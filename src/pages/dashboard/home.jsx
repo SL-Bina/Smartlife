@@ -30,6 +30,9 @@ import { CheckCircleIcon, ClockIcon } from "@heroicons/react/24/solid";
 export function Home() {
   return (
     <div className="mt-12">
+      <div className="w-full bg-black my-4 p-5 rounded-lg shadow-lg mb-6">
+        <h3 className="text-white font-bold">Title</h3>
+      </div>
       <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-2 xl:grid-cols-4">
         {statisticsCardsData.map(({ icon, title, footer, ...rest }) => (
           <StatisticsCard
@@ -48,6 +51,9 @@ export function Home() {
           />
         ))}
       </div>
+      <div className="w-full bg-black my-4 p-5 rounded-lg shadow-lg mb-6">
+        <h3 className="text-white font-bold">Title</h3>
+      </div>
       <div className="mb-6 grid grid-cols-1 gap-y-12 gap-x-6 md:grid-cols-2 xl:grid-cols-3">
         {statisticsChartsData.map((props) => (
           <StatisticsChart
@@ -65,8 +71,11 @@ export function Home() {
           />
         ))}
       </div>
+      <div className="w-full bg-black my-4 p-5 rounded-lg shadow-lg mb-6">
+        <h3 className="text-white font-bold">Title</h3>
+      </div>
       <div className="mb-4 grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <Card className="overflow-hidden xl:col-span-2 border border-blue-gray-100 shadow-sm">
+        <Card className="overflow-hidden xl:col-span-2 border border-red-600 shadow-sm">
           <CardHeader
             floated={false}
             shadow={false}
@@ -110,7 +119,7 @@ export function Home() {
                     (el) => (
                       <th
                         key={el}
-                        className="border-b border-blue-gray-50 py-3 px-6 text-left"
+                        className="border-b border-red-600 py-3 px-6 text-left"
                       >
                         <Typography
                           variant="small"
@@ -129,7 +138,7 @@ export function Home() {
                     const className = `py-3 px-5 ${
                       key === projectsTableData.length - 1
                         ? ""
-                        : "border-b border-blue-gray-50"
+                        : "border-b border-red-600"
                     }`;
 
                     return (
@@ -193,7 +202,8 @@ export function Home() {
             </table>
           </CardBody>
         </Card>
-        <Card className="border border-blue-gray-100 shadow-sm">
+
+        <Card className="border border-red-600 shadow-sm">
           <CardHeader
             floated={false}
             shadow={false}
