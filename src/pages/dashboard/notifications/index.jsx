@@ -1,86 +1,274 @@
 import React from "react";
 import {
   Typography,
-  Alert,
   Card,
   CardHeader,
   CardBody,
+  Chip,
+  IconButton,
+  Menu,
+  MenuHandler,
+  MenuList,
+  MenuItem,
+  Switch,
 } from "@material-tailwind/react";
-import { InformationCircleIcon } from "@heroicons/react/24/outline";
+import {
+  BellIcon,
+  EllipsisVerticalIcon,
+} from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
+
+const initialNotifications = [
+  {
+    id: 1,
+    type: "payment",
+    title: "Yeni ödəniş qeydə alındı",
+    description: "Mənzil A-23 üçün aylıq xidmət haqqı uğurla ödənildi.",
+    time: "5 dəqiqə əvvəl",
+    read: false,
+  },
+  {
+    id: 2,
+    type: "warning",
+    title: "Gecikmiş borc barədə xəbərdarlıq",
+    description: "Bina 3, giriş 2 üzrə 2 aylıq ödəniş gecikib.",
+    time: "1 saat əvvəl",
+    read: false,
+  },
+  {
+    id: 3,
+    type: "info",
+    title: "Planlı texniki işlər",
+    description: "Sabah saat 10:00–12:00 arası lift sistemi üzrə servis işləri aparılacaq.",
+    time: "Dünən",
+    read: true,
+  },
+  {
+    id: 4,
+    type: "system",
+    title: "Sistem yenilənməsi tamamlandı",
+    description: "Smartlife platforması son versiyaya yeniləndi.",
+    time: "2 gün əvvəl",
+    read: true,
+  },
+];
 
 export function Notifications() {
   const { t } = useTranslation();
-  const [showAlerts, setShowAlerts] = React.useState({
-    blue: true,
-    green: true,
-    orange: true,
-    red: true,
-  });
-  const [showAlertsWithIcon, setShowAlertsWithIcon] = React.useState({
-    blue: true,
-    green: true,
-    orange: true,
-    red: true,
-  });
-  const alerts = ["gray", "green", "orange", "red"];
+  const [notifications, setNotifications] = React.useState(initialNotifications);
+  const [showUnreadOnly, setShowUnreadOnly] = React.useState(false);
+
+  const filteredNotifications = React.useMemo(
+    () =>
+      notifications.filter((item) =>
+        showUnreadOnly ? !item.read : true
+      ),
+    [notifications, showUnreadOnly]
+  );
+
+  const handleMarkAsRead = (id) => {
+    setNotifications((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, read: true } : item
+      )
+    );
+  };
+
+  const handleRemove = (id) => {
+    setNotifications((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const getTypeConfig = (type) => {
+    switch (type) {
+      case "payment":
+        return { label: "Ödəniş", color: "green" };
+      case "warning":
+        return { label: "Xəbərdarlıq", color: "red" };
+      case "system":
+        return { label: "Sistem", color: "blue" };
+      default:
+        return { label: "Məlumat", color: "gray" };
+    }
+  };
 
   return (
-    <div className="mx-auto my-20 flex max-w-screen-lg flex-col gap-8">
-      <Card>
+    <div className="  mb-8">
+      {/* Səhifə başlığı – digər dashboard səhifələri ilə eyni stil */}
+      <div className="w-full bg-black my-4 p-5 rounded-lg shadow-lg mb-6 flex items-center justify-between gap-4">
+        <div>
+          <h3 className="text-white font-bold">
+            {t("notifications.pageTitle", "Bildirişlər")}
+          </h3>
+          
+        </div>
+        <div className="hidden sm:flex items-center justify-center h-10 w-10 rounded-full bg-yellow-500/20 border border-yellow-500/50">
+          <BellIcon className="h-6 w-6 text-yellow-400" />
+        </div>
+      </div>
+
+      <Card className="border border-red-600 shadow-sm">
         <CardHeader
-          color="transparent"
           floated={false}
           shadow={false}
-          className="m-0 p-4"
-        >
-          <Typography variant="h5" color="blue-gray">
-            {t("notifications.alertsTitle")}
-          </Typography>
-        </CardHeader>
-        <CardBody className="flex flex-col gap-4 p-4">
-          {alerts.map((color) => (
-            <Alert
-              key={color}
-              open={showAlerts[color]}
-              color={color}
-              onClose={() => setShowAlerts((current) => ({ ...current, [color]: false }))}
-            >
-              A simple {color} alert with an <a href="#">example link</a>. Give
-              it a click if you like.
-            </Alert>
-          ))}
-        </CardBody>
-      </Card>
-      <Card>
-        <CardHeader
           color="transparent"
-          floated={false}
-          shadow={false}
-          className="m-0 p-4"
+          className="m-0 flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between"
         >
-          <Typography variant="h5" color="blue-gray">
-            {t("notifications.alertsWithIconTitle")}
-          </Typography>
-        </CardHeader>
-        <CardBody className="flex flex-col gap-4 p-4">
-          {alerts.map((color) => (
-            <Alert
-              key={color}
-              open={showAlertsWithIcon[color]}
-              color={color}
-              icon={
-                <InformationCircleIcon strokeWidth={2} className="h-6 w-6" />
-              }
-              onClose={() => setShowAlertsWithIcon((current) => ({
-                ...current,
-                [color]: false,
-              }))}
+          <div>
+            <Typography variant="h6" color="blue-gray" className="mb-1">
+              {t("notifications.listTitle", "Son bildirişlər")}
+            </Typography>
+            <Typography
+              variant="small"
+              className="font-normal text-blue-gray-500"
             >
-              A simple {color} alert with an <a href="#">example link</a>. Give
-              it a click if you like.
-            </Alert>
-          ))}
+              {t(
+                "notifications.listSubtitle",
+                "Oxunmamış bildirişləri tez bir zamanda idarə edin."
+              )}
+            </Typography>
+          </div>
+          {/* <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Switch
+                id="unread-only"
+                ripple={false}
+                checked={showUnreadOnly}
+                onChange={() => setShowUnreadOnly((prev) => !prev)}
+                label={t(
+                  "notifications.unreadOnly",
+                  "Yalnız oxunmamışlar"
+                )}
+                containerProps={{ className: "w-auto" }}
+                className="h-full w-full"
+                labelProps={{
+                  className: "text-xs font-normal text-blue-gray-600",
+                }}
+              />
+            </div>
+          </div> */}
+        </CardHeader>
+
+        <CardBody className="px-0 pt-0 pb-2">
+          {filteredNotifications.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-gray-50">
+                <BellIcon className="h-6 w-6 text-blue-gray-300" />
+              </div>
+              <Typography variant="h6" color="blue-gray" className="mb-2">
+                {t(
+                  "notifications.emptyTitle",
+                  "Hazırda göstəriləcək bildiriş yoxdur"
+                )}
+              </Typography>
+              <Typography
+                variant="small"
+                className="max-w-md text-xs font-normal text-blue-gray-500"
+              >
+                {t(
+                  "notifications.emptySubtitle",
+                  "Yeni hadisələr baş verdikdə bildirişlər burada görünəcək."
+                )}
+              </Typography>
+            </div>
+          ) : (
+            <div className="divide-y divide-red-600/60">
+              {filteredNotifications.map((item) => {
+                const config = getTypeConfig(item.type);
+
+                return (
+                  <div
+                    key={item.id}
+                    className="flex flex-col gap-3 px-4 py-4 transition-colors hover:bg-blue-gray-50/40 sm:flex-row sm:items-start sm:justify-between sm:px-6"
+                  >
+                    <div className="flex items-start gap-3">
+                      <span
+                        className={`mt-1 h-2.5 w-2.5 rounded-full ${
+                          item.read ? "bg-blue-gray-200" : "bg-green-500"
+                        }`}
+                      />
+                      <div>
+                        <div className="mb-1 flex flex-wrap items-center gap-2">
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-semibold"
+                          >
+                            {item.title}
+                          </Typography>
+                          <Chip
+                            value={config.label}
+                            size="sm"
+                            variant="ghost"
+                            color={config.color}
+                            className="px-2 py-0.5 text-[10px] font-medium uppercase"
+                          />
+                        </div>
+                        <Typography
+                          variant="small"
+                          className="text-xs font-normal text-blue-gray-500"
+                        >
+                          {item.description}
+                        </Typography>
+                        <Typography
+                          variant="small"
+                          className="mt-2 text-[11px] font-medium text-blue-gray-400"
+                        >
+                          {item.time}
+                        </Typography>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end sm:justify-start">
+                      {!item.read && (
+                        <button
+                          type="button"
+                          onClick={() => handleMarkAsRead(item.id)}
+                          className="rounded-md border border-green-500 px-3 py-1 text-[11px] font-medium uppercase text-green-600 transition-colors hover:bg-green-50"
+                        >
+                          {t(
+                            "notifications.markAsRead",
+                            "Oxunmuş kimi qeyd et"
+                          )}
+                        </button>
+                      )}
+
+                      <Menu placement="left-start">
+                        <MenuHandler>
+                          <IconButton
+                            size="sm"
+                            variant="text"
+                            color="blue-gray"
+                            className="ml-auto"
+                          >
+                            <EllipsisVerticalIcon
+                              strokeWidth={2}
+                              className="h-5 w-5"
+                            />
+                          </IconButton>
+                        </MenuHandler>
+                        <MenuList>
+                          {!item.read && (
+                            <MenuItem onClick={() => handleMarkAsRead(item.id)}>
+                              {t(
+                                "notifications.actions.markAsRead",
+                                "Oxunmuş kimi qeyd et"
+                              )}
+                            </MenuItem>
+                          )}
+                          <MenuItem onClick={() => handleRemove(item.id)}>
+                            {t(
+                              "notifications.actions.remove",
+                              "Siyahıdan sil"
+                            )}
+                          </MenuItem>
+                        </MenuList>
+                      </Menu>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </CardBody>
       </Card>
     </div>

@@ -22,17 +22,49 @@ import {
 } from "@heroicons/react/24/solid";
 import {
   useMaterialTailwindController,
-  setOpenConfigurator,
+  // setOpenConfigurator,
   setOpenSidenav,
 } from "@/context";
 import { useAuth } from "@/auth-context";
 import { useTranslation } from "react-i18next";
 
+import ReactCountryFlag from "react-country-flag";
+
 const languages = [
-  { code: "az", label: "AZ", flag: "🇦🇿" },
-  { code: "en", label: "EN", flag: "🇬🇧" },
-  { code: "ru", label: "RU", flag: "🇷🇺" },
+  { 
+    code: "az", 
+    label: "Azərbaycan dili", 
+    flag: <ReactCountryFlag countryCode="AZ" svg style={{ width: "1.5em", height: "1.5em" }} /> 
+  },
+  { 
+    code: "en", 
+    label: "English", 
+    flag: <ReactCountryFlag countryCode="GB" svg style={{ width: "1.5em", height: "1.5em" }} /> 
+  },
+  { 
+    code: "ru", 
+    label: "Русский", 
+    flag: <ReactCountryFlag countryCode="RU" svg style={{ width: "1.5em", height: "1.5em" }} /> 
+  },
 ];
+
+
+const layoutTitleKeyMap = {
+  dashboard: "sidebar.dashboard",
+};
+
+const pageTitleKeyMap = {
+  home: "sidebar.dashboard",
+  notifications: "sidebar.notifications",
+  mtk: "sidebar.mtk",
+  complex: "sidebar.complexes",
+  buildings: "sidebar.buildings",
+  properties: "sidebar.properties",
+  residents: "sidebar.residents",
+  blocks: "sidebar.blocks",
+  "apartment-groups": "apartmentGroups.pageTitle",
+  "building-service-fee": "buildingServiceFee.pageTitle",
+};
 
 export function DashboardNavbar() {
   const [controller, dispatch] = useMaterialTailwindController();
@@ -46,6 +78,14 @@ export function DashboardNavbar() {
     i18n.changeLanguage(lng);
   };
 
+  const layoutTitle = layoutTitleKeyMap[layout]
+    ? t(layoutTitleKeyMap[layout])
+    : layout;
+
+  const pageTitle = pageTitleKeyMap[page]
+    ? t(pageTitleKeyMap[page])
+    : page;
+
   return (
     <Navbar
       color={fixedNavbar ? "white" : "transparent"}
@@ -58,7 +98,7 @@ export function DashboardNavbar() {
       blurred={fixedNavbar}
     >
       <div className="flex flex-col-reverse justify-between gap-6 md:flex-row md:items-center">
-        <div className="capitalize">
+        <div>
           <Breadcrumbs
             className={`bg-transparent p-0 transition-all ${
               fixedNavbar ? "mt-1" : ""
@@ -70,7 +110,7 @@ export function DashboardNavbar() {
                 color="blue-gray"
                 className="font-normal opacity-50 transition-all hover:text-blue-500 hover:opacity-100"
               >
-                {layout}
+                {layoutTitle}
               </Typography>
             </Link>
             <Typography
@@ -78,11 +118,11 @@ export function DashboardNavbar() {
               color="blue-gray"
               className="font-normal"
             >
-              {page}
+              {pageTitle}
             </Typography>
           </Breadcrumbs>
           <Typography variant="h6" color="blue-gray">
-            {page}
+            {pageTitle}
           </Typography>
         </div>
         <div className="flex items-center justify-end">
@@ -241,13 +281,13 @@ export function DashboardNavbar() {
               </MenuItem>
             </MenuList>
           </Menu>
-          <IconButton
+          {/* <IconButton
             variant="text"
             color="blue-gray"
             onClick={() => setOpenConfigurator(dispatch, true)}
           >
             <Cog6ToothIcon className="h-5 w-5 text-blue-gray-500" />
-          </IconButton>
+          </IconButton> */}
         </div>
       </div>
     </Navbar>

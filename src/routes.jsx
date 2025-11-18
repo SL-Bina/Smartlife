@@ -11,13 +11,15 @@ import {
   UsersIcon,
 } from "@heroicons/react/24/solid";
 import { Home, Profile, Tables, Notifications } from "@/pages/dashboard";
-import { SignIn, SignUp } from "@/pages/auth";
+import { SignIn } from "@/pages/auth";
 import MTK from "./pages/dashboard/mtk";
 import ComplexPage from "./pages/dashboard/complex";
 import ResidentsPage from "./pages/dashboard/residents";
 import BuildingsPage from "./pages/dashboard/buildings";
 import PropertiesPage from "./pages/dashboard/properties";
 import BlocksPage from "./pages/dashboard/blocks";
+import ApartmentGroupsPage from "./pages/dashboard/apartment-groups";
+import BuildingServiceFeePage from "./pages/dashboard/building-service-fee";
 
 const icon = {
   className: "w-5 h-5 text-inherit",
@@ -51,42 +53,61 @@ export const routes = [
         path: "/notifications",
         element: <Notifications />,
       },
-      
-      {
-        icon: <TableCellsIcon {...icon} />,
-        name: "sidebar.mtk",
-        path: "/mtk",
-        element: <MTK />,
-      },
       {
         icon: <BuildingOfficeIcon {...icon} />,
-        name: "sidebar.complexes",
-        path: "/complex",
-        element: <ComplexPage />,
-      },
-      {
-        icon: <BuildingOffice2Icon {...icon} />, 
-        name: "sidebar.buildings",      
-        path: "/buildings",
-        element: <BuildingsPage />,
-      },
-      {
-        icon: <RectangleStackIcon {...icon} />,
-        name: "sidebar.blocks",
-        path: "/blocks",
-        element: <BlocksPage />,
-      },
-      {
-        icon: <HomeModernIcon {...icon} />,
-        name: "sidebar.properties",
-        path: "/properties",
-        element: <PropertiesPage />,
-      },
-      {
-        icon: <UsersIcon {...icon} />,
-        name: "sidebar.residents",
-        path: "/residents",
-        element: <ResidentsPage />,
+        name: "sidebar.buildingManagement",
+        children: [
+          {
+            icon: <TableCellsIcon {...icon} />,
+            name: "sidebar.mtk",
+            path: "/mtk",
+            element: <MTK />,
+          },
+          {
+            icon: <BuildingOfficeIcon {...icon} />,
+            name: "sidebar.complexes",
+            path: "/complex",
+            element: <ComplexPage />,
+          },
+          {
+            icon: <BuildingOffice2Icon {...icon} />,
+            name: "sidebar.buildings",
+            path: "/buildings",
+            element: <BuildingsPage />,
+          },
+          {
+            icon: <RectangleStackIcon {...icon} />,
+            name: "sidebar.blocks",
+            path: "/blocks",
+            element: <BlocksPage />,
+          },
+          {
+            icon: <HomeModernIcon {...icon} />,
+            name: "sidebar.properties",
+            path: "/properties",
+            element: <PropertiesPage />,
+          },
+          {
+            icon: <UsersIcon {...icon} />,
+            name: "sidebar.residents",
+            path: "/residents",
+            element: <ResidentsPage />,
+          },
+          
+          {
+            icon: <HomeModernIcon {...icon} />,
+            name: "sidebar.apartmentGroups",
+            path: "/apartment-groups",
+            element: <ApartmentGroupsPage />,
+          },
+          {
+            icon: <BuildingOfficeIcon {...icon} />,
+            name: "sidebar.buildingServiceFee",
+            path: "/building-service-fee",
+            element: <BuildingServiceFeePage />,
+            hideInSidenav: true,
+          },
+        ],
       },
     ],
   },
@@ -99,12 +120,6 @@ export const routes = [
         name: "sign in",
         path: "sign-in",
         element: <SignIn />,
-      },
-      {
-        icon: <RectangleStackIcon {...icon} />,
-        name: "sign up",
-        path: "sign-up",
-        element: <SignUp />,
       },
     ],
   },

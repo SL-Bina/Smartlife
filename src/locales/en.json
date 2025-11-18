@@ -1,0 +1,182 @@
+{
+  "common": {
+    "appName": "SmartLife",
+    "login": "Sign In",
+    "logout": "Logout",
+    "username": "Username",
+    "password": "Password"
+  },
+  "header": {
+    "search": "Search"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "notifications": "Notifications",
+    "mtk": "HOA",
+    "complexes": "Complexes",
+    "residents": "Residents",
+    "buildings": "Buildings",
+    "properties": "Apartments",
+    "blocks": "Blocks",
+    "apartmentGroups": "Apartment Groups",
+    "buildingServiceFee": "Service Fee",
+    "buildingManagement": "Building Management"
+  },
+  "buttons": {
+    "clear": "Clear",
+    "filter": "Filter",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "apply": "Apply"
+  },
+  "dashboard": {
+    "homeTitle1": "Overview",
+    "homeTitle2": "Charts",
+    "homeTitle3": "Projects & Orders",
+    "projectsTitle": "Projects",
+    "projectsSubtitle": "{{count}} done this month",
+    "actions": {
+      "action1": "Action",
+      "action2": "Another Action",
+      "action3": "Something else here"
+    },
+    "projectsTable": {
+      "companies": "Companies",
+      "members": "Members",
+      "budget": "Budget",
+      "completion": "Completion"
+    },
+    "ordersOverviewTitle": "Orders Overview",
+    "ordersOverviewSubtitle": "{{value}} this month",
+    "charts": {
+      "websiteViews": {
+        "title": "Website Views",
+        "description": "Last Campaign Performance",
+        "footer": "campaign sent 2 days ago"
+      },
+      "dailySales": {
+        "title": "Daily Sales",
+        "description": "15% increase in today sales",
+        "footer": "updated 4 min ago"
+      },
+      "completedTasks": {
+        "title": "Completed Tasks",
+        "description": "Last Campaign Performance",
+        "footer": "just updated"
+      }
+    },
+    "orders": {
+      "items": [
+        {
+          "title": "$2400, Design changes",
+          "description": "22 DEC 7:20 PM"
+        },
+        {
+          "title": "New order #1832412",
+          "description": "21 DEC 11 PM"
+        },
+        {
+          "title": "Server payments for April",
+          "description": "21 DEC 9:34 PM"
+        },
+        {
+          "title": "New card added for order #4395133",
+          "description": "20 DEC 2:20 AM"
+        },
+        {
+          "title": "Unlock packages for development",
+          "description": "18 DEC 4:54 AM"
+        },
+        {
+          "title": "New order #9583120",
+          "description": "17 DEC"
+        }
+      ]
+    }
+  },
+  "statistics": {
+    "todayMoney": {
+      "title": "Today's Money",
+      "subtitle": "Today's Money",
+      "footer": "+55% than last week"
+    },
+    "todayUsers": {
+      "title": "Today's Users",
+      "footer": "+3% than last month"
+    },
+    "newClients": {
+      "title": "New Clients",
+      "footer": "-2% than yesterday"
+    },
+    "sales": {
+      "title": "Sales",
+      "footer": "+5% than yesterday"
+    }
+  },
+  "apartmentGroups": {
+    "pageTitle": "Apartment Groups",
+    "filters": {
+      "complex": "Complex",
+      "complexPlaceholder": "Select complex",
+      "building": "Building",
+      "buildingPlaceholder": "Select building"
+    },
+    "summary": {
+      "title": "Summary",
+      "totalGroups": "Groups: {{count}}",
+      "totalApartments": "Apartments: {{count}}",
+      "occupied": "Occupied: {{count}}"
+    },
+    "labels": {
+      "groupName": "Group name",
+      "complex": "Complex",
+      "building": "Building",
+      "total": "Total",
+      "occupied": "Occupied",
+      "free": "Free",
+      "serviceFee": "Service fee",
+      "serviceFeeValue": "{{value}} AZN / month",
+      "occupancy": "Occupancy: {{ratio}}%"
+    }
+  },
+  "buildingServiceFee": {
+    "pageTitle": "Building Service Fee",
+    "adjustment": {
+      "title": "Global Adjustment",
+      "infoLabel": "Demo mode",
+      "globalIncrease": "Percentage change for all buildings"
+    },
+    "summary": {
+      "title": "Summary",
+      "totalBuildings": "Buildings: {{count}}",
+      "avgFee": "Average fee: {{value}} AZN"
+    },
+    "labels": {
+      "building": "Building",
+      "complex": "Complex",
+      "baseFee": "Monthly service fee",
+      "perM2": "Service fee per m²",
+      "amountValue": "{{value}} AZN",
+      "perM2Value": "{{value}} AZN / m²",
+      "lastUpdatedBy": "Last updated by"
+    }
+  },
+  "auth": {
+    "signIn": {
+      "title": "Sign In",
+      "subtitle": "Enter your credentials to sign in",
+      "usernameLabel": "Username",
+      "passwordLabel": "Password",
+      "submit": "Sign In",
+      "invalidCredentialsError": "Invalid username or password",
+      "demoUsersTitle": "Demo users:"
+    },
+    "signUp": {
+      "title": "Sign Up",
+      "subtitle": "Enter your details to register",
+      "emailLabel": "Email",
+      "submit": "Register"
+    }
+  }
+}

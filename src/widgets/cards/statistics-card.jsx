@@ -6,8 +6,10 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 
-export function StatisticsCard({ color, icon, title, value, footer }) {
+export function StatisticsCard({ color, icon, title, titleKey, value, footer }) {
+  const { t } = useTranslation();
   return (
     <Card className="border border-red-600 shadow-sm">
       <CardHeader
@@ -21,7 +23,7 @@ export function StatisticsCard({ color, icon, title, value, footer }) {
       </CardHeader>
       <CardBody className="p-4 text-right">
         <Typography variant="small" className="font-normal text-blue-gray-600">
-          {title}
+          {titleKey ? t(titleKey) : title}
         </Typography>
         <Typography variant="h4" color="blue-gray">
           {value}
@@ -65,7 +67,8 @@ StatisticsCard.propTypes = {
     "red",
   ]),
   icon: PropTypes.node.isRequired,
-  title: PropTypes.node.isRequired,
+  title: PropTypes.node,
+  titleKey: PropTypes.string,
   value: PropTypes.node.isRequired,
   footer: PropTypes.node,
 };

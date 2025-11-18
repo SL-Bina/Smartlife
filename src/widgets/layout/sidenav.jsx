@@ -1,6 +1,7 @@
+import React from "react";
 import PropTypes from "prop-types";
-import { Link, NavLink } from "react-router-dom";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { Link, NavLink, useLocation } from "react-router-dom";
+import { XMarkIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import {
   Avatar,
   Button,
@@ -14,6 +15,33 @@ export function Sidenav({ brandImg, brandName, routes }) {
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavColor, sidenavType, openSidenav } = controller;
   const { t } = useTranslation();
+  const location = useLocation();
+  const [openMenus, setOpenMenus] = React.useState({});
+
+  React.useEffect(() => {
+    // Aktiv child route dəyişəndə submenu-ləri vəziyyətə uyğunlaşdır
+    setOpenMenus((current) => {
+      const updated = { ...current };
+
+      routes.forEach(({ layout, pages }) => {
+        pages.forEach((page) => {
+          if (Array.isArray(page.children) && page.children.length > 0) {
+            const hasActiveChild = page.children.some(
+              (child) => `/${layout}${child.path}` === location.pathname
+            );
+
+            // Əgər heç bir child aktiv deyilsə, bu parent submenu-ni bağla
+            if (!hasActiveChild) {
+              updated[page.name] = false;
+            }
+          }
+        });
+      });
+
+      return updated;
+    });
+  }, [location.pathname, routes]);
+
   const sidenavTypes = {
     dark: "bg-gradient-to-br from-gray-800 to-gray-900",
     white: "bg-white shadow-sm",
@@ -65,40 +93,148 @@ export function Sidenav({ brandImg, brandName, routes }) {
                 </Typography>
               </li>
             )}
-            {pages.map(({ icon, name, path }) => (
-              <li key={name}>
-                <NavLink to={`/${layout}${path}`}>
-                  {({ isActive }) => (
+            {pages
+              .filter((page) => !page.hideInSidenav)
+              .map((page) => {
+              const hasChildren =
+                Array.isArray(page.children) && page.children.length > 0;
+
+              if (hasChildren) {
+                const hasActiveChild = page.children.some(
+                  ({ path }) => `/${layout}${path}` === location.pathname
+                );
+                const isOpen = hasActiveChild || !!openMenus[page.name];
+
+                return (
+                  <li key={page.name}>
                     <Button
-                      variant={isActive ? "gradient" : "text"}
+                      variant={isOpen ? "black" : "text"}
                       color={
-                        isActive
-                          ? sidenavColor === "dark" ? "black" : sidenavColor
+                        isOpen
+                          ? sidenavColor === "dark"
+                            ? "white"
+                            : sidenavColor
                           : sidenavType === "dark"
-                          ? "white"
+                          ? "black"
                           : "black"
                       }
-                      className="flex items-center gap-4 px-4 capitalize"
+                      className="flex items-center justify-between gap-2 px-4 capitalize"
                       fullWidth
-                      onClick={() => {
-                        // mobil görünüşdə route dəyişəndə sidenav bağlansın
-                        if (window.innerWidth < 1280) {
-                          setOpenSidenav(dispatch, false);
-                        }
-                      }}
+                      onClick={() =>
+                        setOpenMenus((current) => ({
+                          ...current,
+                          [page.name]: !current[page.name],
+                        }))
+                      }
                     >
-                      {icon}
-                      <Typography
-                        color="inherit"
-                        className="font-medium"
-                      >
-                        {name.startsWith("sidebar.") ? t(name) : name}
-                      </Typography>
+                      <span className="flex items-center gap-4">
+                        {page.icon}
+                        <Typography
+                          color="inherit"
+                          className="font-medium"
+                        >
+                          {page.name.startsWith("sidebar.")
+                            ? t(page.name)
+                            : page.name}
+                        </Typography>
+                      </span>
+                      <ChevronDownIcon
+                        strokeWidth={2}
+                        className={`h-4 w-4 transition-transform ${
+                          isOpen ? "rotate-180" : ""
+                        }`}
+                      />
                     </Button>
-                  )}
-                </NavLink>
-              </li>
-            ))}
+
+                    <div
+                      className={`overflow-hidden transition-all duration-300 ${
+                        isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                      }`}
+                    >
+                      <ul className="mt-1 flex flex-col gap-1 pl-5">
+                        {page.children
+                          .filter((child) => !child.hideInSidenav)
+                          .map(({ icon, name, path }) => (
+                          <li key={name}>
+                            <NavLink to={`/${layout}${path}`}>
+                              {({ isActive }) => (
+                                <Button
+                                  variant={isActive ? "gradient" : "text"}
+                                  color={
+                                    isActive
+                                      ? sidenavColor === "dark"
+                                        ? "black"
+                                        : sidenavColor
+                                      : sidenavType === "dark"
+                                      ? "white"
+                                      : "black"
+                                  }
+                                  className="flex items-center gap-3 px-3 py-2 text-sm normal-case"
+                                  fullWidth
+                                  onClick={() => {
+                                    // mobil görünüşdə route dəyişəndə sidenav bağlansın
+                                    if (window.innerWidth < 1280) {
+                                      setOpenSidenav(dispatch, false);
+                                    }
+                                  }}
+                                >
+                                  {icon}
+                                  <Typography
+                                    color="inherit"
+                                    className="font-medium"
+                                  >
+                                    {name.startsWith("sidebar.")
+                                      ? t(name)
+                                      : name}
+                                  </Typography>
+                                </Button>
+                              )}
+                            </NavLink>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </li>
+                );
+              }
+
+              return (
+                <li key={page.name}>
+                  <NavLink to={`/${layout}${page.path}`}>
+                    {({ isActive }) => (
+                      <Button
+                        variant={isActive ? "gradient" : "text"}
+                        color={
+                          isActive
+                            ? sidenavColor === "dark" ? "black" : sidenavColor
+                            : sidenavType === "dark"
+                            ? "white"
+                            : "black"
+                        }
+                        className="flex items-center gap-4 px-4 capitalize"
+                        fullWidth
+                        onClick={() => {
+                          // mobil görünüşdə route dəyişəndə sidenav bağlansın
+                          if (window.innerWidth < 1280) {
+                            setOpenSidenav(dispatch, false);
+                          }
+                        }}
+                      >
+                        {page.icon}
+                        <Typography
+                          color="inherit"
+                          className="font-medium"
+                        >
+                          {page.name.startsWith("sidebar.")
+                            ? t(page.name)
+                            : page.name}
+                        </Typography>
+                      </Button>
+                    )}
+                  </NavLink>
+                </li>
+              );
+            })}
           </ul>
         ))}
       </div>

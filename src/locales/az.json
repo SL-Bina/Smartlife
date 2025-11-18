@@ -1,0 +1,182 @@
+{
+  "common": {
+    "appName": "SmartLife",
+    "login": "Daxil ol",
+    "logout": "Çıxış",
+    "username": "İstifadəçi adı",
+    "password": "Şifrə"
+  },
+  "header": {
+    "search": "Axtarış"
+  },
+  "sidebar": {
+    "dashboard": "Panel",
+    "notifications": "Bildirişlər",
+    "mtk": "MTK",
+    "complexes": "Komplekslər",
+    "residents": "Sakinlər",
+    "buildings": "Binalar",
+    "properties": "Mənzillər",
+    "blocks": "Bloklar",
+    "apartmentGroups": "Mənzil qrupu",
+    "buildingServiceFee": "Servis haqqı",
+    "buildingManagement": "idarə etmə"
+  },
+  "buttons": {
+    "clear": "Təmizlə",
+    "filter": "Filterlə",
+    "cancel": "Ləğv et",
+    "save": "Yadda saxla",
+    "edit": "Düzəliş et",
+    "apply": "Tətbiq et"
+  },
+  "dashboard": {
+    "homeTitle1": "Ümumi göstəricilər",
+    "homeTitle2": "Qrafiklər",
+    "homeTitle3": "Layihələr və sifarişlər",
+    "projectsTitle": "Layihələr",
+    "projectsSubtitle": "Bu ay {{count}} layihə tamamlanıb",
+    "actions": {
+      "action1": "Əməliyyat",
+      "action2": "Başqa əməliyyat",
+      "action3": "Digər"
+    },
+    "projectsTable": {
+      "companies": "Şirkətlər",
+      "members": "Üzvlər",
+      "budget": "Büdcə",
+      "completion": "Tamamlama"
+    },
+    "ordersOverviewTitle": "Sifarişlərə ümumi baxış",
+    "ordersOverviewSubtitle": "Bu ay {{value}}",
+    "charts": {
+      "websiteViews": {
+        "title": "Sayt baxışları",
+        "description": "Son kampaniyanın nəticələri",
+        "footer": "kampaniya 2 gün əvvəl göndərilib"
+      },
+      "dailySales": {
+        "title": "Günlük satışlar",
+        "description": "Bu gün satışlarda 15% artım",
+        "footer": "4 dəqiqə əvvəl yenilənib"
+      },
+      "completedTasks": {
+        "title": "Tamamlanmış tapşırıqlar",
+        "description": "Son kampaniyanın nəticələri",
+        "footer": "indi yenilənib"
+      }
+    },
+    "orders": {
+      "items": [
+        {
+          "title": "$2400, Dizayn dəyişiklikləri",
+          "description": "22 DEK 7:20 PM"
+        },
+        {
+          "title": "Yeni sifariş #1832412",
+          "description": "21 DEK 11 PM"
+        },
+        {
+          "title": "Aprel üçün server ödənişləri",
+          "description": "21 DEK 9:34 PM"
+        },
+        {
+          "title": "Sifariş #4395133 üçün yeni kart əlavə edildi",
+          "description": "20 DEK 2:20 AM"
+        },
+        {
+          "title": "İnkişaf üçün paketlərin açılması",
+          "description": "18 DEK 4:54 AM"
+        },
+        {
+          "title": "Yeni sifariş #9583120",
+          "description": "17 DEK"
+        }
+      ]
+    }
+  },
+  "statistics": {
+    "todayMoney": {
+      "title": "Bu günün gəliri",
+      "subtitle": "Bu günün pulu",
+      "footer": "+55% keçən həftə ilə müqayisədə"
+    },
+    "todayUsers": {
+      "title": "Bu günün istifadəçiləri",
+      "footer": "+3% keçən ay ilə müqayisədə"
+    },
+    "newClients": {
+      "title": "Yeni müştərilər",
+      "footer": "-2% dünənlə müqayisədə"
+    },
+    "sales": {
+      "title": "Satışlar",
+      "footer": "+5% dünənlə müqayisədə"
+    }
+  },
+  "apartmentGroups": {
+    "pageTitle": "Mənzil qrupları",
+    "filters": {
+      "complex": "Kompleks",
+      "complexPlaceholder": "Kompleks seçin",
+      "building": "Bina",
+      "buildingPlaceholder": "Bina seçin"
+    },
+    "summary": {
+      "title": "Ümumi məlumat",
+      "totalGroups": "Qrup sayı: {{count}}",
+      "totalApartments": "Mənzil sayı: {{count}}",
+      "occupied": "Dolu mənzillər: {{count}}"
+    },
+    "labels": {
+      "groupName": "Qrup adı",
+      "complex": "Kompleks",
+      "building": "Bina",
+      "total": "Ümumi",
+      "occupied": "Dolu",
+      "free": "Boş",
+      "serviceFee": "Servis haqqı",
+      "serviceFeeValue": "{{value}} AZN / ay",
+      "occupancy": "Dolu: {{ratio}}%"
+    }
+  },
+  "buildingServiceFee": {
+    "pageTitle": "Binanın servis haqqı",
+    "adjustment": {
+      "title": "Qlobal düzəliş",
+      "infoLabel": "Test rejimi",
+      "globalIncrease": "Bütün binalar üçün faiz dəyişikliyi"
+    },
+    "summary": {
+      "title": "Ümumi məlumat",
+      "totalBuildings": "Bina sayı: {{count}}",
+      "avgFee": "Orta servis haqqı: {{value}} AZN"
+    },
+    "labels": {
+      "building": "Bina",
+      "complex": "Kompleks",
+      "baseFee": "Aylıq servis haqqı",
+      "perM2": "m² üçün servis haqqı",
+      "amountValue": "{{value}} AZN",
+      "perM2Value": "{{value}} AZN / m²",
+      "lastUpdatedBy": "Son dəyişiklik edən"
+    }
+  },
+  "auth": {
+    "signIn": {
+      "title": "Daxil ol",
+      "subtitle": "Sistemə daxil olmaq üçün məlumatları daxil edin",
+      "usernameLabel": "İstifadəçi adı",
+      "passwordLabel": "Şifrə",
+      "submit": "Daxil ol",
+      "invalidCredentialsError": "İstifadəçi adı və ya şifrə yanlışdır",
+      "demoUsersTitle": "Demo istifadəçilər:"
+    },
+    "signUp": {
+      "title": "Qeydiyyat",
+      "subtitle": "Qeydiyyatdan keçmək üçün məlumatları daxil edin",
+      "emailLabel": "Email",
+      "submit": "Qeydiyyatdan keç"
+    }
+  }
+}

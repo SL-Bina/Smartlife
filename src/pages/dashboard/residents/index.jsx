@@ -11,6 +11,13 @@ import {
   MenuList,
   MenuItem,
   Spinner,
+  Dialog,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+  Input,
+  Select,
+  Option,
 } from "@material-tailwind/react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 
@@ -28,6 +35,19 @@ const ITEMS_PER_PAGE = 10;
 const ResidentsPage = () => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  const [filterName, setFilterName] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+
+  const [formFullName, setFormFullName] = useState("");
+  const [formPhone, setFormPhone] = useState("");
+  const [formEmail, setFormEmail] = useState("");
+  const [formApartment, setFormApartment] = useState("");
+  const [formStatus, setFormStatus] = useState("Aktiv");
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 400);
@@ -41,13 +61,234 @@ const ResidentsPage = () => {
   const handlePrev = () => setPage((prev) => Math.max(1, prev - 1));
   const handleNext = () => setPage((prev) => Math.min(totalPages, prev + 1));
 
+  const openCreateModal = () => {
+    setSelectedItem(null);
+    setFormFullName("");
+    setFormPhone("");
+    setFormEmail("");
+    setFormApartment("");
+    setFormStatus("Aktiv");
+    setCreateOpen(true);
+  };
+
+  const openEditModal = (item) => {
+    setSelectedItem(item);
+    setFormFullName(item.fullName);
+    setFormPhone(item.phone);
+    setFormEmail(item.email);
+    setFormApartment(item.apartment);
+    setFormStatus(item.status);
+    setEditOpen(true);
+  };
+
+  const handleFilterApply = () => {
+    setFilterOpen(false);
+  };
+
+  const handleFilterClear = () => {
+    setFilterName("");
+    setFilterStatus("");
+    setFilterOpen(false);
+  };
+
+  const handleCreateSave = () => {
+    setCreateOpen(false);
+  };
+
+  const handleEditSave = () => {
+    setEditOpen(false);
+  };
+
   return (
-    <div className="mt-12">
-      <div className="w-full bg-black my-4 p-5 rounded-lg shadow-lg mb-6">
+    <div className=" ">
+      <div className="w-full bg-black my-4 p-4 rounded-lg shadow-lg mb-6">
         <h3 className="text-white font-bold">Sakinlər</h3>
       </div>
 
-      <Card className="border border-red-600 shadow-sm">
+      {/* Filter modal */}
+      <Dialog open={filterOpen} handler={setFilterOpen} size="sm">
+        <DialogHeader>Sakin filter</DialogHeader>
+        <DialogBody divider className="space-y-4">
+          <div>
+            <Typography variant="small" color="blue-gray" className="mb-1">
+              Ad Soyad
+            </Typography>
+            <Input
+              label="Ad Soyad ilə axtarış"
+              value={filterName}
+              onChange={(e) => setFilterName(e.target.value)}
+            />
+          </div>
+          <div>
+            <Typography variant="small" color="blue-gray" className="mb-1">
+              Status
+            </Typography>
+            <Select
+              label="Status"
+              value={filterStatus}
+              onChange={(val) => setFilterStatus(val || "")}
+            >
+              <Option value="Aktiv">Aktiv</Option>
+              <Option value="Passiv">Passiv</Option>
+            </Select>
+          </div>
+        </DialogBody>
+        <DialogFooter className="flex justify-between gap-2">
+          <Button variant="text" color="blue-gray" onClick={handleFilterClear}>
+            Təmizlə
+          </Button>
+          <div className="flex gap-2">
+            <Button variant="outlined" color="blue-gray" onClick={() => setFilterOpen(false)}>
+              Bağla
+            </Button>
+            <Button color="blue" onClick={handleFilterApply}>
+              Tətbiq et
+            </Button>
+          </div>
+        </DialogFooter>
+      </Dialog>
+
+      {/* Create resident modal */}
+      <Dialog open={createOpen} handler={setCreateOpen} size="sm">
+        <DialogHeader>Yeni sakin əlavə et</DialogHeader>
+        <DialogBody divider className="space-y-4">
+          <div>
+            <Typography variant="small" color="blue-gray" className="mb-1">
+              Ad Soyad
+            </Typography>
+            <Input
+              label="Ad Soyad"
+              value={formFullName}
+              onChange={(e) => setFormFullName(e.target.value)}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Typography variant="small" color="blue-gray" className="mb-1">
+                Telefon
+              </Typography>
+              <Input
+                label="Telefon"
+                value={formPhone}
+                onChange={(e) => setFormPhone(e.target.value)}
+              />
+            </div>
+            <div>
+              <Typography variant="small" color="blue-gray" className="mb-1">
+                Email
+              </Typography>
+              <Input
+                label="Email"
+                value={formEmail}
+                onChange={(e) => setFormEmail(e.target.value)}
+              />
+            </div>
+          </div>
+          <div>
+            <Typography variant="small" color="blue-gray" className="mb-1">
+              Mənzil
+            </Typography>
+            <Input
+              label="Mənzil"
+              value={formApartment}
+              onChange={(e) => setFormApartment(e.target.value)}
+            />
+          </div>
+          <div>
+            <Typography variant="small" color="blue-gray" className="mb-1">
+              Status
+            </Typography>
+            <Select
+              label="Status"
+              value={formStatus}
+              onChange={(val) => setFormStatus(val || "Aktiv")}
+            >
+              <Option value="Aktiv">Aktiv</Option>
+              <Option value="Passiv">Passiv</Option>
+            </Select>
+          </div>
+        </DialogBody>
+        <DialogFooter className="flex justify-end gap-2">
+          <Button variant="outlined" color="blue-gray" onClick={() => setCreateOpen(false)}>
+            Ləğv et
+          </Button>
+          <Button color="green" onClick={handleCreateSave}>
+            Yadda saxla
+          </Button>
+        </DialogFooter>
+      </Dialog>
+
+      {/* Edit resident modal */}
+      <Dialog open={editOpen} handler={setEditOpen} size="sm">
+        <DialogHeader>Sakin məlumatlarını dəyiş</DialogHeader>
+        <DialogBody divider className="space-y-4">
+          <div>
+            <Typography variant="small" color="blue-gray" className="mb-1">
+              Ad Soyad
+            </Typography>
+            <Input
+              label="Ad Soyad"
+              value={formFullName}
+              onChange={(e) => setFormFullName(e.target.value)}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Typography variant="small" color="blue-gray" className="mb-1">
+                Telefon
+              </Typography>
+              <Input
+                label="Telefon"
+                value={formPhone}
+                onChange={(e) => setFormPhone(e.target.value)}
+              />
+            </div>
+            <div>
+              <Typography variant="small" color="blue-gray" className="mb-1">
+                Email
+              </Typography>
+              <Input
+                label="Email"
+                value={formEmail}
+                onChange={(e) => setFormEmail(e.target.value)}
+              />
+            </div>
+          </div>
+          <div>
+            <Typography variant="small" color="blue-gray" className="mb-1">
+              Mənzil
+            </Typography>
+            <Input
+              label="Mənzil"
+              value={formApartment}
+              onChange={(e) => setFormApartment(e.target.value)}
+            />
+          </div>
+          <div>
+            <Typography variant="small" color="blue-gray" className="mb-1">
+              Status
+            </Typography>
+            <Select
+              label="Status"
+              value={formStatus}
+              onChange={(val) => setFormStatus(val || "Aktiv")}
+            >
+              <Option value="Aktiv">Aktiv</Option>
+              <Option value="Passiv">Passiv</Option>
+            </Select>
+          </div>
+        </DialogBody>
+        <DialogFooter className="flex justify-end gap-2">
+          <Button variant="outlined" color="blue-gray" onClick={() => setEditOpen(false)}>
+            Ləğv et
+          </Button>
+          <Button color="blue" onClick={handleEditSave}>
+            Yadda saxla
+          </Button>
+        </DialogFooter>
+      </Dialog>
+
+      <Card className="border border-red-500 shadow-sm">
         <CardHeader
           floated={false}
           shadow={false}
@@ -58,10 +299,12 @@ const ResidentsPage = () => {
             Sakin Siyahısı
           </Typography> */}
           <div className="flex items-center gap-3">
-            <Button variant="outlined" color="blue">
+            <Button variant="outlined" color="blue" onClick={() => setFilterOpen(true)}>
               Axtarış
             </Button>
-            <Button color="green">Əlavə et</Button>
+            <Button color="green" onClick={openCreateModal}>
+              Əlavə et
+            </Button>
           </div>
         </CardHeader>
         <CardBody className="px-0 pt-0 pb-2">
@@ -75,15 +318,15 @@ const ResidentsPage = () => {
           ) : (
             <>
               {/* Desktop table */}
-              <div className="hidden lg:block overflow-x-auto">
-                <table className="w-full min-w-[720px] table-auto">
+              <div className="hidden lg:block">
+                <table className="w-full table-auto">
                   <thead>
                     <tr>
                       {["ID", "Ad Soyad", "Telefon", "Email", "Mənzil", "Status", "Əməliyyatlar"].map(
                         (el, idx) => (
                           <th
                             key={el}
-                            className={`border-b border-red-600 py-3 px-6 text-left ${
+                            className={`border-b border-blue-gray-100 py-3 px-6 text-left ${
                               idx === 6 ? "text-right" : ""
                             }`}
                           >
@@ -101,7 +344,7 @@ const ResidentsPage = () => {
                   <tbody>
                     {pageData.map((row, key) => {
                       const className = `py-3 px-6 ${
-                        key === pageData.length - 1 ? "" : "border-b border-red-600"
+                        key === pageData.length - 1 ? "" : "border-b border-blue-gray-50"
                       }`;
                       return (
                         <tr key={row.id}>
@@ -154,7 +397,7 @@ const ResidentsPage = () => {
                               </MenuHandler>
                               <MenuList>
                                 <MenuItem>Bax</MenuItem>
-                                <MenuItem>Düzəliş et</MenuItem>
+                                <MenuItem onClick={() => openEditModal(row)}>Düzəliş et</MenuItem>
                                 <MenuItem>Sil</MenuItem>
                               </MenuList>
                             </Menu>
@@ -171,7 +414,7 @@ const ResidentsPage = () => {
                 {pageData.map((row) => (
                   <Card
                     key={row.id}
-                    className="border border-blue-gray-100 shadow-sm"
+                    className="border border-red-500 shadow-sm"
                   >
                     <CardBody className="space-y-3">
                       <div className="flex items-start justify-between gap-2">
@@ -202,7 +445,7 @@ const ResidentsPage = () => {
                           </MenuHandler>
                           <MenuList>
                             <MenuItem>Bax</MenuItem>
-                            <MenuItem>Düzəliş et</MenuItem>
+                            <MenuItem onClick={() => openEditModal(row)}>Düzəliş et</MenuItem>
                             <MenuItem>Sil</MenuItem>
                           </MenuList>
                         </Menu>
@@ -281,9 +524,9 @@ const ResidentsPage = () => {
                 ))}
               </div>
 
-              <div className="flex items-center justify-end gap-2 px-6 pt-4">
+      <div className="flex items-center justify-end gap-2 px-6 pt-4">
                 <Button
-                  variant="outlined"
+                  variant="text"
                   size="sm"
                   color="blue-gray"
                   onClick={handlePrev}
@@ -291,11 +534,22 @@ const ResidentsPage = () => {
                 >
                   Geri
                 </Button>
-                <div className="rounded-md bg-blue-600 text-white text-sm px-3 py-1">
-                  {page} / {totalPages}
-                </div>
+                {Array.from({ length: totalPages }, (_, index) => index + 1).map(
+                  (pageNumber) => (
+                    <Button
+                      key={pageNumber}
+                      variant={pageNumber === page ? "filled" : "text"}
+                      size="sm"
+                      color={pageNumber === page ? "blue" : "blue-gray"}
+                      onClick={() => setPage(pageNumber)}
+                      className="min-w-[32px] px-2"
+                    >
+                      {pageNumber}
+                    </Button>
+                  )
+                )}
                 <Button
-                  variant="outlined"
+                  variant="text"
                   size="sm"
                   color="blue-gray"
                   onClick={handleNext}

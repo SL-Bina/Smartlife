@@ -1,0 +1,182 @@
+{
+  "common": {
+    "appName": "SmartLife",
+    "login": "Войти",
+    "logout": "Выйти",
+    "username": "Логин",
+    "password": "Пароль"
+  },
+  "header": {
+    "search": "Поиск"
+  },
+  "sidebar": {
+    "dashboard": "Панель",
+    "notifications": "Уведомления",
+    "mtk": "ТСЖ",
+    "complexes": "Комплексы",
+    "residents": "Жители",
+    "buildings": "Здания",
+    "properties": "Квартиры",
+    "blocks": "Блоки",
+    "apartmentGroups": "Группы квартир",
+    "buildingServiceFee": "Сервисный платеж",
+    "buildingManagement": "Управление зданиями"
+  },
+  "buttons": {
+    "clear": "Очистить",
+    "filter": "Фильтр",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "edit": "Редактировать",
+    "apply": "Применить"
+  },
+  "dashboard": {
+    "homeTitle1": "Общие показатели",
+    "homeTitle2": "Графики",
+    "homeTitle3": "Проекты и заказы",
+    "projectsTitle": "Проекты",
+    "projectsSubtitle": "{{count}} выполнено в этом месяце",
+    "actions": {
+      "action1": "Действие",
+      "action2": "Другое действие",
+      "action3": "Что-то ещё"
+    },
+    "projectsTable": {
+      "companies": "Компании",
+      "members": "Участники",
+      "budget": "Бюджет",
+      "completion": "Завершено"
+    },
+    "ordersOverviewTitle": "Обзор заказов",
+    "ordersOverviewSubtitle": "{{value}} в этом месяце",
+    "charts": {
+      "websiteViews": {
+        "title": "Просмотры сайта",
+        "description": "Результаты последней кампании",
+        "footer": "кампания отправлена 2 дня назад"
+      },
+      "dailySales": {
+        "title": "Ежедневные продажи",
+        "description": "Рост продаж сегодня на 15%",
+        "footer": "обновлено 4 минуты назад"
+      },
+      "completedTasks": {
+        "title": "Выполненные задачи",
+        "description": "Результаты последней кампании",
+        "footer": "только что обновлено"
+      }
+    },
+    "orders": {
+      "items": [
+        {
+          "title": "$2400, Изменения дизайна",
+          "description": "22 ДЕК 7:20 PM"
+        },
+        {
+          "title": "Новый заказ #1832412",
+          "description": "21 ДЕК 11 PM"
+        },
+        {
+          "title": "Оплата серверов за апрель",
+          "description": "21 ДЕК 9:34 PM"
+        },
+        {
+          "title": "Новая карта для заказа #4395133",
+          "description": "20 ДЕК 2:20 AM"
+        },
+        {
+          "title": "Разблокировать пакеты для разработки",
+          "description": "18 ДЕК 4:54 AM"
+        },
+        {
+          "title": "Новый заказ #9583120",
+          "description": "17 ДЕК"
+        }
+      ]
+    }
+  },
+  "statistics": {
+    "todayMoney": {
+      "title": "Доход за сегодня",
+      "subtitle": "Доход за сегодня",
+      "footer": "+55% по сравнению с прошлой неделей"
+    },
+    "todayUsers": {
+      "title": "Пользователи сегодня",
+      "footer": "+3% по сравнению с прошлым месяцем"
+    },
+    "newClients": {
+      "title": "Новые клиенты",
+      "footer": "-2% по сравнению со вчерашним днем"
+    },
+    "sales": {
+      "title": "Продажи",
+      "footer": "+5% по сравнению со вчерашним днем"
+    }
+  },
+  "apartmentGroups": {
+    "pageTitle": "Группы квартир",
+    "filters": {
+      "complex": "Комплекс",
+      "complexPlaceholder": "Выберите комплекс",
+      "building": "Здание",
+      "buildingPlaceholder": "Выберите здание"
+    },
+    "summary": {
+      "title": "Сводка",
+      "totalGroups": "Группы: {{count}}",
+      "totalApartments": "Квартиры: {{count}}",
+      "occupied": "Занято: {{count}}"
+    },
+    "labels": {
+      "groupName": "Название группы",
+      "complex": "Комплекс",
+      "building": "Здание",
+      "total": "Всего",
+      "occupied": "Занято",
+      "free": "Свободно",
+      "serviceFee": "Сервисный платеж",
+      "serviceFeeValue": "{{value}} AZN / месяц",
+      "occupancy": "Заполненность: {{ratio}}%"
+    }
+  },
+  "buildingServiceFee": {
+    "pageTitle": "Сервисный платеж здания",
+    "adjustment": {
+      "title": "Глобальная корректировка",
+      "infoLabel": "Демо режим",
+      "globalIncrease": "Процентное изменение для всех зданий"
+    },
+    "summary": {
+      "title": "Сводка",
+      "totalBuildings": "Здания: {{count}}",
+      "avgFee": "Средний платеж: {{value}} AZN"
+    },
+    "labels": {
+      "building": "Здание",
+      "complex": "Комплекс",
+      "baseFee": "Ежемесячный сервисный платеж",
+      "perM2": "Платеж за м²",
+      "amountValue": "{{value}} AZN",
+      "perM2Value": "{{value}} AZN / м²",
+      "lastUpdatedBy": "Кем изменено"
+    }
+  },
+  "auth": {
+    "signIn": {
+      "title": "Вход",
+      "subtitle": "Введите данные для входа",
+      "usernameLabel": "Логин",
+      "passwordLabel": "Пароль",
+      "submit": "Войти",
+      "invalidCredentialsError": "Неверный логин или пароль",
+      "demoUsersTitle": "Демо пользователи:"
+    },
+    "signUp": {
+      "title": "Регистрация",
+      "subtitle": "Введите данные для регистрации",
+      "emailLabel": "Email",
+      "submit": "Зарегистрироваться"
+    }
+  }
+}

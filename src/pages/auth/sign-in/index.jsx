@@ -4,17 +4,47 @@ import {
   Checkbox,
   Button,
   Typography,
+  Menu,
+  MenuHandler,
+  MenuList,
+  MenuItem,
 } from "@material-tailwind/react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useAuth } from "@/auth-context";
+import { useTranslation } from "react-i18next";
+
+import ReactCountryFlag from "react-country-flag";
+
+const languages = [
+  { 
+    code: "az", 
+    label: "Azərbaycan dili", 
+    flag: <ReactCountryFlag countryCode="AZ" svg style={{ width: "1.5em", height: "1.5em" }} /> 
+  },
+  { 
+    code: "en", 
+    label: "English", 
+    flag: <ReactCountryFlag countryCode="GB" svg style={{ width: "1.5em", height: "1.5em" }} /> 
+  },
+  { 
+    code: "ru", 
+    label: "Русский", 
+    flag: <ReactCountryFlag countryCode="RU" svg style={{ width: "1.5em", height: "1.5em" }} /> 
+  },
+];
 
 export function SignIn() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const [username, setUsername] = useState("admin");
   const [password, setPassword] = useState("admin123");
   const [error, setError] = useState(null);
+
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -22,7 +52,7 @@ export function SignIn() {
 
     const ok = login(username, password);
     if (!ok) {
-      setError("İstifadəçi adı və ya şifrə yanlışdır");
+      setError(t("auth.signIn.invalidCredentialsError"));
       return;
     }
 
@@ -30,16 +60,50 @@ export function SignIn() {
   };
 
   return (
-    <section className="m-8 flex gap-4">
-      <div className="w-full lg:w-3/5 mt-24">
+    <section className="h-full flex gap-4 relative px-8 py-6">
+      <div className="absolute right-8 top-6 z-10">
+        <Menu placement="bottom-end">
+          <MenuHandler>
+            <Button variant="text" className="flex items-center gap-1 px-2 normal-case bg-gray-100 hover:bg-gray-200">
+              {languages.map((lng) =>
+                lng.code === i18n.language ? (
+                  <span key={lng.code} className="flex items-center gap-1">
+                    <span>{lng.flag}</span>
+                    <span className="hidden sm:inline-block text-xs font-medium">
+                      {lng.label}
+                    </span>
+                  </span>
+                ) : null
+              )}
+            </Button>
+          </MenuHandler>
+          <MenuList className="min-w-[160px]">
+            {languages.map((lng) => (
+              <MenuItem key={lng.code} onClick={() => changeLanguage(lng.code)}>
+                <span className="mr-2">{lng.flag}</span>
+                <span>{lng.label}</span>
+              </MenuItem>
+            ))}
+          </MenuList>
+        </Menu>
+      </div>
+      <div className="w-full lg:w-3/5 flex flex-col justify-center">
         <div className="text-center">
-          <Typography variant="h2" className="font-bold mb-4">Sign In</Typography>
-          <Typography variant="paragraph" color="blue-gray" className="text-lg font-normal">İstifadəçi adı və şifrə ilə daxil olun.</Typography>
+          <Typography variant="h2" className="font-bold mb-4">
+            {t("auth.signIn.title")}
+          </Typography>
+          {/* <Typography
+            variant="paragraph"
+            color="blue-gray"
+            className="text-lg font-normal"
+          >
+            {t("auth.signIn.subtitle")}
+          </Typography> */}
         </div>
-        <form className="mt-8 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2" onSubmit={handleSubmit}>
+        <form className="mt-6 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2" onSubmit={handleSubmit}>
           <div className="mb-1 flex flex-col gap-6">
             <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
-              İstifadəçi adı
+              {t("auth.signIn.usernameLabel")}
             </Typography>
             <Input
               size="lg"
@@ -52,7 +116,7 @@ export function SignIn() {
               }}
             />
             <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
-              Şifrə
+              {t("auth.signIn.passwordLabel")}
             </Typography>
             <Input
               type="password"
@@ -71,7 +135,7 @@ export function SignIn() {
               {error}
             </Typography>
           )}
-          <Checkbox
+          {/* <Checkbox
             label={
               <Typography
                 variant="small"
@@ -88,20 +152,20 @@ export function SignIn() {
               </Typography>
             }
             containerProps={{ className: "-ml-2.5" }}
-          />
+          /> */}
           <Button type="submit" className="mt-6" fullWidth>
-            Daxil ol
+            {t("auth.signIn.submit")}
           </Button>
 
-          <div className="mt-6">
-            <Typography variant="paragraph" className="text-blue-gray-700 font-medium">
-              Demo istifadəçilər:
+          <div className="mt-4">
+            <Typography variant="small" className="text-blue-gray-700 font-medium">
+              {t("auth.signIn.demoUsersTitle")}
             </Typography>
-            <ul className="mt-2 text-sm text-blue-gray-600">
+            <ul className="mt-1 text-xs text-blue-gray-600">
               <li>• admin / admin123</li>
-              <li>• manager / manager123</li>
+              {/* <li>• manager / manager123</li>
               <li>• operator / operator123</li>
-              <li>• viewer / viewer123</li>
+              <li>• viewer / viewer123</li> */}
             </ul>
           </div>
         </form>

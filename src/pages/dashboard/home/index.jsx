@@ -32,29 +32,30 @@ export function Home() {
   const { t } = useTranslation();
 
   return (
-    <div className="mt-12">
-      <div className="w-full bg-black my-4 p-5 rounded-lg shadow-lg mb-6">
+    <div className=" ">
+      <div className="w-full bg-black my-4 p-4 rounded-lg shadow-lg mb-6">
         <h3 className="text-white font-bold">{t("dashboard.homeTitle1")}</h3>
       </div>
       <div className="mb-12 grid gap-y-10 gap-x-6 md:grid-cols-2 xl:grid-cols-4">
-        {statisticsCardsData.map(({ icon, title, footer, ...rest }) => (
+        {statisticsCardsData.map(({ icon, title, titleKey, footer, ...rest }) => (
           <StatisticsCard
-            key={title}
+            key={titleKey || title}
             {...rest}
             title={title}
+            titleKey={titleKey}
             icon={React.createElement(icon, {
               className: "w-6 h-6 text-white",
             })}
             footer={
               <Typography className="font-normal text-blue-gray-600">
                 <strong className={footer.color}>{footer.value}</strong>
-                &nbsp;{footer.label}
+                &nbsp;{footer.labelKey ? t(footer.labelKey) : footer.label}
               </Typography>
             }
           />
         ))}
       </div>
-      <div className="w-full bg-black my-4 p-5 rounded-lg shadow-lg mb-6">
+      <div className="w-full bg-black my-4 p-4 rounded-lg shadow-lg mb-6">
         <h3 className="text-white font-bold">{t("dashboard.homeTitle2")}</h3>
       </div>
       <div className="mb-6 grid grid-cols-1 gap-y-12 gap-x-6 md:grid-cols-2 xl:grid-cols-3">
@@ -74,7 +75,7 @@ export function Home() {
           />
         ))}
       </div>
-      <div className="w-full bg-black my-4 p-5 rounded-lg shadow-lg mb-6">
+      <div className="w-full bg-black my-4 p-4 rounded-lg shadow-lg mb-6">
         <h3 className="text-white font-bold">{t("dashboard.homeTitle3")}</h3>
       </div>
       <div className="mb-4 grid grid-cols-1 gap-6 xl:grid-cols-3">
@@ -87,14 +88,14 @@ export function Home() {
           >
             <div>
               <Typography variant="h6" color="blue-gray" className="mb-1">
-                Projects
+                {t("dashboard.projectsTitle")}
               </Typography>
               <Typography
                 variant="small"
                 className="flex items-center gap-1 font-normal text-blue-gray-600"
               >
                 <CheckCircleIcon strokeWidth={3} className="h-4 w-4 text-blue-gray-200" />
-                <strong>30 done</strong> this month
+                <span>{t("dashboard.projectsSubtitle", { count: 30 })}</span>
               </Typography>
             </div>
             <Menu placement="left-start">
@@ -108,9 +109,9 @@ export function Home() {
                 </IconButton>
               </MenuHandler>
               <MenuList>
-                <MenuItem>Action</MenuItem>
-                <MenuItem>Another Action</MenuItem>
-                <MenuItem>Something else here</MenuItem>
+                <MenuItem>{t("dashboard.actions.action1")}</MenuItem>
+                <MenuItem>{t("dashboard.actions.action2")}</MenuItem>
+                <MenuItem>{t("dashboard.actions.action3")}</MenuItem>
               </MenuList>
             </Menu>
           </CardHeader>
@@ -124,11 +125,11 @@ export function Home() {
                         key={el}
                         className="border-b border-red-600 py-3 px-6 text-left"
                       >
-                        <Typography
+                          <Typography
                           variant="small"
                           className="text-[11px] font-medium uppercase text-blue-gray-400"
                         >
-                          {el}
+                          {t(`dashboard.projectsTable.${el}`)}
                         </Typography>
                       </th>
                     )
@@ -214,7 +215,7 @@ export function Home() {
             className="m-0 p-6"
           >
             <Typography variant="h6" color="blue-gray" className="mb-2">
-              Orders Overview
+              {t("dashboard.ordersOverviewTitle")}
             </Typography>
             <Typography
               variant="small"
@@ -224,13 +225,13 @@ export function Home() {
                 strokeWidth={3}
                 className="h-3.5 w-3.5 text-green-500"
               />
-              <strong>24%</strong> this month
+              <span>{t("dashboard.ordersOverviewSubtitle", { value: "24%" })}</span>
             </Typography>
           </CardHeader>
           <CardBody className="pt-0">
             {ordersOverviewData.map(
-              ({ icon, color, title, description }, key) => (
-                <div key={title} className="flex items-start gap-4 py-3">
+              ({ icon, color, titleKey, descriptionKey }, key) => (
+                <div key={titleKey} className="flex items-start gap-4 py-3">
                   <div
                     className={`relative p-1 after:absolute after:-bottom-6 after:left-2/4 after:w-0.5 after:-translate-x-2/4 after:bg-blue-gray-50 after:content-[''] ${
                       key === ordersOverviewData.length - 1
@@ -248,14 +249,14 @@ export function Home() {
                       color="blue-gray"
                       className="block font-medium"
                     >
-                      {title}
+                      {t(titleKey)}
                     </Typography>
                     <Typography
                       as="span"
                       variant="small"
                       className="text-xs font-medium text-blue-gray-500"
                     >
-                      {description}
+                      {t(descriptionKey)}
                     </Typography>
                   </div>
                 </div>

@@ -9,45 +9,45 @@ export const statisticsCardsData = [
   {
     color: "gray",
     icon: BanknotesIcon,
-    title: "Today's Money",
+    titleKey: "statistics.todayMoney.title",
     value: "$53k",
     footer: {
       color: "text-green-500",
       value: "+55%",
-      label: "than last week",
+      labelKey: "statistics.todayMoney.footer",
     },
   },
   {
     color: "gray",
     icon: UsersIcon,
-    title: "Today's Users",
+    titleKey: "statistics.todayUsers.title",
     value: "2,300",
     footer: {
       color: "text-green-500",
       value: "+3%",
-      label: "than last month",
+      labelKey: "statistics.todayUsers.footer",
     },
   },
   {
     color: "gray",
     icon: UserPlusIcon,
-    title: "New Clients",
+    titleKey: "statistics.newClients.title",
     value: "3,462",
     footer: {
       color: "text-red-500",
       value: "-2%",
-      label: "than yesterday",
+      labelKey: "statistics.newClients.footer",
     },
   },
   {
     color: "gray",
     icon: ChartBarIcon,
-    title: "Sales",
+    titleKey: "statistics.sales.title",
     value: "$103,430",
     footer: {
       color: "text-green-500",
       value: "+5%",
-      label: "than yesterday",
+      labelKey: "statistics.sales.footer",
     },
   },
 ];

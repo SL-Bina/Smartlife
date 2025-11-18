@@ -6,9 +6,21 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 import Chart from "react-apexcharts";
 
-export function StatisticsChart({ color, chart, title, description, footer }) {
+export function StatisticsChart({
+  color,
+  chart,
+  title,
+  description,
+  footer,
+  titleKey,
+  descriptionKey,
+  footerKey,
+}) {
+  const { t } = useTranslation();
+
   return (
     <Card className="border border-red-600 shadow-sm">
       <CardHeader variant="gradient" color={color} floated={false} shadow={false}>
@@ -16,15 +28,15 @@ export function StatisticsChart({ color, chart, title, description, footer }) {
       </CardHeader>
       <CardBody className="px-6 pt-0">
         <Typography variant="h6" color="blue-gray">
-          {title}
+          {titleKey ? t(titleKey) : title}
         </Typography>
         <Typography variant="small" className="font-normal text-blue-gray-600">
-          {description}
+          {descriptionKey ? t(descriptionKey) : description}
         </Typography>
       </CardBody>
-      {footer && (
+      {(footer || footerKey) && (
         <CardFooter className="border-t border-blue-gray-50 px-6 py-5">
-          {footer}
+          {footerKey ? t(footerKey) : footer}
         </CardFooter>
       )}
     </Card>
