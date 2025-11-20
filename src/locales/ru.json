@@ -11,6 +11,12 @@
   },
   "sidebar": {
     "dashboard": "Панель",
+    "finance": "Финансы",
+    "invoices": "Счета",
+    "paymentHistory": "История платежей",
+    "reports": "Отчеты",
+    "debtorApartments": "Квартиры с долгами",
+    "expenses": "Расходы",
     "notifications": "Уведомления",
     "mtk": "ТСЖ",
     "complexes": "Комплексы",
@@ -20,7 +26,8 @@
     "blocks": "Блоки",
     "apartmentGroups": "Группы квартир",
     "buildingServiceFee": "Сервисный платеж",
-    "buildingManagement": "Управление зданиями"
+    "buildingManagement": "Управление зданиями",
+    "profile": "Профиль"
   },
   "buttons": {
     "clear": "Очистить",

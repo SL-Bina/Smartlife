@@ -95,6 +95,7 @@ const BuildingsPage = () => {
 
   return (
     <div className="">
+      {/* Section title bar to match Home design */}
       <div className="w-full bg-black my-4 p-4 rounded-lg shadow-lg mb-6">
         <h3 className="text-white font-bold">Binalar</h3>
       </div>
@@ -108,7 +109,7 @@ const BuildingsPage = () => {
               Bina adı
             </Typography>
             <Input
-              label="Ad ilə axtarış"
+              label="Daxil et"
               value={filterName}
               onChange={(e) => setFilterName(e.target.value)}
             />
@@ -118,7 +119,7 @@ const BuildingsPage = () => {
               Kompleks
             </Typography>
             <Input
-              label="Kompleks"
+              label="Daxil et"
               value={filterComplex}
               onChange={(e) => setFilterComplex(e.target.value)}
             />
@@ -148,7 +149,7 @@ const BuildingsPage = () => {
               Ad
             </Typography>
             <Input
-              label="Bina adı"
+              label="Daxil et"
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
             />
@@ -158,7 +159,7 @@ const BuildingsPage = () => {
               Kompleks
             </Typography>
             <Input
-              label="Kompleks"
+              label="Daxil et"
               value={formComplex}
               onChange={(e) => setFormComplex(e.target.value)}
             />
@@ -170,7 +171,7 @@ const BuildingsPage = () => {
               </Typography>
               <Input
                 type="number"
-                label="Blok sayı"
+                label="Daxil et"
                 value={formBlocks}
                 onChange={(e) => setFormBlocks(e.target.value)}
               />
@@ -181,7 +182,7 @@ const BuildingsPage = () => {
               </Typography>
               <Input
                 type="number"
-                label="Mənzil sayı"
+                label="Daxil et"
                 value={formApartments}
                 onChange={(e) => setFormApartments(e.target.value)}
               />
@@ -207,7 +208,7 @@ const BuildingsPage = () => {
               Ad
             </Typography>
             <Input
-              label="Bina adı"
+              label="Daxil et"
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
             />
@@ -217,7 +218,7 @@ const BuildingsPage = () => {
               Kompleks
             </Typography>
             <Input
-              label="Kompleks"
+              label="Daxil et"
               value={formComplex}
               onChange={(e) => setFormComplex(e.target.value)}
             />
@@ -229,7 +230,7 @@ const BuildingsPage = () => {
               </Typography>
               <Input
                 type="number"
-                label="Blok sayı"
+                label="Daxil et"
                 value={formBlocks}
                 onChange={(e) => setFormBlocks(e.target.value)}
               />
@@ -240,7 +241,7 @@ const BuildingsPage = () => {
               </Typography>
               <Input
                 type="number"
-                label="Mənzil sayı"
+                label="Daxil et"
                 value={formApartments}
                 onChange={(e) => setFormApartments(e.target.value)}
               />

@@ -9,8 +9,14 @@ import {
   BuildingOffice2Icon,
   HomeModernIcon,
   UsersIcon,
+  BanknotesIcon,
+  DocumentTextIcon,
+  ChartBarIcon,
+  ExclamationTriangleIcon,
+  CurrencyDollarIcon,
 } from "@heroicons/react/24/solid";
-import { Home, Profile, Tables, Notifications } from "@/pages/dashboard";
+import { Home, Tables, Notifications } from "@/pages/dashboard";
+import Profile from "./pages/dashboard/profile";
 import { SignIn } from "@/pages/auth";
 import MTK from "./pages/dashboard/mtk";
 import ComplexPage from "./pages/dashboard/complex";
@@ -20,6 +26,12 @@ import PropertiesPage from "./pages/dashboard/properties";
 import BlocksPage from "./pages/dashboard/blocks";
 import ApartmentGroupsPage from "./pages/dashboard/apartment-groups";
 import BuildingServiceFeePage from "./pages/dashboard/building-service-fee";
+import PropertyServiceFeePage from "./pages/dashboard/service-fee";
+import InvoicesPage from "./pages/dashboard/finance/invoices";
+import PaymentHistoryPage from "./pages/dashboard/finance/payment-history";
+import ReportsPage from "./pages/dashboard/finance/reports";
+import DebtorApartmentsPage from "./pages/dashboard/finance/debtor-apartments";
+import ExpensesPage from "./pages/dashboard/finance/expenses";
 
 const icon = {
   className: "w-5 h-5 text-inherit",
@@ -36,17 +48,47 @@ export const routes = [
         element: <Home />,
       },
       // {
-      //   icon: <UserCircleIcon {...icon} />,
-      //   name: "profile",
-      //   path: "/profile",
-      //   element: <Profile />,
-      // },
-      // {
       //   icon: <TableCellsIcon {...icon} />,
       //   name: "tables",
       //   path: "/tables",
       //   element: <Tables />,
       // },
+      {
+        icon: <BanknotesIcon {...icon} />,
+        name: "sidebar.finance",
+        children: [
+          {
+            icon: <DocumentTextIcon {...icon} />,
+            name: "sidebar.invoices",
+            path: "/finance/invoices",
+            element: <InvoicesPage />,
+          },
+          {
+            icon: <TableCellsIcon {...icon} />,
+            name: "sidebar.paymentHistory",
+            path: "/finance/payment-history",
+            element: <PaymentHistoryPage />,
+          },
+          {
+            icon: <ChartBarIcon {...icon} />,
+            name: "sidebar.reports",
+            path: "/finance/reports",
+            element: <ReportsPage />,
+          },
+          {
+            icon: <ExclamationTriangleIcon {...icon} />,
+            name: "sidebar.debtorApartments",
+            path: "/finance/debtor-apartments",
+            element: <DebtorApartmentsPage />,
+          },
+          {
+            icon: <CurrencyDollarIcon {...icon} />,
+            name: "sidebar.expenses",
+            path: "/finance/expenses",
+            element: <ExpensesPage />,
+          },
+        ],
+      },
       {
         icon: <InformationCircleIcon {...icon} />,
         name: "sidebar.notifications",
@@ -88,6 +130,13 @@ export const routes = [
             element: <PropertiesPage />,
           },
           {
+            icon: <BuildingOfficeIcon {...icon} />,
+            name: "sidebar.propertyServiceFee",
+            path: "/service-fee/:id",
+            element: <PropertyServiceFeePage />,
+            hideInSidenav: true,
+          },
+          {
             icon: <UsersIcon {...icon} />,
             name: "sidebar.residents",
             path: "/residents",
@@ -108,6 +157,12 @@ export const routes = [
             hideInSidenav: true,
           },
         ],
+      },
+      {
+        icon: <UserCircleIcon {...icon} />,
+        name: "sidebar.profile",
+        path: "/profile",
+        element: <Profile />,
       },
     ],
   },

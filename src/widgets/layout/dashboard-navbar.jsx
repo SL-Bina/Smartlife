@@ -55,7 +55,14 @@ const layoutTitleKeyMap = {
 
 const pageTitleKeyMap = {
   home: "sidebar.dashboard",
+  finance: "sidebar.finance",
+  invoices: "sidebar.invoices",
+  "payment-history": "sidebar.paymentHistory",
+  reports: "sidebar.reports",
+  "debtor-apartments": "sidebar.debtorApartments",
+  expenses: "sidebar.expenses",
   notifications: "sidebar.notifications",
+  profile: "sidebar.profile",
   mtk: "sidebar.mtk",
   complex: "sidebar.complexes",
   buildings: "sidebar.buildings",
@@ -64,6 +71,7 @@ const pageTitleKeyMap = {
   blocks: "sidebar.blocks",
   "apartment-groups": "apartmentGroups.pageTitle",
   "building-service-fee": "buildingServiceFee.pageTitle",
+  "service-fee": "Servis haqqı",
 };
 
 export function DashboardNavbar() {

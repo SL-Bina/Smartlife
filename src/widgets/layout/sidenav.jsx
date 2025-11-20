@@ -108,15 +108,15 @@ export function Sidenav({ brandImg, brandName, routes }) {
                 return (
                   <li key={page.name}>
                     <Button
-                      variant={isOpen ? "black" : "text"}
+                      variant={isOpen ? "filled" : "text"}
                       color={
                         isOpen
                           ? sidenavColor === "dark"
                             ? "white"
                             : sidenavColor
                           : sidenavType === "dark"
-                          ? "black"
-                          : "black"
+                          ? "white"
+                          : "gray"
                       }
                       className="flex items-center justify-between gap-2 px-4 capitalize"
                       fullWidth
@@ -163,11 +163,11 @@ export function Sidenav({ brandImg, brandName, routes }) {
                                   color={
                                     isActive
                                       ? sidenavColor === "dark"
-                                        ? "black"
+                                        ? "gray"
                                         : sidenavColor
                                       : sidenavType === "dark"
                                       ? "white"
-                                      : "black"
+                                      : "gray"
                                   }
                                   className="flex items-center gap-3 px-3 py-2 text-sm normal-case"
                                   fullWidth
@@ -206,10 +206,10 @@ export function Sidenav({ brandImg, brandName, routes }) {
                         variant={isActive ? "gradient" : "text"}
                         color={
                           isActive
-                            ? sidenavColor === "dark" ? "black" : sidenavColor
+                            ? sidenavColor === "dark" ? "gray" : sidenavColor
                             : sidenavType === "dark"
                             ? "white"
-                            : "black"
+                            : "gray"
                         }
                         className="flex items-center gap-4 px-4 capitalize"
                         fullWidth

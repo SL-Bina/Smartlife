@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Typography,
   Card,
@@ -32,6 +33,7 @@ const data = Array.from({ length: 50 }, (_, index) => ({
 const ITEMS_PER_PAGE = 10;
 
 const PropertiesPage = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -47,10 +49,6 @@ const PropertiesPage = () => {
   const [formFloor, setFormFloor] = useState("");
   const [formArea, setFormArea] = useState("");
   const [formResident, setFormResident] = useState("");
-
-  const [feeOpen, setFeeOpen] = useState(false);
-  const [feeItem, setFeeItem] = useState(null);
-  const [feeValue, setFeeValue] = useState("");
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 400);
@@ -102,19 +100,13 @@ const PropertiesPage = () => {
     setEditOpen(false);
   };
 
-  const openFeeModal = (item) => {
-    setFeeItem(item);
-    setFeeValue(String(item.serviceFee ?? ""));
-    setFeeOpen(true);
-  };
-
-  const handleFeeSave = () => {
-    // Burada seçilmiş mənzil üçün servis haqqını saxlamaq üçün API çağırışı ola bilər
-    setFeeOpen(false);
+  const openFeePage = (item) => {
+    navigate(`/dashboard/service-fee/${item.id}`);
   };
 
   return (
     <div className=" ">
+      {/* Section title bar to match Home design */}
       <div className="w-full bg-black my-4 p-4 rounded-lg shadow-lg mb-6">
         <h3 className="text-white font-bold">Mənzillər</h3>
       </div>
@@ -128,7 +120,7 @@ const PropertiesPage = () => {
               Mənzil
             </Typography>
             <Input
-              label="Mənzil nömrəsi ilə axtarış"
+              label="Daxil et"
               value={filterNumber}
               onChange={(e) => setFilterNumber(e.target.value)}
             />
@@ -138,7 +130,7 @@ const PropertiesPage = () => {
               Blok
             </Typography>
             <Input
-              label="Blok"
+              label="Daxil et"
               value={filterBlock}
               onChange={(e) => setFilterBlock(e.target.value)}
             />
@@ -168,7 +160,7 @@ const PropertiesPage = () => {
               Mənzil
             </Typography>
             <Input
-              label="Mənzil"
+              label="Daxil et"
               value={formNumber}
               onChange={(e) => setFormNumber(e.target.value)}
             />
@@ -178,7 +170,7 @@ const PropertiesPage = () => {
               Blok
             </Typography>
             <Input
-              label="Blok"
+              label="Daxil et"
               value={formBlock}
               onChange={(e) => setFormBlock(e.target.value)}
             />
@@ -190,7 +182,7 @@ const PropertiesPage = () => {
               </Typography>
               <Input
                 type="number"
-                label="Mərtəbə"
+                label="Daxil et"
                 value={formFloor}
                 onChange={(e) => setFormFloor(e.target.value)}
               />
@@ -201,7 +193,7 @@ const PropertiesPage = () => {
               </Typography>
               <Input
                 type="number"
-                label="Sahə"
+                label="Daxil et"
                 value={formArea}
                 onChange={(e) => setFormArea(e.target.value)}
               />
@@ -212,7 +204,7 @@ const PropertiesPage = () => {
               Sakin
             </Typography>
             <Input
-              label="Sakin"
+              label="Daxil et"
               value={formResident}
               onChange={(e) => setFormResident(e.target.value)}
             />
@@ -237,7 +229,7 @@ const PropertiesPage = () => {
               Mənzil
             </Typography>
             <Input
-              label="Mənzil"
+              label="Daxil et"
               value={formNumber}
               onChange={(e) => setFormNumber(e.target.value)}
             />
@@ -247,7 +239,7 @@ const PropertiesPage = () => {
               Blok
             </Typography>
             <Input
-              label="Blok"
+              label="Daxil et"
               value={formBlock}
               onChange={(e) => setFormBlock(e.target.value)}
             />
@@ -259,7 +251,7 @@ const PropertiesPage = () => {
               </Typography>
               <Input
                 type="number"
-                label="Mərtəbə"
+                label="Daxil et"
                 value={formFloor}
                 onChange={(e) => setFormFloor(e.target.value)}
               />
@@ -270,7 +262,7 @@ const PropertiesPage = () => {
               </Typography>
               <Input
                 type="number"
-                label="Sahə"
+                label="Daxil et"
                 value={formArea}
                 onChange={(e) => setFormArea(e.target.value)}
               />
@@ -281,7 +273,7 @@ const PropertiesPage = () => {
               Sakin
             </Typography>
             <Input
-              label="Sakin"
+              label="Daxil et"
               value={formResident}
               onChange={(e) => setFormResident(e.target.value)}
             />
@@ -292,34 +284,6 @@ const PropertiesPage = () => {
             Ləğv et
           </Button>
           <Button color="blue" onClick={handleEditSave}>
-            Yadda saxla
-          </Button>
-        </DialogFooter>
-      </Dialog>
-
-      {/* Service fee modal */}
-      <Dialog open={feeOpen} handler={setFeeOpen} size="sm">
-        <DialogHeader>
-          Servis haqqı - {feeItem ? feeItem.number : ""}
-        </DialogHeader>
-        <DialogBody divider className="space-y-4">
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1">
-              Servis haqqı (AZN / ay)
-            </Typography>
-            <Input
-              type="number"
-              label="Servis haqqı"
-              value={feeValue}
-              onChange={(e) => setFeeValue(e.target.value)}
-            />
-          </div>
-        </DialogBody>
-        <DialogFooter className="flex justify-end gap-2">
-          <Button variant="outlined" color="blue-gray" onClick={() => setFeeOpen(false)}>
-            Ləğv et
-          </Button>
-          <Button color="blue" onClick={handleFeeSave}>
             Yadda saxla
           </Button>
         </DialogFooter>
@@ -430,7 +394,7 @@ const PropertiesPage = () => {
                                 </IconButton>
                               </MenuHandler>
                               <MenuList>
-                                <MenuItem onClick={() => openFeeModal(row)}>Servis haqqı</MenuItem>
+                                <MenuItem onClick={() => openFeePage(row)}>Servis haqqı</MenuItem>
                                 <MenuItem onClick={() => openEditModal(row)}>Düzəliş et</MenuItem>
                                 <MenuItem>Sil</MenuItem>
                               </MenuList>
@@ -474,7 +438,7 @@ const PropertiesPage = () => {
                             </IconButton>
                           </MenuHandler>
                           <MenuList>
-                            <MenuItem onClick={() => openFeeModal(row)}>Servis haqqı</MenuItem>
+                            <MenuItem onClick={() => openFeePage(row)}>Servis haqqı</MenuItem>
                             <MenuItem onClick={() => openEditModal(row)}>Düzəliş et</MenuItem>
                             <MenuItem>Sil</MenuItem>
                           </MenuList>

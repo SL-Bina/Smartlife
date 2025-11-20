@@ -16,103 +16,135 @@ import {
   DialogBody,
   DialogFooter,
   Input,
+  Chip,
 } from "@material-tailwind/react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 
-const data = Array.from({ length: 50 }, (_, index) => ({
+const debtorApartmentsData = Array.from({ length: 50 }, (_, index) => ({
   id: index + 1,
-  name: `Kompleks ${index + 1}`,
-  address: `Ünvan ${index + 1}`,
-  buildings: Math.floor(Math.random() * 10) + 1,
-  residents: Math.floor(Math.random() * 200) + 20,
+  apartment: `Mənzil ${index + 1}`,
+  building: `Bina ${String.fromCharCode(65 + (index % 5))}`,
+  block: `Blok ${String.fromCharCode(65 + (index % 3))}`,
+  floor: (index % 16) + 1,
+  area: (60 + (index % 10) * 5).toFixed(2),
+  owner: `Sahib ${index + 1}`,
+  phone: `050-${String(index + 1).padStart(7, "0")}`,
+  totalDebt: (100 + (index % 20) * 10).toFixed(2),
+  invoiceCount: index % 5 + 1,
+  lastPaymentDate: index % 3 === 0 ? `2025-11-${String(19 - (index % 10)).padStart(2, "0")}` : "-",
+  status: index % 3 === 0 ? "Ödənilib" : "Borclu",
 }));
 
 const ITEMS_PER_PAGE = 10;
 
-const ComplexPage = () => {
+const DebtorApartmentsPage = () => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [createOpen, setCreateOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
-  const [filterName, setFilterName] = useState("");
-
-  const [formName, setFormName] = useState("");
-  const [formAddress, setFormAddress] = useState("");
-  const [formBuildings, setFormBuildings] = useState("");
-  const [formResidents, setFormResidents] = useState("");
+  const [filterApartment, setFilterApartment] = useState("");
+  const [filterOwner, setFilterOwner] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 400);
     return () => clearTimeout(timer);
   }, []);
 
-  const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE);
+  const filteredData = React.useMemo(
+    () =>
+      debtorApartmentsData.filter((item) => {
+        const matchesApartment = filterApartment
+          ? item.apartment.toLowerCase().includes(filterApartment.toLowerCase())
+          : true;
+        const matchesOwner = filterOwner
+          ? item.owner.toLowerCase().includes(filterOwner.toLowerCase())
+          : true;
+        const matchesStatus = filterStatus ? item.status === filterStatus : true;
+        return matchesApartment && matchesOwner && matchesStatus;
+      }),
+    [filterApartment, filterOwner, filterStatus]
+  );
+
+  const totalDebt = filteredData
+    .filter((item) => item.status === "Borclu")
+    .reduce((sum, item) => sum + parseFloat(item.totalDebt), 0)
+    .toFixed(2);
+
+  const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
   const startIndex = (page - 1) * ITEMS_PER_PAGE;
-  const pageData = data.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const pageData = filteredData.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const handlePrev = () => setPage((prev) => Math.max(1, prev - 1));
   const handleNext = () => setPage((prev) => Math.min(totalPages, prev + 1));
 
-  const openCreateModal = () => {
-    setSelectedItem(null);
-    setFormName("");
-    setFormAddress("");
-    setFormBuildings("");
-    setFormResidents("");
-    setCreateOpen(true);
-  };
-
-  const openEditModal = (item) => {
-    setSelectedItem(item);
-    setFormName(item.name);
-    setFormAddress(item.address);
-    setFormBuildings(String(item.buildings));
-    setFormResidents(String(item.residents));
-    setEditOpen(true);
-  };
-
   const handleFilterApply = () => {
-    // Filter apply logic backend və ya state ilə inteqrasiya edilə bilər
+    setPage(1);
     setFilterOpen(false);
   };
 
   const handleFilterClear = () => {
-    setFilterName("");
+    setFilterApartment("");
+    setFilterOwner("");
+    setFilterStatus("");
+    setPage(1);
     setFilterOpen(false);
-  };
-
-  const handleCreateSave = () => {
-    // Yeni kompleks yaratmaq üçün API çağırışı burada ola bilər
-    setCreateOpen(false);
-  };
-
-  const handleEditSave = () => {
-    // Seçilmiş kompleks üçün dəyişiklikləri saxlamaq üçün API çağırışı burada ola bilər
-    setEditOpen(false);
   };
 
   return (
     <div className="">
       {/* Section title bar to match Home design */}
       <div className="w-full bg-black my-4 p-4 rounded-lg shadow-lg mb-6">
-        <h3 className="text-white font-bold">Komplekslər</h3>
+        <h3 className="text-white font-bold">Borclu mənzillər</h3>
+      </div>
+
+      {/* Summary card */}
+      <div className="mb-6 flex justify-end">
+        <Card className="border border-red-500 shadow-sm">
+          <CardBody className="p-4">
+            <Typography variant="small" color="blue-gray" className="mb-1">
+              Ümumi borc
+            </Typography>
+            <Typography variant="h5" color="red" className="font-bold">
+              {totalDebt} ₼
+            </Typography>
+          </CardBody>
+        </Card>
       </div>
 
       {/* Filter modal */}
       <Dialog open={filterOpen} handler={setFilterOpen} size="sm">
-        <DialogHeader>Kompleks filter</DialogHeader>
+        <DialogHeader>Borclu mənzillər filter</DialogHeader>
         <DialogBody divider className="space-y-4">
           <div>
             <Typography variant="small" color="blue-gray" className="mb-1">
-              Kompleks adı
+              Mənzil
             </Typography>
             <Input
               label="Daxil et"
-              value={filterName}
-              onChange={(e) => setFilterName(e.target.value)}
+              value={filterApartment}
+              onChange={(e) => setFilterApartment(e.target.value)}
+            />
+          </div>
+          <div>
+            <Typography variant="small" color="blue-gray" className="mb-1">
+              Mənzil sahibi
+            </Typography>
+            <Input
+              label="Daxil et"
+              value={filterOwner}
+              onChange={(e) => setFilterOwner(e.target.value)}
+            />
+          </div>
+          <div>
+            <Typography variant="small" color="blue-gray" className="mb-1">
+              Status
+            </Typography>
+            <Input
+              label="Daxil et"
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
             />
           </div>
         </DialogBody>
@@ -131,124 +163,6 @@ const ComplexPage = () => {
         </DialogFooter>
       </Dialog>
 
-      {/* Create complex modal */}
-      <Dialog open={createOpen} handler={setCreateOpen} size="sm">
-        <DialogHeader>Yeni kompleks əlavə et</DialogHeader>
-        <DialogBody divider className="space-y-4">
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1">
-              Ad
-            </Typography>
-            <Input
-              label="Daxil et"
-              value={formName}
-              onChange={(e) => setFormName(e.target.value)}
-            />
-          </div>
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1">
-              Ünvan
-            </Typography>
-            <Input
-              label="Daxil et"
-              value={formAddress}
-              onChange={(e) => setFormAddress(e.target.value)}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <Typography variant="small" color="blue-gray" className="mb-1">
-                Bina sayı
-              </Typography>
-              <Input
-                type="number"
-                label="Daxil et"
-                value={formBuildings}
-                onChange={(e) => setFormBuildings(e.target.value)}
-              />
-            </div>
-            <div>
-              <Typography variant="small" color="blue-gray" className="mb-1">
-                Sakin sayı
-              </Typography>
-              <Input
-                type="number"
-                label="Daxil et"
-                value={formResidents}
-                onChange={(e) => setFormResidents(e.target.value)}
-              />
-            </div>
-          </div>
-        </DialogBody>
-        <DialogFooter className="flex justify-end gap-2">
-          <Button variant="outlined" color="blue-gray" onClick={() => setCreateOpen(false)}>
-            Ləğv et
-          </Button>
-          <Button color="green" onClick={handleCreateSave}>
-            Yadda saxla
-          </Button>
-        </DialogFooter>
-      </Dialog>
-
-      {/* Edit complex modal */}
-      <Dialog open={editOpen} handler={setEditOpen} size="sm">
-        <DialogHeader>Kompleks məlumatlarını dəyiş</DialogHeader>
-        <DialogBody divider className="space-y-4">
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1">
-              Ad
-            </Typography>
-            <Input
-              label="Daxil et"
-              value={formName}
-              onChange={(e) => setFormName(e.target.value)}
-            />
-          </div>
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1">
-              Ünvan
-            </Typography>
-            <Input
-              label="Daxil et"
-              value={formAddress}
-              onChange={(e) => setFormAddress(e.target.value)}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <Typography variant="small" color="blue-gray" className="mb-1">
-                Bina sayı
-              </Typography>
-              <Input
-                type="number"
-                label="Daxil et"
-                value={formBuildings}
-                onChange={(e) => setFormBuildings(e.target.value)}
-              />
-            </div>
-            <div>
-              <Typography variant="small" color="blue-gray" className="mb-1">
-                Sakin sayı
-              </Typography>
-              <Input
-                type="number"
-                label="Daxil et"
-                value={formResidents}
-                onChange={(e) => setFormResidents(e.target.value)}
-              />
-            </div>
-          </div>
-        </DialogBody>
-        <DialogFooter className="flex justify-end gap-2">
-          <Button variant="outlined" color="blue-gray" onClick={() => setEditOpen(false)}>
-            Ləğv et
-          </Button>
-          <Button color="blue" onClick={handleEditSave}>
-            Yadda saxla
-          </Button>
-        </DialogFooter>
-      </Dialog>
-
       <Card className="border border-red-500 shadow-sm">
         <CardHeader
           floated={false}
@@ -256,15 +170,9 @@ const ComplexPage = () => {
           color="transparent"
           className="m-0 flex items-center justify-between p-6"
         >
-          {/* <Typography variant="h6" color="blue-gray" className="mb-1">
-            Kompleks Siyahısı
-          </Typography> */}
           <div className="flex items-center gap-3">
             <Button variant="outlined" color="blue" onClick={() => setFilterOpen(true)}>
               Axtarış
-            </Button>
-            <Button color="green" onClick={openCreateModal}>
-              Əlavə et
             </Button>
           </div>
         </CardHeader>
@@ -279,27 +187,36 @@ const ComplexPage = () => {
           ) : (
             <>
               {/* Desktop table */}
-              <div className="hidden lg:block">
-                <table className="w-full table-auto">
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="w-full table-auto min-w-[1200px]">
                   <thead>
                     <tr>
-                      {["ID", "Ad", "Ünvan", "Bina sayı", "Sakin sayı", "Əməliyyatlar"].map(
-                        (el, idx) => (
-                          <th
-                            key={el}
-                            className={`border-b border-blue-gray-100 py-3 px-6 text-left ${
-                              idx === 5 ? "text-right" : ""
-                            }`}
+                      {[
+                        "ID",
+                        "Mənzil",
+                        "Mənzil məlumatları",
+                        "Mənzil sahibi",
+                        "Telefon",
+                        "Ümumi borc",
+                        "Faktura sayı",
+                        "Son ödəniş tarixi",
+                        "Status",
+                        "Əməliyyatlar",
+                      ].map((el, idx) => (
+                        <th
+                          key={el}
+                          className={`border-b border-blue-gray-100 py-3 px-6 text-left ${
+                            idx === 9 ? "text-right" : ""
+                          }`}
+                        >
+                          <Typography
+                            variant="small"
+                            className="text-[11px] font-medium uppercase text-blue-gray-400"
                           >
-                            <Typography
-                              variant="small"
-                              className="text-[11px] font-medium uppercase text-blue-gray-400"
-                            >
-                              {el}
-                            </Typography>
-                          </th>
-                        )
-                      )}
+                            {el}
+                          </Typography>
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
@@ -320,23 +237,58 @@ const ComplexPage = () => {
                               color="blue-gray"
                               className="font-semibold"
                             >
-                              {row.name}
+                              {row.apartment}
+                            </Typography>
+                          </td>
+                          <td className={className}>
+                            <Typography variant="small" color="blue-gray" className="text-xs">
+                              Bina: {row.building}
+                            </Typography>
+                            <Typography variant="small" color="blue-gray" className="text-xs">
+                              Blok: {row.block}
+                            </Typography>
+                            <Typography variant="small" color="blue-gray" className="text-xs">
+                              Mərtəbə: {row.floor}
+                            </Typography>
+                            <Typography variant="small" color="blue-gray" className="text-xs">
+                              Sahə: {row.area} m²
                             </Typography>
                           </td>
                           <td className={className}>
                             <Typography variant="small" color="blue-gray">
-                              {row.address}
+                              {row.owner}
                             </Typography>
                           </td>
                           <td className={className}>
                             <Typography variant="small" color="blue-gray">
-                              {row.buildings}
+                              {row.phone}
+                            </Typography>
+                          </td>
+                          <td className={className}>
+                            <Typography
+                              variant="small"
+                              color={parseFloat(row.totalDebt) > 0 ? "red" : "green"}
+                              className="font-semibold"
+                            >
+                              {row.totalDebt} ₼
                             </Typography>
                           </td>
                           <td className={className}>
                             <Typography variant="small" color="blue-gray">
-                              {row.residents}
+                              {row.invoiceCount}
                             </Typography>
+                          </td>
+                          <td className={className}>
+                            <Typography variant="small" color="blue-gray">
+                              {row.lastPaymentDate}
+                            </Typography>
+                          </td>
+                          <td className={className}>
+                            <Chip
+                              size="sm"
+                              value={row.status}
+                              color={row.status === "Ödənilib" ? "green" : "red"}
+                            />
                           </td>
                           <td className={`${className} text-right`}>
                             <Menu placement="left-start">
@@ -350,8 +302,8 @@ const ComplexPage = () => {
                               </MenuHandler>
                               <MenuList>
                                 <MenuItem>Bax</MenuItem>
-                                <MenuItem onClick={() => openEditModal(row)}>Düzəliş et</MenuItem>
-                                <MenuItem>Sil</MenuItem>
+                                <MenuItem>Ödəniş et</MenuItem>
+                                <MenuItem>Fakturalar</MenuItem>
                               </MenuList>
                             </Menu>
                           </td>
@@ -365,10 +317,7 @@ const ComplexPage = () => {
               {/* Tablet & mobile cards */}
               <div className="grid gap-4 sm:grid-cols-2 lg:hidden px-4 pt-4">
                 {pageData.map((row) => (
-                  <Card
-                    key={row.id}
-                    className="border border-red-500 shadow-sm"
-                  >
+                  <Card key={row.id} className="border border-red-500 shadow-sm">
                     <CardBody className="space-y-2">
                       <div className="flex items-center justify-between">
                         <Typography
@@ -376,21 +325,18 @@ const ComplexPage = () => {
                           color="blue-gray"
                           className="font-semibold"
                         >
-                          {row.name}
+                          {row.apartment}
                         </Typography>
                         <Menu placement="left-start">
                           <MenuHandler>
                             <IconButton size="sm" variant="text" color="blue-gray">
-                              <EllipsisVerticalIcon
-                                strokeWidth={2}
-                                className="h-5 w-5"
-                              />
+                              <EllipsisVerticalIcon strokeWidth={2} className="h-5 w-5" />
                             </IconButton>
                           </MenuHandler>
                           <MenuList>
                             <MenuItem>Bax</MenuItem>
-                            <MenuItem onClick={() => openEditModal(row)}>Düzəliş et</MenuItem>
-                            <MenuItem>Sil</MenuItem>
+                            <MenuItem>Ödəniş et</MenuItem>
+                            <MenuItem>Fakturalar</MenuItem>
                           </MenuList>
                         </Menu>
                       </div>
@@ -398,19 +344,35 @@ const ComplexPage = () => {
                         ID: {row.id}
                       </Typography>
                       <Typography variant="small" color="blue-gray">
-                        Ünvan: {row.address}
+                        Mənzil sahibi: {row.owner}
                       </Typography>
                       <Typography variant="small" color="blue-gray">
-                        Bina sayı: {row.buildings}
+                        Telefon: {row.phone}
+                      </Typography>
+                      <Typography
+                        variant="small"
+                        color={parseFloat(row.totalDebt) > 0 ? "red" : "green"}
+                        className="font-semibold"
+                      >
+                        Ümumi borc: {row.totalDebt} ₼
                       </Typography>
                       <Typography variant="small" color="blue-gray">
-                        Sakin sayı: {row.residents}
+                        Faktura sayı: {row.invoiceCount}
                       </Typography>
+                      <Typography variant="small" color="blue-gray">
+                        Son ödəniş: {row.lastPaymentDate}
+                      </Typography>
+                      <Chip
+                        size="sm"
+                        value={row.status}
+                        color={row.status === "Ödənilib" ? "green" : "red"}
+                      />
                     </CardBody>
                   </Card>
                 ))}
               </div>
 
+              {/* Pagination */}
               <div className="flex items-center justify-end gap-2 px-6 pt-4">
                 <Button
                   variant="text"
@@ -453,4 +415,5 @@ const ComplexPage = () => {
   );
 };
 
-export default ComplexPage;
+export default DebtorApartmentsPage;
+

@@ -48,25 +48,31 @@ export function Dashboard() {
           {routes.map(
             ({ layout, pages }) =>
               layout === "dashboard" &&
-              pages.map((page) =>
-                page.children && page.children.length > 0
-                  ? page.children.map(({ path, element }) => (
+              pages.map((page) => {
+                if (page.children && page.children.length > 0) {
+                  return page.children.map(({ path, element }) => {
+                    // Remove leading slash for nested routes
+                    const routePath = path.startsWith("/") ? path.substring(1) : path;
+                    return (
                       <Route
                         key={path}
-                        exact
-                        path={path}
+                        path={routePath}
                         element={<ProtectedRoute element={element} />}
                       />
-                    ))
-                  : (
-                      <Route
-                        key={page.path}
-                        exact
-                        path={page.path}
-                        element={<ProtectedRoute element={page.element} />}
-                      />
-                    )
-              )
+                    );
+                  });
+                } else {
+                  // Remove leading slash for nested routes
+                  const routePath = page.path.startsWith("/") ? page.path.substring(1) : page.path;
+                  return (
+                    <Route
+                      key={page.path}
+                      path={routePath}
+                      element={<ProtectedRoute element={page.element} />}
+                    />
+                  );
+                }
+              })
           )}
         </Routes>
        

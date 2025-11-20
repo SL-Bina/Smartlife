@@ -72,9 +72,12 @@ StatisticsChart.propTypes = {
     "red",
   ]),
   chart: PropTypes.object.isRequired,
-  title: PropTypes.node.isRequired,
-  description: PropTypes.node.isRequired,
+  title: PropTypes.node,
+  description: PropTypes.node,
+  titleKey: PropTypes.string,
+  descriptionKey: PropTypes.string,
   footer: PropTypes.node,
+  footerKey: PropTypes.string,
 };
 
 StatisticsChart.displayName = "/src/widgets/charts/statistics-chart.jsx";

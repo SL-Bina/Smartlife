@@ -106,6 +106,7 @@ const ApartmentGroupsPage = () => {
 
   return (
     <div className=" ">
+      {/* Section title bar to match Home design */}
       <div className="w-full bg-black my-4 p-4 rounded-lg shadow-lg mb-6">
         <h3 className="text-white font-bold">
           {t("apartmentGroups.pageTitle")}
@@ -121,7 +122,7 @@ const ApartmentGroupsPage = () => {
               {t("apartmentGroups.filters.complex")}
             </Typography>
             <Input
-              label={t("apartmentGroups.filters.complexPlaceholder")}
+              label="Daxil et"
               value={filterComplex}
               onChange={(e) => setFilterComplex(e.target.value)}
             />
@@ -131,7 +132,7 @@ const ApartmentGroupsPage = () => {
               {t("apartmentGroups.filters.building")}
             </Typography>
             <Input
-              label={t("apartmentGroups.filters.buildingPlaceholder")}
+              label="Daxil et"
               value={filterBuilding}
               onChange={(e) => setFilterBuilding(e.target.value)}
             />
@@ -161,7 +162,7 @@ const ApartmentGroupsPage = () => {
               {t("apartmentGroups.labels.groupName")}
             </Typography>
             <Input
-              label={t("apartmentGroups.labels.groupName")}
+              label="Daxil et"
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
             />
@@ -172,7 +173,7 @@ const ApartmentGroupsPage = () => {
                 {t("apartmentGroups.labels.complex")}
               </Typography>
               <Input
-                label={t("apartmentGroups.labels.complex")}
+                label="Daxil et"
                 value={formComplex}
                 onChange={(e) => setFormComplex(e.target.value)}
               />
@@ -182,7 +183,7 @@ const ApartmentGroupsPage = () => {
                 {t("apartmentGroups.labels.building")}
               </Typography>
               <Input
-                label={t("apartmentGroups.labels.building")}
+                label="Daxil et"
                 value={formBuilding}
                 onChange={(e) => setFormBuilding(e.target.value)}
               />
@@ -195,7 +196,7 @@ const ApartmentGroupsPage = () => {
               </Typography>
               <Input
                 type="number"
-                label={t("apartmentGroups.labels.total")}
+                label="Daxil et"
                 value={formTotal}
                 onChange={(e) => setFormTotal(e.target.value)}
               />
@@ -206,7 +207,7 @@ const ApartmentGroupsPage = () => {
               </Typography>
               <Input
                 type="number"
-                label={t("apartmentGroups.labels.occupied")}
+                label="Daxil et"
                 value={formOccupied}
                 onChange={(e) => setFormOccupied(e.target.value)}
               />
@@ -217,7 +218,7 @@ const ApartmentGroupsPage = () => {
               </Typography>
               <Input
                 type="number"
-                label={t("apartmentGroups.labels.serviceFee")}
+                label="Daxil et"
                 value={formServiceFee}
                 onChange={(e) => setFormServiceFee(e.target.value)}
               />
@@ -243,7 +244,7 @@ const ApartmentGroupsPage = () => {
               {t("apartmentGroups.labels.groupName")}
             </Typography>
             <Input
-              label={t("apartmentGroups.labels.groupName")}
+              label="Daxil et"
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
             />
@@ -254,7 +255,7 @@ const ApartmentGroupsPage = () => {
                 {t("apartmentGroups.labels.complex")}
               </Typography>
               <Input
-                label={t("apartmentGroups.labels.complex")}
+                label="Daxil et"
                 value={formComplex}
                 onChange={(e) => setFormComplex(e.target.value)}
               />
@@ -264,7 +265,7 @@ const ApartmentGroupsPage = () => {
                 {t("apartmentGroups.labels.building")}
               </Typography>
               <Input
-                label={t("apartmentGroups.labels.building")}
+                label="Daxil et"
                 value={formBuilding}
                 onChange={(e) => setFormBuilding(e.target.value)}
               />
@@ -277,7 +278,7 @@ const ApartmentGroupsPage = () => {
               </Typography>
               <Input
                 type="number"
-                label={t("apartmentGroups.labels.total")}
+                label="Daxil et"
                 value={formTotal}
                 onChange={(e) => setFormTotal(e.target.value)}
               />
@@ -288,7 +289,7 @@ const ApartmentGroupsPage = () => {
               </Typography>
               <Input
                 type="number"
-                label={t("apartmentGroups.labels.occupied")}
+                label="Daxil et"
                 value={formOccupied}
                 onChange={(e) => setFormOccupied(e.target.value)}
               />
@@ -299,7 +300,7 @@ const ApartmentGroupsPage = () => {
               </Typography>
               <Input
                 type="number"
-                label={t("apartmentGroups.labels.serviceFee")}
+                label="Daxil et"
                 value={formServiceFee}
                 onChange={(e) => setFormServiceFee(e.target.value)}
               />
@@ -327,7 +328,7 @@ const ApartmentGroupsPage = () => {
               >
                 {t("apartmentGroups.filters.complex")}
               </Typography>
-              <Select label={t("apartmentGroups.filters.complexPlaceholder")}>
+              <Select label="Daxil et">
                 <Option>Kompleks 1</Option>
                 <Option>Kompleks 2</Option>
               </Select>
@@ -340,7 +341,7 @@ const ApartmentGroupsPage = () => {
               >
                 {t("apartmentGroups.filters.building")}
               </Typography>
-              <Select label={t("apartmentGroups.filters.buildingPlaceholder")}>
+              <Select label="Daxil et">
                 <Option>Bina 1</Option>
                 <Option>Bina 2</Option>
               </Select>

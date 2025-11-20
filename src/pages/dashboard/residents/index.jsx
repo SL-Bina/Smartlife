@@ -101,6 +101,7 @@ const ResidentsPage = () => {
 
   return (
     <div className=" ">
+      {/* Section title bar to match Home design */}
       <div className="w-full bg-black my-4 p-4 rounded-lg shadow-lg mb-6">
         <h3 className="text-white font-bold">Sakinlər</h3>
       </div>
@@ -114,7 +115,7 @@ const ResidentsPage = () => {
               Ad Soyad
             </Typography>
             <Input
-              label="Ad Soyad ilə axtarış"
+              label="Daxil et"
               value={filterName}
               onChange={(e) => setFilterName(e.target.value)}
             />
@@ -124,7 +125,7 @@ const ResidentsPage = () => {
               Status
             </Typography>
             <Select
-              label="Status"
+              label="Daxil et"
               value={filterStatus}
               onChange={(val) => setFilterStatus(val || "")}
             >
@@ -157,7 +158,7 @@ const ResidentsPage = () => {
               Ad Soyad
             </Typography>
             <Input
-              label="Ad Soyad"
+              label="Daxil et"
               value={formFullName}
               onChange={(e) => setFormFullName(e.target.value)}
             />
@@ -168,7 +169,7 @@ const ResidentsPage = () => {
                 Telefon
               </Typography>
               <Input
-                label="Telefon"
+                label="Daxil et"
                 value={formPhone}
                 onChange={(e) => setFormPhone(e.target.value)}
               />
@@ -178,7 +179,7 @@ const ResidentsPage = () => {
                 Email
               </Typography>
               <Input
-                label="Email"
+                label="Daxil et"
                 value={formEmail}
                 onChange={(e) => setFormEmail(e.target.value)}
               />
@@ -189,7 +190,7 @@ const ResidentsPage = () => {
               Mənzil
             </Typography>
             <Input
-              label="Mənzil"
+              label="Daxil et"
               value={formApartment}
               onChange={(e) => setFormApartment(e.target.value)}
             />
@@ -199,7 +200,7 @@ const ResidentsPage = () => {
               Status
             </Typography>
             <Select
-              label="Status"
+              label="Daxil et"
               value={formStatus}
               onChange={(val) => setFormStatus(val || "Aktiv")}
             >
@@ -227,7 +228,7 @@ const ResidentsPage = () => {
               Ad Soyad
             </Typography>
             <Input
-              label="Ad Soyad"
+              label="Daxil et"
               value={formFullName}
               onChange={(e) => setFormFullName(e.target.value)}
             />
@@ -238,7 +239,7 @@ const ResidentsPage = () => {
                 Telefon
               </Typography>
               <Input
-                label="Telefon"
+                label="Daxil et"
                 value={formPhone}
                 onChange={(e) => setFormPhone(e.target.value)}
               />
@@ -248,7 +249,7 @@ const ResidentsPage = () => {
                 Email
               </Typography>
               <Input
-                label="Email"
+                label="Daxil et"
                 value={formEmail}
                 onChange={(e) => setFormEmail(e.target.value)}
               />
@@ -259,7 +260,7 @@ const ResidentsPage = () => {
               Mənzil
             </Typography>
             <Input
-              label="Mənzil"
+              label="Daxil et"
               value={formApartment}
               onChange={(e) => setFormApartment(e.target.value)}
             />
@@ -269,7 +270,7 @@ const ResidentsPage = () => {
               Status
             </Typography>
             <Select
-              label="Status"
+              label="Daxil et"
               value={formStatus}
               onChange={(val) => setFormStatus(val || "Aktiv")}
             >

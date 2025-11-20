@@ -11,6 +11,12 @@
   },
   "sidebar": {
     "dashboard": "Panel",
+    "finance": "Maliyyə",
+    "invoices": "Fakturalar",
+    "paymentHistory": "Ödəniş tarixçəsi",
+    "reports": "Hesabatlar",
+    "debtorApartments": "Borclu mənzillər",
+    "expenses": "Xərclər",
     "notifications": "Bildirişlər",
     "mtk": "MTK",
     "complexes": "Komplekslər",
@@ -20,7 +26,8 @@
     "blocks": "Bloklar",
     "apartmentGroups": "Mənzil qrupu",
     "buildingServiceFee": "Servis haqqı",
-    "buildingManagement": "idarə etmə"
+    "buildingManagement": "idarə etmə",
+    "profile": "Profil"
   },
   "buttons": {
     "clear": "Təmizlə",

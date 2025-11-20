@@ -59,9 +59,9 @@ export function Home() {
         <h3 className="text-white font-bold">{t("dashboard.homeTitle2")}</h3>
       </div>
       <div className="mb-6 grid grid-cols-1 gap-y-12 gap-x-6 md:grid-cols-2 xl:grid-cols-3">
-        {statisticsChartsData.map((props) => (
+        {statisticsChartsData.map((props, index) => (
           <StatisticsChart
-            key={props.title}
+            key={props.titleKey || props.title || `chart-${index}`}
             {...props}
             footer={
               <Typography
@@ -69,7 +69,7 @@ export function Home() {
                 className="flex items-center font-normal text-blue-gray-600"
               >
                 <ClockIcon strokeWidth={2} className="h-4 w-4 text-blue-gray-400" />
-                &nbsp;{props.footer}
+                &nbsp;{props.footerKey ? t(props.footerKey) : props.footer}
               </Typography>
             }
           />

@@ -16,25 +16,41 @@ import {
   DialogBody,
   DialogFooter,
   Input,
+  Chip,
 } from "@material-tailwind/react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 
-const mtkData = Array.from({ length: 50 }, (_, index) => ({
-  id: index + 1,
-  name: `Test MTK ${index + 1}`,
+const invoicesData = Array.from({ length: 50 }, (_, index) => ({
+  id: 139653 - index,
+  serviceName: `Xidmət ${index + 1}`,
+  owner: `Sahib ${index + 1}`,
+  ownerBalance: (Math.random() * 10).toFixed(2),
+  apartment: `Mənzil ${index + 1}`,
+  building: `Bina ${String.fromCharCode(65 + (index % 5))}`,
+  block: `Blok ${String.fromCharCode(65 + (index % 3))}`,
+  floor: (index % 16) + 1,
+  area: (60 + (index % 10) * 5).toFixed(2),
+  amount: (20 + (index % 10) * 5).toFixed(2),
+  paidAmount: index % 3 === 0 ? (20 + (index % 10) * 5).toFixed(2) : (10 + (index % 5) * 2).toFixed(2),
+  remaining: index % 3 === 0 ? "0.00" : (10 + (index % 5) * 3).toFixed(2),
+  status: index % 3 === 0 ? "Ödənilib" : "Ödənilməmiş",
+  invoiceDate: "2025 Noy",
+  paymentDate: index % 3 === 0 ? `2025-11-${String(19 - (index % 10)).padStart(2, "0")} 17:01` : "",
+  paymentMethod: index % 3 === 0 ? (index % 2 === 0 ? "Balans" : "Nağd") : "",
 }));
 
 const ITEMS_PER_PAGE = 10;
 
-const MTK = () => {
+const InvoicesPage = () => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [filterOpen, setFilterOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [filterName, setFilterName] = useState("");
-  const [formName, setFormName] = useState("");
+
+  const [filterServiceName, setFilterServiceName] = useState("");
+  const [filterOwner, setFilterOwner] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 400);
@@ -43,11 +59,25 @@ const MTK = () => {
 
   const filteredData = React.useMemo(
     () =>
-      mtkData.filter((item) =>
-        filterName ? item.name.toLowerCase().includes(filterName.toLowerCase()) : true
-      ),
-    [filterName]
+      invoicesData.filter((item) => {
+        const matchesService = filterServiceName
+          ? item.serviceName.toLowerCase().includes(filterServiceName.toLowerCase())
+          : true;
+        const matchesOwner = filterOwner
+          ? item.owner.toLowerCase().includes(filterOwner.toLowerCase())
+          : true;
+        const matchesStatus = filterStatus ? item.status === filterStatus : true;
+        return matchesService && matchesOwner && matchesStatus;
+      }),
+    [filterServiceName, filterOwner, filterStatus]
   );
+
+  const totalPaid = filteredData
+    .reduce((sum, item) => sum + parseFloat(item.paidAmount), 0)
+    .toFixed(2);
+  const totalConsumption = filteredData
+    .reduce((sum, item) => sum + parseFloat(item.amount), 0)
+    .toFixed(2);
 
   const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
   const startIndex = (page - 1) * ITEMS_PER_PAGE;
@@ -57,14 +87,7 @@ const MTK = () => {
   const handleNext = () => setPage((prev) => Math.min(totalPages, prev + 1));
 
   const openCreateModal = () => {
-    setFormName("");
     setCreateOpen(true);
-  };
-
-  const openEditModal = (item) => {
-    setSelectedItem(item);
-    setFormName(item.name);
-    setEditOpen(true);
   };
 
   const handleFilterApply = () => {
@@ -73,40 +96,80 @@ const MTK = () => {
   };
 
   const handleFilterClear = () => {
-    setFilterName("");
+    setFilterServiceName("");
+    setFilterOwner("");
+    setFilterStatus("");
     setPage(1);
     setFilterOpen(false);
   };
 
   const handleCreateSave = () => {
-    // Burada backend inteqrasiyası üçün API çağırışı edilə bilər
     setCreateOpen(false);
-  };
-
-  const handleEditSave = () => {
-    // Burada seçilmiş MTK üçün dəyişiklikləri saxlamaq üçün API çağırışı edilə bilər
-    setEditOpen(false);
   };
 
   return (
     <div className="">
       {/* Section title bar to match Home design */}
       <div className="w-full bg-black my-4 p-4 rounded-lg shadow-lg mb-6">
-        <h3 className="text-white font-bold">MTK</h3>
+        <h3 className="text-white font-bold">Fakturalar</h3>
+      </div>
+
+      {/* Summary cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <Card className="border border-red-500 shadow-sm">
+          <CardBody className="p-4">
+            <Typography variant="small" color="blue-gray" className="mb-1">
+              Ödənilib
+            </Typography>
+            <Typography variant="h5" color="green" className="font-bold">
+              {totalPaid} ₼
+            </Typography>
+          </CardBody>
+        </Card>
+        <Card className="border border-red-500 shadow-sm">
+          <CardBody className="p-4">
+            <Typography variant="small" color="blue-gray" className="mb-1">
+              İstehlak həcmi
+            </Typography>
+            <Typography variant="h5" color="blue-gray" className="font-bold">
+              {totalConsumption} ₼
+            </Typography>
+          </CardBody>
+        </Card>
       </div>
 
       {/* Filter modal */}
       <Dialog open={filterOpen} handler={setFilterOpen} size="sm">
-        <DialogHeader>MTK filter</DialogHeader>
+        <DialogHeader>Faktura filter</DialogHeader>
         <DialogBody divider className="space-y-4">
           <div>
             <Typography variant="small" color="blue-gray" className="mb-1">
-              MTK adı
+              Xidmət adı
             </Typography>
             <Input
               label="Daxil et"
-              value={filterName}
-              onChange={(e) => setFilterName(e.target.value)}
+              value={filterServiceName}
+              onChange={(e) => setFilterServiceName(e.target.value)}
+            />
+          </div>
+          <div>
+            <Typography variant="small" color="blue-gray" className="mb-1">
+              Mənzil sahibi
+            </Typography>
+            <Input
+              label="Daxil et"
+              value={filterOwner}
+              onChange={(e) => setFilterOwner(e.target.value)}
+            />
+          </div>
+          <div>
+            <Typography variant="small" color="blue-gray" className="mb-1">
+              Status
+            </Typography>
+            <Input
+              label="Daxil et"
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
             />
           </div>
         </DialogBody>
@@ -125,19 +188,15 @@ const MTK = () => {
         </DialogFooter>
       </Dialog>
 
-      {/* Create MTK modal */}
+      {/* Create invoice modal */}
       <Dialog open={createOpen} handler={setCreateOpen} size="sm">
-        <DialogHeader>Yeni MTK əlavə et</DialogHeader>
+        <DialogHeader>Yeni faktura əlavə et</DialogHeader>
         <DialogBody divider className="space-y-4">
           <div>
             <Typography variant="small" color="blue-gray" className="mb-1">
-              Daxil et
+              Xidmət adı
             </Typography>
-            <Input
-              label="Daxil et"
-              value={formName}
-              onChange={(e) => setFormName(e.target.value)}
-            />
+            <Input label="Daxil et" />
           </div>
         </DialogBody>
         <DialogFooter className="flex justify-end gap-2">
@@ -150,31 +209,6 @@ const MTK = () => {
         </DialogFooter>
       </Dialog>
 
-      {/* Edit MTK modal */}
-      <Dialog open={editOpen} handler={setEditOpen} size="sm">
-        <DialogHeader>MTK məlumatlarını dəyiş</DialogHeader>
-        <DialogBody divider className="space-y-4">
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1">
-              MTK adı
-            </Typography>
-            <Input
-              label="Daxil et"
-              value={formName}
-              onChange={(e) => setFormName(e.target.value)}
-            />
-          </div>
-        </DialogBody>
-        <DialogFooter className="flex justify-end gap-2">
-          <Button variant="outlined" color="blue-gray" onClick={() => setEditOpen(false)}>
-            Ləğv et
-          </Button>
-          <Button color="blue" onClick={handleEditSave}>
-            Yadda saxla
-          </Button>
-        </DialogFooter>
-      </Dialog>
-
       <Card className="border border-red-500 shadow-sm">
         <CardHeader
           floated={false}
@@ -182,9 +216,6 @@ const MTK = () => {
           color="transparent"
           className="m-0 flex items-center justify-between p-6"
         >
-          {/* <Typography variant="h6" color="blue-gray" className="mb-1">
-            MTK Siyahısı
-          </Typography> */}
           <div className="flex items-center gap-3">
             <Button variant="outlined" color="blue" onClick={() => setFilterOpen(true)}>
               Axtarış
@@ -205,15 +236,28 @@ const MTK = () => {
           ) : (
             <>
               {/* Desktop table */}
-              <div className="hidden lg:block">
-                <table className="w-full table-auto">
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="w-full table-auto min-w-[1200px]">
                   <thead>
                     <tr>
-                      {["ID", "Ad", "Əməliyyatlar"].map((el, idx) => (
+                      {[
+                        "ID",
+                        "Xidmət adı",
+                        "Mənzil sahibi",
+                        "Mənzil məlumatları",
+                        "Məbləğ",
+                        "Ödənilən məbləğ",
+                        "Qalıq",
+                        "Status",
+                        "Faktura tarixi",
+                        "Ödəniş tarixi",
+                        "Ödəniş üsulu",
+                        "Əməliyyatlar",
+                      ].map((el, idx) => (
                         <th
                           key={el}
                           className={`border-b border-blue-gray-100 py-3 px-6 text-left ${
-                            idx === 2 ? "text-right" : ""
+                            idx === 11 ? "text-right" : ""
                           }`}
                         >
                           <Typography
@@ -244,7 +288,65 @@ const MTK = () => {
                               color="blue-gray"
                               className="font-semibold"
                             >
-                              {row.name}
+                              {row.serviceName}
+                            </Typography>
+                          </td>
+                          <td className={className}>
+                            <Typography variant="small" color="blue-gray">
+                              {row.owner}
+                            </Typography>
+                            <Typography variant="small" color="blue-gray" className="text-xs">
+                              Balans: {row.ownerBalance} ₼
+                            </Typography>
+                          </td>
+                          <td className={className}>
+                            <Typography variant="small" color="blue-gray">
+                              {row.apartment}
+                            </Typography>
+                            <Typography variant="small" color="blue-gray" className="text-xs">
+                              Bina: {row.building}, Blok: {row.block}, Mərtəbə: {row.floor}, Sahə:{" "}
+                              {row.area} m²
+                            </Typography>
+                          </td>
+                          <td className={className}>
+                            <Typography variant="small" color="blue-gray" className="font-semibold">
+                              {row.amount} ₼
+                            </Typography>
+                          </td>
+                          <td className={className}>
+                            <Typography variant="small" color="green" className="font-semibold">
+                              {row.paidAmount} ₼
+                            </Typography>
+                          </td>
+                          <td className={className}>
+                            <Typography
+                              variant="small"
+                              color={parseFloat(row.remaining) > 0 ? "red" : "blue-gray"}
+                              className="font-semibold"
+                            >
+                              {row.remaining} ₼
+                            </Typography>
+                          </td>
+                          <td className={className}>
+                            <Chip
+                              size="sm"
+                              value={row.status}
+                              color={row.status === "Ödənilib" ? "green" : "red"}
+                            />
+                          </td>
+                          <td className={className}>
+                            <Typography variant="small" color="blue-gray">
+                              {row.invoiceDate}
+                            </Typography>
+                          </td>
+                          <td className={className}>
+                            <Typography variant="small" color="blue-gray">
+                              {row.paymentDate || "-"}
+                            </Typography>
+                          </td>
+                          <td className={className}>
+                            <Typography variant="small" color="blue-gray">
+                              {row.paymentMethod || "-"}
                             </Typography>
                           </td>
                           <td className={`${className} text-right`}>
@@ -259,7 +361,7 @@ const MTK = () => {
                               </MenuHandler>
                               <MenuList>
                                 <MenuItem>Bax</MenuItem>
-                                <MenuItem onClick={() => openEditModal(row)}>Düzəliş et</MenuItem>
+                                <MenuItem>Düzəliş et</MenuItem>
                                 <MenuItem>Sil</MenuItem>
                               </MenuList>
                             </Menu>
@@ -274,10 +376,7 @@ const MTK = () => {
               {/* Tablet & mobile cards */}
               <div className="grid gap-4 sm:grid-cols-2 lg:hidden px-4 pt-4">
                 {pageData.map((row) => (
-                  <Card
-                    key={row.id}
-                    className="border border-red-500 shadow-sm"
-                  >
+                  <Card key={row.id} className="border border-red-500 shadow-sm">
                     <CardBody className="space-y-2">
                       <div className="flex items-center justify-between">
                         <Typography
@@ -285,20 +384,17 @@ const MTK = () => {
                           color="blue-gray"
                           className="font-semibold"
                         >
-                          {row.name}
+                          {row.serviceName}
                         </Typography>
                         <Menu placement="left-start">
                           <MenuHandler>
                             <IconButton size="sm" variant="text" color="blue-gray">
-                              <EllipsisVerticalIcon
-                                strokeWidth={2}
-                                className="h-5 w-5"
-                              />
+                              <EllipsisVerticalIcon strokeWidth={2} className="h-5 w-5" />
                             </IconButton>
                           </MenuHandler>
                           <MenuList>
                             <MenuItem>Bax</MenuItem>
-                            <MenuItem onClick={() => openEditModal(row)}>Düzəliş et</MenuItem>
+                            <MenuItem>Düzəliş et</MenuItem>
                             <MenuItem>Sil</MenuItem>
                           </MenuList>
                         </Menu>
@@ -306,6 +402,26 @@ const MTK = () => {
                       <Typography variant="small" color="blue-gray">
                         ID: {row.id}
                       </Typography>
+                      <Typography variant="small" color="blue-gray">
+                        Mənzil sahibi: {row.owner}
+                      </Typography>
+                      <Typography variant="small" color="blue-gray">
+                        Məbləğ: {row.amount} ₼
+                      </Typography>
+                      <Typography variant="small" color="green">
+                        Ödənilən: {row.paidAmount} ₼
+                      </Typography>
+                      <Typography
+                        variant="small"
+                        color={parseFloat(row.remaining) > 0 ? "red" : "blue-gray"}
+                      >
+                        Qalıq: {row.remaining} ₼
+                      </Typography>
+                      <Chip
+                        size="sm"
+                        value={row.status}
+                        color={row.status === "Ödənilib" ? "green" : "red"}
+                      />
                     </CardBody>
                   </Card>
                 ))}
@@ -354,4 +470,5 @@ const MTK = () => {
   );
 };
 
-export default MTK;
+export default InvoicesPage;
+

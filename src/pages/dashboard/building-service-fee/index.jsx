@@ -91,6 +91,7 @@ const BuildingServiceFeePage = () => {
 
   return (
     <div className=" ">
+      {/* Section title bar to match Home design */}
       <div className="w-full bg-black my-4 p-4 rounded-lg shadow-lg mb-6">
         <h3 className="text-white font-bold">
           {t("buildingServiceFee.pageTitle")}
@@ -106,7 +107,7 @@ const BuildingServiceFeePage = () => {
               {t("buildingServiceFee.labels.complex")}
             </Typography>
             <Input
-              label={t("buildingServiceFee.labels.complex")}
+              label="Daxil et"
               value={filterComplex}
               onChange={(e) => setFilterComplex(e.target.value)}
             />
@@ -116,7 +117,7 @@ const BuildingServiceFeePage = () => {
               {t("buildingServiceFee.labels.building")}
             </Typography>
             <Input
-              label={t("buildingServiceFee.labels.building")}
+              label="Daxil et"
               value={filterBuilding}
               onChange={(e) => setFilterBuilding(e.target.value)}
             />
@@ -146,7 +147,7 @@ const BuildingServiceFeePage = () => {
               {t("buildingServiceFee.labels.building")}
             </Typography>
             <Input
-              label={t("buildingServiceFee.labels.building")}
+              label="Daxil et"
               value={formBuilding}
               onChange={(e) => setFormBuilding(e.target.value)}
             />
@@ -156,7 +157,7 @@ const BuildingServiceFeePage = () => {
               {t("buildingServiceFee.labels.complex")}
             </Typography>
             <Input
-              label={t("buildingServiceFee.labels.complex")}
+              label="Daxil et"
               value={formComplex}
               onChange={(e) => setFormComplex(e.target.value)}
             />
@@ -168,7 +169,7 @@ const BuildingServiceFeePage = () => {
               </Typography>
               <Input
                 type="number"
-                label={t("buildingServiceFee.labels.baseFee")}
+                label="Daxil et"
                 value={formBaseFee}
                 onChange={(e) => setFormBaseFee(e.target.value)}
               />
@@ -179,7 +180,7 @@ const BuildingServiceFeePage = () => {
               </Typography>
               <Input
                 type="number"
-                label={t("buildingServiceFee.labels.perM2")}
+                label="Daxil et"
                 value={formPerM2}
                 onChange={(e) => setFormPerM2(e.target.value)}
               />
@@ -190,7 +191,7 @@ const BuildingServiceFeePage = () => {
               {t("buildingServiceFee.labels.lastUpdatedBy")}
             </Typography>
             <Input
-              label={t("buildingServiceFee.labels.lastUpdatedBy")}
+              label="Daxil et"
               value={formLastUpdatedBy}
               onChange={(e) => setFormLastUpdatedBy(e.target.value)}
             />
@@ -215,7 +216,7 @@ const BuildingServiceFeePage = () => {
               {t("buildingServiceFee.labels.building")}
             </Typography>
             <Input
-              label={t("buildingServiceFee.labels.building")}
+              label="Daxil et"
               value={formBuilding}
               onChange={(e) => setFormBuilding(e.target.value)}
             />
@@ -225,7 +226,7 @@ const BuildingServiceFeePage = () => {
               {t("buildingServiceFee.labels.complex")}
             </Typography>
             <Input
-              label={t("buildingServiceFee.labels.complex")}
+              label="Daxil et"
               value={formComplex}
               onChange={(e) => setFormComplex(e.target.value)}
             />
@@ -237,7 +238,7 @@ const BuildingServiceFeePage = () => {
               </Typography>
               <Input
                 type="number"
-                label={t("buildingServiceFee.labels.baseFee")}
+                label="Daxil et"
                 value={formBaseFee}
                 onChange={(e) => setFormBaseFee(e.target.value)}
               />
@@ -248,7 +249,7 @@ const BuildingServiceFeePage = () => {
               </Typography>
               <Input
                 type="number"
-                label={t("buildingServiceFee.labels.perM2")}
+                label="Daxil et"
                 value={formPerM2}
                 onChange={(e) => setFormPerM2(e.target.value)}
               />
@@ -259,7 +260,7 @@ const BuildingServiceFeePage = () => {
               {t("buildingServiceFee.labels.lastUpdatedBy")}
             </Typography>
             <Input
-              label={t("buildingServiceFee.labels.lastUpdatedBy")}
+              label="Daxil et"
               value={formLastUpdatedBy}
               onChange={(e) => setFormLastUpdatedBy(e.target.value)}
             />

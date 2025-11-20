@@ -11,6 +11,12 @@
   },
   "sidebar": {
     "dashboard": "Dashboard",
+    "finance": "Finance",
+    "invoices": "Invoices",
+    "paymentHistory": "Payment History",
+    "reports": "Reports",
+    "debtorApartments": "Debtor Apartments",
+    "expenses": "Expenses",
     "notifications": "Notifications",
     "mtk": "HOA",
     "complexes": "Complexes",
@@ -20,7 +26,8 @@
     "blocks": "Blocks",
     "apartmentGroups": "Apartment Groups",
     "buildingServiceFee": "Service Fee",
-    "buildingManagement": "Building Management"
+    "buildingManagement": "Building Management",
+    "profile": "Profile"
   },
   "buttons": {
     "clear": "Clear",
