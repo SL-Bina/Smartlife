@@ -19,12 +19,16 @@ import {
   ClockIcon,
   CreditCardIcon,
   Bars3Icon,
+  SunIcon,
+  MoonIcon,
 } from "@heroicons/react/24/solid";
 import {
   useMaterialTailwindController,
   // setOpenConfigurator,
   setOpenSidenav,
+  setDarkMode,
 } from "@/context";
+import { Switch } from "@material-tailwind/react";
 import { useAuth } from "@/auth-context";
 import { useTranslation } from "react-i18next";
 
@@ -76,7 +80,7 @@ const pageTitleKeyMap = {
 
 export function DashboardNavbar() {
   const [controller, dispatch] = useMaterialTailwindController();
-  const { fixedNavbar, openSidenav } = controller;
+  const { fixedNavbar, openSidenav, darkMode } = controller;
   const { pathname } = useLocation();
   const [layout, page] = pathname.split("/").filter((el) => el !== "");
   const { user, logout } = useAuth();
@@ -97,128 +101,153 @@ export function DashboardNavbar() {
   return (
     <Navbar
       color={fixedNavbar ? "white" : "transparent"}
-      className={`rounded-xl transition-all ${
+      className={`rounded-xl transition-all dark:bg-gray-800 border border-gray-200 dark:border-gray-700 ${
         fixedNavbar
-          ? "sticky top-4 z-40 py-3 shadow-md shadow-blue-gray-500/5"
-          : "px-0 py-1"
+          ? "sticky top-4 z-40 py-3 shadow-lg shadow-blue-gray-500/5"
+          : "px-4 sm:px-6 py-2 sm:py-3"
       }`}
       fullWidth
       blurred={fixedNavbar}
     >
-      <div className="flex flex-col-reverse justify-between gap-6 md:flex-row md:items-center">
-        <div>
-          <Breadcrumbs
-            className={`bg-transparent p-0 transition-all ${
-              fixedNavbar ? "mt-1" : ""
-            }`}
-          >
-            <Link to={`/${layout}`}>
-              <Typography
-                variant="small"
-                color="blue-gray"
-                className="font-normal opacity-50 transition-all hover:text-blue-500 hover:opacity-100"
-              >
-                {layoutTitle}
-              </Typography>
-            </Link>
-            <Typography
-              variant="small"
-              color="blue-gray"
-              className="font-normal"
-            >
-              {pageTitle}
-            </Typography>
-          </Breadcrumbs>
-          <Typography variant="h6" color="blue-gray">
-            {pageTitle}
-          </Typography>
-        </div>
-        <div className="flex items-center justify-end">
-          {/* <div className="mr-auto md:mr-4 md:w-56">
-            <Input label={t("header.search")} />
-          </div> */}
+      <div className="flex items-center justify-between gap-2 sm:gap-4">
+        {/* Left side - Mobile: only hamburger, Desktop: hamburger + title */}
+        <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
           <IconButton
             variant="text"
             color="blue-gray"
-            className="grid xl:hidden"
+            className="grid xl:hidden dark:text-gray-300 dark:hover:bg-gray-700 flex-shrink-0"
             onClick={() => setOpenSidenav(dispatch, !openSidenav)}
+            size="sm"
           >
-            <Bars3Icon strokeWidth={3} className="h-6 w-6 text-blue-gray-500" />
+            <Bars3Icon strokeWidth={3} className="h-5 w-5" />
           </IconButton>
+          <div className="min-w-0 flex-1 hidden sm:block">
+            <Breadcrumbs
+              className={`bg-transparent p-0 transition-all ${
+                fixedNavbar ? "mt-1" : ""
+              }`}
+            >
+              <Link to={`/${layout}`}>
+                <Typography
+                  variant="small"
+                  color="blue-gray"
+                  className="font-normal opacity-50 transition-all hover:text-blue-500 hover:opacity-100 dark:text-gray-300 text-xs sm:text-sm truncate"
+                >
+                  {layoutTitle}
+                </Typography>
+              </Link>
+              <Typography
+                variant="small"
+                color="blue-gray"
+                className="font-normal dark:text-gray-300 text-xs sm:text-sm truncate"
+              >
+                {pageTitle}
+              </Typography>
+            </Breadcrumbs>
+            <Typography 
+              variant="h6" 
+              color="blue-gray" 
+              className="dark:text-white text-sm sm:text-base lg:text-lg font-bold truncate"
+            >
+              {pageTitle}
+            </Typography>
+          </div>
+        </div>
+        {/* Right side - Icons */}
+        <div className="flex items-center justify-end gap-1 sm:gap-2 flex-shrink-0">
+          {/* Dark Mode Toggle - Button Style */}
+          <Menu placement="bottom-end">
+            <MenuHandler>
+              <IconButton
+                variant="text"
+                color="blue-gray"
+                className="dark:text-gray-300 dark:hover:bg-gray-700"
+                title={darkMode ? t("header.lightMode") : t("header.darkMode")}
+                size="sm"
+              >
+                {darkMode ? (
+                  <SunIcon className="h-5 w-5 text-yellow-500" />
+                ) : (
+                  <MoonIcon className="h-5 w-5 text-blue-gray-700 dark:text-gray-300" />
+                )}
+              </IconButton>
+            </MenuHandler>
+            <MenuList className="dark:bg-gray-800 dark:border-gray-700 min-w-[140px]">
+              <MenuItem
+                onClick={() => setDarkMode(dispatch, false)}
+                className={`dark:text-gray-300 dark:hover:bg-gray-700 flex items-center gap-2 ${
+                  !darkMode ? "bg-blue-50 dark:bg-blue-900/20" : ""
+                }`}
+              >
+                <SunIcon className="h-4 w-4 text-yellow-500" />
+                <span>{t("header.lightMode")}</span>
+              </MenuItem>
+              <MenuItem
+                onClick={() => setDarkMode(dispatch, true)}
+                className={`dark:text-gray-300 dark:hover:bg-gray-700 flex items-center gap-2 ${
+                  darkMode ? "bg-blue-50 dark:bg-blue-900/20" : ""
+                }`}
+              >
+                <MoonIcon className="h-4 w-4 text-blue-gray-700 dark:text-gray-300" />
+                <span>{t("header.darkMode")}</span>
+              </MenuItem>
+            </MenuList>
+          </Menu>
 
           {/* Language selector */}
           <Menu placement="bottom-end">
             <MenuHandler>
-              <Button variant="text" className="flex items-center gap-1 px-2 normal-case">
+              <IconButton
+                variant="text"
+                color="blue-gray"
+                className="dark:text-gray-300 dark:hover:bg-gray-700 p-1"
+                size="sm"
+              >
                 {languages.map((lng) => (
                   lng.code === i18n.language && (
-                    <span key={lng.code} className="flex items-center gap-1">
-                      <span>{lng.flag}</span>
-                      <span className="hidden sm:inline-block text-xs font-medium">{lng.label}</span>
+                    <span key={lng.code} className="text-lg">
+                      {lng.flag}
                     </span>
                   )
                 ))}
-              </Button>
+              </IconButton>
             </MenuHandler>
-            <MenuList className="min-w-[120px]">
+            <MenuList className="min-w-[160px] dark:bg-gray-800 dark:border-gray-700">
               {languages.map((lng) => (
-                <MenuItem key={lng.code} onClick={() => changeLanguage(lng.code)}>
-                  <span className="mr-2">{lng.flag}</span>
+                <MenuItem 
+                  key={lng.code} 
+                  onClick={() => changeLanguage(lng.code)} 
+                  className={`dark:text-gray-300 dark:hover:bg-gray-700 flex items-center gap-2 ${
+                    i18n.language === lng.code ? "bg-blue-50 dark:bg-blue-900/20" : ""
+                  }`}
+                >
+                  <span className="text-base">{lng.flag}</span>
                   <span>{lng.label}</span>
                 </MenuItem>
               ))}
             </MenuList>
           </Menu>
 
-          {/* User info / auth */}
-          {user ? (
-            <Menu placement="bottom-end">
-              <MenuHandler>
-                <Button
-                  variant="text"
-                  color="blue-gray"
-                  className="hidden items-center gap-2 px-4 xl:flex normal-case"
-                >
-                  <Avatar
-                    src="https://ui-avatars.com/api/?name="
-                    alt={user.fullName}
-                    size="sm"
-                  />
-                  <span>{user.fullName}</span>
-                </Button>
-              </MenuHandler>
-              <MenuList>
-                <MenuItem onClick={logout}>{t("common.logout")}</MenuItem>
-              </MenuList>
-            </Menu>
-          ) : (
-            <Link to="/auth/sign-in">
-              <Button
-                variant="text"
-                color="blue-gray"
-                className="hidden items-center gap-1 px-4 xl:flex normal-case"
-              >
-                <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
-                {t("common.login")}
-              </Button>
-              <IconButton
-                variant="text"
-                color="blue-gray"
-                className="grid xl:hidden"
-              >
-                <UserCircleIcon className="h-5 w-5 text-blue-gray-500" />
-              </IconButton>
-            </Link>
-          )}
-
-          <Menu>
+          {/* Notifications */}
+          <Menu placement="bottom-end">
             <MenuHandler>
-              <IconButton variant="text" color="blue-gray">
-                <BellIcon className="h-5 w-5 text-blue-gray-500" />
+              <IconButton 
+                variant="text" 
+                color="blue-gray"
+                className="dark:text-gray-300 dark:hover:bg-gray-700 relative p-1"
+                size="sm"
+              >
+                <BellIcon className="h-5 w-5" />
+                <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full border border-white dark:border-gray-800"></span>
               </IconButton>
             </MenuHandler>
-            <MenuList className="w-max border-0">
-              <MenuItem className="flex items-center gap-3">
+            <MenuList className="w-80 sm:w-96 border-0 dark:bg-gray-800 dark:border-gray-700 max-h-[400px] overflow-y-auto">
+              <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                <Typography variant="h6" className="text-blue-gray-900 dark:text-white font-semibold">
+                  {t("header.notifications")}
+                </Typography>
+              </div>
+              <MenuItem className="flex items-center gap-3 dark:hover:bg-gray-700">
                 <Avatar
                   src="https://demos.creative-tim.com/material-dashboard/assets/img/team-2.jpg"
                   alt="item-1"
@@ -229,20 +258,20 @@ export function DashboardNavbar() {
                   <Typography
                     variant="small"
                     color="blue-gray"
-                    className="mb-1 font-normal"
+                    className="mb-1 font-normal dark:text-gray-300"
                   >
                     <strong>New message</strong> from Laur
                   </Typography>
                   <Typography
                     variant="small"
                     color="blue-gray"
-                    className="flex items-center gap-1 text-xs font-normal opacity-60"
+                    className="flex items-center gap-1 text-xs font-normal opacity-60 dark:text-gray-400"
                   >
                     <ClockIcon className="h-3.5 w-3.5" /> 13 minutes ago
                   </Typography>
                 </div>
               </MenuItem>
-              <MenuItem className="flex items-center gap-4">
+              <MenuItem className="flex items-center gap-4 dark:hover:bg-gray-700">
                 <Avatar
                   src="https://demos.creative-tim.com/material-dashboard/assets/img/small-logos/logo-spotify.svg"
                   alt="item-1"
@@ -253,35 +282,35 @@ export function DashboardNavbar() {
                   <Typography
                     variant="small"
                     color="blue-gray"
-                    className="mb-1 font-normal"
+                    className="mb-1 font-normal dark:text-gray-300"
                   >
                     <strong>New album</strong> by Travis Scott
                   </Typography>
                   <Typography
                     variant="small"
                     color="blue-gray"
-                    className="flex items-center gap-1 text-xs font-normal opacity-60"
+                    className="flex items-center gap-1 text-xs font-normal opacity-60 dark:text-gray-400"
                   >
                     <ClockIcon className="h-3.5 w-3.5" /> 1 day ago
                   </Typography>
                 </div>
               </MenuItem>
-              <MenuItem className="flex items-center gap-4">
-                <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-tr from-blue-gray-800 to-blue-gray-900">
+              <MenuItem className="flex items-center gap-4 dark:hover:bg-gray-700">
+                <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-tr from-blue-gray-800 to-blue-gray-900 dark:from-blue-900 dark:to-gray-800">
                   <CreditCardIcon className="h-4 w-4 text-white" />
                 </div>
                 <div>
                   <Typography
                     variant="small"
                     color="blue-gray"
-                    className="mb-1 font-normal"
+                    className="mb-1 font-normal dark:text-gray-300"
                   >
                     Payment successfully completed
                   </Typography>
                   <Typography
                     variant="small"
                     color="blue-gray"
-                    className="flex items-center gap-1 text-xs font-normal opacity-60"
+                    className="flex items-center gap-1 text-xs font-normal opacity-60 dark:text-gray-400"
                   >
                     <ClockIcon className="h-3.5 w-3.5" /> 2 days ago
                   </Typography>
@@ -289,6 +318,85 @@ export function DashboardNavbar() {
               </MenuItem>
             </MenuList>
           </Menu>
+
+          {/* User info / auth */}
+          {user ? (
+            <>
+              <Menu placement="bottom-end">
+                <MenuHandler>
+                  <Button
+                    variant="text"
+                    color="blue-gray"
+                    className="hidden items-center gap-2 px-3 sm:px-4 xl:flex normal-case dark:text-gray-300 dark:hover:bg-gray-700"
+                  >
+                    <Avatar
+                      src="https://ui-avatars.com/api/?name="
+                      alt={user.fullName}
+                      size="sm"
+                    />
+                    <span className="text-sm sm:text-base">{user.fullName}</span>
+                  </Button>
+                </MenuHandler>
+                <MenuList className="dark:bg-gray-800 dark:border-gray-700 min-w-[180px]">
+                  <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700 flex items-center gap-2">
+                    <UserCircleIcon className="h-4 w-4" />
+                    <span>{t("header.profile")}</span>
+                  </MenuItem>
+                  <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700 flex items-center gap-2">
+                    <Cog6ToothIcon className="h-4 w-4" />
+                    <span>{t("header.settings")}</span>
+                  </MenuItem>
+                  <MenuItem onClick={logout} className="dark:hover:bg-gray-700 flex items-center gap-2 text-red-600 dark:text-red-400">
+                    <span>{t("common.logout")}</span>
+                  </MenuItem>
+                </MenuList>
+              </Menu>
+              <Menu placement="bottom-end">
+                <MenuHandler>
+                  <IconButton
+                    variant="text"
+                    color="blue-gray"
+                    className="grid xl:hidden dark:text-gray-300 dark:hover:bg-gray-700 p-1"
+                    size="sm"
+                  >
+                    <UserCircleIcon className="h-5 w-5" />
+                  </IconButton>
+                </MenuHandler>
+                <MenuList className="dark:bg-gray-800 dark:border-gray-700 min-w-[180px]">
+                  <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700 flex items-center gap-2">
+                    <UserCircleIcon className="h-4 w-4" />
+                    <span>{t("header.profile")}</span>
+                  </MenuItem>
+                  <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700 flex items-center gap-2">
+                    <Cog6ToothIcon className="h-4 w-4" />
+                    <span>{t("header.settings")}</span>
+                  </MenuItem>
+                  <MenuItem onClick={logout} className="dark:hover:bg-gray-700 flex items-center gap-2 text-red-600 dark:text-red-400">
+                    <span>{t("common.logout")}</span>
+                  </MenuItem>
+                </MenuList>
+              </Menu>
+            </>
+          ) : (
+            <Link to="/auth/sign-in">
+              <Button
+                variant="text"
+                color="blue-gray"
+                className="hidden items-center gap-1 px-3 sm:px-4 xl:flex normal-case dark:text-gray-300 dark:hover:bg-gray-700"
+              >
+                <UserCircleIcon className="h-5 w-5" />
+                <span className="text-sm sm:text-base">{t("common.login")}</span>
+              </Button>
+              <IconButton
+                variant="text"
+                color="blue-gray"
+                className="grid xl:hidden dark:text-gray-300 dark:hover:bg-gray-700 p-1"
+                size="sm"
+              >
+                <UserCircleIcon className="h-5 w-5" />
+              </IconButton>
+            </Link>
+          )}
           {/* <IconButton
             variant="text"
             color="blue-gray"

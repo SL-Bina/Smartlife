@@ -28,12 +28,12 @@ export function Navbar({ brandName, routes, action }) {
           as="li"
           variant="small"
           color="blue-gray"
-          className="capitalize"
+          className="capitalize dark:text-gray-300"
         >
-          <Link to={path} className="flex items-center gap-1 p-1 font-normal">
+          <Link to={path} className="flex items-center gap-1 p-1 font-normal dark:text-gray-300 dark:hover:text-white">
             {icon &&
               React.createElement(icon, {
-                className: "w-[18px] h-[18px] opacity-50 mr-1",
+                className: "w-[18px] h-[18px] opacity-50 mr-1 dark:opacity-70",
               })}
             {name}
           </Link>
@@ -43,12 +43,12 @@ export function Navbar({ brandName, routes, action }) {
   );
 
   return (
-    <MTNavbar className="p-3">
-      <div className="container mx-auto flex items-center justify-between text-blue-gray-900">
+    <MTNavbar className="p-3 dark:bg-gray-800 dark:border-gray-700">
+      <div className="container mx-auto flex items-center justify-between text-blue-gray-900 dark:text-white">
         <Link to="/">
           <Typography
             variant="small"
-            className="mr-4 ml-2 cursor-pointer py-1.5 font-bold"
+            className="mr-4 ml-2 cursor-pointer py-1.5 font-bold dark:text-white"
           >
             {brandName}
           </Typography>
@@ -60,7 +60,7 @@ export function Navbar({ brandName, routes, action }) {
         <IconButton
           variant="text"
           size="sm"
-          className="ml-auto text-inherit hover:bg-transparent focus:bg-transparent active:bg-transparent lg:hidden"
+          className="ml-auto text-inherit hover:bg-transparent focus:bg-transparent active:bg-transparent lg:hidden dark:text-white"
           onClick={() => setOpenNav(!openNav)}
         >
           {openNav ? (
@@ -70,7 +70,7 @@ export function Navbar({ brandName, routes, action }) {
           )}
         </IconButton>
       </div>
-      <Collapse open={openNav}>
+      <Collapse open={openNav} className="dark:bg-gray-800">
         <div className="container mx-auto">
           {navList}
           {React.cloneElement(action, {

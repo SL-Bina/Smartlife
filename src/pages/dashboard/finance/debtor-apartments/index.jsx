@@ -19,6 +19,7 @@ import {
   Chip,
 } from "@material-tailwind/react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
+import { useTranslation } from "react-i18next";
 
 const debtorApartmentsData = Array.from({ length: 50 }, (_, index) => ({
   id: index + 1,
@@ -38,6 +39,7 @@ const debtorApartmentsData = Array.from({ length: 50 }, (_, index) => ({
 const ITEMS_PER_PAGE = 10;
 
 const DebtorApartmentsPage = () => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -95,18 +97,18 @@ const DebtorApartmentsPage = () => {
   return (
     <div className="">
       {/* Section title bar to match Home design */}
-      <div className="w-full bg-black my-4 p-4 rounded-lg shadow-lg mb-6">
-        <h3 className="text-white font-bold">Borclu mənzillər</h3>
+      <div className="w-full bg-black dark:bg-gray-900 my-4 p-4 rounded-lg shadow-lg mb-6">
+        <h3 className="text-white font-bold">{t("debtorApartments.pageTitle")}</h3>
       </div>
 
       {/* Summary card */}
       <div className="mb-6 flex justify-end">
-        <Card className="border border-red-500 shadow-sm">
+        <Card className="border border-red-500 shadow-sm dark:bg-gray-800 dark:border-gray-700">
           <CardBody className="p-4">
-            <Typography variant="small" color="blue-gray" className="mb-1">
-              Ümumi borc
+            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+              {t("debtorApartments.summary.totalDebt")}
             </Typography>
-            <Typography variant="h5" color="red" className="font-bold">
+            <Typography variant="h5" color="red" className="font-bold dark:text-red-300">
               {totalDebt} ₼
             </Typography>
           </CardBody>
@@ -114,74 +116,80 @@ const DebtorApartmentsPage = () => {
       </div>
 
       {/* Filter modal */}
-      <Dialog open={filterOpen} handler={setFilterOpen} size="sm">
-        <DialogHeader>Borclu mənzillər filter</DialogHeader>
-        <DialogBody divider className="space-y-4">
+      <Dialog open={filterOpen} handler={setFilterOpen} size="sm" className="dark:bg-gray-800">
+        <DialogHeader className="dark:text-white">{t("debtorApartments.filter.title")}</DialogHeader>
+        <DialogBody divider className="space-y-4 dark:bg-gray-800 dark:border-gray-700">
           <div>
-            <Typography variant="small" color="blue-gray" className="mb-1">
-              Mənzil
+            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+              {t("debtorApartments.filter.apartment")}
             </Typography>
             <Input
-              label="Daxil et"
+              label={t("debtorApartments.filter.enter")}
               value={filterApartment}
               onChange={(e) => setFilterApartment(e.target.value)}
+              className="dark:text-white"
+              labelProps={{ className: "dark:text-gray-400" }}
             />
           </div>
           <div>
-            <Typography variant="small" color="blue-gray" className="mb-1">
-              Mənzil sahibi
+            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+              {t("debtorApartments.filter.owner")}
             </Typography>
             <Input
-              label="Daxil et"
+              label={t("debtorApartments.filter.enter")}
               value={filterOwner}
               onChange={(e) => setFilterOwner(e.target.value)}
+              className="dark:text-white"
+              labelProps={{ className: "dark:text-gray-400" }}
             />
           </div>
           <div>
-            <Typography variant="small" color="blue-gray" className="mb-1">
-              Status
+            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+              {t("debtorApartments.filter.status")}
             </Typography>
             <Input
-              label="Daxil et"
+              label={t("debtorApartments.filter.enter")}
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
+              className="dark:text-white"
+              labelProps={{ className: "dark:text-gray-400" }}
             />
           </div>
         </DialogBody>
-        <DialogFooter className="flex justify-between gap-2">
-          <Button variant="text" color="blue-gray" onClick={handleFilterClear}>
-            Təmizlə
+        <DialogFooter className="flex justify-between gap-2 dark:bg-gray-800 dark:border-gray-700">
+          <Button variant="text" color="blue-gray" onClick={handleFilterClear} className="dark:text-gray-300 dark:hover:bg-gray-700">
+            {t("buttons.clear")}
           </Button>
           <div className="flex gap-2">
-            <Button variant="outlined" color="blue-gray" onClick={() => setFilterOpen(false)}>
-              Bağla
+            <Button variant="outlined" color="blue-gray" onClick={() => setFilterOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+              {t("buttons.cancel")}
             </Button>
-            <Button color="blue" onClick={handleFilterApply}>
-              Tətbiq et
+            <Button color="blue" onClick={handleFilterApply} className="dark:bg-blue-600 dark:hover:bg-blue-700">
+              {t("buttons.apply")}
             </Button>
           </div>
         </DialogFooter>
       </Dialog>
 
-      <Card className="border border-red-500 shadow-sm">
+      <Card className="border border-red-500 shadow-sm dark:bg-gray-800 dark:border-gray-700">
         <CardHeader
           floated={false}
           shadow={false}
           color="transparent"
-          className="m-0 flex items-center justify-between p-6"
+          className="m-0 flex items-center justify-between p-6 dark:bg-gray-800"
         >
           <div className="flex items-center gap-3">
-            <Button variant="outlined" color="blue" onClick={() => setFilterOpen(true)}>
-              Axtarış
+            <Button variant="outlined" color="blue" onClick={() => setFilterOpen(true)} className="dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-600/20">
+              {t("debtorApartments.actions.search")}
             </Button>
           </div>
         </CardHeader>
-        <CardBody className="px-0 pt-0 pb-2">
+        <CardBody className="px-0 pt-0 pb-2 dark:bg-gray-800">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-10">
-              <Spinner className="h-6 w-6" />
-              <Typography variant="small" className="mt-2 text-blue-gray-400">
-                Yüklənir...
+              <Spinner className="h-6 w-6 dark:text-blue-400" />
+              <Typography variant="small" className="mt-2 text-blue-gray-400 dark:text-gray-400">
+                {t("debtorApartments.actions.loading")}
               </Typography>
             </div>
           ) : (
@@ -192,26 +200,26 @@ const DebtorApartmentsPage = () => {
                   <thead>
                     <tr>
                       {[
-                        "ID",
-                        "Mənzil",
-                        "Mənzil məlumatları",
-                        "Mənzil sahibi",
-                        "Telefon",
-                        "Ümumi borc",
-                        "Faktura sayı",
-                        "Son ödəniş tarixi",
-                        "Status",
-                        "Əməliyyatlar",
+                        t("debtorApartments.table.id"),
+                        t("debtorApartments.table.apartment"),
+                        t("debtorApartments.table.apartmentInfo"),
+                        t("debtorApartments.table.owner"),
+                        t("debtorApartments.table.phone"),
+                        t("debtorApartments.table.totalDebt"),
+                        t("debtorApartments.table.invoiceCount"),
+                        t("debtorApartments.table.lastPaymentDate"),
+                        t("debtorApartments.table.status"),
+                        t("debtorApartments.table.operations"),
                       ].map((el, idx) => (
                         <th
                           key={el}
-                          className={`border-b border-blue-gray-100 py-3 px-6 text-left ${
+                          className={`border-b border-blue-gray-100 dark:border-gray-700 py-3 px-6 text-left ${
                             idx === 9 ? "text-right" : ""
                           }`}
                         >
                           <Typography
                             variant="small"
-                            className="text-[11px] font-medium uppercase text-blue-gray-400"
+                            className="text-[11px] font-medium uppercase text-blue-gray-400 dark:text-gray-400"
                           >
                             {el}
                           </Typography>
@@ -222,12 +230,12 @@ const DebtorApartmentsPage = () => {
                   <tbody>
                     {pageData.map((row, key) => {
                       const className = `py-3 px-6 ${
-                        key === pageData.length - 1 ? "" : "border-b border-blue-gray-50"
+                        key === pageData.length - 1 ? "" : "border-b border-blue-gray-50 dark:border-gray-700"
                       }`;
                       return (
-                        <tr key={row.id}>
+                        <tr key={row.id} className="dark:hover:bg-gray-700/50">
                           <td className={className}>
-                            <Typography variant="small" color="blue-gray">
+                            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
                               {row.id}
                             </Typography>
                           </td>
@@ -235,32 +243,32 @@ const DebtorApartmentsPage = () => {
                             <Typography
                               variant="small"
                               color="blue-gray"
-                              className="font-semibold"
+                              className="font-semibold dark:text-white"
                             >
                               {row.apartment}
                             </Typography>
                           </td>
                           <td className={className}>
-                            <Typography variant="small" color="blue-gray" className="text-xs">
-                              Bina: {row.building}
+                            <Typography variant="small" color="blue-gray" className="text-xs dark:text-gray-400">
+                              {t("debtorApartments.labels.building")}: {row.building}
                             </Typography>
-                            <Typography variant="small" color="blue-gray" className="text-xs">
-                              Blok: {row.block}
+                            <Typography variant="small" color="blue-gray" className="text-xs dark:text-gray-400">
+                              {t("debtorApartments.labels.block")}: {row.block}
                             </Typography>
-                            <Typography variant="small" color="blue-gray" className="text-xs">
-                              Mərtəbə: {row.floor}
+                            <Typography variant="small" color="blue-gray" className="text-xs dark:text-gray-400">
+                              {t("debtorApartments.labels.floor")}: {row.floor}
                             </Typography>
-                            <Typography variant="small" color="blue-gray" className="text-xs">
-                              Sahə: {row.area} m²
+                            <Typography variant="small" color="blue-gray" className="text-xs dark:text-gray-400">
+                              {t("debtorApartments.labels.area")}: {row.area} m²
                             </Typography>
                           </td>
                           <td className={className}>
-                            <Typography variant="small" color="blue-gray">
+                            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
                               {row.owner}
                             </Typography>
                           </td>
                           <td className={className}>
-                            <Typography variant="small" color="blue-gray">
+                            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
                               {row.phone}
                             </Typography>
                           </td>
@@ -268,42 +276,43 @@ const DebtorApartmentsPage = () => {
                             <Typography
                               variant="small"
                               color={parseFloat(row.totalDebt) > 0 ? "red" : "green"}
-                              className="font-semibold"
+                              className={`font-semibold ${parseFloat(row.totalDebt) > 0 ? "dark:text-red-400" : "dark:text-green-300"}`}
                             >
                               {row.totalDebt} ₼
                             </Typography>
                           </td>
                           <td className={className}>
-                            <Typography variant="small" color="blue-gray">
+                            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
                               {row.invoiceCount}
                             </Typography>
                           </td>
                           <td className={className}>
-                            <Typography variant="small" color="blue-gray">
+                            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
                               {row.lastPaymentDate}
                             </Typography>
                           </td>
                           <td className={className}>
                             <Chip
                               size="sm"
-                              value={row.status}
+                              value={row.status === "Ödənilib" ? t("debtorApartments.status.paid") : t("debtorApartments.status.debtor")}
                               color={row.status === "Ödənilib" ? "green" : "red"}
+                              className="dark:bg-opacity-80"
                             />
                           </td>
                           <td className={`${className} text-right`}>
                             <Menu placement="left-start">
                               <MenuHandler>
-                                <IconButton size="sm" variant="text" color="blue-gray">
+                                <IconButton size="sm" variant="text" color="blue-gray" className="dark:text-gray-300 dark:hover:bg-gray-700">
                                   <EllipsisVerticalIcon
                                     strokeWidth={2}
                                     className="h-5 w-5"
                                   />
                                 </IconButton>
                               </MenuHandler>
-                              <MenuList>
-                                <MenuItem>Bax</MenuItem>
-                                <MenuItem>Ödəniş et</MenuItem>
-                                <MenuItem>Fakturalar</MenuItem>
+                              <MenuList className="dark:bg-gray-800 dark:border-gray-700">
+                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("debtorApartments.actions.view")}</MenuItem>
+                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("debtorApartments.actions.pay")}</MenuItem>
+                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("debtorApartments.actions.invoices")}</MenuItem>
                               </MenuList>
                             </Menu>
                           </td>
@@ -317,55 +326,56 @@ const DebtorApartmentsPage = () => {
               {/* Tablet & mobile cards */}
               <div className="grid gap-4 sm:grid-cols-2 lg:hidden px-4 pt-4">
                 {pageData.map((row) => (
-                  <Card key={row.id} className="border border-red-500 shadow-sm">
-                    <CardBody className="space-y-2">
+                  <Card key={row.id} className="border border-red-500 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                    <CardBody className="space-y-2 dark:bg-gray-800">
                       <div className="flex items-center justify-between">
                         <Typography
                           variant="small"
                           color="blue-gray"
-                          className="font-semibold"
+                          className="font-semibold dark:text-white"
                         >
                           {row.apartment}
                         </Typography>
                         <Menu placement="left-start">
                           <MenuHandler>
-                            <IconButton size="sm" variant="text" color="blue-gray">
+                            <IconButton size="sm" variant="text" color="blue-gray" className="dark:text-gray-300 dark:hover:bg-gray-700">
                               <EllipsisVerticalIcon strokeWidth={2} className="h-5 w-5" />
                             </IconButton>
                           </MenuHandler>
-                          <MenuList>
-                            <MenuItem>Bax</MenuItem>
-                            <MenuItem>Ödəniş et</MenuItem>
-                            <MenuItem>Fakturalar</MenuItem>
+                          <MenuList className="dark:bg-gray-800 dark:border-gray-700">
+                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("debtorApartments.actions.view")}</MenuItem>
+                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("debtorApartments.actions.pay")}</MenuItem>
+                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("debtorApartments.actions.invoices")}</MenuItem>
                           </MenuList>
                         </Menu>
                       </div>
-                      <Typography variant="small" color="blue-gray">
-                        ID: {row.id}
+                      <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                        {t("debtorApartments.mobile.id")}: {row.id}
                       </Typography>
-                      <Typography variant="small" color="blue-gray">
-                        Mənzil sahibi: {row.owner}
+                      <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                        {t("debtorApartments.mobile.owner")}: {row.owner}
                       </Typography>
-                      <Typography variant="small" color="blue-gray">
-                        Telefon: {row.phone}
+                      <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                        {t("debtorApartments.mobile.phone")}: {row.phone}
                       </Typography>
                       <Typography
                         variant="small"
                         color={parseFloat(row.totalDebt) > 0 ? "red" : "green"}
-                        className="font-semibold"
+                        className={`font-semibold ${parseFloat(row.totalDebt) > 0 ? "dark:text-red-400" : "dark:text-green-300"}`}
                       >
-                        Ümumi borc: {row.totalDebt} ₼
+                        {t("debtorApartments.mobile.totalDebt")}: {row.totalDebt} ₼
                       </Typography>
-                      <Typography variant="small" color="blue-gray">
-                        Faktura sayı: {row.invoiceCount}
+                      <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                        {t("debtorApartments.mobile.invoiceCount")}: {row.invoiceCount}
                       </Typography>
-                      <Typography variant="small" color="blue-gray">
-                        Son ödəniş: {row.lastPaymentDate}
+                      <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                        {t("debtorApartments.mobile.lastPayment")}: {row.lastPaymentDate}
                       </Typography>
                       <Chip
                         size="sm"
-                        value={row.status}
+                        value={row.status === "Ödənilib" ? t("debtorApartments.status.paid") : t("debtorApartments.status.debtor")}
                         color={row.status === "Ödənilib" ? "green" : "red"}
+                        className="dark:bg-opacity-80"
                       />
                     </CardBody>
                   </Card>
@@ -380,8 +390,9 @@ const DebtorApartmentsPage = () => {
                   color="blue-gray"
                   onClick={handlePrev}
                   disabled={page === 1}
+                  className="dark:text-gray-300 dark:hover:bg-gray-700 dark:disabled:text-gray-600"
                 >
-                  Geri
+                  {t("debtorApartments.pagination.prev")}
                 </Button>
                 {Array.from({ length: totalPages }, (_, index) => index + 1).map(
                   (pageNumber) => (
@@ -391,7 +402,11 @@ const DebtorApartmentsPage = () => {
                       size="sm"
                       color={pageNumber === page ? "blue" : "blue-gray"}
                       onClick={() => setPage(pageNumber)}
-                      className="min-w-[32px] px-2"
+                      className={`min-w-[32px] px-2 ${
+                        pageNumber === page 
+                          ? "dark:bg-blue-600 dark:hover:bg-blue-700" 
+                          : "dark:text-gray-300 dark:hover:bg-gray-700"
+                      }`}
                     >
                       {pageNumber}
                     </Button>
@@ -403,8 +418,9 @@ const DebtorApartmentsPage = () => {
                   color="blue-gray"
                   onClick={handleNext}
                   disabled={page === totalPages}
+                  className="dark:text-gray-300 dark:hover:bg-gray-700 dark:disabled:text-gray-600"
                 >
-                  İrəli
+                  {t("debtorApartments.pagination.next")}
                 </Button>
               </div>
             </>

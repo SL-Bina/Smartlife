@@ -4,10 +4,18 @@
     "login": "Sign In",
     "logout": "Logout",
     "username": "Username",
-    "password": "Password"
+    "password": "Password",
+    "count": "Count",
+    "percentage": "Percentage",
+    "enter": "Enter"
   },
   "header": {
-    "search": "Search"
+    "search": "Search",
+    "notifications": "Notifications",
+    "lightMode": "Light Mode",
+    "darkMode": "Dark Mode",
+    "profile": "Profile",
+    "settings": "Settings"
   },
   "sidebar": {
     "dashboard": "Dashboard",
@@ -18,6 +26,10 @@
     "debtorApartments": "Debtor Apartments",
     "expenses": "Expenses",
     "notifications": "Notifications",
+    "applications": "Applications",
+    "applicationsList": "Applications List",
+    "applicationsEvaluation": "Applications Evaluation",
+    "kpi": "KPI",
     "mtk": "HOA",
     "complexes": "Complexes",
     "residents": "Residents",
@@ -56,7 +68,62 @@
     },
     "ordersOverviewTitle": "Orders Overview",
     "ordersOverviewSubtitle": "{{value}} this month",
+    "paymentStats": {
+      "currentMonthPayments": "Current month payment statistics",
+      "paidServicesCount": "Number of paid services",
+      "paidInvoicesCount": "Number of paid invoices",
+      "totalIncome": "Total income"
+    },
     "charts": {
+      "paymentDynamics": "Payment types and monthly dynamics",
+      "employeePerformance": "Top performing employees",
+      "applicationStatus": "Application status",
+      "departmentStats": "Department statistics",
+      "requestCount": "Request count",
+      "allDepartments": "All departments",
+      "technicalDepartment": "Technical department",
+      "security": "Security",
+      "cleaning": "Cleaning",
+      "reception": "Reception",
+      "buildingManagement": "Building Management"
+    },
+    "departmentLabels": {
+      "totalRequests": "Total requests",
+      "completed": "Completed",
+      "successRate": "Success rate"
+    },
+    "applicationStatus": {
+      "pending": "Pending",
+      "completed": "Completed",
+      "accepted": "Accepted",
+      "inProgress": "In progress",
+      "cancelled": "Cancelled"
+    },
+    "paymentTypes": {
+      "cash": "Cash payment",
+      "online": "Online payment",
+      "terminal": "Terminal payment",
+      "posTerminal": "POS TERMINAL"
+    },
+    "employeeMetrics": {
+      "assignedRequests": "Assigned requests",
+      "completedRequests": "Completed requests",
+      "cancelledRequests": "Cancelled requests",
+      "avgResolutionTime": "Average resolution time (hours)",
+      "successRate": "Success rate (%)",
+      "cancellationRate": "Cancellation rate (%)",
+      "totalRate": "Total rate (%)"
+    },
+    "residentStats": {
+      "totalResidents": "Total residents",
+      "activeResidents": "Active residents",
+      "onlinePayingResidents": "Online paying residents",
+      "passiveResidents": "Passive residents",
+      "buildings": "Buildings",
+      "apartments": "Apartments",
+      "details": "Details →"
+    },
+    "legacyCharts": {
       "websiteViews": {
         "title": "Website Views",
         "description": "Last Campaign Performance",
@@ -129,6 +196,12 @@
       "building": "Building",
       "buildingPlaceholder": "Select building"
     },
+    "create": {
+      "title": "New apartment group"
+    },
+    "edit": {
+      "title": "Edit apartment group information"
+    },
     "summary": {
       "title": "Summary",
       "totalGroups": "Groups: {{count}}",
@@ -184,6 +257,803 @@
       "subtitle": "Enter your details to register",
       "emailLabel": "Email",
       "submit": "Register"
+    }
+  },
+  "invoices": {
+    "pageTitle": "Invoices",
+    "summary": {
+      "paid": "Paid",
+      "consumption": "Consumption volume"
+    },
+    "filter": {
+      "title": "Invoice filter",
+      "serviceName": "Service name",
+      "owner": "Apartment owner",
+      "status": "Status",
+      "enter": "Enter"
+    },
+    "create": {
+      "title": "Add new invoice",
+      "serviceName": "Service name",
+      "enter": "Enter"
+    },
+    "actions": {
+      "search": "Search",
+      "add": "Add",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete",
+      "loading": "Loading..."
+    },
+    "table": {
+      "id": "ID",
+      "serviceName": "Service name",
+      "owner": "Apartment owner",
+      "apartmentInfo": "Apartment information",
+      "amount": "Amount",
+      "paidAmount": "Paid amount",
+      "remaining": "Remaining",
+      "status": "Status",
+      "invoiceDate": "Invoice date",
+      "paymentDate": "Payment date",
+      "paymentMethod": "Payment method",
+      "operations": "Operations"
+    },
+    "mobile": {
+      "id": "ID",
+      "owner": "Apartment owner",
+      "amount": "Amount",
+      "paid": "Paid",
+      "remaining": "Remaining"
+    },
+    "labels": {
+      "balance": "Balance",
+      "building": "Building",
+      "block": "Block",
+      "floor": "Floor",
+      "area": "Area"
+    },
+    "status": {
+      "paid": "Paid",
+      "unpaid": "Unpaid"
+    },
+    "paymentMethod": {
+      "balance": "Balance",
+      "cash": "Cash"
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next"
+    }
+  },
+  "paymentHistory": {
+    "pageTitle": "Payment History",
+    "summary": {
+      "total": "Total"
+    },
+    "filter": {
+      "title": "Payment history filter",
+      "payer": "Payer",
+      "apartment": "Apartment",
+      "status": "Status",
+      "enter": "Enter"
+    },
+    "actions": {
+      "search": "Search",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete",
+      "loading": "Loading..."
+    },
+    "table": {
+      "id": "ID",
+      "payer": "Payer",
+      "apartmentInfo": "Apartment information",
+      "amount": "Amount",
+      "paymentDate": "Payment date",
+      "status": "Status",
+      "transactionType": "Transaction type",
+      "paymentType": "Payment type",
+      "operations": "Operations"
+    },
+    "mobile": {
+      "id": "ID",
+      "apartment": "Apartment",
+      "amount": "Amount",
+      "paymentDate": "Payment date"
+    },
+    "labels": {
+      "building": "Building",
+      "block": "Block",
+      "apartment": "Apartment",
+      "floor": "Floor",
+      "area": "Area",
+      "serviceDate": "Service date"
+    },
+    "status": {
+      "successful": "Successful"
+    },
+    "transactionType": {
+      "income": "Income"
+    },
+    "paymentType": {
+      "cash": "Cash",
+      "balance": "Balance"
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next"
+    }
+  },
+  "reports": {
+    "pageTitle": "General Report",
+    "filter": {
+      "title": "Report filter",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "currency": "Currency",
+      "enter": "Enter"
+    },
+    "actions": {
+      "search": "Search",
+      "export": "Export",
+      "loading": "Loading..."
+    },
+    "common": {
+      "total": "Total",
+      "bank": "Bank",
+      "cash": "Cash"
+    },
+    "income": {
+      "title": "INCOME",
+      "invoice": "INCOME (BY INVOICE)",
+      "deposit": "DEPOSIT",
+      "receivedLiabilities": "RECEIVED LIABILITIES",
+      "total": "TOTAL INCOME"
+    },
+    "expenses": {
+      "title": "EXPENSES",
+      "expenses": "EXPENSES",
+      "returnedLiabilities": "RETURNED LIABILITIES",
+      "total": "TOTAL EXPENSES"
+    },
+    "balances": {
+      "title": "Balances",
+      "totalDepositBalance": "TOTAL DEPOSIT BALANCE",
+      "depositWithdrawn": "DEPOSIT WITHDRAWN FROM CUSTOMER DEBT (By date range)",
+      "previousMonthBalances": "PREVIOUS MONTH BALANCES"
+    },
+    "profitLoss": {
+      "title": "Profit / Loss and Cash / Bank",
+      "currentMonth": "CURRENT MONTH PROFIT / -LOSS",
+      "revenue": "Revenue",
+      "expense": "Expense",
+      "previousMonthPeriod": "PREVIOUS MONTH PERIOD (CASH AND BANK)",
+      "periodIncome": "PERIOD INCOME",
+      "periodPaid": "PERIOD PAID",
+      "cashBankBalance": "CASH AND BANK BALANCE",
+      "centralDebt": "CENTRAL DEBT-(Receivable)",
+      "cashAndBank": "CASH AND BANK",
+      "receivableFromMainOffice": "RECEIVABLE FROM MAIN OFFICE",
+      "totalAssets": "TOTAL ASSETS"
+    }
+  },
+  "debtorApartments": {
+    "pageTitle": "Debtor Apartments",
+    "summary": {
+      "totalDebt": "Total debt"
+    },
+    "filter": {
+      "title": "Debtor apartments filter",
+      "apartment": "Apartment",
+      "owner": "Apartment owner",
+      "status": "Status",
+      "enter": "Enter"
+    },
+    "actions": {
+      "search": "Search",
+      "view": "View",
+      "pay": "Pay",
+      "invoices": "Invoices",
+      "loading": "Loading..."
+    },
+    "table": {
+      "id": "ID",
+      "apartment": "Apartment",
+      "apartmentInfo": "Apartment information",
+      "owner": "Apartment owner",
+      "phone": "Phone",
+      "totalDebt": "Total debt",
+      "invoiceCount": "Invoice count",
+      "lastPaymentDate": "Last payment date",
+      "status": "Status",
+      "operations": "Operations"
+    },
+    "mobile": {
+      "id": "ID",
+      "owner": "Apartment owner",
+      "phone": "Phone",
+      "totalDebt": "Total debt",
+      "invoiceCount": "Invoice count",
+      "lastPayment": "Last payment"
+    },
+    "labels": {
+      "building": "Building",
+      "block": "Block",
+      "floor": "Floor",
+      "area": "Area"
+    },
+    "status": {
+      "paid": "Paid",
+      "debtor": "Debtor"
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next"
+    }
+  },
+  "expenses": {
+    "pageTitle": "Expenses",
+    "summary": {
+      "totalExpenses": "Total expenses"
+    },
+    "filter": {
+      "title": "Expense filter",
+      "category": "Category",
+      "paymentMethod": "Payment method",
+      "status": "Status",
+      "enter": "Enter"
+    },
+    "create": {
+      "title": "Add new expense"
+    },
+    "edit": {
+      "title": "Edit expense"
+    },
+    "actions": {
+      "search": "Search",
+      "add": "Add",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete",
+      "loading": "Loading..."
+    },
+    "table": {
+      "id": "ID",
+      "category": "Category",
+      "description": "Description",
+      "amount": "Amount",
+      "paymentMethod": "Payment method",
+      "paymentDate": "Payment date",
+      "paidBy": "Paid by",
+      "invoiceNumber": "Invoice number",
+      "status": "Status",
+      "operations": "Operations"
+    },
+    "mobile": {
+      "id": "ID",
+      "description": "Description",
+      "amount": "Amount",
+      "paymentMethod": "Payment method",
+      "paymentDate": "Payment date",
+      "paidBy": "Paid by",
+      "invoice": "Invoice"
+    },
+    "form": {
+      "category": "Category",
+      "description": "Description",
+      "amount": "Amount",
+      "paymentMethod": "Payment method",
+      "paymentDate": "Payment date",
+      "paidBy": "Paid by",
+      "invoiceNumber": "Invoice number",
+      "enter": "Enter"
+    },
+    "paymentMethod": {
+      "cash": "Cash",
+      "bank": "Bank"
+    },
+    "status": {
+      "approved": "Approved",
+      "pending": "Pending"
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next"
+    }
+  },
+  "notifications": {
+    "pageTitle": "Notifications",
+    "listTitle": "Recent notifications",
+    "listSubtitle": "Manage unread notifications quickly.",
+    "emptyTitle": "No notifications to display",
+    "emptySubtitle": "Notifications will appear here when new events occur.",
+    "markAsRead": "Mark as read",
+    "unreadOnly": "Unread only",
+    "types": {
+      "payment": "Payment",
+      "warning": "Warning",
+      "system": "System",
+      "info": "Info"
+    },
+    "actions": {
+      "markAsRead": "Mark as read",
+      "remove": "Remove from list"
+    }
+  },
+  "mtk": {
+    "pageTitle": "MTK",
+    "loading": "Loading...",
+    "table": {
+      "id": "ID",
+      "name": "Name",
+      "actions": "Actions"
+    },
+    "actions": {
+      "search": "Search",
+      "add": "Add",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "filter": {
+      "title": "MTK filter",
+      "name": "MTK name",
+      "enterName": "Enter",
+      "clear": "Clear",
+      "close": "Close",
+      "apply": "Apply"
+    },
+    "create": {
+      "title": "Add new MTK",
+      "name": "MTK name",
+      "enterName": "Enter",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "edit": {
+      "title": "Edit MTK information",
+      "name": "MTK name",
+      "enterName": "Enter",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next"
+    }
+  },
+  "complexes": {
+    "pageTitle": "Complexes",
+    "loading": "Loading...",
+    "table": {
+      "id": "ID",
+      "name": "Name",
+      "address": "Address",
+      "buildingsCount": "Buildings count",
+      "residentsCount": "Residents count",
+      "actions": "Actions"
+    },
+    "actions": {
+      "search": "Search",
+      "add": "Add",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "filter": {
+      "title": "Complex filter",
+      "name": "Complex name",
+      "enterName": "Enter",
+      "clear": "Clear",
+      "close": "Close",
+      "apply": "Apply"
+    },
+    "create": {
+      "title": "Add new complex",
+      "name": "Name",
+      "enterName": "Enter",
+      "address": "Address",
+      "enterAddress": "Enter",
+      "buildingsCount": "Buildings count",
+      "enterBuildings": "Enter",
+      "residentsCount": "Residents count",
+      "enterResidents": "Enter",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "edit": {
+      "title": "Edit complex information",
+      "name": "Name",
+      "enterName": "Enter",
+      "address": "Address",
+      "enterAddress": "Enter",
+      "buildingsCount": "Buildings count",
+      "enterBuildings": "Enter",
+      "residentsCount": "Residents count",
+      "enterResidents": "Enter",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next"
+    }
+  },
+  "buildings": {
+    "pageTitle": "Buildings",
+    "loading": "Loading...",
+    "table": {
+      "id": "ID",
+      "name": "Name",
+      "complex": "Complex",
+      "blocksCount": "Blocks count",
+      "apartmentsCount": "Apartments count",
+      "actions": "Actions"
+    },
+    "actions": {
+      "search": "Search",
+      "add": "Add",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "filter": {
+      "title": "Building filter",
+      "name": "Building name",
+      "enterName": "Enter",
+      "complex": "Complex",
+      "enterComplex": "Enter",
+      "clear": "Clear",
+      "close": "Close",
+      "apply": "Apply"
+    },
+    "create": {
+      "title": "Add new building",
+      "name": "Name",
+      "enterName": "Enter",
+      "complex": "Complex",
+      "enterComplex": "Enter",
+      "blocksCount": "Blocks count",
+      "enterBlocks": "Enter",
+      "apartmentsCount": "Apartments count",
+      "enterApartments": "Enter",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "edit": {
+      "title": "Edit building information",
+      "name": "Name",
+      "enterName": "Enter",
+      "complex": "Complex",
+      "enterComplex": "Enter",
+      "blocksCount": "Blocks count",
+      "enterBlocks": "Enter",
+      "apartmentsCount": "Apartments count",
+      "enterApartments": "Enter",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next"
+    }
+  },
+  "blocks": {
+    "pageTitle": "Blocks",
+    "loading": "Loading...",
+    "table": {
+      "id": "ID",
+      "block": "Block",
+      "building": "Building",
+      "floorsCount": "Floors count",
+      "apartmentsCount": "Apartments count",
+      "actions": "Actions"
+    },
+    "actions": {
+      "search": "Search",
+      "add": "Add",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "filter": {
+      "title": "Block filter",
+      "block": "Block",
+      "enterBlock": "Enter",
+      "building": "Building",
+      "enterBuilding": "Enter",
+      "clear": "Clear",
+      "close": "Close",
+      "apply": "Apply"
+    },
+    "create": {
+      "title": "Add new block",
+      "block": "Block",
+      "enterBlock": "Enter",
+      "building": "Building",
+      "enterBuilding": "Enter",
+      "floorsCount": "Floors count",
+      "enterFloors": "Enter",
+      "apartmentsCount": "Apartments count",
+      "enterApartments": "Enter",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "edit": {
+      "title": "Edit block information",
+      "block": "Block",
+      "enterBlock": "Enter",
+      "building": "Building",
+      "enterBuilding": "Enter",
+      "floorsCount": "Floors count",
+      "enterFloors": "Enter",
+      "apartmentsCount": "Apartments count",
+      "enterApartments": "Enter",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next"
+    }
+  },
+  "properties": {
+    "pageTitle": "Apartments",
+    "loading": "Loading...",
+    "table": {
+      "id": "ID",
+      "apartment": "Apartment",
+      "block": "Block",
+      "floor": "Floor",
+      "area": "Area (m²)",
+      "resident": "Resident",
+      "actions": "Actions"
+    },
+    "actions": {
+      "search": "Search",
+      "add": "Add",
+      "serviceFee": "Service fee",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "filter": {
+      "title": "Apartment filter",
+      "apartment": "Apartment",
+      "enterApartment": "Enter",
+      "block": "Block",
+      "enterBlock": "Enter",
+      "clear": "Clear",
+      "close": "Close",
+      "apply": "Apply"
+    },
+    "create": {
+      "title": "Add new apartment",
+      "apartment": "Apartment",
+      "enterApartment": "Enter",
+      "block": "Block",
+      "enterBlock": "Enter",
+      "floor": "Floor",
+      "enterFloor": "Enter",
+      "area": "Area (m²)",
+      "enterArea": "Enter",
+      "resident": "Resident",
+      "enterResident": "Enter",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "edit": {
+      "title": "Edit apartment information",
+      "apartment": "Apartment",
+      "enterApartment": "Enter",
+      "block": "Block",
+      "enterBlock": "Enter",
+      "floor": "Floor",
+      "enterFloor": "Enter",
+      "area": "Area (m²)",
+      "enterArea": "Enter",
+      "resident": "Resident",
+      "enterResident": "Enter",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next"
+    }
+  },
+  "residents": {
+    "pageTitle": "Residents",
+    "loading": "Loading...",
+    "table": {
+      "id": "ID",
+      "fullName": "Full Name",
+      "phone": "Phone",
+      "email": "Email",
+      "apartment": "Apartment",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "actions": {
+      "search": "Search",
+      "add": "Add",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "filter": {
+      "title": "Resident filter",
+      "fullName": "Full Name",
+      "enterFullName": "Enter",
+      "status": "Status",
+      "enterStatus": "Enter",
+      "clear": "Clear",
+      "close": "Close",
+      "apply": "Apply"
+    },
+    "create": {
+      "title": "Add new resident",
+      "fullName": "Full Name",
+      "enterFullName": "Enter",
+      "phone": "Phone",
+      "enterPhone": "Enter",
+      "email": "Email",
+      "enterEmail": "Enter",
+      "apartment": "Apartment",
+      "enterApartment": "Enter",
+      "status": "Status",
+      "enterStatus": "Enter",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "edit": {
+      "title": "Edit resident information",
+      "fullName": "Full Name",
+      "enterFullName": "Enter",
+      "phone": "Phone",
+      "enterPhone": "Enter",
+      "email": "Email",
+      "enterEmail": "Enter",
+      "apartment": "Apartment",
+      "enterApartment": "Enter",
+      "status": "Status",
+      "enterStatus": "Enter",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "status": {
+      "active": "Active",
+      "passive": "Passive"
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next"
+    }
+  },
+  "serviceFee": {
+    "pageTitle": "Service fee",
+    "loading": "Loading...",
+    "notFound": "Apartment not found",
+    "goBack": "Go back",
+    "apartmentInfo": "Apartment information",
+    "serviceFeeTitle": "Service fee",
+    "serviceFeePerMonth": "Service fee (AZN / month)",
+    "enterFee": "Enter",
+    "currentFee": "Current service fee",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "changeHistory": "Change history",
+    "noHistory": "No history",
+    "current": "Current",
+    "old": "Old",
+    "changedBy": "Changed by",
+    "invalidFee": "Service fee must be entered correctly",
+    "successMessage": "Service fee updated successfully",
+    "reasons": {
+      "initial": "Initial assignment",
+      "tariffIncrease": "Tariff increase",
+      "manualChange": "Manual change"
+    },
+    "labels": {
+      "apartment": "Apartment",
+      "block": "Block",
+      "floor": "Floor",
+      "area": "Area (m²)",
+      "resident": "Resident",
+      "complex": "Complex",
+      "building": "Building"
+    }
+  },
+  "profile": {
+    "pageTitle": "Profile",
+    "personalInfo": "Personal information",
+    "password": "My password",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "birthDate": "Birth date",
+    "address": "Address",
+    "phone": "Phone",
+    "enter": "Enter",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "save": "Save"
+  },
+  "kpi": {
+    "pageTitle": "Employee KPI Report",
+    "loading": "Loading...",
+    "timeRange": "Time range",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "search": "Search",
+    "created": "Created",
+    "completed": "Completed",
+    "count": "Count",
+    "percentage": "Percentage",
+    "medium": "Medium",
+    "high": "High",
+    "urgent": "Urgent",
+    "low": "Low",
+    "fiveMinute": "5 minute",
+    "employeeWorkHours": "Employee work hours",
+    "spentHours": "Spent hours",
+    "workOrdersPerDayCount": "Work orders per day",
+    "totalWorkOrders": "Total work orders",
+    "daysCount": "Days count",
+    "clear": "Clear",
+    "table": {
+      "employeeInfo": "Employee information",
+      "totalWorkOrders": "Total work orders (Created / Closed)",
+      "onTimeCompletion": "Percentage of work orders completed on time",
+      "priorityReport": "Work order priority report",
+      "averageCompletionTime": "Average work order completion time",
+      "delay": "Work order delay",
+      "utilization": "Technician utilization percentage",
+      "repeatedRequests": "Repeated requests",
+      "averageResponseTime": "Average response time interval",
+      "workOrdersPerDay": "Number of work orders per technician per day"
+    }
+  },
+  "applications": {
+    "list": {
+      "pageTitle": "Applications",
+      "calendar": "Calendar",
+      "list": "List",
+      "search": "Search",
+      "category": "Category",
+      "excelExport": "Excel Export",
+      "priorities": "Priorities",
+      "newApplication": "New Application",
+      "loading": "Loading...",
+      "new": "New",
+      "details": "Details",
+      "table": {
+        "apartmentEmployee": "Apartment/Employee",
+        "text": "Text",
+        "department": "Department",
+        "residentPriority": "Resident Priority",
+        "operationPriority": "Operation Priority",
+        "image": "Image",
+        "status": "Status",
+        "date": "Date",
+        "action": "Action"
+      }
+    },
+    "evaluation": {
+      "pageTitle": "Applications Evaluation",
+      "search": "Search",
+      "loading": "Loading...",
+      "details": "Details",
+      "table": {
+        "apartment": "Apartment",
+        "text": "Text",
+        "department": "Department",
+        "image": "Image",
+        "date": "Date",
+        "rating": "Rating",
+        "action": "Action"
+      }
     }
   }
 }

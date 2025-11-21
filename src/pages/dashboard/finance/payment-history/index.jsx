@@ -19,6 +19,7 @@ import {
   Chip,
 } from "@material-tailwind/react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
+import { useTranslation } from "react-i18next";
 
 const paymentHistoryData = Array.from({ length: 50 }, (_, index) => ({
   id: 86316 - index,
@@ -39,6 +40,7 @@ const paymentHistoryData = Array.from({ length: 50 }, (_, index) => ({
 const ITEMS_PER_PAGE = 10;
 
 const PaymentHistoryPage = () => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -95,92 +97,98 @@ const PaymentHistoryPage = () => {
   return (
     <div className="">
       {/* Section title bar to match Home design */}
-      <div className="w-full bg-black my-4 p-4 rounded-lg shadow-lg mb-6">
-        <h3 className="text-white font-bold">Ödəniş tarixçəsi</h3>
+      <div className="w-full bg-black dark:bg-gray-900 my-4 p-4 rounded-lg shadow-lg mb-6">
+        <h3 className="text-white font-bold">{t("paymentHistory.pageTitle")}</h3>
       </div>
 
       {/* Summary card */}
       <div className="mb-6 flex justify-end">
-        <Card className="border border-red-500 shadow-sm">
+        <Card className="border border-red-500 shadow-sm dark:bg-gray-800 dark:border-gray-700">
           <CardBody className="p-4">
             <Chip
-              value={`Toplam: ${totalAmount} ₼`}
+              value={`${t("paymentHistory.summary.total")}: ${totalAmount} ₼`}
               color="green"
-              className="font-semibold"
+              className="font-semibold dark:bg-opacity-80"
             />
           </CardBody>
         </Card>
       </div>
 
       {/* Filter modal */}
-      <Dialog open={filterOpen} handler={setFilterOpen} size="sm">
-        <DialogHeader>Ödəniş tarixçəsi filter</DialogHeader>
-        <DialogBody divider className="space-y-4">
+      <Dialog open={filterOpen} handler={setFilterOpen} size="sm" className="dark:bg-gray-800">
+        <DialogHeader className="dark:text-white">{t("paymentHistory.filter.title")}</DialogHeader>
+        <DialogBody divider className="space-y-4 dark:bg-gray-800 dark:border-gray-700">
           <div>
-            <Typography variant="small" color="blue-gray" className="mb-1">
-              Ödəniş edən şəxs
+            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+              {t("paymentHistory.filter.payer")}
             </Typography>
             <Input
-              label="Daxil et"
+              label={t("paymentHistory.filter.enter")}
               value={filterPayer}
               onChange={(e) => setFilterPayer(e.target.value)}
+              className="dark:text-white"
+              labelProps={{ className: "dark:text-gray-400" }}
             />
           </div>
           <div>
-            <Typography variant="small" color="blue-gray" className="mb-1">
-              Mənzil
+            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+              {t("paymentHistory.filter.apartment")}
             </Typography>
             <Input
-              label="Daxil et"
+              label={t("paymentHistory.filter.enter")}
               value={filterApartment}
               onChange={(e) => setFilterApartment(e.target.value)}
+              className="dark:text-white"
+              labelProps={{ className: "dark:text-gray-400" }}
             />
           </div>
           <div>
-            <Typography variant="small" color="blue-gray" className="mb-1">
-              Status
+            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+              {t("paymentHistory.filter.status")}
             </Typography>
             <Input
-              label="Daxil et"
+              label={t("paymentHistory.filter.enter")}
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
+              className="dark:text-white"
+              labelProps={{ className: "dark:text-gray-400" }}
             />
           </div>
         </DialogBody>
-        <DialogFooter className="flex justify-between gap-2">
-          <Button variant="text" color="blue-gray" onClick={handleFilterClear}>
-            Təmizlə
+        <DialogFooter className="flex justify-between gap-2 dark:bg-gray-800 dark:border-gray-700">
+          <Button variant="text" color="blue-gray" onClick={handleFilterClear} className="dark:text-gray-300 dark:hover:bg-gray-700">
+            {t("buttons.clear")}
           </Button>
           <div className="flex gap-2">
-            <Button variant="outlined" color="blue-gray" onClick={() => setFilterOpen(false)}>
-              Bağla
+            <Button variant="outlined" color="blue-gray" onClick={() => setFilterOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+              {t("buttons.cancel")}
             </Button>
-            <Button color="blue" onClick={handleFilterApply}>
-              Tətbiq et
+            <Button color="blue" onClick={handleFilterApply} className="dark:bg-blue-600 dark:hover:bg-blue-700">
+              {t("buttons.apply")}
             </Button>
           </div>
         </DialogFooter>
       </Dialog>
 
-      <Card className="border border-red-500 shadow-sm">
+      <Card className="border border-red-500 shadow-sm dark:bg-gray-800 dark:border-gray-700">
         <CardHeader
           floated={false}
           shadow={false}
           color="transparent"
-          className="m-0 flex items-center justify-between p-6"
+          className="m-0 flex items-center justify-between p-6 dark:bg-gray-800"
         >
           <div className="flex items-center gap-3">
-            <Button variant="outlined" color="blue" onClick={() => setFilterOpen(true)}>
-              Axtarış
+            <Button variant="outlined" color="blue" onClick={() => setFilterOpen(true)} className="dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-600/20">
+              {t("paymentHistory.actions.search")}
             </Button>
           </div>
         </CardHeader>
-        <CardBody className="px-0 pt-0 pb-2">
+        <CardBody className="px-0 pt-0 pb-2 dark:bg-gray-800">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-10">
-              <Spinner className="h-6 w-6" />
-              <Typography variant="small" className="mt-2 text-blue-gray-400">
-                Yüklənir...
+              <Spinner className="h-6 w-6 dark:text-blue-400" />
+              <Typography variant="small" className="mt-2 text-blue-gray-400 dark:text-gray-400">
+                {t("paymentHistory.actions.loading")}
               </Typography>
             </div>
           ) : (
@@ -191,25 +199,25 @@ const PaymentHistoryPage = () => {
                   <thead>
                     <tr>
                       {[
-                        "ID",
-                        "Ödəniş edən şəxs",
-                        "Mənzil məlumatları",
-                        "Məbləğ",
-                        "Ödəniş tarixi",
-                        "Status",
-                        "Əməliyyat Növü",
-                        "Ödəniş növü",
-                        "Əməliyyatlar",
+                        t("paymentHistory.table.id"),
+                        t("paymentHistory.table.payer"),
+                        t("paymentHistory.table.apartmentInfo"),
+                        t("paymentHistory.table.amount"),
+                        t("paymentHistory.table.paymentDate"),
+                        t("paymentHistory.table.status"),
+                        t("paymentHistory.table.transactionType"),
+                        t("paymentHistory.table.paymentType"),
+                        t("paymentHistory.table.operations"),
                       ].map((el, idx) => (
                         <th
                           key={el}
-                          className={`border-b border-blue-gray-100 py-3 px-6 text-left ${
+                          className={`border-b border-blue-gray-100 dark:border-gray-700 py-3 px-6 text-left ${
                             idx === 8 ? "text-right" : ""
                           }`}
                         >
                           <Typography
                             variant="small"
-                            className="text-[11px] font-medium uppercase text-blue-gray-400"
+                            className="text-[11px] font-medium uppercase text-blue-gray-400 dark:text-gray-400"
                           >
                             {el}
                           </Typography>
@@ -220,12 +228,12 @@ const PaymentHistoryPage = () => {
                   <tbody>
                     {pageData.map((row, key) => {
                       const className = `py-3 px-6 ${
-                        key === pageData.length - 1 ? "" : "border-b border-blue-gray-50"
+                        key === pageData.length - 1 ? "" : "border-b border-blue-gray-50 dark:border-gray-700"
                       }`;
                       return (
-                        <tr key={row.id}>
+                        <tr key={row.id} className="dark:hover:bg-gray-700/50">
                           <td className={className}>
-                            <Typography variant="small" color="blue-gray">
+                            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
                               {row.id}
                             </Typography>
                           </td>
@@ -233,68 +241,69 @@ const PaymentHistoryPage = () => {
                             <Typography
                               variant="small"
                               color="blue-gray"
-                              className="font-semibold"
+                              className="font-semibold dark:text-white"
                             >
                               {row.payer}
                             </Typography>
                           </td>
                           <td className={className}>
-                            <Typography variant="small" color="blue-gray" className="text-xs">
-                              Bina: {row.building}
+                            <Typography variant="small" color="blue-gray" className="text-xs dark:text-gray-400">
+                              {t("paymentHistory.labels.building")}: {row.building}
                             </Typography>
-                            <Typography variant="small" color="blue-gray" className="text-xs">
-                              Blok: {row.block}
+                            <Typography variant="small" color="blue-gray" className="text-xs dark:text-gray-400">
+                              {t("paymentHistory.labels.block")}: {row.block}
                             </Typography>
-                            <Typography variant="small" color="blue-gray" className="text-xs">
-                              Mənzil: {row.apartment}
+                            <Typography variant="small" color="blue-gray" className="text-xs dark:text-gray-400">
+                              {t("paymentHistory.labels.apartment")}: {row.apartment}
                             </Typography>
-                            <Typography variant="small" color="blue-gray" className="text-xs">
-                              Mərtəbə: {row.floor}
+                            <Typography variant="small" color="blue-gray" className="text-xs dark:text-gray-400">
+                              {t("paymentHistory.labels.floor")}: {row.floor}
                             </Typography>
-                            <Typography variant="small" color="blue-gray" className="text-xs">
-                              Sahə: {row.area} m²
+                            <Typography variant="small" color="blue-gray" className="text-xs dark:text-gray-400">
+                              {t("paymentHistory.labels.area")}: {row.area} m²
                             </Typography>
-                            <Typography variant="small" color="blue-gray" className="text-xs">
-                              Xidmət tarixi: {row.serviceDate}
+                            <Typography variant="small" color="blue-gray" className="text-xs dark:text-gray-400">
+                              {t("paymentHistory.labels.serviceDate")}: {row.serviceDate}
                             </Typography>
                           </td>
                           <td className={className}>
-                            <Typography variant="small" color="blue-gray" className="font-semibold">
+                            <Typography variant="small" color="blue-gray" className="font-semibold dark:text-white">
                               {row.amount} AZN
                             </Typography>
                           </td>
                           <td className={className}>
-                            <Typography variant="small" color="blue-gray">
+                            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
                               {row.paymentDate}
                             </Typography>
                           </td>
                           <td className={className}>
-                            <Chip size="sm" value={row.status} color="green" />
+                            <Chip size="sm" value={t("paymentHistory.status.successful")} color="green" className="dark:bg-opacity-80" />
                           </td>
                           <td className={className}>
-                            <Chip size="sm" value={row.transactionType} color="green" />
+                            <Chip size="sm" value={t("paymentHistory.transactionType.income")} color="green" className="dark:bg-opacity-80" />
                           </td>
                           <td className={className}>
                             <Chip
                               size="sm"
-                              value={row.paymentType}
+                              value={row.paymentType === "Nağd" ? t("paymentHistory.paymentType.cash") : t("paymentHistory.paymentType.balance")}
                               color={row.paymentType === "Nağd" ? "amber" : "blue"}
+                              className="dark:bg-opacity-80"
                             />
                           </td>
                           <td className={`${className} text-right`}>
                             <Menu placement="left-start">
                               <MenuHandler>
-                                <IconButton size="sm" variant="text" color="blue-gray">
+                                <IconButton size="sm" variant="text" color="blue-gray" className="dark:text-gray-300 dark:hover:bg-gray-700">
                                   <EllipsisVerticalIcon
                                     strokeWidth={2}
                                     className="h-5 w-5"
                                   />
                                 </IconButton>
                               </MenuHandler>
-                              <MenuList>
-                                <MenuItem>Bax</MenuItem>
-                                <MenuItem>Düzəliş et</MenuItem>
-                                <MenuItem>Sil</MenuItem>
+                              <MenuList className="dark:bg-gray-800 dark:border-gray-700">
+                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("paymentHistory.actions.view")}</MenuItem>
+                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("paymentHistory.actions.edit")}</MenuItem>
+                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("paymentHistory.actions.delete")}</MenuItem>
                               </MenuList>
                             </Menu>
                           </td>
@@ -308,48 +317,49 @@ const PaymentHistoryPage = () => {
               {/* Tablet & mobile cards */}
               <div className="grid gap-4 sm:grid-cols-2 lg:hidden px-4 pt-4">
                 {pageData.map((row) => (
-                  <Card key={row.id} className="border border-red-500 shadow-sm">
-                    <CardBody className="space-y-2">
+                  <Card key={row.id} className="border border-red-500 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                    <CardBody className="space-y-2 dark:bg-gray-800">
                       <div className="flex items-center justify-between">
                         <Typography
                           variant="small"
                           color="blue-gray"
-                          className="font-semibold"
+                          className="font-semibold dark:text-white"
                         >
                           {row.payer}
                         </Typography>
                         <Menu placement="left-start">
                           <MenuHandler>
-                            <IconButton size="sm" variant="text" color="blue-gray">
+                            <IconButton size="sm" variant="text" color="blue-gray" className="dark:text-gray-300 dark:hover:bg-gray-700">
                               <EllipsisVerticalIcon strokeWidth={2} className="h-5 w-5" />
                             </IconButton>
                           </MenuHandler>
-                          <MenuList>
-                            <MenuItem>Bax</MenuItem>
-                            <MenuItem>Düzəliş et</MenuItem>
-                            <MenuItem>Sil</MenuItem>
+                          <MenuList className="dark:bg-gray-800 dark:border-gray-700">
+                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("paymentHistory.actions.view")}</MenuItem>
+                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("paymentHistory.actions.edit")}</MenuItem>
+                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("paymentHistory.actions.delete")}</MenuItem>
                           </MenuList>
                         </Menu>
                       </div>
-                      <Typography variant="small" color="blue-gray">
-                        ID: {row.id}
+                      <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                        {t("paymentHistory.mobile.id")}: {row.id}
                       </Typography>
-                      <Typography variant="small" color="blue-gray">
-                        Mənzil: {row.apartment}
+                      <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                        {t("paymentHistory.mobile.apartment")}: {row.apartment}
                       </Typography>
-                      <Typography variant="small" color="blue-gray" className="font-semibold">
-                        Məbləğ: {row.amount} AZN
+                      <Typography variant="small" color="blue-gray" className="font-semibold dark:text-white">
+                        {t("paymentHistory.mobile.amount")}: {row.amount} AZN
                       </Typography>
-                      <Typography variant="small" color="blue-gray">
-                        Ödəniş tarixi: {row.paymentDate}
+                      <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                        {t("paymentHistory.mobile.paymentDate")}: {row.paymentDate}
                       </Typography>
                       <div className="flex gap-2 flex-wrap">
-                        <Chip size="sm" value={row.status} color="green" />
-                        <Chip size="sm" value={row.transactionType} color="green" />
+                        <Chip size="sm" value={t("paymentHistory.status.successful")} color="green" className="dark:bg-opacity-80" />
+                        <Chip size="sm" value={t("paymentHistory.transactionType.income")} color="green" className="dark:bg-opacity-80" />
                         <Chip
                           size="sm"
-                          value={row.paymentType}
+                          value={row.paymentType === "Nağd" ? t("paymentHistory.paymentType.cash") : t("paymentHistory.paymentType.balance")}
                           color={row.paymentType === "Nağd" ? "amber" : "blue"}
+                          className="dark:bg-opacity-80"
                         />
                       </div>
                     </CardBody>
@@ -365,8 +375,9 @@ const PaymentHistoryPage = () => {
                   color="blue-gray"
                   onClick={handlePrev}
                   disabled={page === 1}
+                  className="dark:text-gray-300 dark:hover:bg-gray-700 dark:disabled:text-gray-600"
                 >
-                  Geri
+                  {t("paymentHistory.pagination.prev")}
                 </Button>
                 {Array.from({ length: totalPages }, (_, index) => index + 1).map(
                   (pageNumber) => (
@@ -376,7 +387,11 @@ const PaymentHistoryPage = () => {
                       size="sm"
                       color={pageNumber === page ? "blue" : "blue-gray"}
                       onClick={() => setPage(pageNumber)}
-                      className="min-w-[32px] px-2"
+                      className={`min-w-[32px] px-2 ${
+                        pageNumber === page 
+                          ? "dark:bg-blue-600 dark:hover:bg-blue-700" 
+                          : "dark:text-gray-300 dark:hover:bg-gray-700"
+                      }`}
                     >
                       {pageNumber}
                     </Button>
@@ -388,8 +403,9 @@ const PaymentHistoryPage = () => {
                   color="blue-gray"
                   onClick={handleNext}
                   disabled={page === totalPages}
+                  className="dark:text-gray-300 dark:hover:bg-gray-700 dark:disabled:text-gray-600"
                 >
-                  İrəli
+                  {t("paymentHistory.pagination.next")}
                 </Button>
               </div>
             </>

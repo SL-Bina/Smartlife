@@ -14,8 +14,11 @@ import {
   ChartBarIcon,
   ExclamationTriangleIcon,
   CurrencyDollarIcon,
+  BellIcon,
+  PresentationChartLineIcon,
+  QuestionMarkCircleIcon,
 } from "@heroicons/react/24/solid";
-import { Home, Tables, Notifications } from "@/pages/dashboard";
+import { Home, Tables, Notifications, KPI, ApplicationsListPage, ApplicationsEvaluationPage } from "@/pages/dashboard";
 import Profile from "./pages/dashboard/profile";
 import { SignIn } from "@/pages/auth";
 import MTK from "./pages/dashboard/mtk";
@@ -34,7 +37,7 @@ import DebtorApartmentsPage from "./pages/dashboard/finance/debtor-apartments";
 import ExpensesPage from "./pages/dashboard/finance/expenses";
 
 const icon = {
-  className: "w-5 h-5 text-inherit",
+  className: "w-5 h-5 text-inherit dark:text-white",
 };
 
 export const routes = [
@@ -90,10 +93,34 @@ export const routes = [
         ],
       },
       {
-        icon: <InformationCircleIcon {...icon} />,
+        icon: <BellIcon {...icon} />,
         name: "sidebar.notifications",
         path: "/notifications",
         element: <Notifications />,
+      },
+      {
+        icon: <QuestionMarkCircleIcon {...icon} />,
+        name: "sidebar.applications",
+        children: [
+          {
+            icon: <TableCellsIcon {...icon} />,
+            name: "sidebar.applicationsList",
+            path: "/applications/list",
+            element: <ApplicationsListPage />,
+          },
+          {
+            icon: <ChartBarIcon {...icon} />,
+            name: "sidebar.applicationsEvaluation",
+            path: "/applications/evaluation",
+            element: <ApplicationsEvaluationPage />,
+          },
+        ],
+      },
+      {
+        icon: <PresentationChartLineIcon {...icon} />,
+        name: "sidebar.kpi",
+        path: "/kpi",
+        element: <KPI />,
       },
       {
         icon: <BuildingOfficeIcon {...icon} />,

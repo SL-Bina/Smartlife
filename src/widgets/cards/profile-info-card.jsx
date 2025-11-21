@@ -8,29 +8,29 @@ import {
 
 export function ProfileInfoCard({ title, description, details, action }) {
   return (
-    <Card color="transparent" shadow={false}>
+    <Card color="transparent" shadow={false} className="dark:bg-gray-800">
       <CardHeader
         color="transparent"
         shadow={false}
         floated={false}
-        className="mx-0 mt-0 mb-4 flex items-center justify-between gap-4"
+        className="mx-0 mt-0 mb-4 flex items-center justify-between gap-4 dark:bg-gray-800"
       >
-        <Typography variant="h6" color="blue-gray">
+        <Typography variant="h6" color="blue-gray" className="dark:text-white">
           {title}
         </Typography>
         {action}
       </CardHeader>
-      <CardBody className="p-0">
+      <CardBody className="p-0 dark:bg-gray-800">
         {description && (
           <Typography
             variant="small"
-            className="font-normal text-blue-gray-500"
+            className="font-normal text-blue-gray-500 dark:text-gray-400"
           >
             {description}
           </Typography>
         )}
         {description && details ? (
-          <hr className="my-8 border-blue-gray-50" />
+          <hr className="my-8 border-blue-gray-50 dark:border-gray-700" />
         ) : null}
         {details && (
           <ul className="flex flex-col gap-4 p-0">
@@ -39,14 +39,14 @@ export function ProfileInfoCard({ title, description, details, action }) {
                 <Typography
                   variant="small"
                   color="blue-gray"
-                  className="font-semibold capitalize"
+                  className="font-semibold capitalize dark:text-gray-300"
                 >
                   {el}:
                 </Typography>
                 {typeof details[el] === "string" ? (
                   <Typography
                     variant="small"
-                    className="font-normal text-blue-gray-500"
+                    className="font-normal text-blue-gray-500 dark:text-gray-400"
                   >
                     {details[el]}
                   </Typography>

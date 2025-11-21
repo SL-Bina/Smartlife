@@ -4,10 +4,18 @@
     "login": "Войти",
     "logout": "Выйти",
     "username": "Логин",
-    "password": "Пароль"
+    "password": "Пароль",
+    "count": "Количество",
+    "percentage": "Процент",
+    "enter": "Введите"
   },
   "header": {
-    "search": "Поиск"
+    "search": "Поиск",
+    "notifications": "Уведомления",
+    "lightMode": "Светлый режим",
+    "darkMode": "Темный режим",
+    "profile": "Профиль",
+    "settings": "Настройки"
   },
   "sidebar": {
     "dashboard": "Панель",
@@ -18,6 +26,10 @@
     "debtorApartments": "Квартиры с долгами",
     "expenses": "Расходы",
     "notifications": "Уведомления",
+    "applications": "Заявки",
+    "applicationsList": "Список заявок",
+    "applicationsEvaluation": "Оценка заявок",
+    "kpi": "KPI",
     "mtk": "ТСЖ",
     "complexes": "Комплексы",
     "residents": "Жители",
@@ -56,7 +68,62 @@
     },
     "ordersOverviewTitle": "Обзор заказов",
     "ordersOverviewSubtitle": "{{value}} в этом месяце",
+    "paymentStats": {
+      "currentMonthPayments": "Статистика платежей текущего месяца",
+      "paidServicesCount": "Количество оплаченных услуг",
+      "paidInvoicesCount": "Количество оплаченных счетов",
+      "totalIncome": "Общий доход"
+    },
     "charts": {
+      "paymentDynamics": "Типы платежей и динамика по месяцам",
+      "employeePerformance": "Лучшие сотрудники",
+      "applicationStatus": "Статус заявок",
+      "departmentStats": "Статистика отделов",
+      "requestCount": "Количество заявок",
+      "allDepartments": "Все отделы",
+      "technicalDepartment": "Технический отдел",
+      "security": "Охрана",
+      "cleaning": "Уборка",
+      "reception": "Ресепшн",
+      "buildingManagement": "Управление зданием"
+    },
+    "departmentLabels": {
+      "totalRequests": "Всего заявок",
+      "completed": "Завершено",
+      "successRate": "Процент успеха"
+    },
+    "applicationStatus": {
+      "pending": "В ожидании",
+      "completed": "Завершено",
+      "accepted": "Принято",
+      "inProgress": "В процессе",
+      "cancelled": "Отменено"
+    },
+    "paymentTypes": {
+      "cash": "Наличный платеж",
+      "online": "Онлайн платеж",
+      "terminal": "Платеж через терминал",
+      "posTerminal": "POS ТЕРМИНАЛ"
+    },
+    "employeeMetrics": {
+      "assignedRequests": "Назначенные заявки",
+      "completedRequests": "Завершенные заявки",
+      "cancelledRequests": "Отмененные заявки",
+      "avgResolutionTime": "Среднее время решения (часы)",
+      "successRate": "Процент успеха (%)",
+      "cancellationRate": "Процент отмены (%)",
+      "totalRate": "Общий процент (%)"
+    },
+    "residentStats": {
+      "totalResidents": "Всего жителей",
+      "activeResidents": "Активные жители",
+      "onlinePayingResidents": "Жители, оплачивающие онлайн",
+      "passiveResidents": "Пассивные жители",
+      "buildings": "Здания",
+      "apartments": "Квартиры",
+      "details": "Подробнее →"
+    },
+    "legacyCharts": {
       "websiteViews": {
         "title": "Просмотры сайта",
         "description": "Результаты последней кампании",
@@ -129,6 +196,12 @@
       "building": "Здание",
       "buildingPlaceholder": "Выберите здание"
     },
+    "create": {
+      "title": "Новая группа квартир"
+    },
+    "edit": {
+      "title": "Изменить информацию группы квартир"
+    },
     "summary": {
       "title": "Сводка",
       "totalGroups": "Группы: {{count}}",
@@ -184,6 +257,803 @@
       "subtitle": "Введите данные для регистрации",
       "emailLabel": "Email",
       "submit": "Зарегистрироваться"
+    }
+  },
+  "invoices": {
+    "pageTitle": "Счета",
+    "summary": {
+      "paid": "Оплачено",
+      "consumption": "Объем потребления"
+    },
+    "filter": {
+      "title": "Фильтр счетов",
+      "serviceName": "Название услуги",
+      "owner": "Владелец квартиры",
+      "status": "Статус",
+      "enter": "Введите"
+    },
+    "create": {
+      "title": "Добавить новый счет",
+      "serviceName": "Название услуги",
+      "enter": "Введите"
+    },
+    "actions": {
+      "search": "Поиск",
+      "add": "Добавить",
+      "view": "Просмотр",
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "loading": "Загрузка..."
+    },
+    "table": {
+      "id": "ID",
+      "serviceName": "Название услуги",
+      "owner": "Владелец квартиры",
+      "apartmentInfo": "Информация о квартире",
+      "amount": "Сумма",
+      "paidAmount": "Оплаченная сумма",
+      "remaining": "Остаток",
+      "status": "Статус",
+      "invoiceDate": "Дата счета",
+      "paymentDate": "Дата оплаты",
+      "paymentMethod": "Способ оплаты",
+      "operations": "Операции"
+    },
+    "mobile": {
+      "id": "ID",
+      "owner": "Владелец квартиры",
+      "amount": "Сумма",
+      "paid": "Оплачено",
+      "remaining": "Остаток"
+    },
+    "labels": {
+      "balance": "Баланс",
+      "building": "Здание",
+      "block": "Блок",
+      "floor": "Этаж",
+      "area": "Площадь"
+    },
+    "status": {
+      "paid": "Оплачено",
+      "unpaid": "Не оплачено"
+    },
+    "paymentMethod": {
+      "balance": "Баланс",
+      "cash": "Наличные"
+    },
+    "pagination": {
+      "prev": "Назад",
+      "next": "Вперед"
+    }
+  },
+  "paymentHistory": {
+    "pageTitle": "История платежей",
+    "summary": {
+      "total": "Всего"
+    },
+    "filter": {
+      "title": "Фильтр истории платежей",
+      "payer": "Плательщик",
+      "apartment": "Квартира",
+      "status": "Статус",
+      "enter": "Введите"
+    },
+    "actions": {
+      "search": "Поиск",
+      "view": "Просмотр",
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "loading": "Загрузка..."
+    },
+    "table": {
+      "id": "ID",
+      "payer": "Плательщик",
+      "apartmentInfo": "Информация о квартире",
+      "amount": "Сумма",
+      "paymentDate": "Дата оплаты",
+      "status": "Статус",
+      "transactionType": "Тип операции",
+      "paymentType": "Тип оплаты",
+      "operations": "Операции"
+    },
+    "mobile": {
+      "id": "ID",
+      "apartment": "Квартира",
+      "amount": "Сумма",
+      "paymentDate": "Дата оплаты"
+    },
+    "labels": {
+      "building": "Здание",
+      "block": "Блок",
+      "apartment": "Квартира",
+      "floor": "Этаж",
+      "area": "Площадь",
+      "serviceDate": "Дата услуги"
+    },
+    "status": {
+      "successful": "Успешно"
+    },
+    "transactionType": {
+      "income": "Поступление"
+    },
+    "paymentType": {
+      "cash": "Наличные",
+      "balance": "Баланс"
+    },
+    "pagination": {
+      "prev": "Назад",
+      "next": "Вперед"
+    }
+  },
+  "reports": {
+    "pageTitle": "Общий отчет",
+    "filter": {
+      "title": "Фильтр отчета",
+      "startDate": "Начальная дата",
+      "endDate": "Конечная дата",
+      "currency": "Валюта",
+      "enter": "Введите"
+    },
+    "actions": {
+      "search": "Поиск",
+      "export": "Экспорт",
+      "loading": "Загрузка..."
+    },
+    "common": {
+      "total": "Всего",
+      "bank": "Банк",
+      "cash": "Наличные"
+    },
+    "income": {
+      "title": "ДОХОДЫ",
+      "invoice": "ДОХОДЫ (ПО СЧЕТАМ)",
+      "deposit": "ДЕПОЗИТ",
+      "receivedLiabilities": "ПОЛУЧЕННЫЕ ОБЯЗАТЕЛЬСТВА",
+      "total": "ОБЩИЙ ДОХОД"
+    },
+    "expenses": {
+      "title": "РАСХОДЫ",
+      "expenses": "РАСХОДЫ",
+      "returnedLiabilities": "ВОЗВРАЩЕННЫЕ ОБЯЗАТЕЛЬСТВА",
+      "total": "ОБЩИЕ РАСХОДЫ"
+    },
+    "balances": {
+      "title": "Балансы",
+      "totalDepositBalance": "ОБЩИЙ ОСТАТОК ДЕПОЗИТА",
+      "depositWithdrawn": "ДЕПОЗИТ, СНЯТЫЙ С ДОЛГА КЛИЕНТА (По диапазону дат)",
+      "previousMonthBalances": "ОСТАТКИ ПРЕДЫДУЩЕГО МЕСЯЦА"
+    },
+    "profitLoss": {
+      "title": "Прибыль / Убыток и Касса / Банк",
+      "currentMonth": "ПРИБЫЛЬ / -УБЫТОК ТЕКУЩЕГО МЕСЯЦА",
+      "revenue": "Доход",
+      "expense": "Расход",
+      "previousMonthPeriod": "ПЕРИОД ПРЕДЫДУЩЕГО МЕСЯЦА (КАССА И БАНК)",
+      "periodIncome": "ДОХОД ЗА ПЕРИОД",
+      "periodPaid": "ОПЛАЧЕНО ЗА ПЕРИОД",
+      "cashBankBalance": "ОСТАТОК КАССЫ И БАНКА",
+      "centralDebt": "ДОЛГ ЦЕНТРА-(Дебиторская задолженность)",
+      "cashAndBank": "КАССА И БАНК",
+      "receivableFromMainOffice": "ДЕБИТОРСКАЯ ЗАДОЛЖЕННОСТЬ ОТ ГЛАВНОГО ОФИСА",
+      "totalAssets": "ОБЩИЕ АКТИВЫ"
+    }
+  },
+  "debtorApartments": {
+    "pageTitle": "Квартиры с долгами",
+    "summary": {
+      "totalDebt": "Общий долг"
+    },
+    "filter": {
+      "title": "Фильтр квартир с долгами",
+      "apartment": "Квартира",
+      "owner": "Владелец квартиры",
+      "status": "Статус",
+      "enter": "Введите"
+    },
+    "actions": {
+      "search": "Поиск",
+      "view": "Просмотр",
+      "pay": "Оплатить",
+      "invoices": "Счета",
+      "loading": "Загрузка..."
+    },
+    "table": {
+      "id": "ID",
+      "apartment": "Квартира",
+      "apartmentInfo": "Информация о квартире",
+      "owner": "Владелец квартиры",
+      "phone": "Телефон",
+      "totalDebt": "Общий долг",
+      "invoiceCount": "Количество счетов",
+      "lastPaymentDate": "Дата последней оплаты",
+      "status": "Статус",
+      "operations": "Операции"
+    },
+    "mobile": {
+      "id": "ID",
+      "owner": "Владелец квартиры",
+      "phone": "Телефон",
+      "totalDebt": "Общий долг",
+      "invoiceCount": "Количество счетов",
+      "lastPayment": "Последняя оплата"
+    },
+    "labels": {
+      "building": "Здание",
+      "block": "Блок",
+      "floor": "Этаж",
+      "area": "Площадь"
+    },
+    "status": {
+      "paid": "Оплачено",
+      "debtor": "Должник"
+    },
+    "pagination": {
+      "prev": "Назад",
+      "next": "Вперед"
+    }
+  },
+  "expenses": {
+    "pageTitle": "Расходы",
+    "summary": {
+      "totalExpenses": "Общие расходы"
+    },
+    "filter": {
+      "title": "Фильтр расходов",
+      "category": "Категория",
+      "paymentMethod": "Способ оплаты",
+      "status": "Статус",
+      "enter": "Введите"
+    },
+    "create": {
+      "title": "Добавить новый расход"
+    },
+    "edit": {
+      "title": "Редактировать расход"
+    },
+    "actions": {
+      "search": "Поиск",
+      "add": "Добавить",
+      "view": "Просмотр",
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "loading": "Загрузка..."
+    },
+    "table": {
+      "id": "ID",
+      "category": "Категория",
+      "description": "Описание",
+      "amount": "Сумма",
+      "paymentMethod": "Способ оплаты",
+      "paymentDate": "Дата оплаты",
+      "paidBy": "Оплатил",
+      "invoiceNumber": "Номер счета",
+      "status": "Статус",
+      "operations": "Операции"
+    },
+    "mobile": {
+      "id": "ID",
+      "description": "Описание",
+      "amount": "Сумма",
+      "paymentMethod": "Способ оплаты",
+      "paymentDate": "Дата оплаты",
+      "paidBy": "Оплатил",
+      "invoice": "Счет"
+    },
+    "form": {
+      "category": "Категория",
+      "description": "Описание",
+      "amount": "Сумма",
+      "paymentMethod": "Способ оплаты",
+      "paymentDate": "Дата оплаты",
+      "paidBy": "Оплатил",
+      "invoiceNumber": "Номер счета",
+      "enter": "Введите"
+    },
+    "paymentMethod": {
+      "cash": "Наличные",
+      "bank": "Банк"
+    },
+    "status": {
+      "approved": "Подтверждено",
+      "pending": "Ожидает"
+    },
+    "pagination": {
+      "prev": "Назад",
+      "next": "Вперед"
+    }
+  },
+  "notifications": {
+    "pageTitle": "Уведомления",
+    "listTitle": "Последние уведомления",
+    "listSubtitle": "Быстро управляйте непрочитанными уведомлениями.",
+    "emptyTitle": "Нет уведомлений для отображения",
+    "emptySubtitle": "Уведомления появятся здесь, когда произойдут новые события.",
+    "markAsRead": "Отметить как прочитанное",
+    "unreadOnly": "Только непрочитанные",
+    "types": {
+      "payment": "Платеж",
+      "warning": "Предупреждение",
+      "system": "Система",
+      "info": "Информация"
+    },
+    "actions": {
+      "markAsRead": "Отметить как прочитанное",
+      "remove": "Удалить из списка"
+    }
+  },
+  "mtk": {
+    "pageTitle": "МТК",
+    "loading": "Загрузка...",
+    "table": {
+      "id": "ID",
+      "name": "Название",
+      "actions": "Действия"
+    },
+    "actions": {
+      "search": "Поиск",
+      "add": "Добавить",
+      "view": "Просмотр",
+      "edit": "Редактировать",
+      "delete": "Удалить"
+    },
+    "filter": {
+      "title": "Фильтр МТК",
+      "name": "Название МТК",
+      "enterName": "Введите",
+      "clear": "Очистить",
+      "close": "Закрыть",
+      "apply": "Применить"
+    },
+    "create": {
+      "title": "Добавить новый МТК",
+      "name": "Название МТК",
+      "enterName": "Введите",
+      "cancel": "Отмена",
+      "save": "Сохранить"
+    },
+    "edit": {
+      "title": "Изменить информацию МТК",
+      "name": "Название МТК",
+      "enterName": "Введите",
+      "cancel": "Отмена",
+      "save": "Сохранить"
+    },
+    "pagination": {
+      "prev": "Назад",
+      "next": "Вперед"
+    }
+  },
+  "complexes": {
+    "pageTitle": "Комплексы",
+    "loading": "Загрузка...",
+    "table": {
+      "id": "ID",
+      "name": "Название",
+      "address": "Адрес",
+      "buildingsCount": "Количество зданий",
+      "residentsCount": "Количество жителей",
+      "actions": "Действия"
+    },
+    "actions": {
+      "search": "Поиск",
+      "add": "Добавить",
+      "view": "Просмотр",
+      "edit": "Редактировать",
+      "delete": "Удалить"
+    },
+    "filter": {
+      "title": "Фильтр комплекса",
+      "name": "Название комплекса",
+      "enterName": "Введите",
+      "clear": "Очистить",
+      "close": "Закрыть",
+      "apply": "Применить"
+    },
+    "create": {
+      "title": "Добавить новый комплекс",
+      "name": "Название",
+      "enterName": "Введите",
+      "address": "Адрес",
+      "enterAddress": "Введите",
+      "buildingsCount": "Количество зданий",
+      "enterBuildings": "Введите",
+      "residentsCount": "Количество жителей",
+      "enterResidents": "Введите",
+      "cancel": "Отмена",
+      "save": "Сохранить"
+    },
+    "edit": {
+      "title": "Изменить информацию комплекса",
+      "name": "Название",
+      "enterName": "Введите",
+      "address": "Адрес",
+      "enterAddress": "Введите",
+      "buildingsCount": "Количество зданий",
+      "enterBuildings": "Введите",
+      "residentsCount": "Количество жителей",
+      "enterResidents": "Введите",
+      "cancel": "Отмена",
+      "save": "Сохранить"
+    },
+    "pagination": {
+      "prev": "Назад",
+      "next": "Вперед"
+    }
+  },
+  "buildings": {
+    "pageTitle": "Здания",
+    "loading": "Загрузка...",
+    "table": {
+      "id": "ID",
+      "name": "Название",
+      "complex": "Комплекс",
+      "blocksCount": "Количество блоков",
+      "apartmentsCount": "Количество квартир",
+      "actions": "Действия"
+    },
+    "actions": {
+      "search": "Поиск",
+      "add": "Добавить",
+      "view": "Просмотр",
+      "edit": "Редактировать",
+      "delete": "Удалить"
+    },
+    "filter": {
+      "title": "Фильтр здания",
+      "name": "Название здания",
+      "enterName": "Введите",
+      "complex": "Комплекс",
+      "enterComplex": "Введите",
+      "clear": "Очистить",
+      "close": "Закрыть",
+      "apply": "Применить"
+    },
+    "create": {
+      "title": "Добавить новое здание",
+      "name": "Название",
+      "enterName": "Введите",
+      "complex": "Комплекс",
+      "enterComplex": "Введите",
+      "blocksCount": "Количество блоков",
+      "enterBlocks": "Введите",
+      "apartmentsCount": "Количество квартир",
+      "enterApartments": "Введите",
+      "cancel": "Отмена",
+      "save": "Сохранить"
+    },
+    "edit": {
+      "title": "Изменить информацию здания",
+      "name": "Название",
+      "enterName": "Введите",
+      "complex": "Комплекс",
+      "enterComplex": "Введите",
+      "blocksCount": "Количество блоков",
+      "enterBlocks": "Введите",
+      "apartmentsCount": "Количество квартир",
+      "enterApartments": "Введите",
+      "cancel": "Отмена",
+      "save": "Сохранить"
+    },
+    "pagination": {
+      "prev": "Назад",
+      "next": "Вперед"
+    }
+  },
+  "blocks": {
+    "pageTitle": "Блоки",
+    "loading": "Загрузка...",
+    "table": {
+      "id": "ID",
+      "block": "Блок",
+      "building": "Здание",
+      "floorsCount": "Количество этажей",
+      "apartmentsCount": "Количество квартир",
+      "actions": "Действия"
+    },
+    "actions": {
+      "search": "Поиск",
+      "add": "Добавить",
+      "view": "Просмотр",
+      "edit": "Редактировать",
+      "delete": "Удалить"
+    },
+    "filter": {
+      "title": "Фильтр блока",
+      "block": "Блок",
+      "enterBlock": "Введите",
+      "building": "Здание",
+      "enterBuilding": "Введите",
+      "clear": "Очистить",
+      "close": "Закрыть",
+      "apply": "Применить"
+    },
+    "create": {
+      "title": "Добавить новый блок",
+      "block": "Блок",
+      "enterBlock": "Введите",
+      "building": "Здание",
+      "enterBuilding": "Введите",
+      "floorsCount": "Количество этажей",
+      "enterFloors": "Введите",
+      "apartmentsCount": "Количество квартир",
+      "enterApartments": "Введите",
+      "cancel": "Отмена",
+      "save": "Сохранить"
+    },
+    "edit": {
+      "title": "Изменить информацию блока",
+      "block": "Блок",
+      "enterBlock": "Введите",
+      "building": "Здание",
+      "enterBuilding": "Введите",
+      "floorsCount": "Количество этажей",
+      "enterFloors": "Введите",
+      "apartmentsCount": "Количество квартир",
+      "enterApartments": "Введите",
+      "cancel": "Отмена",
+      "save": "Сохранить"
+    },
+    "pagination": {
+      "prev": "Назад",
+      "next": "Вперед"
+    }
+  },
+  "properties": {
+    "pageTitle": "Квартиры",
+    "loading": "Загрузка...",
+    "table": {
+      "id": "ID",
+      "apartment": "Квартира",
+      "block": "Блок",
+      "floor": "Этаж",
+      "area": "Площадь (м²)",
+      "resident": "Житель",
+      "actions": "Действия"
+    },
+    "actions": {
+      "search": "Поиск",
+      "add": "Добавить",
+      "serviceFee": "Сервисный платеж",
+      "edit": "Редактировать",
+      "delete": "Удалить"
+    },
+    "filter": {
+      "title": "Фильтр квартиры",
+      "apartment": "Квартира",
+      "enterApartment": "Введите",
+      "block": "Блок",
+      "enterBlock": "Введите",
+      "clear": "Очистить",
+      "close": "Закрыть",
+      "apply": "Применить"
+    },
+    "create": {
+      "title": "Добавить новую квартиру",
+      "apartment": "Квартира",
+      "enterApartment": "Введите",
+      "block": "Блок",
+      "enterBlock": "Введите",
+      "floor": "Этаж",
+      "enterFloor": "Введите",
+      "area": "Площадь (м²)",
+      "enterArea": "Введите",
+      "resident": "Житель",
+      "enterResident": "Введите",
+      "cancel": "Отмена",
+      "save": "Сохранить"
+    },
+    "edit": {
+      "title": "Изменить информацию квартиры",
+      "apartment": "Квартира",
+      "enterApartment": "Введите",
+      "block": "Блок",
+      "enterBlock": "Введите",
+      "floor": "Этаж",
+      "enterFloor": "Введите",
+      "area": "Площадь (м²)",
+      "enterArea": "Введите",
+      "resident": "Житель",
+      "enterResident": "Введите",
+      "cancel": "Отмена",
+      "save": "Сохранить"
+    },
+    "pagination": {
+      "prev": "Назад",
+      "next": "Вперед"
+    }
+  },
+  "residents": {
+    "pageTitle": "Жители",
+    "loading": "Загрузка...",
+    "table": {
+      "id": "ID",
+      "fullName": "ФИО",
+      "phone": "Телефон",
+      "email": "Email",
+      "apartment": "Квартира",
+      "status": "Статус",
+      "actions": "Действия"
+    },
+    "actions": {
+      "search": "Поиск",
+      "add": "Добавить",
+      "view": "Просмотр",
+      "edit": "Редактировать",
+      "delete": "Удалить"
+    },
+    "filter": {
+      "title": "Фильтр жителя",
+      "fullName": "ФИО",
+      "enterFullName": "Введите",
+      "status": "Статус",
+      "enterStatus": "Введите",
+      "clear": "Очистить",
+      "close": "Закрыть",
+      "apply": "Применить"
+    },
+    "create": {
+      "title": "Добавить нового жителя",
+      "fullName": "ФИО",
+      "enterFullName": "Введите",
+      "phone": "Телефон",
+      "enterPhone": "Введите",
+      "email": "Email",
+      "enterEmail": "Введите",
+      "apartment": "Квартира",
+      "enterApartment": "Введите",
+      "status": "Статус",
+      "enterStatus": "Введите",
+      "cancel": "Отмена",
+      "save": "Сохранить"
+    },
+    "edit": {
+      "title": "Изменить информацию жителя",
+      "fullName": "ФИО",
+      "enterFullName": "Введите",
+      "phone": "Телефон",
+      "enterPhone": "Введите",
+      "email": "Email",
+      "enterEmail": "Введите",
+      "apartment": "Квартира",
+      "enterApartment": "Введите",
+      "status": "Статус",
+      "enterStatus": "Введите",
+      "cancel": "Отмена",
+      "save": "Сохранить"
+    },
+    "status": {
+      "active": "Активный",
+      "passive": "Пассивный"
+    },
+    "pagination": {
+      "prev": "Назад",
+      "next": "Вперед"
+    }
+  },
+  "serviceFee": {
+    "pageTitle": "Сервисный платеж",
+    "loading": "Загрузка...",
+    "notFound": "Квартира не найдена",
+    "goBack": "Вернуться",
+    "apartmentInfo": "Информация о квартире",
+    "serviceFeeTitle": "Сервисный платеж",
+    "serviceFeePerMonth": "Сервисный платеж (AZN / месяц)",
+    "enterFee": "Введите",
+    "currentFee": "Текущий сервисный платеж",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "saving": "Сохранение...",
+    "changeHistory": "История изменений",
+    "noHistory": "Нет истории",
+    "current": "Текущий",
+    "old": "Старый",
+    "changedBy": "Изменено",
+    "invalidFee": "Сервисный платеж должен быть введен правильно",
+    "successMessage": "Сервисный платеж успешно обновлен",
+    "reasons": {
+      "initial": "Первоначальное назначение",
+      "tariffIncrease": "Увеличение тарифа",
+      "manualChange": "Ручное изменение"
+    },
+    "labels": {
+      "apartment": "Квартира",
+      "block": "Блок",
+      "floor": "Этаж",
+      "area": "Площадь (м²)",
+      "resident": "Житель",
+      "complex": "Комплекс",
+      "building": "Здание"
+    }
+  },
+  "profile": {
+    "pageTitle": "Профиль",
+    "personalInfo": "Личная информация",
+    "password": "Мой пароль",
+    "firstName": "Имя",
+    "lastName": "Фамилия",
+    "birthDate": "Дата рождения",
+    "address": "Адрес",
+    "phone": "Телефон",
+    "enter": "Введите",
+    "currentPassword": "Текущий пароль",
+    "newPassword": "Новый пароль",
+    "confirmPassword": "Подтвердите новый пароль",
+    "save": "Сохранить"
+  },
+  "kpi": {
+    "pageTitle": "Отчет KPI сотрудников",
+    "loading": "Загрузка...",
+    "timeRange": "Временной диапазон",
+    "startDate": "Дата начала",
+    "endDate": "Дата окончания",
+    "search": "Поиск",
+    "created": "Создано",
+    "completed": "Завершено",
+    "count": "Количество",
+    "percentage": "Процент",
+    "medium": "Средний",
+    "high": "Высокий",
+    "urgent": "Срочный",
+    "low": "Низкий",
+    "fiveMinute": "5 минут",
+    "employeeWorkHours": "Рабочие часы сотрудника",
+    "spentHours": "Потраченные часы",
+    "workOrdersPerDayCount": "Рабочих заказов в день",
+    "totalWorkOrders": "Всего рабочих заказов",
+    "daysCount": "Количество дней",
+    "clear": "Очистить",
+    "table": {
+      "employeeInfo": "Информация о сотруднике",
+      "totalWorkOrders": "Всего рабочих заказов (Создано / Закрыто)",
+      "onTimeCompletion": "Процент рабочих заказов, выполненных вовремя",
+      "priorityReport": "Отчет о приоритете рабочих заказов",
+      "averageCompletionTime": "Среднее время выполнения рабочего заказа",
+      "delay": "Задержка рабочего заказа",
+      "utilization": "Процент использования техника",
+      "repeatedRequests": "Повторные запросы",
+      "averageResponseTime": "Средний интервал времени ответа",
+      "workOrdersPerDay": "Количество рабочих заказов на техника в день"
+    }
+  },
+  "applications": {
+    "list": {
+      "pageTitle": "Заявки",
+      "calendar": "Календарь",
+      "list": "Список",
+      "search": "Поиск",
+      "category": "Категория",
+      "excelExport": "Экспорт Excel",
+      "priorities": "Приоритеты",
+      "newApplication": "Новая заявка",
+      "loading": "Загрузка...",
+      "new": "Новое",
+      "details": "Подробности",
+      "table": {
+        "apartmentEmployee": "Квартира/Сотрудник",
+        "text": "Текст",
+        "department": "Отдел",
+        "residentPriority": "Приоритет жителя",
+        "operationPriority": "Приоритет операции",
+        "image": "Изображение",
+        "status": "Статус",
+        "date": "Дата",
+        "action": "Действие"
+      }
+    },
+    "evaluation": {
+      "pageTitle": "Оценка заявок",
+      "search": "Поиск",
+      "loading": "Загрузка...",
+      "details": "Подробности",
+      "table": {
+        "apartment": "Квартира",
+        "text": "Текст",
+        "department": "Отдел",
+        "image": "Изображение",
+        "date": "Дата",
+        "rating": "Оценка",
+        "action": "Действие"
+      }
     }
   }
 }

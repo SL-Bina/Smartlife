@@ -1,3 +1,177 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-primary: #f8f9fa;
+    --text-primary: #1a202c;
+  }
+  
+  .dark {
+    --bg-primary: #111827;
+    --text-primary: #f9fafb;
+  }
+  
+  body {
+    @apply bg-blue-gray-50/50 dark:bg-gray-900;
+    color: var(--text-primary);
+  }
+}
+
+@layer utilities {
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  
+  /* Custom scrollbar styles */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #9ca3af;
+    border-radius: 3px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: #6b7280;
+  }
+  
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #4b5563;
+  }
+  
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: #6b7280;
+  }
+  
+  /* Firefox scrollbar */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #9ca3af transparent;
+  }
+  
+  .dark .scrollbar-thin {
+    scrollbar-color: #4b5563 transparent;
+  }
+}
+
+/* Optimize Dialog animations for better performance */
+@layer base {
+  .dark .apexcharts-text {
+    fill: #E0E0E0 !important;
+  }
+}
+
+/* Disable Material Tailwind Dialog animations completely for better performance */
+@layer components {
+  /* Disable all Dialog animations - instant open/close */
+  div[role="dialog"],
+  [class*="dialog-root"],
+  [class*="dialog-container"],
+  [class*="MuiDialog-root"],
+  [class*="MuiDialog"],
+  div[class*="Dialog"],
+  div[class*="dialog"] {
+    transition: none !important;
+    animation: none !important;
+    -webkit-transition: none !important;
+    -moz-transition: none !important;
+    -o-transition: none !important;
+  }
+  
+  /* Dialog backdrop - instant */
+  [class*="backdrop"],
+  [class*="dialog-backdrop"],
+  [class*="MuiBackdrop-root"],
+  div[class*="Backdrop"],
+  div[class*="backdrop"] {
+    transition: opacity 0ms !important;
+    animation: none !important;
+    -webkit-transition: opacity 0ms !important;
+    -moz-transition: opacity 0ms !important;
+    -o-transition: opacity 0ms !important;
+  }
+  
+  /* Dialog content - instant, no transform animations */
+  [class*="dialog-content"],
+  [class*="dialog-paper"],
+  [class*="MuiDialog-paper"],
+  [class*="MuiPaper-root"],
+  [class*="dialog-body"],
+  [class*="dialog-header"],
+  [class*="dialog-footer"],
+  div[class*="DialogContent"],
+  div[class*="DialogPaper"] {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+    -webkit-transition: none !important;
+    -moz-transition: none !important;
+    -o-transition: none !important;
+    -webkit-transform: none !important;
+    -moz-transform: none !important;
+    -o-transform: none !important;
+  }
+  
+  /* Remove all scale, translate, and rotation animations */
+  [class*="dialog"] *,
+  div[role="dialog"] * {
+    transition: none !important;
+    animation: none !important;
+    -webkit-transition: none !important;
+    -moz-transition: none !important;
+    -o-transition: none !important;
+  }
+}
+
+/* Global override for Material Tailwind Dialog - disable all animations */
+div[role="dialog"],
+[class*="dialog-root"],
+[class*="MuiDialog-root"],
+div[class*="Dialog"],
+div[class*="dialog"] {
+  transition: none !important;
+  animation: none !important;
+}
+
+[class*="dialog-content"],
+[class*="dialog-paper"],
+[class*="MuiDialog-paper"],
+div[class*="DialogContent"],
+div[class*="DialogPaper"] {
+  transition: none !important;
+  animation: none !important;
+  transform: none !important;
+}
+
+[class*="backdrop"],
+[class*="MuiBackdrop-root"],
+div[class*="Backdrop"],
+div[class*="backdrop"] {
+  transition: opacity 0ms !important;
+  animation: none !important;
+}
+
+/* Force disable all transitions and animations on any element inside dialog */
+div[role="dialog"] *,
+[class*="dialog"] *,
+[class*="Dialog"] * {
+  transition: none !important;
+  animation: none !important;
+  transform: none !important;
+}
+
+/* Material Tailwind specific classes */
+.material-tailwind-dialog,
+.material-tailwind-dialog-content,
+.material-tailwind-dialog-paper {
+  transition: none !important;
+  animation: none !important;
+  transform: none !important;
+}

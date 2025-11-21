@@ -4,10 +4,18 @@
     "login": "Daxil ol",
     "logout": "Çıxış",
     "username": "İstifadəçi adı",
-    "password": "Şifrə"
+    "password": "Şifrə",
+    "count": "Sayı",
+    "percentage": "Faizi",
+    "enter": "Daxil et"
   },
   "header": {
-    "search": "Axtarış"
+    "search": "Axtarış",
+    "notifications": "Bildirişlər",
+    "lightMode": "İşıq rejimi",
+    "darkMode": "Qaranlıq rejim",
+    "profile": "Profil",
+    "settings": "Parametrlər"
   },
   "sidebar": {
     "dashboard": "Panel",
@@ -18,6 +26,10 @@
     "debtorApartments": "Borclu mənzillər",
     "expenses": "Xərclər",
     "notifications": "Bildirişlər",
+    "applications": "Müraciətlər",
+    "applicationsList": "Müraciətlər siyahısı",
+    "applicationsEvaluation": "Müraciətlərin qiymətləndirilməsi",
+    "kpi": "KPI",
     "mtk": "MTK",
     "complexes": "Komplekslər",
     "residents": "Sakinlər",
@@ -56,7 +68,62 @@
     },
     "ordersOverviewTitle": "Sifarişlərə ümumi baxış",
     "ordersOverviewSubtitle": "Bu ay {{value}}",
+    "paymentStats": {
+      "currentMonthPayments": "Cari ayın ödəniş statistikası",
+      "paidServicesCount": "Ödənilmiş xidmətlərin sayı",
+      "paidInvoicesCount": "Ödənilmiş fakturaların sayı",
+      "totalIncome": "Ümumi mədaxil"
+    },
     "charts": {
+      "paymentDynamics": "Ödəniş növləri və aylar üzrə dinamika",
+      "employeePerformance": "Ən yaxşı performans göstərən əməkdaşlar",
+      "applicationStatus": "Müraciətlərin statusu",
+      "departmentStats": "Şöbə statistikaları",
+      "requestCount": "Müraciət sayı",
+      "allDepartments": "Bütün şöbələr",
+      "technicalDepartment": "Texniki şöbə",
+      "security": "Mühafizə",
+      "cleaning": "Təmizlik",
+      "reception": "Reception",
+      "buildingManagement": "Bina Rəhbərliyi"
+    },
+    "departmentLabels": {
+      "totalRequests": "Ümumi müraciət",
+      "completed": "Tamamlanan",
+      "successRate": "Uğur faizi"
+    },
+    "applicationStatus": {
+      "pending": "Gözləmədə",
+      "completed": "Tamamlandı",
+      "accepted": "Qəbul edildi",
+      "inProgress": "İcraya başalınıldı",
+      "cancelled": "Ləğv edildi"
+    },
+    "paymentTypes": {
+      "cash": "Nağd ödəniş",
+      "online": "Online ödəniş",
+      "terminal": "Terminal ödənişi",
+      "posTerminal": "POS TERMINAL"
+    },
+    "employeeMetrics": {
+      "assignedRequests": "Təyin edilən müraciətlər",
+      "completedRequests": "Tamamlanan müraciətlər",
+      "cancelledRequests": "Ləğv edilən müraciətlər",
+      "avgResolutionTime": "Orta həll müddəti (saat)",
+      "successRate": "Uğur faizi (%)",
+      "cancellationRate": "Ləğv faizi (%)",
+      "totalRate": "Ümumi faiz (%)"
+    },
+    "residentStats": {
+      "totalResidents": "Ümumi sakin",
+      "activeResidents": "Aktiv sakin",
+      "onlinePayingResidents": "Online ödəniş edən sakinlər",
+      "passiveResidents": "Passiv sakin",
+      "buildings": "Bina",
+      "apartments": "Mənzil",
+      "details": "Ətraflı →"
+    },
+    "legacyCharts": {
       "websiteViews": {
         "title": "Sayt baxışları",
         "description": "Son kampaniyanın nəticələri",
@@ -129,6 +196,12 @@
       "building": "Bina",
       "buildingPlaceholder": "Bina seçin"
     },
+    "create": {
+      "title": "Yeni mənzil qrupu"
+    },
+    "edit": {
+      "title": "Mənzil qrupu məlumatlarını dəyiş"
+    },
     "summary": {
       "title": "Ümumi məlumat",
       "totalGroups": "Qrup sayı: {{count}}",
@@ -184,6 +257,803 @@
       "subtitle": "Qeydiyyatdan keçmək üçün məlumatları daxil edin",
       "emailLabel": "Email",
       "submit": "Qeydiyyatdan keç"
+    }
+  },
+  "invoices": {
+    "pageTitle": "Fakturalar",
+    "summary": {
+      "paid": "Ödənilib",
+      "consumption": "İstehlak həcmi"
+    },
+    "filter": {
+      "title": "Faktura filter",
+      "serviceName": "Xidmət adı",
+      "owner": "Mənzil sahibi",
+      "status": "Status",
+      "enter": "Daxil et"
+    },
+    "create": {
+      "title": "Yeni faktura əlavə et",
+      "serviceName": "Xidmət adı",
+      "enter": "Daxil et"
+    },
+    "actions": {
+      "search": "Axtarış",
+      "add": "Əlavə et",
+      "view": "Bax",
+      "edit": "Düzəliş et",
+      "delete": "Sil",
+      "loading": "Yüklənir..."
+    },
+    "table": {
+      "id": "ID",
+      "serviceName": "Xidmət adı",
+      "owner": "Mənzil sahibi",
+      "apartmentInfo": "Mənzil məlumatları",
+      "amount": "Məbləğ",
+      "paidAmount": "Ödənilən məbləğ",
+      "remaining": "Qalıq",
+      "status": "Status",
+      "invoiceDate": "Faktura tarixi",
+      "paymentDate": "Ödəniş tarixi",
+      "paymentMethod": "Ödəniş üsulu",
+      "operations": "Əməliyyatlar"
+    },
+    "mobile": {
+      "id": "ID",
+      "owner": "Mənzil sahibi",
+      "amount": "Məbləğ",
+      "paid": "Ödənilən",
+      "remaining": "Qalıq"
+    },
+    "labels": {
+      "balance": "Balans",
+      "building": "Bina",
+      "block": "Blok",
+      "floor": "Mərtəbə",
+      "area": "Sahə"
+    },
+    "status": {
+      "paid": "Ödənilib",
+      "unpaid": "Ödənilməmiş"
+    },
+    "paymentMethod": {
+      "balance": "Balans",
+      "cash": "Nağd"
+    },
+    "pagination": {
+      "prev": "Geri",
+      "next": "İrəli"
+    }
+  },
+  "paymentHistory": {
+    "pageTitle": "Ödəniş tarixçəsi",
+    "summary": {
+      "total": "Toplam"
+    },
+    "filter": {
+      "title": "Ödəniş tarixçəsi filter",
+      "payer": "Ödəniş edən şəxs",
+      "apartment": "Mənzil",
+      "status": "Status",
+      "enter": "Daxil et"
+    },
+    "actions": {
+      "search": "Axtarış",
+      "view": "Bax",
+      "edit": "Düzəliş et",
+      "delete": "Sil",
+      "loading": "Yüklənir..."
+    },
+    "table": {
+      "id": "ID",
+      "payer": "Ödəniş edən şəxs",
+      "apartmentInfo": "Mənzil məlumatları",
+      "amount": "Məbləğ",
+      "paymentDate": "Ödəniş tarixi",
+      "status": "Status",
+      "transactionType": "Əməliyyat Növü",
+      "paymentType": "Ödəniş növü",
+      "operations": "Əməliyyatlar"
+    },
+    "mobile": {
+      "id": "ID",
+      "apartment": "Mənzil",
+      "amount": "Məbləğ",
+      "paymentDate": "Ödəniş tarixi"
+    },
+    "labels": {
+      "building": "Bina",
+      "block": "Blok",
+      "apartment": "Mənzil",
+      "floor": "Mərtəbə",
+      "area": "Sahə",
+      "serviceDate": "Xidmət tarixi"
+    },
+    "status": {
+      "successful": "Uğurlu"
+    },
+    "transactionType": {
+      "income": "Mədaxil"
+    },
+    "paymentType": {
+      "cash": "Nağd",
+      "balance": "Balans"
+    },
+    "pagination": {
+      "prev": "Geri",
+      "next": "İrəli"
+    }
+  },
+  "reports": {
+    "pageTitle": "Ümumi hesabat",
+    "filter": {
+      "title": "Hesabat filter",
+      "startDate": "Başlanğıc tarix",
+      "endDate": "Son tarix",
+      "currency": "Valyuta",
+      "enter": "Daxil et"
+    },
+    "actions": {
+      "search": "Axtarış",
+      "export": "Export",
+      "loading": "Yüklənir..."
+    },
+    "common": {
+      "total": "Ümumi",
+      "bank": "Bank",
+      "cash": "Nağd"
+    },
+    "income": {
+      "title": "MƏDAXİL",
+      "invoice": "MƏDAXİL (FAKTURA ÜZRƏ)",
+      "deposit": "DEPOZİT",
+      "receivedLiabilities": "ALINAN ÖHDƏLİKLƏR",
+      "total": "TOPLAM MƏDAXİL"
+    },
+    "expenses": {
+      "title": "XƏRCLƏR",
+      "expenses": "XƏRCLƏR",
+      "returnedLiabilities": "QAYTARILAN ÖHDƏLİKLƏR",
+      "total": "TOPLAM MƏXARİC"
+    },
+    "balances": {
+      "title": "Balanslar",
+      "totalDepositBalance": "ÜMUMI DEPOZIT QALIĞI",
+      "depositWithdrawn": "MÜŞTƏRİ BORCUNDAN ÇIXILAN DEPOZİT (Tarix aralığına görə)",
+      "previousMonthBalances": "ÖNCƏKİ AY QALIQLARI"
+    },
+    "profitLoss": {
+      "title": "Mənfəət / Zərər və Kassa / Bank",
+      "currentMonth": "CARİ AY MƏNFƏƏT / -ZƏRƏR",
+      "revenue": "Gəlir",
+      "expense": "Xərc",
+      "previousMonthPeriod": "ÖNCƏKİ AY DÖVR (KASSA VƏ BANK)",
+      "periodIncome": "DÖVR İÇİ MƏDAXİL",
+      "periodPaid": "DÖVR İÇİ ÖDƏNƏN",
+      "cashBankBalance": "KASSA VƏ BANK QALIĞI",
+      "centralDebt": "MƏRKƏZİN BORCU-(Alacağı)",
+      "cashAndBank": "KASSA VƏ BANK",
+      "receivableFromMainOffice": "BAŞ OFİSDƏN ALACAQ",
+      "totalAssets": "TOPLAM AKTİV"
+    }
+  },
+  "debtorApartments": {
+    "pageTitle": "Borclu mənzillər",
+    "summary": {
+      "totalDebt": "Ümumi borc"
+    },
+    "filter": {
+      "title": "Borclu mənzillər filter",
+      "apartment": "Mənzil",
+      "owner": "Mənzil sahibi",
+      "status": "Status",
+      "enter": "Daxil et"
+    },
+    "actions": {
+      "search": "Axtarış",
+      "view": "Bax",
+      "pay": "Ödəniş et",
+      "invoices": "Fakturalar",
+      "loading": "Yüklənir..."
+    },
+    "table": {
+      "id": "ID",
+      "apartment": "Mənzil",
+      "apartmentInfo": "Mənzil məlumatları",
+      "owner": "Mənzil sahibi",
+      "phone": "Telefon",
+      "totalDebt": "Ümumi borc",
+      "invoiceCount": "Faktura sayı",
+      "lastPaymentDate": "Son ödəniş tarixi",
+      "status": "Status",
+      "operations": "Əməliyyatlar"
+    },
+    "mobile": {
+      "id": "ID",
+      "owner": "Mənzil sahibi",
+      "phone": "Telefon",
+      "totalDebt": "Ümumi borc",
+      "invoiceCount": "Faktura sayı",
+      "lastPayment": "Son ödəniş"
+    },
+    "labels": {
+      "building": "Bina",
+      "block": "Blok",
+      "floor": "Mərtəbə",
+      "area": "Sahə"
+    },
+    "status": {
+      "paid": "Ödənilib",
+      "debtor": "Borclu"
+    },
+    "pagination": {
+      "prev": "Geri",
+      "next": "İrəli"
+    }
+  },
+  "expenses": {
+    "pageTitle": "Xərclər",
+    "summary": {
+      "totalExpenses": "Ümumi xərc"
+    },
+    "filter": {
+      "title": "Xərc filter",
+      "category": "Kateqoriya",
+      "paymentMethod": "Ödəniş üsulu",
+      "status": "Status",
+      "enter": "Daxil et"
+    },
+    "create": {
+      "title": "Yeni xərc əlavə et"
+    },
+    "edit": {
+      "title": "Xərc məlumatlarını dəyiş"
+    },
+    "actions": {
+      "search": "Axtarış",
+      "add": "Əlavə et",
+      "view": "Bax",
+      "edit": "Düzəliş et",
+      "delete": "Sil",
+      "loading": "Yüklənir..."
+    },
+    "table": {
+      "id": "ID",
+      "category": "Kateqoriya",
+      "description": "Açıqlama",
+      "amount": "Məbləğ",
+      "paymentMethod": "Ödəniş üsulu",
+      "paymentDate": "Ödəniş tarixi",
+      "paidBy": "Ödəyən",
+      "invoiceNumber": "Faktura nömrəsi",
+      "status": "Status",
+      "operations": "Əməliyyatlar"
+    },
+    "mobile": {
+      "id": "ID",
+      "description": "Açıqlama",
+      "amount": "Məbləğ",
+      "paymentMethod": "Ödəniş üsulu",
+      "paymentDate": "Ödəniş tarixi",
+      "paidBy": "Ödəyən",
+      "invoice": "Faktura"
+    },
+    "form": {
+      "category": "Kateqoriya",
+      "description": "Açıqlama",
+      "amount": "Məbləğ",
+      "paymentMethod": "Ödəniş üsulu",
+      "paymentDate": "Ödəniş tarixi",
+      "paidBy": "Ödəyən",
+      "invoiceNumber": "Faktura nömrəsi",
+      "enter": "Daxil et"
+    },
+    "paymentMethod": {
+      "cash": "Nağd",
+      "bank": "Bank"
+    },
+    "status": {
+      "approved": "Təsdiqlənib",
+      "pending": "Gözləyir"
+    },
+    "pagination": {
+      "prev": "Geri",
+      "next": "İrəli"
+    }
+  },
+  "notifications": {
+    "pageTitle": "Bildirişlər",
+    "listTitle": "Son bildirişlər",
+    "listSubtitle": "Oxunmamış bildirişləri tez bir zamanda idarə edin.",
+    "emptyTitle": "Hazırda göstəriləcək bildiriş yoxdur",
+    "emptySubtitle": "Yeni hadisələr baş verdikdə bildirişlər burada görünəcək.",
+    "markAsRead": "Oxunmuş kimi qeyd et",
+    "unreadOnly": "Yalnız oxunmamışlar",
+    "types": {
+      "payment": "Ödəniş",
+      "warning": "Xəbərdarlıq",
+      "system": "Sistem",
+      "info": "Məlumat"
+    },
+    "actions": {
+      "markAsRead": "Oxunmuş kimi qeyd et",
+      "remove": "Siyahıdan sil"
+    }
+  },
+  "mtk": {
+    "pageTitle": "MTK",
+    "loading": "Yüklənir...",
+    "table": {
+      "id": "ID",
+      "name": "Ad",
+      "actions": "Əməliyyatlar"
+    },
+    "actions": {
+      "search": "Axtarış",
+      "add": "Əlavə et",
+      "view": "Bax",
+      "edit": "Düzəliş et",
+      "delete": "Sil"
+    },
+    "filter": {
+      "title": "MTK filter",
+      "name": "MTK adı",
+      "enterName": "Daxil et",
+      "clear": "Təmizlə",
+      "close": "Bağla",
+      "apply": "Tətbiq et"
+    },
+    "create": {
+      "title": "Yeni MTK əlavə et",
+      "name": "MTK adı",
+      "enterName": "Daxil et",
+      "cancel": "Ləğv et",
+      "save": "Yadda saxla"
+    },
+    "edit": {
+      "title": "MTK məlumatlarını dəyiş",
+      "name": "MTK adı",
+      "enterName": "Daxil et",
+      "cancel": "Ləğv et",
+      "save": "Yadda saxla"
+    },
+    "pagination": {
+      "prev": "Geri",
+      "next": "İrəli"
+    }
+  },
+  "complexes": {
+    "pageTitle": "Komplekslər",
+    "loading": "Yüklənir...",
+    "table": {
+      "id": "ID",
+      "name": "Ad",
+      "address": "Ünvan",
+      "buildingsCount": "Bina sayı",
+      "residentsCount": "Sakin sayı",
+      "actions": "Əməliyyatlar"
+    },
+    "actions": {
+      "search": "Axtarış",
+      "add": "Əlavə et",
+      "view": "Bax",
+      "edit": "Düzəliş et",
+      "delete": "Sil"
+    },
+    "filter": {
+      "title": "Kompleks filter",
+      "name": "Kompleks adı",
+      "enterName": "Daxil et",
+      "clear": "Təmizlə",
+      "close": "Bağla",
+      "apply": "Tətbiq et"
+    },
+    "create": {
+      "title": "Yeni kompleks əlavə et",
+      "name": "Ad",
+      "enterName": "Daxil et",
+      "address": "Ünvan",
+      "enterAddress": "Daxil et",
+      "buildingsCount": "Bina sayı",
+      "enterBuildings": "Daxil et",
+      "residentsCount": "Sakin sayı",
+      "enterResidents": "Daxil et",
+      "cancel": "Ləğv et",
+      "save": "Yadda saxla"
+    },
+    "edit": {
+      "title": "Kompleks məlumatlarını dəyiş",
+      "name": "Ad",
+      "enterName": "Daxil et",
+      "address": "Ünvan",
+      "enterAddress": "Daxil et",
+      "buildingsCount": "Bina sayı",
+      "enterBuildings": "Daxil et",
+      "residentsCount": "Sakin sayı",
+      "enterResidents": "Daxil et",
+      "cancel": "Ləğv et",
+      "save": "Yadda saxla"
+    },
+    "pagination": {
+      "prev": "Geri",
+      "next": "İrəli"
+    }
+  },
+  "buildings": {
+    "pageTitle": "Binalar",
+    "loading": "Yüklənir...",
+    "table": {
+      "id": "ID",
+      "name": "Ad",
+      "complex": "Kompleks",
+      "blocksCount": "Blok sayı",
+      "apartmentsCount": "Mənzil sayı",
+      "actions": "Əməliyyatlar"
+    },
+    "actions": {
+      "search": "Axtarış",
+      "add": "Əlavə et",
+      "view": "Bax",
+      "edit": "Düzəliş et",
+      "delete": "Sil"
+    },
+    "filter": {
+      "title": "Bina filter",
+      "name": "Bina adı",
+      "enterName": "Daxil et",
+      "complex": "Kompleks",
+      "enterComplex": "Daxil et",
+      "clear": "Təmizlə",
+      "close": "Bağla",
+      "apply": "Tətbiq et"
+    },
+    "create": {
+      "title": "Yeni bina əlavə et",
+      "name": "Ad",
+      "enterName": "Daxil et",
+      "complex": "Kompleks",
+      "enterComplex": "Daxil et",
+      "blocksCount": "Blok sayı",
+      "enterBlocks": "Daxil et",
+      "apartmentsCount": "Mənzil sayı",
+      "enterApartments": "Daxil et",
+      "cancel": "Ləğv et",
+      "save": "Yadda saxla"
+    },
+    "edit": {
+      "title": "Bina məlumatlarını dəyiş",
+      "name": "Ad",
+      "enterName": "Daxil et",
+      "complex": "Kompleks",
+      "enterComplex": "Daxil et",
+      "blocksCount": "Blok sayı",
+      "enterBlocks": "Daxil et",
+      "apartmentsCount": "Mənzil sayı",
+      "enterApartments": "Daxil et",
+      "cancel": "Ləğv et",
+      "save": "Yadda saxla"
+    },
+    "pagination": {
+      "prev": "Geri",
+      "next": "İrəli"
+    }
+  },
+  "blocks": {
+    "pageTitle": "Bloklar",
+    "loading": "Yüklənir...",
+    "table": {
+      "id": "ID",
+      "block": "Blok",
+      "building": "Bina",
+      "floorsCount": "Mərtəbə sayı",
+      "apartmentsCount": "Mənzil sayı",
+      "actions": "Əməliyyatlar"
+    },
+    "actions": {
+      "search": "Axtarış",
+      "add": "Əlavə et",
+      "view": "Bax",
+      "edit": "Düzəliş et",
+      "delete": "Sil"
+    },
+    "filter": {
+      "title": "Blok filter",
+      "block": "Blok",
+      "enterBlock": "Daxil et",
+      "building": "Bina",
+      "enterBuilding": "Daxil et",
+      "clear": "Təmizlə",
+      "close": "Bağla",
+      "apply": "Tətbiq et"
+    },
+    "create": {
+      "title": "Yeni blok əlavə et",
+      "block": "Blok",
+      "enterBlock": "Daxil et",
+      "building": "Bina",
+      "enterBuilding": "Daxil et",
+      "floorsCount": "Mərtəbə sayı",
+      "enterFloors": "Daxil et",
+      "apartmentsCount": "Mənzil sayı",
+      "enterApartments": "Daxil et",
+      "cancel": "Ləğv et",
+      "save": "Yadda saxla"
+    },
+    "edit": {
+      "title": "Blok məlumatlarını dəyiş",
+      "block": "Blok",
+      "enterBlock": "Daxil et",
+      "building": "Bina",
+      "enterBuilding": "Daxil et",
+      "floorsCount": "Mərtəbə sayı",
+      "enterFloors": "Daxil et",
+      "apartmentsCount": "Mənzil sayı",
+      "enterApartments": "Daxil et",
+      "cancel": "Ləğv et",
+      "save": "Yadda saxla"
+    },
+    "pagination": {
+      "prev": "Geri",
+      "next": "İrəli"
+    }
+  },
+  "properties": {
+    "pageTitle": "Mənzillər",
+    "loading": "Yüklənir...",
+    "table": {
+      "id": "ID",
+      "apartment": "Mənzil",
+      "block": "Blok",
+      "floor": "Mərtəbə",
+      "area": "Sahə (m²)",
+      "resident": "Sakin",
+      "actions": "Əməliyyatlar"
+    },
+    "actions": {
+      "search": "Axtarış",
+      "add": "Əlavə et",
+      "serviceFee": "Servis haqqı",
+      "edit": "Düzəliş et",
+      "delete": "Sil"
+    },
+    "filter": {
+      "title": "Mənzil filter",
+      "apartment": "Mənzil",
+      "enterApartment": "Daxil et",
+      "block": "Blok",
+      "enterBlock": "Daxil et",
+      "clear": "Təmizlə",
+      "close": "Bağla",
+      "apply": "Tətbiq et"
+    },
+    "create": {
+      "title": "Yeni mənzil əlavə et",
+      "apartment": "Mənzil",
+      "enterApartment": "Daxil et",
+      "block": "Blok",
+      "enterBlock": "Daxil et",
+      "floor": "Mərtəbə",
+      "enterFloor": "Daxil et",
+      "area": "Sahə (m²)",
+      "enterArea": "Daxil et",
+      "resident": "Sakin",
+      "enterResident": "Daxil et",
+      "cancel": "Ləğv et",
+      "save": "Yadda saxla"
+    },
+    "edit": {
+      "title": "Mənzil məlumatlarını dəyiş",
+      "apartment": "Mənzil",
+      "enterApartment": "Daxil et",
+      "block": "Blok",
+      "enterBlock": "Daxil et",
+      "floor": "Mərtəbə",
+      "enterFloor": "Daxil et",
+      "area": "Sahə (m²)",
+      "enterArea": "Daxil et",
+      "resident": "Sakin",
+      "enterResident": "Daxil et",
+      "cancel": "Ləğv et",
+      "save": "Yadda saxla"
+    },
+    "pagination": {
+      "prev": "Geri",
+      "next": "İrəli"
+    }
+  },
+  "residents": {
+    "pageTitle": "Sakinlər",
+    "loading": "Yüklənir...",
+    "table": {
+      "id": "ID",
+      "fullName": "Ad Soyad",
+      "phone": "Telefon",
+      "email": "Email",
+      "apartment": "Mənzil",
+      "status": "Status",
+      "actions": "Əməliyyatlar"
+    },
+    "actions": {
+      "search": "Axtarış",
+      "add": "Əlavə et",
+      "view": "Bax",
+      "edit": "Düzəliş et",
+      "delete": "Sil"
+    },
+    "filter": {
+      "title": "Sakin filter",
+      "fullName": "Ad Soyad",
+      "enterFullName": "Daxil et",
+      "status": "Status",
+      "enterStatus": "Daxil et",
+      "clear": "Təmizlə",
+      "close": "Bağla",
+      "apply": "Tətbiq et"
+    },
+    "create": {
+      "title": "Yeni sakin əlavə et",
+      "fullName": "Ad Soyad",
+      "enterFullName": "Daxil et",
+      "phone": "Telefon",
+      "enterPhone": "Daxil et",
+      "email": "Email",
+      "enterEmail": "Daxil et",
+      "apartment": "Mənzil",
+      "enterApartment": "Daxil et",
+      "status": "Status",
+      "enterStatus": "Daxil et",
+      "cancel": "Ləğv et",
+      "save": "Yadda saxla"
+    },
+    "edit": {
+      "title": "Sakin məlumatlarını dəyiş",
+      "fullName": "Ad Soyad",
+      "enterFullName": "Daxil et",
+      "phone": "Telefon",
+      "enterPhone": "Daxil et",
+      "email": "Email",
+      "enterEmail": "Daxil et",
+      "apartment": "Mənzil",
+      "enterApartment": "Daxil et",
+      "status": "Status",
+      "enterStatus": "Daxil et",
+      "cancel": "Ləğv et",
+      "save": "Yadda saxla"
+    },
+    "status": {
+      "active": "Aktiv",
+      "passive": "Passiv"
+    },
+    "pagination": {
+      "prev": "Geri",
+      "next": "İrəli"
+    }
+  },
+  "serviceFee": {
+    "pageTitle": "Servis haqqı",
+    "loading": "Yüklənir...",
+    "notFound": "Mənzil tapılmadı",
+    "goBack": "Geri qayıt",
+    "apartmentInfo": "Mənzil məlumatları",
+    "serviceFeeTitle": "Servis haqqı",
+    "serviceFeePerMonth": "Servis haqqı (AZN / ay)",
+    "enterFee": "Daxil et",
+    "currentFee": "Cari servis haqqı",
+    "cancel": "Ləğv et",
+    "save": "Yadda saxla",
+    "saving": "Yadda saxlanılır...",
+    "changeHistory": "Dəyişiklik tarixçəsi",
+    "noHistory": "Tarixçə yoxdur",
+    "current": "Cari",
+    "old": "Köhnə",
+    "changedBy": "Dəyişdirən",
+    "invalidFee": "Servis haqqı düzgün daxil edilməlidir",
+    "successMessage": "Servis haqqı uğurla yeniləndi",
+    "reasons": {
+      "initial": "İlkin təyin",
+      "tariffIncrease": "Tarif artımı",
+      "manualChange": "Manual dəyişiklik"
+    },
+    "labels": {
+      "apartment": "Mənzil",
+      "block": "Blok",
+      "floor": "Mərtəbə",
+      "area": "Sahə (m²)",
+      "resident": "Sakin",
+      "complex": "Kompleks",
+      "building": "Bina"
+    }
+  },
+  "profile": {
+    "pageTitle": "Profil",
+    "personalInfo": "Şəxsi məlumatlar",
+    "password": "Şifrəm",
+    "firstName": "Ad",
+    "lastName": "Soyad",
+    "birthDate": "Doğum tarixi",
+    "address": "Ünvan",
+    "phone": "Telefon",
+    "enter": "Daxil et",
+    "currentPassword": "Cari şifrə",
+    "newPassword": "Yeni şifrə",
+    "confirmPassword": "Yeni şifrəni təsdiq et",
+    "save": "Yadda saxla"
+  },
+  "kpi": {
+    "pageTitle": "Əməkdaş KPI hesabatı",
+    "loading": "Yüklənir...",
+    "timeRange": "Zaman aralığı",
+    "startDate": "Başlanğıc tarixi",
+    "endDate": "Bitmə tarixi",
+    "search": "Axtarış",
+    "created": "Yaradılıb",
+    "completed": "Tamamlanıb",
+    "count": "Sayı",
+    "percentage": "Faiz",
+    "medium": "Orta",
+    "high": "Yüksək",
+    "urgent": "Təcili",
+    "low": "Aşağı",
+    "fiveMinute": "5 deqiqelik",
+    "employeeWorkHours": "Əməkdaşın iş saatı",
+    "spentHours": "Sərfiyyat saatı",
+    "workOrdersPerDayCount": "Bir günə düşən iş sayı",
+    "totalWorkOrders": "Ümumi iş sayı",
+    "daysCount": "Gün sayı",
+    "clear": "Təmizlə",
+    "table": {
+      "employeeInfo": "İşçi məlumatı",
+      "totalWorkOrders": "Ümumi iş əmrləri (Yaradılıb / Bağlanıb)",
+      "onTimeCompletion": "Vaxtında tamamlanan iş əmrlərinin faizi",
+      "priorityReport": "İş əmrinin prioritet hesabatı",
+      "averageCompletionTime": "Orta iş əmri tamamlama müddəti",
+      "delay": "İş əmrində gecikmə",
+      "utilization": "Texnikin istifadə faizi",
+      "repeatedRequests": "Təkrarlanan müraciətlər",
+      "averageResponseTime": "Orta cavab müddəti aralığı",
+      "workOrdersPerDay": "Bir texnikə bir gündə düşən iş əmrlərinin sayı"
+    }
+  },
+  "applications": {
+    "list": {
+      "pageTitle": "Müraciətlər",
+      "calendar": "Təqvim",
+      "list": "Siyahı",
+      "search": "Axtarış",
+      "category": "Kateqoriya",
+      "excelExport": "Excel Export",
+      "priorities": "Prioritetlər",
+      "newApplication": "Yeni müraciət",
+      "loading": "Yüklənir...",
+      "new": "Yeni",
+      "details": "Ətraflı",
+      "table": {
+        "apartmentEmployee": "Mənzil/Əməkdaş",
+        "text": "Mətn",
+        "department": "Şöbə",
+        "residentPriority": "Sakin prioriteti",
+        "operationPriority": "Əməliyyat prioriteti",
+        "image": "Şəkil",
+        "status": "Status",
+        "date": "Tarix",
+        "action": "Əməliyyat"
+      }
+    },
+    "evaluation": {
+      "pageTitle": "Müraciətlərin qiymətləndirilməsi",
+      "search": "Axtarış",
+      "loading": "Yüklənir...",
+      "details": "Ətraflı",
+      "table": {
+        "apartment": "Mənzil",
+        "text": "Mətn",
+        "department": "Şöbə",
+        "image": "Şəkil",
+        "date": "Tarix",
+        "rating": "Qiymətləndirmə",
+        "action": "Əməliyyat"
+      }
     }
   }
 }

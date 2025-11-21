@@ -15,11 +15,11 @@ export function MessageCard({ img, name, message, action }) {
           <Typography
             variant="small"
             color="blue-gray"
-            className="mb-1 font-semibold"
+            className="mb-1 font-semibold dark:text-white"
           >
             {name}
           </Typography>
-          <Typography className="text-xs font-normal text-blue-gray-400">
+          <Typography className="text-xs font-normal text-blue-gray-400 dark:text-gray-400">
             {message}
           </Typography>
         </div>

@@ -81,50 +81,47 @@ export function Notifications() {
   const getTypeConfig = (type) => {
     switch (type) {
       case "payment":
-        return { label: "Ödəniş", color: "green" };
+        return { label: t("notifications.types.payment"), color: "green" };
       case "warning":
-        return { label: "Xəbərdarlıq", color: "red" };
+        return { label: t("notifications.types.warning"), color: "red" };
       case "system":
-        return { label: "Sistem", color: "blue" };
+        return { label: t("notifications.types.system"), color: "blue" };
       default:
-        return { label: "Məlumat", color: "gray" };
+        return { label: t("notifications.types.info"), color: "gray" };
     }
   };
 
   return (
     <div className="  mb-8">
       {/* Səhifə başlığı – digər dashboard səhifələri ilə eyni stil */}
-      <div className="w-full bg-black my-4 p-5 rounded-lg shadow-lg mb-6 flex items-center justify-between gap-4">
+      <div className="w-full bg-black dark:bg-gray-900 my-4 p-5 rounded-lg shadow-lg mb-6 flex items-center justify-between gap-4">
         <div>
           <h3 className="text-white font-bold">
-            {t("notifications.pageTitle", "Bildirişlər")}
+            {t("notifications.pageTitle")}
           </h3>
           
         </div>
-        <div className="hidden sm:flex items-center justify-center h-10 w-10 rounded-full bg-yellow-500/20 border border-yellow-500/50">
-          <BellIcon className="h-6 w-6 text-yellow-400" />
+        <div className="hidden sm:flex items-center justify-center h-10 w-10 rounded-full bg-yellow-500/20 dark:bg-yellow-500/10 border border-yellow-500/50 dark:border-yellow-500/30">
+          <BellIcon className="h-6 w-6 text-yellow-400 dark:text-yellow-300" />
         </div>
       </div>
 
-      <Card className="border border-red-600 shadow-sm">
+      <Card className="border border-red-600 shadow-sm dark:bg-gray-800 dark:border-gray-700">
         <CardHeader
           floated={false}
           shadow={false}
           color="transparent"
-          className="m-0 flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between"
+          className="m-0 flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between dark:bg-gray-800"
         >
           <div>
-            <Typography variant="h6" color="blue-gray" className="mb-1">
-              {t("notifications.listTitle", "Son bildirişlər")}
+            <Typography variant="h6" color="blue-gray" className="mb-1 dark:text-white">
+              {t("notifications.listTitle")}
             </Typography>
             <Typography
               variant="small"
-              className="font-normal text-blue-gray-500"
+              className="font-normal text-blue-gray-500 dark:text-gray-400"
             >
-              {t(
-                "notifications.listSubtitle",
-                "Oxunmamış bildirişləri tez bir zamanda idarə edin."
-              )}
+              {t("notifications.listSubtitle")}
             </Typography>
           </div>
           {/* <div className="flex items-center gap-4">
@@ -148,42 +145,36 @@ export function Notifications() {
           </div> */}
         </CardHeader>
 
-        <CardBody className="px-0 pt-0 pb-2">
+        <CardBody className="px-0 pt-0 pb-2 dark:bg-gray-800">
           {filteredNotifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-gray-50">
-                <BellIcon className="h-6 w-6 text-blue-gray-300" />
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-gray-50 dark:bg-gray-700">
+                <BellIcon className="h-6 w-6 text-blue-gray-300 dark:text-gray-400" />
               </div>
-              <Typography variant="h6" color="blue-gray" className="mb-2">
-                {t(
-                  "notifications.emptyTitle",
-                  "Hazırda göstəriləcək bildiriş yoxdur"
-                )}
+              <Typography variant="h6" color="blue-gray" className="mb-2 dark:text-white">
+                {t("notifications.emptyTitle")}
               </Typography>
               <Typography
                 variant="small"
-                className="max-w-md text-xs font-normal text-blue-gray-500"
+                className="max-w-md text-xs font-normal text-blue-gray-500 dark:text-gray-400"
               >
-                {t(
-                  "notifications.emptySubtitle",
-                  "Yeni hadisələr baş verdikdə bildirişlər burada görünəcək."
-                )}
+                {t("notifications.emptySubtitle")}
               </Typography>
             </div>
           ) : (
-            <div className="divide-y divide-red-600/60">
+            <div className="divide-y divide-red-600/60 dark:divide-gray-700">
               {filteredNotifications.map((item) => {
                 const config = getTypeConfig(item.type);
 
                 return (
                   <div
                     key={item.id}
-                    className="flex flex-col gap-3 px-4 py-4 transition-colors hover:bg-blue-gray-50/40 sm:flex-row sm:items-start sm:justify-between sm:px-6"
+                    className="flex flex-col gap-3 px-4 py-4 transition-colors hover:bg-blue-gray-50/40 dark:hover:bg-gray-700/50 sm:flex-row sm:items-start sm:justify-between sm:px-6"
                   >
                     <div className="flex items-start gap-3">
                       <span
                         className={`mt-1 h-2.5 w-2.5 rounded-full ${
-                          item.read ? "bg-blue-gray-200" : "bg-green-500"
+                          item.read ? "bg-blue-gray-200 dark:bg-gray-600" : "bg-green-500 dark:bg-green-400"
                         }`}
                       />
                       <div>
@@ -191,27 +182,27 @@ export function Notifications() {
                           <Typography
                             variant="small"
                             color="blue-gray"
-                            className="font-semibold"
+                            className="font-semibold dark:text-white"
                           >
                             {item.title}
                           </Typography>
                           <Chip
-                            value={config.label}
+                            value={t(`notifications.types.${item.type}`)}
                             size="sm"
                             variant="ghost"
                             color={config.color}
-                            className="px-2 py-0.5 text-[10px] font-medium uppercase"
+                            className="px-2 py-0.5 text-[10px] font-medium uppercase dark:bg-opacity-80"
                           />
                         </div>
                         <Typography
                           variant="small"
-                          className="text-xs font-normal text-blue-gray-500"
+                          className="text-xs font-normal text-blue-gray-500 dark:text-gray-300"
                         >
                           {item.description}
                         </Typography>
                         <Typography
                           variant="small"
-                          className="mt-2 text-[11px] font-medium text-blue-gray-400"
+                          className="mt-2 text-[11px] font-medium text-blue-gray-400 dark:text-gray-400"
                         >
                           {item.time}
                         </Typography>
@@ -223,12 +214,9 @@ export function Notifications() {
                         <button
                           type="button"
                           onClick={() => handleMarkAsRead(item.id)}
-                          className="rounded-md border border-green-500 px-3 py-1 text-[11px] font-medium uppercase text-green-600 transition-colors hover:bg-green-50"
+                          className="rounded-md border border-green-500 dark:border-green-400 px-3 py-1 text-[11px] font-medium uppercase text-green-600 dark:text-green-300 transition-colors hover:bg-green-50 dark:hover:bg-green-900/20"
                         >
-                          {t(
-                            "notifications.markAsRead",
-                            "Oxunmuş kimi qeyd et"
-                          )}
+                          {t("notifications.markAsRead")}
                         </button>
                       )}
 
@@ -238,7 +226,7 @@ export function Notifications() {
                             size="sm"
                             variant="text"
                             color="blue-gray"
-                            className="ml-auto"
+                            className="ml-auto dark:text-gray-300 dark:hover:bg-gray-700"
                           >
                             <EllipsisVerticalIcon
                               strokeWidth={2}
@@ -246,20 +234,14 @@ export function Notifications() {
                             />
                           </IconButton>
                         </MenuHandler>
-                        <MenuList>
+                        <MenuList className="dark:bg-gray-800 dark:border-gray-700">
                           {!item.read && (
-                            <MenuItem onClick={() => handleMarkAsRead(item.id)}>
-                              {t(
-                                "notifications.actions.markAsRead",
-                                "Oxunmuş kimi qeyd et"
-                              )}
+                            <MenuItem onClick={() => handleMarkAsRead(item.id)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                              {t("notifications.actions.markAsRead")}
                             </MenuItem>
                           )}
-                          <MenuItem onClick={() => handleRemove(item.id)}>
-                            {t(
-                              "notifications.actions.remove",
-                              "Siyahıdan sil"
-                            )}
+                          <MenuItem onClick={() => handleRemove(item.id)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                            {t("notifications.actions.remove")}
                           </MenuItem>
                         </MenuList>
                       </Menu>

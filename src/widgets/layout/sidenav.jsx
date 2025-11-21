@@ -10,6 +10,7 @@ import {
 } from "@material-tailwind/react";
 import { useMaterialTailwindController, setOpenSidenav } from "@/context";
 import { useTranslation } from "react-i18next";
+import { motion } from "framer-motion";
 
 export function Sidenav({ brandImg, brandName, routes }) {
   const [controller, dispatch] = useMaterialTailwindController();
@@ -21,7 +22,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
   React.useEffect(() => {
     // Aktiv child route dəyişəndə submenu-ləri vəziyyətə uyğunlaşdır
     setOpenMenus((current) => {
-      const updated = { ...current };
+      const updated = {};
 
       routes.forEach(({ layout, pages }) => {
         pages.forEach((page) => {
@@ -30,9 +31,9 @@ export function Sidenav({ brandImg, brandName, routes }) {
               (child) => `/${layout}${child.path}` === location.pathname
             );
 
-            // Əgər heç bir child aktiv deyilsə, bu parent submenu-ni bağla
-            if (!hasActiveChild) {
-              updated[page.name] = false;
+            // Yalnız aktiv child route-u olan submenu-ni aç
+            if (hasActiveChild) {
+              updated[page.name] = true;
             }
           }
         });
@@ -43,8 +44,8 @@ export function Sidenav({ brandImg, brandName, routes }) {
   }, [location.pathname, routes]);
 
   const sidenavTypes = {
-    dark: "bg-gradient-to-br from-gray-800 to-gray-900",
-    white: "bg-white shadow-sm",
+    dark: "bg-gradient-to-br from-gray-800 to-gray-900 dark:from-blue-900 dark:to-gray-900",
+    white: "bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700",
     transparent: "bg-transparent",
   };
 
@@ -52,15 +53,15 @@ export function Sidenav({ brandImg, brandName, routes }) {
     <aside
       className={`${sidenavTypes[sidenavType]} ${
         openSidenav ? "translate-x-0" : "-translate-x-80"
-      } fixed inset-0 z-50 my-4 ml-4 h-[calc(100vh-32px)] w-72 rounded-xl transition-transform duration-300 xl:translate-x-0 border border-red-600 shadow-sm`}
+      } fixed inset-0 z-50 my-4 ml-4 h-[calc(100vh-32px)] w-72 rounded-xl transition-transform duration-300 xl:translate-x-0 border border-red-600 shadow-sm flex flex-col overflow-hidden`}
     >
-      <div
-        className={`relative`}
-      >
+      {/* Fixed Header */}
+      <div className="relative flex-shrink-0">
         <Link to="/" className="py-6 px-8 text-center">
           <Typography
             variant="h6"
             color={sidenavType === "dark" ? "white" : "black"}
+            className="dark:text-white"
           >
             {brandName}
           </Typography>
@@ -79,7 +80,8 @@ export function Sidenav({ brandImg, brandName, routes }) {
           />
         </IconButton>
       </div>
-      <div className="m-4">
+      {/* Scrollable Menu List */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden m-4 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent hover:scrollbar-thumb-gray-500 dark:scrollbar-thumb-gray-600 dark:hover:scrollbar-thumb-gray-500">
         {routes.map(({ layout, title, pages }, key) => (
           <ul key={key} className="mb-4 flex flex-col gap-1">
             {title && (
@@ -87,7 +89,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
                 <Typography
                   variant="small"
                   color={sidenavType === "dark" ? "white" : "black"}
-                  className="font-black uppercase opacity-75"
+                  className="font-black uppercase opacity-75 dark:text-white dark:opacity-100"
                 >
                   {title}
                 </Typography>
@@ -118,20 +120,36 @@ export function Sidenav({ brandImg, brandName, routes }) {
                           ? "white"
                           : "gray"
                       }
-                      className="flex items-center justify-between gap-2 px-4 capitalize"
+                      className={`flex items-center justify-between gap-2 px-4 capitalize transition-colors ${
+                        isOpen 
+                          ? "dark:bg-gray-700 dark:text-white bg-gray-100" 
+                          : "dark:text-white dark:hover:bg-gray-700/50 dark:bg-transparent hover:bg-gray-50"
+                      }`}
                       fullWidth
-                      onClick={() =>
-                        setOpenMenus((current) => ({
-                          ...current,
-                          [page.name]: !current[page.name],
-                        }))
-                      }
+                      onClick={(e) => {
+                        // Bir submenu açılanda digərlərini bağla - yalnız bir submenu açıq olsun
+                        setOpenMenus((current) => {
+                          // Əgər bu menu açıqdırsa, onu bağla
+                          if (current[page.name]) {
+                            return {};
+                          }
+                          // Bu menu açıq deyilsə, onu aç və digərlərini bağla
+                          return { [page.name]: true };
+                        });
+                      }}
                     >
                       <span className="flex items-center gap-4">
-                        {page.icon}
+                        <motion.div
+                          whileTap={{ scale: 0.8, rotate: 360 }}
+                          whileHover={{ scale: 1.1, rotate: 15 }}
+                          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                          className="dark:text-white"
+                        >
+                          {page.icon}
+                        </motion.div>
                         <Typography
                           color="inherit"
-                          className="font-medium"
+                          className="font-medium dark:text-white"
                         >
                           {page.name.startsWith("sidebar.")
                             ? t(page.name)
@@ -140,7 +158,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
                       </span>
                       <ChevronDownIcon
                         strokeWidth={2}
-                        className={`h-4 w-4 transition-transform ${
+                        className={`h-4 w-4 transition-transform dark:text-white ${
                           isOpen ? "rotate-180" : ""
                         }`}
                       />
@@ -151,7 +169,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
                         isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
                       }`}
                     >
-                      <ul className="mt-1 flex flex-col gap-1 pl-5">
+                      <ul className="mt-1 flex flex-col gap-1 pl-5 dark:bg-transparent">
                         {page.children
                           .filter((child) => !child.hideInSidenav)
                           .map(({ icon, name, path }) => (
@@ -169,19 +187,31 @@ export function Sidenav({ brandImg, brandName, routes }) {
                                       ? "white"
                                       : "gray"
                                   }
-                                  className="flex items-center gap-3 px-3 py-2 text-sm normal-case"
+                                  className={`flex items-center justify-start gap-3 px-3 py-2 text-sm normal-case transition-colors text-left ${
+                                    isActive 
+                                      ? "dark:bg-gray-700 dark:text-white bg-gray-100" 
+                                      : "dark:text-white dark:hover:bg-gray-700/50 dark:bg-transparent hover:bg-gray-50"
+                                  }`}
                                   fullWidth
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    // Icon animasiyasını trigger et - icon-un öz click event-i işləyəcək
                                     // mobil görünüşdə route dəyişəndə sidenav bağlansın
                                     if (window.innerWidth < 1280) {
                                       setOpenSidenav(dispatch, false);
                                     }
                                   }}
                                 >
-                                  {icon}
+                                  <motion.div
+                                    whileTap={{ scale: 0.8, rotate: 360 }}
+                                    whileHover={{ scale: 1.1, rotate: 15 }}
+                                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                                    className="dark:text-white"
+                                  >
+                                    {icon}
+                                  </motion.div>
                                   <Typography
                                     color="inherit"
-                                    className="font-medium"
+                                    className="font-medium dark:text-white text-left"
                                   >
                                     {name.startsWith("sidebar.")
                                       ? t(name)
@@ -211,19 +241,31 @@ export function Sidenav({ brandImg, brandName, routes }) {
                             ? "white"
                             : "gray"
                         }
-                        className="flex items-center gap-4 px-4 capitalize"
+                        className={`flex items-center gap-4 px-4 capitalize transition-colors ${
+                          isActive 
+                            ? "dark:bg-gray-700 dark:text-white bg-gray-100" 
+                            : "dark:text-white dark:hover:bg-gray-700/50 dark:bg-transparent hover:bg-gray-50"
+                        }`}
                         fullWidth
-                        onClick={() => {
+                        onClick={(e) => {
+                          // Icon animasiyasını trigger et - icon-un öz click event-i işləyəcək
                           // mobil görünüşdə route dəyişəndə sidenav bağlansın
                           if (window.innerWidth < 1280) {
                             setOpenSidenav(dispatch, false);
                           }
                         }}
                       >
-                        {page.icon}
+                        <motion.div
+                          whileTap={{ scale: 0.8, rotate: 360 }}
+                          whileHover={{ scale: 1.1, rotate: 15 }}
+                          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                          className="dark:text-white"
+                        >
+                          {page.icon}
+                        </motion.div>
                         <Typography
                           color="inherit"
-                          className="font-medium"
+                          className="font-medium dark:text-white"
                         >
                           {page.name.startsWith("sidebar.")
                             ? t(page.name)
@@ -235,11 +277,11 @@ export function Sidenav({ brandImg, brandName, routes }) {
                 </li>
               );
             })}
-          </ul>
-        ))}
-      </div>
-    </aside>
-  );
+        </ul>
+      ))}
+    </div>
+  </aside>
+);
 }
 
 Sidenav.defaultProps = {

@@ -24,6 +24,9 @@ export function reducer(state, action) {
     case "OPEN_CONFIGURATOR": {
       return { ...state, openConfigurator: action.value };
     }
+    case "DARK_MODE": {
+      return { ...state, darkMode: action.value };
+    }
     default: {
       throw new Error(`Unhandled action type: ${action.type}`);
     }
@@ -31,6 +34,15 @@ export function reducer(state, action) {
 }
 
 export function MaterialTailwindControllerProvider({ children }) {
+  // Dark mode-u localStorage-dan oxu
+  const getInitialDarkMode = () => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("darkMode");
+      return saved === "true";
+    }
+    return false;
+  };
+
   const initialState = {
     openSidenav: false,
     sidenavColor: "dark",
@@ -38,9 +50,21 @@ export function MaterialTailwindControllerProvider({ children }) {
     transparentNavbar: true,
     fixedNavbar: false,
     openConfigurator: false,
+    darkMode: getInitialDarkMode(),
   };
 
   const [controller, dispatch] = React.useReducer(reducer, initialState);
+
+  // Dark mode dəyişəndə HTML elementinə class əlavə et/çıxart
+  React.useEffect(() => {
+    if (controller.darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("darkMode", String(controller.darkMode));
+  }, [controller.darkMode]);
+
   const value = React.useMemo(
     () => [controller, dispatch],
     [controller, dispatch]
@@ -83,3 +107,5 @@ export const setFixedNavbar = (dispatch, value) =>
   dispatch({ type: "FIXED_NAVBAR", value });
 export const setOpenConfigurator = (dispatch, value) =>
   dispatch({ type: "OPEN_CONFIGURATOR", value });
+export const setDarkMode = (dispatch, value) =>
+  dispatch({ type: "DARK_MODE", value });
