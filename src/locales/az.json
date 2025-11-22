@@ -25,6 +25,9 @@
     "reports": "Hesabatlar",
     "debtorApartments": "Borclu mənzillər",
     "expenses": "Xərclər",
+    "deposit": "Depozit",
+    "transfers": "Köçürmələr",
+    "debt": "Öhdəlik",
     "notifications": "Bildirişlər",
     "applications": "Müraciətlər",
     "applicationsList": "Müraciətlər siyahısı",
@@ -97,7 +100,12 @@
       "completed": "Tamamlandı",
       "accepted": "Qəbul edildi",
       "inProgress": "İcraya başalınıldı",
-      "cancelled": "Ləğv edildi"
+      "cancelled": "Ləğv edildi",
+      "Gözləmədə": "Gözləmədə",
+      "Tamamlandı": "Tamamlandı",
+      "Qəbul edildi": "Qəbul edildi",
+      "İcraya başalınıldı": "İcraya başalınıldı",
+      "Ləğv edildi": "Ləğv edildi"
     },
     "paymentTypes": {
       "cash": "Nağd ödəniş",
@@ -562,6 +570,201 @@
       "next": "İrəli"
     }
   },
+  "deposit": {
+    "pageTitle": "Depozit",
+    "summary": {
+      "totalDeposit": "Ümumi depozit"
+    },
+    "filter": {
+      "title": "Depozit filter",
+      "apartment": "Mənzil",
+      "owner": "Mənzil sahibi",
+      "status": "Status",
+      "enter": "Daxil et"
+    },
+    "create": {
+      "title": "Yeni depozit əlavə et"
+    },
+    "edit": {
+      "title": "Depozit məlumatlarını dəyiş"
+    },
+    "actions": {
+      "search": "Axtarış",
+      "add": "Əlavə et",
+      "view": "Bax",
+      "edit": "Düzəliş et",
+      "delete": "Sil",
+      "loading": "Yüklənir..."
+    },
+    "table": {
+      "id": "ID",
+      "apartment": "Mənzil",
+      "owner": "Mənzil sahibi",
+      "amount": "Məbləğ",
+      "paymentMethod": "Ödəniş üsulu",
+      "depositDate": "Depozit tarixi",
+      "status": "Status",
+      "notes": "Qeyd",
+      "operations": "Əməliyyatlar"
+    },
+    "mobile": {
+      "id": "ID",
+      "owner": "Mənzil sahibi",
+      "amount": "Məbləğ",
+      "paymentMethod": "Ödəniş üsulu",
+      "depositDate": "Depozit tarixi"
+    },
+    "form": {
+      "apartment": "Mənzil",
+      "owner": "Mənzil sahibi",
+      "amount": "Məbləğ",
+      "paymentMethod": "Ödəniş üsulu",
+      "depositDate": "Depozit tarixi",
+      "notes": "Qeyd",
+      "enter": "Daxil et"
+    },
+    "paymentMethod": {
+      "cash": "Nağd",
+      "bank": "Bank"
+    },
+    "status": {
+      "active": "Aktiv",
+      "returned": "Qaytarılıb"
+    },
+    "pagination": {
+      "prev": "Geri",
+      "next": "İrəli"
+    }
+  },
+  "transfers": {
+    "pageTitle": "Köçürmələr",
+    "summary": {
+      "totalTransfers": "Ümumi köçürmə"
+    },
+    "filter": {
+      "title": "Köçürmə filter",
+      "fromAccount": "Haradan",
+      "toAccount": "Haraya",
+      "status": "Status",
+      "enter": "Daxil et"
+    },
+    "create": {
+      "title": "Yeni köçürmə əlavə et"
+    },
+    "edit": {
+      "title": "Köçürmə məlumatlarını dəyiş"
+    },
+    "actions": {
+      "search": "Axtarış",
+      "add": "Əlavə et",
+      "view": "Bax",
+      "edit": "Düzəliş et",
+      "delete": "Sil",
+      "loading": "Yüklənir..."
+    },
+    "table": {
+      "id": "ID",
+      "fromAccount": "Haradan",
+      "toAccount": "Haraya",
+      "amount": "Məbləğ",
+      "transferDate": "Köçürmə tarixi",
+      "description": "Təsvir",
+      "referenceNumber": "İstinad nömrəsi",
+      "status": "Status",
+      "operations": "Əməliyyatlar"
+    },
+    "mobile": {
+      "id": "ID",
+      "fromAccount": "Haradan",
+      "toAccount": "Haraya",
+      "amount": "Məbləğ",
+      "transferDate": "Köçürmə tarixi"
+    },
+    "form": {
+      "fromAccount": "Haradan",
+      "toAccount": "Haraya",
+      "amount": "Məbləğ",
+      "transferDate": "Köçürmə tarixi",
+      "description": "Təsvir",
+      "enter": "Daxil et"
+    },
+    "account": {
+      "cash": "Nağd",
+      "bank": "Bank"
+    },
+    "status": {
+      "completed": "Tamamlanıb",
+      "pending": "Gözləyir"
+    },
+    "pagination": {
+      "prev": "Geri",
+      "next": "İrəli"
+    }
+  },
+  "debt": {
+    "pageTitle": "Öhdəlik",
+    "summary": {
+      "totalDebt": "Ümumi öhdəlik"
+    },
+    "filter": {
+      "title": "Öhdəlik filter",
+      "creditor": "Alacaglı",
+      "category": "Kateqoriya",
+      "status": "Status",
+      "enter": "Daxil et"
+    },
+    "create": {
+      "title": "Yeni öhdəlik əlavə et"
+    },
+    "edit": {
+      "title": "Öhdəlik məlumatlarını dəyiş"
+    },
+    "actions": {
+      "search": "Axtarış",
+      "add": "Əlavə et",
+      "view": "Bax",
+      "edit": "Düzəliş et",
+      "delete": "Sil",
+      "loading": "Yüklənir..."
+    },
+    "table": {
+      "id": "ID",
+      "creditor": "Alacaglı",
+      "debtor": "Borclu",
+      "amount": "Məbləğ",
+      "category": "Kateqoriya",
+      "debtDate": "Öhdəlik tarixi",
+      "dueDate": "Son tarix",
+      "description": "Təsvir",
+      "status": "Status",
+      "operations": "Əməliyyatlar"
+    },
+    "mobile": {
+      "id": "ID",
+      "debtor": "Borclu",
+      "amount": "Məbləğ",
+      "category": "Kateqoriya",
+      "dueDate": "Son tarix"
+    },
+    "form": {
+      "creditor": "Alacaglı",
+      "debtor": "Borclu",
+      "amount": "Məbləğ",
+      "debtDate": "Öhdəlik tarixi",
+      "dueDate": "Son tarix",
+      "category": "Kateqoriya",
+      "description": "Təsvir",
+      "enter": "Daxil et"
+    },
+    "status": {
+      "paid": "Ödənilib",
+      "active": "Aktiv"
+    },
+    "pagination": {
+      "prev": "Geri",
+      "next": "İrəli"
+    }
+  },
   "notifications": {
     "pageTitle": "Bildirişlər",
     "listTitle": "Son bildirişlər",
@@ -986,10 +1189,25 @@
     "timeRange": "Zaman aralığı",
     "startDate": "Başlanğıc tarixi",
     "endDate": "Bitmə tarixi",
-    "search": "Axtarış",
+    "search": "AXTARIŞ",
+    "excel": "EXCEL",
+    "pdf": "PDF",
     "created": "Yaradılıb",
     "completed": "Tamamlanıb",
     "count": "Sayı",
+    "searchModal": {
+      "title": "Axtarış",
+      "employeeName": "Əməkdaş adı",
+      "enterEmployeeName": "Əməkdaş adını daxil edin",
+      "employeeSurname": "Əməkdaş soyadı",
+      "enterEmployeeSurname": "Əməkdaş soyadını daxil edin",
+      "department": "Şöbə",
+      "enterDepartment": "Şöbə daxil edin",
+      "dateFrom": "Başlanğıc tarixi",
+      "enterDateFrom": "Başlanğıc tarixini daxil edin",
+      "dateTo": "Son tarix",
+      "enterDateTo": "Son tarixini daxil edin"
+    },
     "percentage": "Faiz",
     "medium": "Orta",
     "high": "Yüksək",
@@ -1018,16 +1236,83 @@
   "applications": {
     "list": {
       "pageTitle": "Müraciətlər",
-      "calendar": "Təqvim",
-      "list": "Siyahı",
-      "search": "Axtarış",
-      "category": "Kateqoriya",
-      "excelExport": "Excel Export",
-      "priorities": "Prioritetlər",
+      "calendar": "TƏQVİM",
+      "list": "SİYAHI",
+      "search": "AXTARIŞ",
+      "category": "KATEQORİYA",
+      "excelExport": "EXCEL EXPORT",
+      "priorities": "PRIORITETLƏR",
       "newApplication": "Yeni müraciət",
       "loading": "Yüklənir...",
       "new": "Yeni",
       "details": "Ətraflı",
+      "searchModal": {
+        "title": "Axtarış",
+        "searchText": "Axtarış mətni",
+        "enterSearchText": "Daxil et",
+        "apartment": "Mənzil",
+        "enterApartment": "Daxil et",
+        "department": "Şöbə",
+        "enterDepartment": "Daxil et",
+        "status": "Status",
+        "selectStatus": "Seçin",
+        "dateFrom": "Başlanğıc tarixi",
+        "enterDateFrom": "Daxil et",
+        "dateTo": "Son tarix",
+        "enterDateTo": "Daxil et",
+        "all": "Hamısı"
+      },
+      "categoryModal": {
+        "title": "Kateqoriya",
+        "category": "Kateqoriya",
+        "selectCategory": "Seçin",
+        "all": "Hamısı",
+        "cleaning": "Təmizlik",
+        "plumbing": "Santexnika",
+        "electricity": "Elektrik",
+        "repair": "Təmir",
+        "other": "Digər"
+      },
+      "newApplicationModal": {
+        "title": "Yeni müraciət",
+        "apartmentEmployee": "Mənzil/Əməkdaş",
+        "enterApartmentEmployee": "Daxil et",
+        "text": "Mətn",
+        "enterText": "Daxil et",
+        "department": "Şöbə",
+        "selectDepartment": "Seçin",
+        "residentPriority": "Sakin prioriteti",
+        "selectResidentPriority": "Seçin",
+        "operationPriority": "Əməliyyat prioriteti",
+        "selectOperationPriority": "Seçin",
+        "status": "Status",
+        "selectStatus": "Seçin",
+        "date": "Tarix",
+        "enterDate": "Daxil et",
+        "image": "Şəkil",
+        "selectImage": "Seçin",
+        "selectOption": "Seçin",
+        "priorityNormal": "Normal",
+        "priorityMedium": "Orta",
+        "priorityHigh": "Yüksək",
+        "priorityLow": "Aşağı",
+        "priorityUrgent": "Tecili",
+        "priority5Minute": "5 deqiqelik"
+      },
+      "detailsModal": {
+        "title": "Müraciət ətraflı",
+        "id": "ID",
+        "apartmentEmployee": "Mənzil/Əməkdaş",
+        "text": "Mətn",
+        "department": "Şöbə",
+        "residentPriority": "Sakin prioriteti",
+        "operationPriority": "Əməliyyat prioriteti",
+        "image": "Şəkil",
+        "status": "Status",
+        "date": "Tarix",
+        "noImage": "Şəkil yoxdur",
+        "newApplication": "Yeni müraciət"
+      },
       "table": {
         "apartmentEmployee": "Mənzil/Əməkdaş",
         "text": "Mətn",
@@ -1042,9 +1327,37 @@
     },
     "evaluation": {
       "pageTitle": "Müraciətlərin qiymətləndirilməsi",
-      "search": "Axtarış",
+      "search": "AXTARIŞ",
       "loading": "Yüklənir...",
       "details": "Ətraflı",
+      "searchModal": {
+        "title": "Axtarış",
+        "searchText": "Axtarış mətni",
+        "enterSearchText": "Axtarış mətnini daxil edin",
+        "apartment": "Mənzil",
+        "enterApartment": "Mənzil daxil edin",
+        "department": "Şöbə",
+        "enterDepartment": "Şöbə daxil edin",
+        "rating": "Qiymətləndirmə",
+        "selectRating": "Qiymətləndirmə seçin",
+        "dateFrom": "Başlanğıc tarixi",
+        "enterDateFrom": "Başlanğıc tarixini daxil edin",
+        "dateTo": "Son tarix",
+        "enterDateTo": "Son tarixini daxil edin",
+        "all": "Hamısı"
+      },
+      "detailsModal": {
+        "title": "Qiymətləndirmə ətraflı",
+        "id": "ID",
+        "apartment": "Mənzil",
+        "text": "Mətn",
+        "department": "Şöbə",
+        "image": "Şəkil",
+        "status": "Status",
+        "date": "Tarix",
+        "rating": "Qiymətləndirmə",
+        "noImage": "Şəkil yoxdur"
+      },
       "table": {
         "apartment": "Mənzil",
         "text": "Mətn",

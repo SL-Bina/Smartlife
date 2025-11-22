@@ -17,6 +17,8 @@ import {
   BellIcon,
   PresentationChartLineIcon,
   QuestionMarkCircleIcon,
+  ArrowDownCircleIcon,
+  ArrowsRightLeftIcon,
 } from "@heroicons/react/24/solid";
 import { Home, Tables, Notifications, KPI, ApplicationsListPage, ApplicationsEvaluationPage } from "@/pages/dashboard";
 import Profile from "./pages/dashboard/profile";
@@ -35,6 +37,9 @@ import PaymentHistoryPage from "./pages/dashboard/finance/payment-history";
 import ReportsPage from "./pages/dashboard/finance/reports";
 import DebtorApartmentsPage from "./pages/dashboard/finance/debtor-apartments";
 import ExpensesPage from "./pages/dashboard/finance/expenses";
+import DepositPage from "./pages/dashboard/finance/deposit";
+import TransfersPage from "./pages/dashboard/finance/transfers";
+import DebtPage from "./pages/dashboard/finance/debt";
 
 const icon = {
   className: "w-5 h-5 text-inherit dark:text-white",
@@ -89,6 +94,24 @@ export const routes = [
             name: "sidebar.expenses",
             path: "/finance/expenses",
             element: <ExpensesPage />,
+          },
+          {
+            icon: <ArrowDownCircleIcon {...icon} />,
+            name: "sidebar.deposit",
+            path: "/finance/deposit",
+            element: <DepositPage />,
+          },
+          {
+            icon: <ArrowsRightLeftIcon {...icon} />,
+            name: "sidebar.transfers",
+            path: "/finance/transfers",
+            element: <TransfersPage />,
+          },
+          {
+            icon: <DocumentTextIcon {...icon} />,
+            name: "sidebar.debt",
+            path: "/finance/debt",
+            element: <DebtPage />,
           },
         ],
       },

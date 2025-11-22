@@ -25,6 +25,9 @@
     "reports": "Отчеты",
     "debtorApartments": "Квартиры с долгами",
     "expenses": "Расходы",
+    "deposit": "Депозит",
+    "transfers": "Переводы",
+    "debt": "Обязательство",
     "notifications": "Уведомления",
     "applications": "Заявки",
     "applicationsList": "Список заявок",
@@ -97,7 +100,12 @@
       "completed": "Завершено",
       "accepted": "Принято",
       "inProgress": "В процессе",
-      "cancelled": "Отменено"
+      "cancelled": "Отменено",
+      "Gözləmədə": "В ожидании",
+      "Tamamlandı": "Завершено",
+      "Qəbul edildi": "Принято",
+      "İcraya başalınıldı": "В процессе",
+      "Ləğv edildi": "Отменено"
     },
     "paymentTypes": {
       "cash": "Наличный платеж",
@@ -562,6 +570,201 @@
       "next": "Вперед"
     }
   },
+  "deposit": {
+    "pageTitle": "Депозит",
+    "summary": {
+      "totalDeposit": "Общий депозит"
+    },
+    "filter": {
+      "title": "Фильтр депозита",
+      "apartment": "Квартира",
+      "owner": "Владелец квартиры",
+      "status": "Статус",
+      "enter": "Введите"
+    },
+    "create": {
+      "title": "Добавить новый депозит"
+    },
+    "edit": {
+      "title": "Редактировать депозит"
+    },
+    "actions": {
+      "search": "Поиск",
+      "add": "Добавить",
+      "view": "Просмотр",
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "loading": "Загрузка..."
+    },
+    "table": {
+      "id": "ID",
+      "apartment": "Квартира",
+      "owner": "Владелец квартиры",
+      "amount": "Сумма",
+      "paymentMethod": "Способ оплаты",
+      "depositDate": "Дата депозита",
+      "status": "Статус",
+      "notes": "Примечание",
+      "operations": "Операции"
+    },
+    "mobile": {
+      "id": "ID",
+      "owner": "Владелец квартиры",
+      "amount": "Сумма",
+      "paymentMethod": "Способ оплаты",
+      "depositDate": "Дата депозита"
+    },
+    "form": {
+      "apartment": "Квартира",
+      "owner": "Владелец квартиры",
+      "amount": "Сумма",
+      "paymentMethod": "Способ оплаты",
+      "depositDate": "Дата депозита",
+      "notes": "Примечание",
+      "enter": "Введите"
+    },
+    "paymentMethod": {
+      "cash": "Наличные",
+      "bank": "Банк"
+    },
+    "status": {
+      "active": "Активный",
+      "returned": "Возвращен"
+    },
+    "pagination": {
+      "prev": "Назад",
+      "next": "Вперед"
+    }
+  },
+  "transfers": {
+    "pageTitle": "Переводы",
+    "summary": {
+      "totalTransfers": "Общие переводы"
+    },
+    "filter": {
+      "title": "Фильтр переводов",
+      "fromAccount": "С счета",
+      "toAccount": "На счет",
+      "status": "Статус",
+      "enter": "Введите"
+    },
+    "create": {
+      "title": "Добавить новый перевод"
+    },
+    "edit": {
+      "title": "Редактировать перевод"
+    },
+    "actions": {
+      "search": "Поиск",
+      "add": "Добавить",
+      "view": "Просмотр",
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "loading": "Загрузка..."
+    },
+    "table": {
+      "id": "ID",
+      "fromAccount": "С счета",
+      "toAccount": "На счет",
+      "amount": "Сумма",
+      "transferDate": "Дата перевода",
+      "description": "Описание",
+      "referenceNumber": "Номер ссылки",
+      "status": "Статус",
+      "operations": "Операции"
+    },
+    "mobile": {
+      "id": "ID",
+      "fromAccount": "С счета",
+      "toAccount": "На счет",
+      "amount": "Сумма",
+      "transferDate": "Дата перевода"
+    },
+    "form": {
+      "fromAccount": "С счета",
+      "toAccount": "На счет",
+      "amount": "Сумма",
+      "transferDate": "Дата перевода",
+      "description": "Описание",
+      "enter": "Введите"
+    },
+    "account": {
+      "cash": "Наличные",
+      "bank": "Банк"
+    },
+    "status": {
+      "completed": "Завершено",
+      "pending": "Ожидает"
+    },
+    "pagination": {
+      "prev": "Назад",
+      "next": "Вперед"
+    }
+  },
+  "debt": {
+    "pageTitle": "Обязательство",
+    "summary": {
+      "totalDebt": "Общее обязательство"
+    },
+    "filter": {
+      "title": "Фильтр обязательств",
+      "creditor": "Кредитор",
+      "category": "Категория",
+      "status": "Статус",
+      "enter": "Введите"
+    },
+    "create": {
+      "title": "Добавить новое обязательство"
+    },
+    "edit": {
+      "title": "Редактировать обязательство"
+    },
+    "actions": {
+      "search": "Поиск",
+      "add": "Добавить",
+      "view": "Просмотр",
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "loading": "Загрузка..."
+    },
+    "table": {
+      "id": "ID",
+      "creditor": "Кредитор",
+      "debtor": "Должник",
+      "amount": "Сумма",
+      "category": "Категория",
+      "debtDate": "Дата обязательства",
+      "dueDate": "Срок погашения",
+      "description": "Описание",
+      "status": "Статус",
+      "operations": "Операции"
+    },
+    "mobile": {
+      "id": "ID",
+      "debtor": "Должник",
+      "amount": "Сумма",
+      "category": "Категория",
+      "dueDate": "Срок погашения"
+    },
+    "form": {
+      "creditor": "Кредитор",
+      "debtor": "Должник",
+      "amount": "Сумма",
+      "debtDate": "Дата обязательства",
+      "dueDate": "Срок погашения",
+      "category": "Категория",
+      "description": "Описание",
+      "enter": "Введите"
+    },
+    "status": {
+      "paid": "Оплачено",
+      "active": "Активное"
+    },
+    "pagination": {
+      "prev": "Назад",
+      "next": "Вперед"
+    }
+  },
   "notifications": {
     "pageTitle": "Уведомления",
     "listTitle": "Последние уведомления",
@@ -986,11 +1189,26 @@
     "timeRange": "Временной диапазон",
     "startDate": "Дата начала",
     "endDate": "Дата окончания",
-    "search": "Поиск",
+    "search": "ПОИСК",
+    "excel": "EXCEL",
+    "pdf": "PDF",
     "created": "Создано",
     "completed": "Завершено",
     "count": "Количество",
     "percentage": "Процент",
+    "searchModal": {
+      "title": "Поиск",
+      "employeeName": "Имя сотрудника",
+      "enterEmployeeName": "Введите имя сотрудника",
+      "employeeSurname": "Фамилия сотрудника",
+      "enterEmployeeSurname": "Введите фамилию сотрудника",
+      "department": "Отдел",
+      "enterDepartment": "Введите отдел",
+      "dateFrom": "Дата с",
+      "enterDateFrom": "Введите дату с",
+      "dateTo": "Дата по",
+      "enterDateTo": "Введите дату по"
+    },
     "medium": "Средний",
     "high": "Высокий",
     "urgent": "Срочный",
@@ -1018,16 +1236,77 @@
   "applications": {
     "list": {
       "pageTitle": "Заявки",
-      "calendar": "Календарь",
-      "list": "Список",
-      "search": "Поиск",
-      "category": "Категория",
-      "excelExport": "Экспорт Excel",
-      "priorities": "Приоритеты",
+      "calendar": "КАЛЕНДАРЬ",
+      "list": "СПИСОК",
+      "search": "ПОИСК",
+      "category": "КАТЕГОРИЯ",
+      "excelExport": "ЭКСПОРТ EXCEL",
+      "priorities": "ПРИОРИТЕТЫ",
       "newApplication": "Новая заявка",
       "loading": "Загрузка...",
       "new": "Новое",
       "details": "Подробности",
+      "searchModal": {
+        "title": "Поиск",
+        "searchText": "Текст поиска",
+        "enterSearchText": "Введите",
+        "apartment": "Квартира",
+        "enterApartment": "Введите",
+        "department": "Отдел",
+        "enterDepartment": "Введите",
+        "status": "Статус",
+        "selectStatus": "Выберите",
+        "dateFrom": "Дата с",
+        "enterDateFrom": "Введите",
+        "dateTo": "Дата по",
+        "enterDateTo": "Введите",
+        "all": "Все"
+      },
+      "categoryModal": {
+        "title": "Категория",
+        "category": "Категория",
+        "selectCategory": "Выберите",
+        "all": "Все",
+        "cleaning": "Уборка",
+        "plumbing": "Сантехника",
+        "electricity": "Электричество",
+        "repair": "Ремонт",
+        "other": "Другое"
+      },
+      "newApplicationModal": {
+        "title": "Новая заявка",
+        "apartmentEmployee": "Квартира/Сотрудник",
+        "enterApartmentEmployee": "Введите",
+        "text": "Текст",
+        "enterText": "Введите",
+        "department": "Отдел",
+        "selectDepartment": "Выберите",
+        "residentPriority": "Приоритет жителя",
+        "selectResidentPriority": "Выберите",
+        "operationPriority": "Приоритет операции",
+        "selectOperationPriority": "Выберите",
+        "status": "Статус",
+        "selectStatus": "Выберите",
+        "date": "Дата",
+        "enterDate": "Введите",
+        "image": "Изображение",
+        "selectImage": "Выберите",
+        "selectOption": "Выберите"
+      },
+      "detailsModal": {
+        "title": "Детали заявки",
+        "id": "ID",
+        "apartmentEmployee": "Квартира/Сотрудник",
+        "text": "Текст",
+        "department": "Отдел",
+        "residentPriority": "Приоритет жителя",
+        "operationPriority": "Приоритет операции",
+        "image": "Изображение",
+        "status": "Статус",
+        "date": "Дата",
+        "noImage": "Нет изображения",
+        "newApplication": "Новая заявка"
+      },
       "table": {
         "apartmentEmployee": "Квартира/Сотрудник",
         "text": "Текст",
@@ -1042,9 +1321,37 @@
     },
     "evaluation": {
       "pageTitle": "Оценка заявок",
-      "search": "Поиск",
+      "search": "ПОИСК",
       "loading": "Загрузка...",
       "details": "Подробности",
+      "searchModal": {
+        "title": "Поиск",
+        "searchText": "Текст поиска",
+        "enterSearchText": "Введите текст поиска",
+        "apartment": "Квартира",
+        "enterApartment": "Введите квартиру",
+        "department": "Отдел",
+        "enterDepartment": "Введите отдел",
+        "rating": "Оценка",
+        "selectRating": "Выберите оценку",
+        "dateFrom": "Дата с",
+        "enterDateFrom": "Введите дату с",
+        "dateTo": "Дата по",
+        "enterDateTo": "Введите дату по",
+        "all": "Все"
+      },
+      "detailsModal": {
+        "title": "Детали оценки",
+        "id": "ID",
+        "apartment": "Квартира",
+        "text": "Текст",
+        "department": "Отдел",
+        "image": "Изображение",
+        "status": "Статус",
+        "date": "Дата",
+        "rating": "Оценка",
+        "noImage": "Нет изображения"
+      },
       "table": {
         "apartment": "Квартира",
         "text": "Текст",

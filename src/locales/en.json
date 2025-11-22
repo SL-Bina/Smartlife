@@ -25,6 +25,9 @@
     "reports": "Reports",
     "debtorApartments": "Debtor Apartments",
     "expenses": "Expenses",
+    "deposit": "Deposit",
+    "transfers": "Transfers",
+    "debt": "Debt",
     "notifications": "Notifications",
     "applications": "Applications",
     "applicationsList": "Applications List",
@@ -97,7 +100,12 @@
       "completed": "Completed",
       "accepted": "Accepted",
       "inProgress": "In progress",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "Gözləmədə": "Pending",
+      "Tamamlandı": "Completed",
+      "Qəbul edildi": "Accepted",
+      "İcraya başalınıldı": "In progress",
+      "Ləğv edildi": "Cancelled"
     },
     "paymentTypes": {
       "cash": "Cash payment",
@@ -562,6 +570,201 @@
       "next": "Next"
     }
   },
+  "deposit": {
+    "pageTitle": "Deposit",
+    "summary": {
+      "totalDeposit": "Total deposit"
+    },
+    "filter": {
+      "title": "Deposit filter",
+      "apartment": "Apartment",
+      "owner": "Apartment owner",
+      "status": "Status",
+      "enter": "Enter"
+    },
+    "create": {
+      "title": "Add new deposit"
+    },
+    "edit": {
+      "title": "Edit deposit"
+    },
+    "actions": {
+      "search": "Search",
+      "add": "Add",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete",
+      "loading": "Loading..."
+    },
+    "table": {
+      "id": "ID",
+      "apartment": "Apartment",
+      "owner": "Apartment owner",
+      "amount": "Amount",
+      "paymentMethod": "Payment method",
+      "depositDate": "Deposit date",
+      "status": "Status",
+      "notes": "Notes",
+      "operations": "Operations"
+    },
+    "mobile": {
+      "id": "ID",
+      "owner": "Apartment owner",
+      "amount": "Amount",
+      "paymentMethod": "Payment method",
+      "depositDate": "Deposit date"
+    },
+    "form": {
+      "apartment": "Apartment",
+      "owner": "Apartment owner",
+      "amount": "Amount",
+      "paymentMethod": "Payment method",
+      "depositDate": "Deposit date",
+      "notes": "Notes",
+      "enter": "Enter"
+    },
+    "paymentMethod": {
+      "cash": "Cash",
+      "bank": "Bank"
+    },
+    "status": {
+      "active": "Active",
+      "returned": "Returned"
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next"
+    }
+  },
+  "transfers": {
+    "pageTitle": "Transfers",
+    "summary": {
+      "totalTransfers": "Total transfers"
+    },
+    "filter": {
+      "title": "Transfer filter",
+      "fromAccount": "From account",
+      "toAccount": "To account",
+      "status": "Status",
+      "enter": "Enter"
+    },
+    "create": {
+      "title": "Add new transfer"
+    },
+    "edit": {
+      "title": "Edit transfer"
+    },
+    "actions": {
+      "search": "Search",
+      "add": "Add",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete",
+      "loading": "Loading..."
+    },
+    "table": {
+      "id": "ID",
+      "fromAccount": "From account",
+      "toAccount": "To account",
+      "amount": "Amount",
+      "transferDate": "Transfer date",
+      "description": "Description",
+      "referenceNumber": "Reference number",
+      "status": "Status",
+      "operations": "Operations"
+    },
+    "mobile": {
+      "id": "ID",
+      "fromAccount": "From account",
+      "toAccount": "To account",
+      "amount": "Amount",
+      "transferDate": "Transfer date"
+    },
+    "form": {
+      "fromAccount": "From account",
+      "toAccount": "To account",
+      "amount": "Amount",
+      "transferDate": "Transfer date",
+      "description": "Description",
+      "enter": "Enter"
+    },
+    "account": {
+      "cash": "Cash",
+      "bank": "Bank"
+    },
+    "status": {
+      "completed": "Completed",
+      "pending": "Pending"
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next"
+    }
+  },
+  "debt": {
+    "pageTitle": "Debt",
+    "summary": {
+      "totalDebt": "Total debt"
+    },
+    "filter": {
+      "title": "Debt filter",
+      "creditor": "Creditor",
+      "category": "Category",
+      "status": "Status",
+      "enter": "Enter"
+    },
+    "create": {
+      "title": "Add new debt"
+    },
+    "edit": {
+      "title": "Edit debt"
+    },
+    "actions": {
+      "search": "Search",
+      "add": "Add",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete",
+      "loading": "Loading..."
+    },
+    "table": {
+      "id": "ID",
+      "creditor": "Creditor",
+      "debtor": "Debtor",
+      "amount": "Amount",
+      "category": "Category",
+      "debtDate": "Debt date",
+      "dueDate": "Due date",
+      "description": "Description",
+      "status": "Status",
+      "operations": "Operations"
+    },
+    "mobile": {
+      "id": "ID",
+      "debtor": "Debtor",
+      "amount": "Amount",
+      "category": "Category",
+      "dueDate": "Due date"
+    },
+    "form": {
+      "creditor": "Creditor",
+      "debtor": "Debtor",
+      "amount": "Amount",
+      "debtDate": "Debt date",
+      "dueDate": "Due date",
+      "category": "Category",
+      "description": "Description",
+      "enter": "Enter"
+    },
+    "status": {
+      "paid": "Paid",
+      "active": "Active"
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next"
+    }
+  },
   "notifications": {
     "pageTitle": "Notifications",
     "listTitle": "Recent notifications",
@@ -986,10 +1189,25 @@
     "timeRange": "Time range",
     "startDate": "Start date",
     "endDate": "End date",
-    "search": "Search",
+    "search": "SEARCH",
+    "excel": "EXCEL",
+    "pdf": "PDF",
     "created": "Created",
     "completed": "Completed",
     "count": "Count",
+    "searchModal": {
+      "title": "Search",
+      "employeeName": "Employee Name",
+      "enterEmployeeName": "Enter employee name",
+      "employeeSurname": "Employee Surname",
+      "enterEmployeeSurname": "Enter employee surname",
+      "department": "Department",
+      "enterDepartment": "Enter department",
+      "dateFrom": "Date from",
+      "enterDateFrom": "Enter date from",
+      "dateTo": "Date to",
+      "enterDateTo": "Enter date to"
+    },
     "percentage": "Percentage",
     "medium": "Medium",
     "high": "High",
@@ -1018,16 +1236,77 @@
   "applications": {
     "list": {
       "pageTitle": "Applications",
-      "calendar": "Calendar",
-      "list": "List",
-      "search": "Search",
-      "category": "Category",
-      "excelExport": "Excel Export",
-      "priorities": "Priorities",
+      "calendar": "CALENDAR",
+      "list": "LIST",
+      "search": "SEARCH",
+      "category": "CATEGORY",
+      "excelExport": "EXCEL EXPORT",
+      "priorities": "PRIORITIES",
       "newApplication": "New Application",
       "loading": "Loading...",
       "new": "New",
       "details": "Details",
+      "searchModal": {
+        "title": "Search",
+        "searchText": "Search text",
+        "enterSearchText": "Enter",
+        "apartment": "Apartment",
+        "enterApartment": "Enter",
+        "department": "Department",
+        "enterDepartment": "Enter",
+        "status": "Status",
+        "selectStatus": "Select",
+        "dateFrom": "Date from",
+        "enterDateFrom": "Enter",
+        "dateTo": "Date to",
+        "enterDateTo": "Enter",
+        "all": "All"
+      },
+      "categoryModal": {
+        "title": "Category",
+        "category": "Category",
+        "selectCategory": "Select",
+        "all": "All",
+        "cleaning": "Cleaning",
+        "plumbing": "Plumbing",
+        "electricity": "Electricity",
+        "repair": "Repair",
+        "other": "Other"
+      },
+      "newApplicationModal": {
+        "title": "New Application",
+        "apartmentEmployee": "Apartment/Employee",
+        "enterApartmentEmployee": "Enter",
+        "text": "Text",
+        "enterText": "Enter",
+        "department": "Department",
+        "selectDepartment": "Select",
+        "residentPriority": "Resident Priority",
+        "selectResidentPriority": "Select",
+        "operationPriority": "Operation Priority",
+        "selectOperationPriority": "Select",
+        "status": "Status",
+        "selectStatus": "Select",
+        "date": "Date",
+        "enterDate": "Enter",
+        "image": "Image",
+        "selectImage": "Select",
+        "selectOption": "Select"
+      },
+      "detailsModal": {
+        "title": "Application Details",
+        "id": "ID",
+        "apartmentEmployee": "Apartment/Employee",
+        "text": "Text",
+        "department": "Department",
+        "residentPriority": "Resident Priority",
+        "operationPriority": "Operation Priority",
+        "image": "Image",
+        "status": "Status",
+        "date": "Date",
+        "noImage": "No image",
+        "newApplication": "New application"
+      },
       "table": {
         "apartmentEmployee": "Apartment/Employee",
         "text": "Text",
@@ -1042,9 +1321,37 @@
     },
     "evaluation": {
       "pageTitle": "Applications Evaluation",
-      "search": "Search",
+      "search": "SEARCH",
       "loading": "Loading...",
       "details": "Details",
+      "searchModal": {
+        "title": "Search",
+        "searchText": "Search text",
+        "enterSearchText": "Enter search text",
+        "apartment": "Apartment",
+        "enterApartment": "Enter apartment",
+        "department": "Department",
+        "enterDepartment": "Enter department",
+        "rating": "Rating",
+        "selectRating": "Select rating",
+        "dateFrom": "Date from",
+        "enterDateFrom": "Enter date from",
+        "dateTo": "Date to",
+        "enterDateTo": "Enter date to",
+        "all": "All"
+      },
+      "detailsModal": {
+        "title": "Evaluation Details",
+        "id": "ID",
+        "apartment": "Apartment",
+        "text": "Text",
+        "department": "Department",
+        "image": "Image",
+        "status": "Status",
+        "date": "Date",
+        "rating": "Rating",
+        "noImage": "No image"
+      },
       "table": {
         "apartment": "Apartment",
         "text": "Text",

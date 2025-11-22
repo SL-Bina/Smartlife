@@ -7,6 +7,12 @@ import {
   Button,
   Input,
   Spinner,
+  Dialog,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+  Select,
+  Option,
 } from "@material-tailwind/react";
 import { useTranslation } from "react-i18next";
 import { CalendarIcon, ArrowDownTrayIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
@@ -140,11 +146,33 @@ const KPIPage = () => {
   const [loading, setLoading] = useState(true);
   const [startDate, setStartDate] = useState("2025-11-01");
   const [endDate, setEndDate] = useState("2025-11-20");
+  const [searchOpen, setSearchOpen] = useState(false);
+  
+  // Search filter states
+  const [searchEmployeeName, setSearchEmployeeName] = useState("");
+  const [searchEmployeeSurname, setSearchEmployeeSurname] = useState("");
+  const [searchDepartment, setSearchDepartment] = useState("");
+  const [searchDateFrom, setSearchDateFrom] = useState("");
+  const [searchDateTo, setSearchDateTo] = useState("");
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 400);
     return () => clearTimeout(timer);
   }, []);
+  
+  const handleSearchApply = () => {
+    setSearchOpen(false);
+    // Apply search filters here
+  };
+  
+  const handleSearchClear = () => {
+    setSearchEmployeeName("");
+    setSearchEmployeeSurname("");
+    setSearchDepartment("");
+    setSearchDateFrom("");
+    setSearchDateTo("");
+    setSearchOpen(false);
+  };
 
   return (
     <div className="">
@@ -209,32 +237,122 @@ const KPIPage = () => {
                 variant="outlined"
                 color="blue-gray"
                 size="sm"
-                className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                className="flex items-center gap-2 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
               >
-                <ArrowDownTrayIcon className="h-4 w-4 mr-1" />
-                Excel
+                <ArrowDownTrayIcon className="h-4 w-4" />
+                <span>{t("kpi.excel")}</span>
               </Button>
               <Button
                 variant="outlined"
                 color="blue-gray"
                 size="sm"
-                className="dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                className="flex items-center gap-2 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
               >
-                <ArrowDownTrayIcon className="h-4 w-4 mr-1" />
-                PDF
+                <ArrowDownTrayIcon className="h-4 w-4" />
+                <span>{t("kpi.pdf")}</span>
               </Button>
               <Button
                 color="blue"
                 size="sm"
-                className="dark:bg-blue-600 dark:hover:bg-blue-700"
+                onClick={() => setSearchOpen(true)}
+                className="flex items-center gap-2 dark:bg-blue-600 dark:hover:bg-blue-700"
               >
-                <MagnifyingGlassIcon className="h-4 w-4 mr-1" />
-                {t("kpi.search")}
+                <MagnifyingGlassIcon className="h-4 w-4" />
+                <span>{t("kpi.search")}</span>
               </Button>
             </div>
           </div>
         </CardBody>
       </Card>
+
+      {/* Search Modal */}
+      <Dialog open={searchOpen} handler={setSearchOpen} size="md" className="dark:bg-black border border-red-600 dark:border-red-600">
+        <DialogHeader className="dark:text-white">{t("kpi.searchModal.title")}</DialogHeader>
+        <DialogBody divider className="space-y-4 dark:bg-black">
+          <div>
+            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+              {t("kpi.searchModal.employeeName")}
+            </Typography>
+            <Input
+              label={t("kpi.searchModal.enterEmployeeName")}
+              value={searchEmployeeName}
+              onChange={(e) => setSearchEmployeeName(e.target.value)}
+              className="dark:text-white"
+              labelProps={{ className: "dark:text-gray-400 !text-left" }}
+              containerProps={{ className: "!min-w-0" }}
+            />
+          </div>
+          <div>
+            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+              {t("kpi.searchModal.employeeSurname")}
+            </Typography>
+            <Input
+              label={t("kpi.searchModal.enterEmployeeSurname")}
+              value={searchEmployeeSurname}
+              onChange={(e) => setSearchEmployeeSurname(e.target.value)}
+              className="dark:text-white"
+              labelProps={{ className: "dark:text-gray-400 !text-left" }}
+              containerProps={{ className: "!min-w-0" }}
+            />
+          </div>
+          <div>
+            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+              {t("kpi.searchModal.department")}
+            </Typography>
+            <Input
+              label={t("kpi.searchModal.enterDepartment")}
+              value={searchDepartment}
+              onChange={(e) => setSearchDepartment(e.target.value)}
+              className="dark:text-white"
+              labelProps={{ className: "dark:text-gray-400 !text-left" }}
+              containerProps={{ className: "!min-w-0" }}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+                {t("kpi.searchModal.dateFrom")}
+              </Typography>
+              <Input
+                type="date"
+                label={t("kpi.searchModal.enterDateFrom")}
+                value={searchDateFrom}
+                onChange={(e) => setSearchDateFrom(e.target.value)}
+                className="dark:text-white"
+                labelProps={{ className: "dark:text-gray-400 !text-left" }}
+                containerProps={{ className: "!min-w-0" }}
+              />
+            </div>
+            <div>
+              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+                {t("kpi.searchModal.dateTo")}
+              </Typography>
+              <Input
+                type="date"
+                label={t("kpi.searchModal.enterDateTo")}
+                value={searchDateTo}
+                onChange={(e) => setSearchDateTo(e.target.value)}
+                className="dark:text-white"
+                labelProps={{ className: "dark:text-gray-400 !text-left" }}
+                containerProps={{ className: "!min-w-0" }}
+              />
+            </div>
+          </div>
+        </DialogBody>
+        <DialogFooter className="flex justify-between gap-2 dark:bg-black">
+          <Button variant="text" color="blue-gray" onClick={handleSearchClear} className="dark:text-gray-300 dark:hover:bg-gray-700">
+            {t("buttons.clear")}
+          </Button>
+          <div className="flex gap-2">
+            <Button variant="outlined" color="blue-gray" onClick={() => setSearchOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+              {t("buttons.cancel")}
+            </Button>
+            <Button color="blue" onClick={handleSearchApply} className="dark:bg-blue-600 dark:hover:bg-blue-700">
+              {t("buttons.apply")}
+            </Button>
+          </div>
+        </DialogFooter>
+      </Dialog>
 
       {/* KPI Table */}
       <Card className="border border-red-600 dark:border-red-600 shadow-sm dark:bg-black">

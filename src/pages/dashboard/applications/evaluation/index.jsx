@@ -7,6 +7,14 @@ import {
   Button,
   IconButton,
   Spinner,
+  Dialog,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+  Input,
+  Select,
+  Option,
+  Chip,
 } from "@material-tailwind/react";
 import {
   MagnifyingGlassIcon,
@@ -117,6 +125,17 @@ const ApplicationsEvaluationPage = () => {
   const [page, setPage] = useState(1);
   const [sortColumn, setSortColumn] = useState("id");
   const [sortDirection, setSortDirection] = useState("desc");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [selectedEvaluation, setSelectedEvaluation] = useState(null);
+  
+  // Search filter states
+  const [searchText, setSearchText] = useState("");
+  const [searchApartment, setSearchApartment] = useState("");
+  const [searchDepartment, setSearchDepartment] = useState("");
+  const [searchDateFrom, setSearchDateFrom] = useState("");
+  const [searchDateTo, setSearchDateTo] = useState("");
+  const [searchRating, setSearchRating] = useState("");
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 400);
@@ -156,6 +175,33 @@ const ApplicationsEvaluationPage = () => {
 
   const handlePrev = () => setPage((prev) => Math.max(1, prev - 1));
   const handleNext = () => setPage((prev) => Math.min(totalPages, prev + 1));
+  
+  const handleSearchApply = () => {
+    setPage(1);
+    setSearchOpen(false);
+    // Apply search filters here
+  };
+  
+  const handleSearchClear = () => {
+    setSearchText("");
+    setSearchApartment("");
+    setSearchDepartment("");
+    setSearchDateFrom("");
+    setSearchDateTo("");
+    setSearchRating("");
+    setPage(1);
+    setSearchOpen(false);
+  };
+  
+  const openDetailsModal = (evaluation) => {
+    setSelectedEvaluation(evaluation);
+    setDetailsOpen(true);
+  };
+  
+  const handleDetailsClose = () => {
+    setDetailsOpen(false);
+    setSelectedEvaluation(null);
+  };
 
   return (
     <div className="">
@@ -168,13 +214,234 @@ const ApplicationsEvaluationPage = () => {
           <Button
             color="blue"
             size="sm"
-            className="dark:bg-blue-600 dark:hover:bg-blue-700"
+            onClick={() => setSearchOpen(true)}
+            className="flex items-center gap-2 dark:bg-blue-600 dark:hover:bg-blue-700"
           >
-            <MagnifyingGlassIcon className="h-4 w-4 mr-1" />
-            {t("applications.evaluation.search")}
+            <MagnifyingGlassIcon className="h-4 w-4" />
+            <span>{t("applications.evaluation.search")}</span>
           </Button>
         </div>
       </div>
+
+      {/* Search Modal */}
+      <Dialog open={searchOpen} handler={setSearchOpen} size="md" className="dark:bg-black border border-red-600 dark:border-red-600">
+        <DialogHeader className="dark:text-white">{t("applications.evaluation.searchModal.title")}</DialogHeader>
+        <DialogBody divider className="space-y-4 dark:bg-black">
+          <div>
+            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+              {t("applications.evaluation.searchModal.searchText")}
+            </Typography>
+            <Input
+              label={t("applications.evaluation.searchModal.enterSearchText")}
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              className="dark:text-white"
+              labelProps={{ className: "dark:text-gray-400 !text-left" }}
+              containerProps={{ className: "!min-w-0" }}
+            />
+          </div>
+          <div>
+            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+              {t("applications.evaluation.searchModal.apartment")}
+            </Typography>
+            <Input
+              label={t("applications.evaluation.searchModal.enterApartment")}
+              value={searchApartment}
+              onChange={(e) => setSearchApartment(e.target.value)}
+              className="dark:text-white"
+              labelProps={{ className: "dark:text-gray-400 !text-left" }}
+              containerProps={{ className: "!min-w-0" }}
+            />
+          </div>
+          <div>
+            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+              {t("applications.evaluation.searchModal.department")}
+            </Typography>
+            <Input
+              label={t("applications.evaluation.searchModal.enterDepartment")}
+              value={searchDepartment}
+              onChange={(e) => setSearchDepartment(e.target.value)}
+              className="dark:text-white"
+              labelProps={{ className: "dark:text-gray-400 !text-left" }}
+              containerProps={{ className: "!min-w-0" }}
+            />
+          </div>
+          <div>
+            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+              {t("applications.evaluation.searchModal.rating")}
+            </Typography>
+            <Select
+              label={t("applications.evaluation.searchModal.selectRating")}
+              value={searchRating}
+              onChange={(val) => setSearchRating(val)}
+              className="dark:text-white"
+              labelProps={{ className: "dark:text-gray-400 !text-left" }}
+              containerProps={{ className: "!min-w-0" }}
+            >
+              <Option value="" className="text-center dark:text-gray-300">
+                {t("applications.evaluation.searchModal.all")}
+              </Option>
+              <Option value="5" className="text-center dark:text-gray-300">
+                5 ⭐
+              </Option>
+              <Option value="4" className="text-center dark:text-gray-300">
+                4 ⭐
+              </Option>
+              <Option value="3" className="text-center dark:text-gray-300">
+                3 ⭐
+              </Option>
+              <Option value="2" className="text-center dark:text-gray-300">
+                2 ⭐
+              </Option>
+              <Option value="1" className="text-center dark:text-gray-300">
+                1 ⭐
+              </Option>
+            </Select>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+                {t("applications.evaluation.searchModal.dateFrom")}
+              </Typography>
+              <Input
+                type="date"
+                label={t("applications.evaluation.searchModal.enterDateFrom")}
+                value={searchDateFrom}
+                onChange={(e) => setSearchDateFrom(e.target.value)}
+                className="dark:text-white"
+                labelProps={{ className: "dark:text-gray-400 !text-left" }}
+                containerProps={{ className: "!min-w-0" }}
+              />
+            </div>
+            <div>
+              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+                {t("applications.evaluation.searchModal.dateTo")}
+              </Typography>
+              <Input
+                type="date"
+                label={t("applications.evaluation.searchModal.enterDateTo")}
+                value={searchDateTo}
+                onChange={(e) => setSearchDateTo(e.target.value)}
+                className="dark:text-white"
+                labelProps={{ className: "dark:text-gray-400 !text-left" }}
+                containerProps={{ className: "!min-w-0" }}
+              />
+            </div>
+          </div>
+        </DialogBody>
+        <DialogFooter className="flex justify-between gap-2 dark:bg-black">
+          <Button variant="text" color="blue-gray" onClick={handleSearchClear} className="dark:text-gray-300 dark:hover:bg-gray-700">
+            {t("buttons.clear")}
+          </Button>
+          <div className="flex gap-2">
+            <Button variant="outlined" color="blue-gray" onClick={() => setSearchOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+              {t("buttons.cancel")}
+            </Button>
+            <Button color="blue" onClick={handleSearchApply} className="dark:bg-blue-600 dark:hover:bg-blue-700">
+              {t("buttons.apply")}
+            </Button>
+          </div>
+        </DialogFooter>
+      </Dialog>
+
+      {/* Details Modal */}
+      {selectedEvaluation && (
+        <Dialog open={detailsOpen} handler={handleDetailsClose} size="xl" className="dark:bg-black border border-red-600 dark:border-red-600">
+          <DialogHeader className="dark:text-white">{t("applications.evaluation.detailsModal.title")}</DialogHeader>
+          <DialogBody divider className="space-y-6 dark:bg-black max-h-[70vh] overflow-y-auto">
+            {/* Evaluation ID */}
+            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+              <Typography variant="small" color="blue-gray" className="font-semibold dark:text-gray-300">
+                {t("applications.evaluation.detailsModal.id")}
+              </Typography>
+              <Typography variant="h6" color="blue-gray" className="dark:text-white">
+                #{selectedEvaluation.id}
+              </Typography>
+            </div>
+
+            {/* Main Information Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
+                  {t("applications.evaluation.detailsModal.apartment")}
+                </Typography>
+                <Typography variant="paragraph" color="blue-gray" className="dark:text-white">
+                  {selectedEvaluation.apartment || "-"}
+                </Typography>
+              </div>
+              
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
+                  {t("applications.evaluation.detailsModal.department")}
+                </Typography>
+                <Typography variant="paragraph" color="blue-gray" className="dark:text-white">
+                  {selectedEvaluation.department || "-"}
+                </Typography>
+              </div>
+              
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
+                  {t("applications.evaluation.detailsModal.date")}
+                </Typography>
+                <Typography variant="paragraph" color="blue-gray" className="dark:text-white">
+                  {selectedEvaluation.date}
+                </Typography>
+              </div>
+              
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
+                  {t("applications.evaluation.detailsModal.rating")}
+                </Typography>
+                <div className="flex items-center gap-2">
+                  {renderStars(selectedEvaluation.rating)}
+                  <Typography variant="paragraph" color="blue-gray" className="dark:text-white">
+                    ({selectedEvaluation.rating}/5)
+                  </Typography>
+                </div>
+              </div>
+            </div>
+
+            {/* Text Description */}
+            <div>
+              <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
+                {t("applications.evaluation.detailsModal.text")}
+              </Typography>
+              <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <Typography variant="paragraph" color="blue-gray" className="dark:text-white whitespace-pre-wrap">
+                  {selectedEvaluation.text || "-"}
+                </Typography>
+              </div>
+            </div>
+
+            {/* Image */}
+            <div>
+              <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
+                {t("applications.evaluation.detailsModal.image")}
+              </Typography>
+              <div className="flex items-center justify-center p-6 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                {selectedEvaluation.image === "lightbulb" ? (
+                  <div className="w-20 h-20 rounded-full bg-orange-500 flex items-center justify-center">
+                    <span className="text-white text-3xl">⚡</span>
+                  </div>
+                ) : selectedEvaluation.image === "other" ? (
+                  <div className="w-20 h-20 rounded-full bg-blue-500 flex items-center justify-center">
+                    <span className="text-white text-3xl">📷</span>
+                  </div>
+                ) : (
+                  <Typography variant="small" color="blue-gray" className="dark:text-gray-400">
+                    {t("applications.evaluation.detailsModal.noImage")}
+                  </Typography>
+                )}
+              </div>
+            </div>
+          </DialogBody>
+          <DialogFooter className="flex justify-end gap-2 dark:bg-black">
+            <Button variant="outlined" color="blue-gray" onClick={handleDetailsClose} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+              {t("buttons.cancel")}
+            </Button>
+          </DialogFooter>
+        </Dialog>
+      )}
 
       {/* Evaluation Table */}
       <Card className="border border-red-600 dark:border-red-600 shadow-sm dark:bg-black ">
@@ -306,6 +573,7 @@ const ApplicationsEvaluationPage = () => {
                         <Button
                           size="sm"
                           color="blue"
+                          onClick={() => openDetailsModal(row)}
                           className="dark:bg-blue-600 dark:hover:bg-blue-700"
                         >
                           {t("applications.evaluation.details")}

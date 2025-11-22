@@ -65,6 +65,9 @@ const pageTitleKeyMap = {
   reports: "sidebar.reports",
   "debtor-apartments": "sidebar.debtorApartments",
   expenses: "sidebar.expenses",
+  deposit: "sidebar.deposit",
+  transfers: "sidebar.transfers",
+  debt: "sidebar.debt",
   notifications: "sidebar.notifications",
   profile: "sidebar.profile",
   mtk: "sidebar.mtk",
@@ -75,14 +78,20 @@ const pageTitleKeyMap = {
   blocks: "sidebar.blocks",
   "apartment-groups": "apartmentGroups.pageTitle",
   "building-service-fee": "buildingServiceFee.pageTitle",
-  "service-fee": "Servis haqqı",
+  "service-fee": "serviceFee.pageTitle",
+  kpi: "kpi.pageTitle",
+  applications: "applications.list.pageTitle",
+  "applications/list": "applications.list.pageTitle",
+  "applications/evaluation": "applications.evaluation.pageTitle",
 };
 
 export function DashboardNavbar() {
   const [controller, dispatch] = useMaterialTailwindController();
   const { fixedNavbar, openSidenav, darkMode } = controller;
   const { pathname } = useLocation();
-  const [layout, page] = pathname.split("/").filter((el) => el !== "");
+  const pathParts = pathname.split("/").filter((el) => el !== "");
+  const layout = pathParts[0] || "";
+  const page = pathParts.slice(1).join("/") || pathParts[0] || "";
   const { user, logout } = useAuth();
   const { t, i18n } = useTranslation();
 
@@ -94,7 +103,11 @@ export function DashboardNavbar() {
     ? t(layoutTitleKeyMap[layout])
     : layout;
 
-  const pageTitle = pageTitleKeyMap[page]
+  // First try full path (e.g., "applications/list"), then try just page name
+  const fullPath = pathParts.slice(1).join("/");
+  const pageTitle = pageTitleKeyMap[fullPath] 
+    ? t(pageTitleKeyMap[fullPath])
+    : pageTitleKeyMap[page]
     ? t(pageTitleKeyMap[page])
     : page;
 
