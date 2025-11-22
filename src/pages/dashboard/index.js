@@ -11,3 +11,6 @@ export { default as ResidentsPage } from "@/pages/dashboard/residents";
 export { default as BuildingsPage } from "@/pages/dashboard/buildings";
 export { default as PropertiesPage } from "@/pages/dashboard/properties";
 export { default as BlocksPage } from "@/pages/dashboard/blocks";
+
+
+//test
