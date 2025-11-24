@@ -19,6 +19,8 @@ import {
   QuestionMarkCircleIcon,
   ArrowDownCircleIcon,
   ArrowsRightLeftIcon,
+  ShieldCheckIcon,
+  UserGroupIcon,
 } from "@heroicons/react/24/solid";
 import { Home, Tables, Notifications, KPI, ApplicationsListPage, ApplicationsEvaluationPage } from "@/pages/dashboard";
 import Profile from "./pages/dashboard/profile";
@@ -40,6 +42,8 @@ import ExpensesPage from "./pages/dashboard/finance/expenses";
 import DepositPage from "./pages/dashboard/finance/deposit";
 import TransfersPage from "./pages/dashboard/finance/transfers";
 import DebtPage from "./pages/dashboard/finance/debt";
+import UserRightsPage from "./pages/dashboard/user-rights";
+import UserPermissionsPage from "./pages/dashboard/user-permissions";
 
 const icon = {
   className: "w-5 h-5 text-inherit dark:text-white",
@@ -207,6 +211,18 @@ export const routes = [
             hideInSidenav: true,
           },
         ],
+      },
+      {
+        icon: <UserGroupIcon {...icon} />,
+        name: "sidebar.userRights",
+        path: "/user-rights",
+        element: <UserRightsPage />,
+      },
+      {
+        icon: <ShieldCheckIcon {...icon} />,
+        name: "sidebar.userPermissions",
+        path: "/user-permissions",
+        element: <UserPermissionsPage />,
       },
       {
         icon: <UserCircleIcon {...icon} />,

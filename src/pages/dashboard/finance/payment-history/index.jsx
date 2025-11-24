@@ -44,6 +44,9 @@ const PaymentHistoryPage = () => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [viewOpen, setViewOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
   const [filterPayer, setFilterPayer] = useState("");
@@ -92,6 +95,31 @@ const PaymentHistoryPage = () => {
     setFilterStatus("");
     setPage(1);
     setFilterOpen(false);
+  };
+
+  const openViewModal = (item) => {
+    setSelectedItem(item);
+    setViewOpen(true);
+  };
+
+  const openEditModal = (item) => {
+    setSelectedItem(item);
+    setEditOpen(true);
+  };
+
+  const openDeleteModal = (item) => {
+    setSelectedItem(item);
+    setDeleteOpen(true);
+  };
+
+  const handleEditSave = () => {
+    setEditOpen(false);
+    setSelectedItem(null);
+  };
+
+  const handleDeleteConfirm = () => {
+    setDeleteOpen(false);
+    setSelectedItem(null);
   };
 
   return (
@@ -167,6 +195,162 @@ const PaymentHistoryPage = () => {
               {t("buttons.apply")}
             </Button>
           </div>
+        </DialogFooter>
+      </Dialog>
+
+      {/* View payment modal */}
+      <Dialog open={viewOpen} handler={setViewOpen} size="lg" className="dark:bg-black border border-red-600 dark:border-red-600">
+        <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3">
+          <Typography variant="h5" className="font-bold">
+            {t("paymentHistory.view.title")}
+          </Typography>
+        </DialogHeader>
+        <DialogBody divider className="space-y-4 dark:bg-black py-4">
+          {selectedItem && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("paymentHistory.table.id")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="font-semibold dark:text-white">
+                  {selectedItem.id}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("paymentHistory.table.payer")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="font-semibold dark:text-white">
+                  {selectedItem.payer}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("paymentHistory.table.apartmentInfo")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  {selectedItem.apartment}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="text-xs dark:text-gray-400">
+                  {t("paymentHistory.labels.building")}: {selectedItem.building}, {t("paymentHistory.labels.block")}: {selectedItem.block}, {t("paymentHistory.labels.floor")}: {selectedItem.floor}, {t("paymentHistory.labels.area")}: {selectedItem.area} m²
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("paymentHistory.table.amount")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="font-semibold dark:text-white">
+                  {selectedItem.amount} AZN
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("paymentHistory.table.paymentDate")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  {selectedItem.paymentDate}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("paymentHistory.table.status")}
+                </Typography>
+                <Chip size="sm" value={t("paymentHistory.status.successful")} color="green" className="dark:bg-opacity-80" />
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("paymentHistory.table.transactionType")}
+                </Typography>
+                <Chip size="sm" value={t("paymentHistory.transactionType.income")} color="green" className="dark:bg-opacity-80" />
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("paymentHistory.table.paymentType")}
+                </Typography>
+                <Chip
+                  size="sm"
+                  value={selectedItem.paymentType === "Nağd" ? t("paymentHistory.paymentType.cash") : t("paymentHistory.paymentType.balance")}
+                  color={selectedItem.paymentType === "Nağd" ? "amber" : "blue"}
+                  className="dark:bg-opacity-80"
+                />
+              </div>
+            </div>
+          )}
+        </DialogBody>
+        <DialogFooter className="flex justify-end gap-2 dark:bg-black border-t border-gray-200 dark:border-gray-700 pt-3">
+          <Button variant="outlined" color="blue-gray" onClick={() => setViewOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+            {t("buttons.close")}
+          </Button>
+        </DialogFooter>
+      </Dialog>
+
+      {/* Edit payment modal */}
+      <Dialog open={editOpen} handler={setEditOpen} size="md" className="dark:bg-black border border-red-600 dark:border-red-600">
+        <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3">
+          <Typography variant="h5" className="font-bold">
+            {t("paymentHistory.edit.title")}
+          </Typography>
+        </DialogHeader>
+        <DialogBody divider className="space-y-4 dark:bg-black py-4">
+          {selectedItem && (
+            <>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+                  {t("paymentHistory.table.payer")}
+                </Typography>
+                <Input 
+                  label={t("paymentHistory.filter.enter")}
+                  defaultValue={selectedItem.payer}
+                  className="dark:text-white"
+                  labelProps={{ className: "dark:text-gray-400" }}
+                />
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+                  {t("paymentHistory.table.amount")}
+                </Typography>
+                <Input 
+                  type="number"
+                  label={t("paymentHistory.filter.enter")}
+                  defaultValue={selectedItem.amount}
+                  className="dark:text-white"
+                  labelProps={{ className: "dark:text-gray-400" }}
+                />
+              </div>
+            </>
+          )}
+        </DialogBody>
+        <DialogFooter className="flex justify-end gap-2 dark:bg-black border-t border-gray-200 dark:border-gray-700 pt-3">
+          <Button variant="outlined" color="blue-gray" onClick={() => setEditOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+            {t("buttons.cancel")}
+          </Button>
+          <Button color="green" onClick={handleEditSave} className="dark:bg-green-600 dark:hover:bg-green-700">
+            {t("buttons.save")}
+          </Button>
+        </DialogFooter>
+      </Dialog>
+
+      {/* Delete payment modal */}
+      <Dialog open={deleteOpen} handler={setDeleteOpen} size="sm" className="dark:bg-black border border-red-600 dark:border-red-600">
+        <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3">
+          <Typography variant="h5" className="font-bold">
+            {t("paymentHistory.delete.title")}
+          </Typography>
+        </DialogHeader>
+        <DialogBody divider className="space-y-4 dark:bg-black py-4">
+          {selectedItem && (
+            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+              {t("paymentHistory.delete.message")} <strong>{selectedItem.payer}</strong> (ID: {selectedItem.id})?
+            </Typography>
+          )}
+        </DialogBody>
+        <DialogFooter className="flex justify-end gap-2 dark:bg-black border-t border-gray-200 dark:border-gray-700 pt-3">
+          <Button variant="outlined" color="blue-gray" onClick={() => setDeleteOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+            {t("buttons.cancel")}
+          </Button>
+          <Button color="red" onClick={handleDeleteConfirm} className="dark:bg-red-600 dark:hover:bg-red-700">
+            {t("buttons.delete")}
+          </Button>
         </DialogFooter>
       </Dialog>
 
@@ -300,10 +484,16 @@ const PaymentHistoryPage = () => {
                                   />
                                 </IconButton>
                               </MenuHandler>
-                              <MenuList className="dark:bg-black ">
-                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("paymentHistory.actions.view")}</MenuItem>
-                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("paymentHistory.actions.edit")}</MenuItem>
-                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("paymentHistory.actions.delete")}</MenuItem>
+                              <MenuList className="dark:bg-black dark:border-gray-800">
+                                <MenuItem onClick={() => openViewModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                                  {t("paymentHistory.actions.view")}
+                                </MenuItem>
+                                <MenuItem onClick={() => openEditModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                                  {t("paymentHistory.actions.edit")}
+                                </MenuItem>
+                                <MenuItem onClick={() => openDeleteModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                                  {t("paymentHistory.actions.delete")}
+                                </MenuItem>
                               </MenuList>
                             </Menu>
                           </td>
@@ -333,10 +523,16 @@ const PaymentHistoryPage = () => {
                               <EllipsisVerticalIcon strokeWidth={2} className="h-5 w-5" />
                             </IconButton>
                           </MenuHandler>
-                          <MenuList className="dark:bg-black ">
-                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("paymentHistory.actions.view")}</MenuItem>
-                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("paymentHistory.actions.edit")}</MenuItem>
-                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("paymentHistory.actions.delete")}</MenuItem>
+                          <MenuList className="dark:bg-black dark:border-gray-800">
+                            <MenuItem onClick={() => openViewModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                              {t("paymentHistory.actions.view")}
+                            </MenuItem>
+                            <MenuItem onClick={() => openEditModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                              {t("paymentHistory.actions.edit")}
+                            </MenuItem>
+                            <MenuItem onClick={() => openDeleteModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                              {t("paymentHistory.actions.delete")}
+                            </MenuItem>
                           </MenuList>
                         </Menu>
                       </div>

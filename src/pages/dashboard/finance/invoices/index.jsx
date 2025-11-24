@@ -48,6 +48,9 @@ const InvoicesPage = () => {
   const [page, setPage] = useState(1);
   const [filterOpen, setFilterOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
+  const [viewOpen, setViewOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
   const [filterServiceName, setFilterServiceName] = useState("");
@@ -89,7 +92,23 @@ const InvoicesPage = () => {
   const handleNext = () => setPage((prev) => Math.min(totalPages, prev + 1));
 
   const openCreateModal = () => {
+    setSelectedItem(null);
     setCreateOpen(true);
+  };
+
+  const openViewModal = (item) => {
+    setSelectedItem(item);
+    setViewOpen(true);
+  };
+
+  const openEditModal = (item) => {
+    setSelectedItem(item);
+    setEditOpen(true);
+  };
+
+  const openDeleteModal = (item) => {
+    setSelectedItem(item);
+    setDeleteOpen(true);
   };
 
   const handleFilterApply = () => {
@@ -107,6 +126,17 @@ const InvoicesPage = () => {
 
   const handleCreateSave = () => {
     setCreateOpen(false);
+  };
+
+  const handleEditSave = () => {
+    setEditOpen(false);
+    setSelectedItem(null);
+  };
+
+  const handleDeleteConfirm = () => {
+    // Delete logic here
+    setDeleteOpen(false);
+    setSelectedItem(null);
   };
 
   return (
@@ -197,9 +227,13 @@ const InvoicesPage = () => {
       </Dialog>
 
       {/* Create invoice modal */}
-      <Dialog open={createOpen} handler={setCreateOpen} size="sm" className="dark:bg-black border border-red-600 dark:border-red-600">
-        <DialogHeader className="dark:text-white">{t("invoices.create.title")}</DialogHeader>
-          <DialogBody divider className="space-y-4 dark:bg-black ">
+      <Dialog open={createOpen} handler={setCreateOpen} size="md" className="dark:bg-black border border-red-600 dark:border-red-600">
+        <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3">
+          <Typography variant="h5" className="font-bold">
+            {t("invoices.create.title")}
+          </Typography>
+        </DialogHeader>
+        <DialogBody divider className="space-y-4 dark:bg-black py-4">
           <div>
             <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
               {t("invoices.create.serviceName")}
@@ -211,12 +245,214 @@ const InvoicesPage = () => {
             />
           </div>
         </DialogBody>
-          <DialogFooter className="flex justify-end gap-2 dark:bg-black ">
+        <DialogFooter className="flex justify-end gap-2 dark:bg-black border-t border-gray-200 dark:border-gray-700 pt-3">
           <Button variant="outlined" color="blue-gray" onClick={() => setCreateOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
             {t("buttons.cancel")}
           </Button>
           <Button color="green" onClick={handleCreateSave} className="dark:bg-green-600 dark:hover:bg-green-700">
             {t("buttons.save")}
+          </Button>
+        </DialogFooter>
+      </Dialog>
+
+      {/* View invoice modal */}
+      <Dialog open={viewOpen} handler={setViewOpen} size="lg" className="dark:bg-black border border-red-600 dark:border-red-600">
+        <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3">
+          <Typography variant="h5" className="font-bold">
+            {t("invoices.view.title")}
+          </Typography>
+        </DialogHeader>
+        <DialogBody divider className="space-y-4 dark:bg-black py-4">
+          {selectedItem && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("invoices.table.id")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="font-semibold dark:text-white">
+                  {selectedItem.id}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("invoices.table.serviceName")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="font-semibold dark:text-white">
+                  {selectedItem.serviceName}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("invoices.table.owner")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  {selectedItem.owner}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="text-xs dark:text-gray-400">
+                  {t("invoices.labels.balance")}: {selectedItem.ownerBalance} ₼
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("invoices.table.apartmentInfo")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  {selectedItem.apartment}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="text-xs dark:text-gray-400">
+                  {t("invoices.labels.building")}: {selectedItem.building}, {t("invoices.labels.block")}: {selectedItem.block}, {t("invoices.labels.floor")}: {selectedItem.floor}, {t("invoices.labels.area")}: {selectedItem.area} m²
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("invoices.table.amount")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="font-semibold dark:text-white">
+                  {selectedItem.amount} ₼
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("invoices.table.paidAmount")}
+                </Typography>
+                <Typography variant="small" color="green" className="font-semibold dark:text-green-300">
+                  {selectedItem.paidAmount} ₼
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("invoices.table.remaining")}
+                </Typography>
+                <Typography
+                  variant="small"
+                  color={parseFloat(selectedItem.remaining) > 0 ? "red" : "blue-gray"}
+                  className={`font-semibold ${parseFloat(selectedItem.remaining) > 0 ? "dark:text-red-400" : "dark:text-gray-300"}`}
+                >
+                  {selectedItem.remaining} ₼
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("invoices.table.status")}
+                </Typography>
+                <Chip
+                  size="sm"
+                  value={selectedItem.status === "Ödənilib" ? t("invoices.status.paid") : t("invoices.status.unpaid")}
+                  color={selectedItem.status === "Ödənilib" ? "green" : "red"}
+                  className="dark:bg-opacity-80"
+                />
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("invoices.table.invoiceDate")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  {selectedItem.invoiceDate}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("invoices.table.paymentDate")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  {selectedItem.paymentDate || "-"}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("invoices.table.paymentMethod")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  {selectedItem.paymentMethod || "-"}
+                </Typography>
+              </div>
+            </div>
+          )}
+        </DialogBody>
+        <DialogFooter className="flex justify-end gap-2 dark:bg-black border-t border-gray-200 dark:border-gray-700 pt-3">
+          <Button variant="outlined" color="blue-gray" onClick={() => setViewOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+            {t("buttons.close")}
+          </Button>
+        </DialogFooter>
+      </Dialog>
+
+      {/* Edit invoice modal */}
+      <Dialog open={editOpen} handler={setEditOpen} size="md" className="dark:bg-black border border-red-600 dark:border-red-600">
+        <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3">
+          <Typography variant="h5" className="font-bold">
+            {t("invoices.edit.title")}
+          </Typography>
+        </DialogHeader>
+        <DialogBody divider className="space-y-4 dark:bg-black py-4">
+          {selectedItem && (
+            <>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+                  {t("invoices.create.serviceName")}
+                </Typography>
+                <Input 
+                  label={t("invoices.create.enter")}
+                  defaultValue={selectedItem.serviceName}
+                  className="dark:text-white"
+                  labelProps={{ className: "dark:text-gray-400" }}
+                />
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+                  {t("invoices.table.owner")}
+                </Typography>
+                <Input 
+                  label={t("invoices.filter.enter")}
+                  defaultValue={selectedItem.owner}
+                  className="dark:text-white"
+                  labelProps={{ className: "dark:text-gray-400" }}
+                />
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+                  {t("invoices.table.amount")}
+                </Typography>
+                <Input 
+                  type="number"
+                  label={t("invoices.filter.enter")}
+                  defaultValue={selectedItem.amount}
+                  className="dark:text-white"
+                  labelProps={{ className: "dark:text-gray-400" }}
+                />
+              </div>
+            </>
+          )}
+        </DialogBody>
+        <DialogFooter className="flex justify-end gap-2 dark:bg-black border-t border-gray-200 dark:border-gray-700 pt-3">
+          <Button variant="outlined" color="blue-gray" onClick={() => setEditOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+            {t("buttons.cancel")}
+          </Button>
+          <Button color="green" onClick={handleEditSave} className="dark:bg-green-600 dark:hover:bg-green-700">
+            {t("buttons.save")}
+          </Button>
+        </DialogFooter>
+      </Dialog>
+
+      {/* Delete invoice modal */}
+      <Dialog open={deleteOpen} handler={setDeleteOpen} size="sm" className="dark:bg-black border border-red-600 dark:border-red-600">
+        <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3">
+          <Typography variant="h5" className="font-bold">
+            {t("invoices.delete.title")}
+          </Typography>
+        </DialogHeader>
+        <DialogBody divider className="space-y-4 dark:bg-black py-4">
+          {selectedItem && (
+            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+              {t("invoices.delete.message")} <strong>{selectedItem.serviceName}</strong> (ID: {selectedItem.id})?
+            </Typography>
+          )}
+        </DialogBody>
+        <DialogFooter className="flex justify-end gap-2 dark:bg-black border-t border-gray-200 dark:border-gray-700 pt-3">
+          <Button variant="outlined" color="blue-gray" onClick={() => setDeleteOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+            {t("buttons.cancel")}
+          </Button>
+          <Button color="red" onClick={handleDeleteConfirm} className="dark:bg-red-600 dark:hover:bg-red-700">
+            {t("buttons.delete")}
           </Button>
         </DialogFooter>
       </Dialog>
@@ -373,9 +609,15 @@ const InvoicesPage = () => {
                                 </IconButton>
                               </MenuHandler>
                               <MenuList className="dark:bg-black dark:border-gray-800">
-                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("invoices.actions.view")}</MenuItem>
-                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("invoices.actions.edit")}</MenuItem>
-                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("invoices.actions.delete")}</MenuItem>
+                                <MenuItem onClick={() => openViewModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                                  {t("invoices.actions.view")}
+                                </MenuItem>
+                                <MenuItem onClick={() => openEditModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                                  {t("invoices.actions.edit")}
+                                </MenuItem>
+                                <MenuItem onClick={() => openDeleteModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                                  {t("invoices.actions.delete")}
+                                </MenuItem>
                               </MenuList>
                             </Menu>
                           </td>
@@ -406,9 +648,15 @@ const InvoicesPage = () => {
                             </IconButton>
                           </MenuHandler>
                           <MenuList className="dark:bg-black dark:border-gray-800">
-                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("invoices.actions.view")}</MenuItem>
-                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("invoices.actions.edit")}</MenuItem>
-                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("invoices.actions.delete")}</MenuItem>
+                            <MenuItem onClick={() => openViewModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                              {t("invoices.actions.view")}
+                            </MenuItem>
+                            <MenuItem onClick={() => openEditModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                              {t("invoices.actions.edit")}
+                            </MenuItem>
+                            <MenuItem onClick={() => openDeleteModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                              {t("invoices.actions.delete")}
+                            </MenuItem>
                           </MenuList>
                         </Menu>
                       </div>

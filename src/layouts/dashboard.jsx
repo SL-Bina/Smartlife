@@ -9,6 +9,7 @@ import {
 import routes from "@/routes";
 import { useMaterialTailwindController } from "@/context";
 import { useAuth } from "@/auth-context";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 function ProtectedRoute({ element }) {
   const { user } = useAuth();
@@ -23,6 +24,9 @@ function ProtectedRoute({ element }) {
 export function Dashboard() {
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavType } = controller;
+  
+  // Update document title based on current route
+  useDocumentTitle();
 
   return (
     <div className="min-h-screen bg-blue-gray-50/50 dark:bg-black">
@@ -32,7 +36,7 @@ export function Dashboard() {
           sidenavType === "dark" ? "/img/logo-ct.png" : "/img/logo-ct-dark.png"
         }
       />
-      <div className="p-4 xl:ml-80">
+      <div className="p-4 xl:ml-80 h-[calc(100vh-2rem)] overflow-hidden flex flex-col">
         <DashboardNavbar />
         {/* <Configurator /> */}
         {/* <IconButton
@@ -44,7 +48,8 @@ export function Dashboard() {
         >
           <Cog6ToothIcon className="h-5 w-5" />
         </IconButton> */}
-        <Routes>
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <Routes>
           {routes.map(
             ({ layout, pages }) =>
               layout === "dashboard" &&
@@ -75,7 +80,7 @@ export function Dashboard() {
               })
           )}
         </Routes>
-       
+        </div>
       </div>
     </div>
   );

@@ -7,7 +7,11 @@
     "password": "Şifrə",
     "count": "Sayı",
     "percentage": "Faizi",
-    "enter": "Daxil et"
+    "enter": "Daxil et",
+    "showing": "Göstərilir",
+    "of": "üçün",
+    "previous": "Əvvəlki",
+    "next": "Növbəti"
   },
   "header": {
     "search": "Axtarış",
@@ -42,6 +46,8 @@
     "apartmentGroups": "Mənzil qrupu",
     "buildingServiceFee": "Servis haqqı",
     "buildingManagement": "idarə etmə",
+    "userRights": "Hüquqlar",
+    "userPermissions": "İcazələr",
     "profile": "Profil"
   },
   "buttons": {
@@ -50,7 +56,9 @@
     "cancel": "Ləğv et",
     "save": "Yadda saxla",
     "edit": "Düzəliş et",
-    "apply": "Tətbiq et"
+    "apply": "Tətbiq et",
+    "close": "Bağla",
+    "delete": "Sil"
   },
   "dashboard": {
     "homeTitle1": "Ümumi göstəricilər",
@@ -285,6 +293,16 @@
       "serviceName": "Xidmət adı",
       "enter": "Daxil et"
     },
+    "view": {
+      "title": "Faktura məlumatları"
+    },
+    "edit": {
+      "title": "Faktura düzəliş et"
+    },
+    "delete": {
+      "title": "Faktura sil",
+      "message": "Bu fakturanı silmək istədiyinizə əminsiniz?"
+    },
     "actions": {
       "search": "Axtarış",
       "add": "Əlavə et",
@@ -345,6 +363,16 @@
       "apartment": "Mənzil",
       "status": "Status",
       "enter": "Daxil et"
+    },
+    "view": {
+      "title": "Ödəniş məlumatları"
+    },
+    "edit": {
+      "title": "Ödəniş düzəliş et"
+    },
+    "delete": {
+      "title": "Ödəniş sil",
+      "message": "Bu ödənişi silmək istədiyinizə əminsiniz?"
     },
     "actions": {
       "search": "Axtarış",
@@ -429,7 +457,8 @@
       "title": "Balanslar",
       "totalDepositBalance": "ÜMUMI DEPOZIT QALIĞI",
       "depositWithdrawn": "MÜŞTƏRİ BORCUNDAN ÇIXILAN DEPOZİT (Tarix aralığına görə)",
-      "previousMonthBalances": "ÖNCƏKİ AY QALIQLARI"
+      "previousMonthBalances": "ÖNCƏKİ AY QALIQLARI",
+      "currentMonthEndBalance": "CARİ AY SONU QALIQ"
     },
     "profitLoss": {
       "title": "Mənfəət / Zərər və Kassa / Bank",
@@ -441,9 +470,18 @@
       "periodPaid": "DÖVR İÇİ ÖDƏNƏN",
       "cashBankBalance": "KASSA VƏ BANK QALIĞI",
       "centralDebt": "MƏRKƏZİN BORCU-(Alacağı)",
+      "centralDebtValue": "MƏRKƏZİN BORCU-(Alacağı)",
       "cashAndBank": "KASSA VƏ BANK",
       "receivableFromMainOffice": "BAŞ OFİSDƏN ALACAQ",
       "totalAssets": "TOPLAM AKTİV"
+    },
+    "residentsReceivables": {
+      "title": "SAKİNLƏRDƏN ALACAĞIMIZ",
+      "dateRange": "Seçilmiş tarix aralığı",
+      "totalApartments": "Ümumi mənzil sayı",
+      "indebtedApartments": "Borclu mənzil sayı",
+      "indebtedInvoices": "Borclu faktura sayı",
+      "debtAmount": "Borc məbləği (AZN)"
     }
   },
   "debtorApartments": {
@@ -457,6 +495,17 @@
       "owner": "Mənzil sahibi",
       "status": "Status",
       "enter": "Daxil et"
+    },
+    "view": {
+      "title": "Borclu mənzil məlumatları"
+    },
+    "pay": {
+      "title": "Borc ödənişi",
+      "amount": "Ödəniş məbləği"
+    },
+    "invoices": {
+      "title": "Fakturalar",
+      "message": "Fakturalar siyahısı"
     },
     "actions": {
       "search": "Axtarış",
@@ -517,6 +566,13 @@
     },
     "edit": {
       "title": "Xərc məlumatlarını dəyiş"
+    },
+    "view": {
+      "title": "Xərc məlumatları"
+    },
+    "delete": {
+      "title": "Xərc sil",
+      "message": "Bu xərci silmək istədiyinizə əminsiniz?"
     },
     "actions": {
       "search": "Axtarış",
@@ -1166,6 +1222,51 @@
       "resident": "Sakin",
       "complex": "Kompleks",
       "building": "Bina"
+    }
+  },
+  "userRights": {
+    "pageTitle": "Hüquqlar",
+    "subtitle": "İstifadəçi rollarını idarə edin",
+    "loading": "Yüklənir...",
+    "rights": {
+      "title": "Hüquqlar",
+      "total": "Cəmi",
+      "role": "rol",
+      "create": "Hüquq yarat",
+      "managePermissions": "İcazələri idarə et",
+      "filter": {
+        "name": "Hüquq adı",
+        "status": "Status"
+      },
+      "table": {
+        "name": "Ad",
+        "status": "Status",
+        "actions": "Əməliyyatlar"
+      },
+      "createModal": {
+        "title": "Yeni Hüquq Yarat",
+        "name": "Hüquq adı",
+        "status": "Status"
+      },
+      "editModal": {
+        "title": "Hüququ Düzəliş Et",
+        "name": "Hüquq adı",
+        "status": "Status"
+      }
+    }
+  },
+  "userPermissions": {
+    "pageTitle": "İcazələr",
+    "subtitle": "İstifadəçi icazələrini idarə edin",
+    "loading": "Yüklənir...",
+    "search": "Axtarış...",
+    "selectRight": "Hüquq seçin",
+    "backToRights": "Hüquqlara qayıt",
+    "savePermissions": "İcazələri yadda saxla",
+    "permissions": {
+      "title": "İcazələr",
+      "total": "Cəmi",
+      "permission": "icazə"
     }
   },
   "profile": {

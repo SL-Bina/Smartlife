@@ -43,6 +43,9 @@ const DebtorApartmentsPage = () => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [viewOpen, setViewOpen] = useState(false);
+  const [payOpen, setPayOpen] = useState(false);
+  const [invoicesOpen, setInvoicesOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
   const [filterApartment, setFilterApartment] = useState("");
@@ -92,6 +95,26 @@ const DebtorApartmentsPage = () => {
     setFilterStatus("");
     setPage(1);
     setFilterOpen(false);
+  };
+
+  const openViewModal = (item) => {
+    setSelectedItem(item);
+    setViewOpen(true);
+  };
+
+  const openPayModal = (item) => {
+    setSelectedItem(item);
+    setPayOpen(true);
+  };
+
+  const openInvoicesModal = (item) => {
+    setSelectedItem(item);
+    setInvoicesOpen(true);
+  };
+
+  const handlePaySave = () => {
+    setPayOpen(false);
+    setSelectedItem(null);
   };
 
   return (
@@ -168,6 +191,168 @@ const DebtorApartmentsPage = () => {
               {t("buttons.apply")}
             </Button>
           </div>
+        </DialogFooter>
+      </Dialog>
+
+      {/* View debtor apartment modal */}
+      <Dialog open={viewOpen} handler={setViewOpen} size="lg" className="dark:bg-black border border-red-600 dark:border-red-600">
+        <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3">
+          <Typography variant="h5" className="font-bold">
+            {t("debtorApartments.view.title")}
+          </Typography>
+        </DialogHeader>
+        <DialogBody divider className="space-y-4 dark:bg-black py-4">
+          {selectedItem && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("debtorApartments.table.id")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="font-semibold dark:text-white">
+                  {selectedItem.id}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("debtorApartments.table.apartment")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="font-semibold dark:text-white">
+                  {selectedItem.apartment}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("debtorApartments.table.apartmentInfo")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  {t("debtorApartments.labels.building")}: {selectedItem.building}, {t("debtorApartments.labels.block")}: {selectedItem.block}, {t("debtorApartments.labels.floor")}: {selectedItem.floor}, {t("debtorApartments.labels.area")}: {selectedItem.area} m²
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("debtorApartments.table.owner")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  {selectedItem.owner}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("debtorApartments.table.phone")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  {selectedItem.phone}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("debtorApartments.table.totalDebt")}
+                </Typography>
+                <Typography
+                  variant="small"
+                  color={parseFloat(selectedItem.totalDebt) > 0 ? "red" : "green"}
+                  className={`font-semibold ${parseFloat(selectedItem.totalDebt) > 0 ? "dark:text-red-400" : "dark:text-green-300"}`}
+                >
+                  {selectedItem.totalDebt} ₼
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("debtorApartments.table.invoiceCount")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  {selectedItem.invoiceCount}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("debtorApartments.table.lastPaymentDate")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  {selectedItem.lastPaymentDate}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("debtorApartments.table.status")}
+                </Typography>
+                <Chip
+                  size="sm"
+                  value={selectedItem.status === "Ödənilib" ? t("debtorApartments.status.paid") : t("debtorApartments.status.debtor")}
+                  color={selectedItem.status === "Ödənilib" ? "green" : "red"}
+                  className="dark:bg-opacity-80"
+                />
+              </div>
+            </div>
+          )}
+        </DialogBody>
+        <DialogFooter className="flex justify-end gap-2 dark:bg-black border-t border-gray-200 dark:border-gray-700 pt-3">
+          <Button variant="outlined" color="blue-gray" onClick={() => setViewOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+            {t("buttons.close")}
+          </Button>
+        </DialogFooter>
+      </Dialog>
+
+      {/* Pay debt modal */}
+      <Dialog open={payOpen} handler={setPayOpen} size="md" className="dark:bg-black border border-red-600 dark:border-red-600">
+        <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3">
+          <Typography variant="h5" className="font-bold">
+            {t("debtorApartments.pay.title")}
+          </Typography>
+        </DialogHeader>
+        <DialogBody divider className="space-y-4 dark:bg-black py-4">
+          {selectedItem && (
+            <>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+                  {t("debtorApartments.table.totalDebt")}
+                </Typography>
+                <Typography variant="small" color="red" className="font-semibold dark:text-red-300">
+                  {selectedItem.totalDebt} ₼
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+                  {t("debtorApartments.pay.amount")}
+                </Typography>
+                <Input 
+                  type="number"
+                  label={t("debtorApartments.filter.enter")}
+                  className="dark:text-white"
+                  labelProps={{ className: "dark:text-gray-400" }}
+                />
+              </div>
+            </>
+          )}
+        </DialogBody>
+        <DialogFooter className="flex justify-end gap-2 dark:bg-black border-t border-gray-200 dark:border-gray-700 pt-3">
+          <Button variant="outlined" color="blue-gray" onClick={() => setPayOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+            {t("buttons.cancel")}
+          </Button>
+          <Button color="green" onClick={handlePaySave} className="dark:bg-green-600 dark:hover:bg-green-700">
+            {t("buttons.save")}
+          </Button>
+        </DialogFooter>
+      </Dialog>
+
+      {/* View invoices modal */}
+      <Dialog open={invoicesOpen} handler={setInvoicesOpen} size="lg" className="dark:bg-black border border-red-600 dark:border-red-600">
+        <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3">
+          <Typography variant="h5" className="font-bold">
+            {t("debtorApartments.invoices.title")}
+          </Typography>
+        </DialogHeader>
+        <DialogBody divider className="space-y-4 dark:bg-black py-4">
+          {selectedItem && (
+            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+              {t("debtorApartments.invoices.message")} {selectedItem.apartment} ({t("debtorApartments.table.invoiceCount")}: {selectedItem.invoiceCount})
+            </Typography>
+          )}
+        </DialogBody>
+        <DialogFooter className="flex justify-end gap-2 dark:bg-black border-t border-gray-200 dark:border-gray-700 pt-3">
+          <Button variant="outlined" color="blue-gray" onClick={() => setInvoicesOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+            {t("buttons.close")}
+          </Button>
         </DialogFooter>
       </Dialog>
 
@@ -309,10 +494,16 @@ const DebtorApartmentsPage = () => {
                                   />
                                 </IconButton>
                               </MenuHandler>
-                                  <MenuList className="dark:bg-black ">
-                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("debtorApartments.actions.view")}</MenuItem>
-                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("debtorApartments.actions.pay")}</MenuItem>
-                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("debtorApartments.actions.invoices")}</MenuItem>
+                                  <MenuList className="dark:bg-black dark:border-gray-800">
+                                <MenuItem onClick={() => openViewModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                                  {t("debtorApartments.actions.view")}
+                                </MenuItem>
+                                <MenuItem onClick={() => openPayModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                                  {t("debtorApartments.actions.pay")}
+                                </MenuItem>
+                                <MenuItem onClick={() => openInvoicesModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                                  {t("debtorApartments.actions.invoices")}
+                                </MenuItem>
                               </MenuList>
                             </Menu>
                           </td>
@@ -342,10 +533,16 @@ const DebtorApartmentsPage = () => {
                               <EllipsisVerticalIcon strokeWidth={2} className="h-5 w-5" />
                             </IconButton>
                           </MenuHandler>
-                          <MenuList className="dark:bg-black ">
-                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("debtorApartments.actions.view")}</MenuItem>
-                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("debtorApartments.actions.pay")}</MenuItem>
-                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("debtorApartments.actions.invoices")}</MenuItem>
+                          <MenuList className="dark:bg-black dark:border-gray-800">
+                            <MenuItem onClick={() => openViewModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                              {t("debtorApartments.actions.view")}
+                            </MenuItem>
+                            <MenuItem onClick={() => openPayModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                              {t("debtorApartments.actions.pay")}
+                            </MenuItem>
+                            <MenuItem onClick={() => openInvoicesModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                              {t("debtorApartments.actions.invoices")}
+                            </MenuItem>
                           </MenuList>
                         </Menu>
                       </div>

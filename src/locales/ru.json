@@ -7,7 +7,11 @@
     "password": "Пароль",
     "count": "Количество",
     "percentage": "Процент",
-    "enter": "Введите"
+    "enter": "Введите",
+    "showing": "Показано",
+    "of": "из",
+    "previous": "Предыдущий",
+    "next": "Следующий"
   },
   "header": {
     "search": "Поиск",
@@ -42,6 +46,7 @@
     "apartmentGroups": "Группы квартир",
     "buildingServiceFee": "Сервисный платеж",
     "buildingManagement": "Управление зданиями",
+    "userRights": "Права пользователей",
     "profile": "Профиль"
   },
   "buttons": {
@@ -50,7 +55,9 @@
     "cancel": "Отмена",
     "save": "Сохранить",
     "edit": "Редактировать",
-    "apply": "Применить"
+    "apply": "Применить",
+    "close": "Закрыть",
+    "delete": "Удалить"
   },
   "dashboard": {
     "homeTitle1": "Общие показатели",
@@ -285,6 +292,16 @@
       "serviceName": "Название услуги",
       "enter": "Введите"
     },
+    "view": {
+      "title": "Детали счета"
+    },
+    "edit": {
+      "title": "Редактировать счет"
+    },
+    "delete": {
+      "title": "Удалить счет",
+      "message": "Вы уверены, что хотите удалить этот счет"
+    },
     "actions": {
       "search": "Поиск",
       "add": "Добавить",
@@ -345,6 +362,16 @@
       "apartment": "Квартира",
       "status": "Статус",
       "enter": "Введите"
+    },
+    "view": {
+      "title": "Детали платежа"
+    },
+    "edit": {
+      "title": "Редактировать платеж"
+    },
+    "delete": {
+      "title": "Удалить платеж",
+      "message": "Вы уверены, что хотите удалить этот платеж"
     },
     "actions": {
       "search": "Поиск",
@@ -429,7 +456,8 @@
       "title": "Балансы",
       "totalDepositBalance": "ОБЩИЙ ОСТАТОК ДЕПОЗИТА",
       "depositWithdrawn": "ДЕПОЗИТ, СНЯТЫЙ С ДОЛГА КЛИЕНТА (По диапазону дат)",
-      "previousMonthBalances": "ОСТАТКИ ПРЕДЫДУЩЕГО МЕСЯЦА"
+      "previousMonthBalances": "ОСТАТКИ ПРЕДЫДУЩЕГО МЕСЯЦА",
+      "currentMonthEndBalance": "ОСТАТОК НА КОНЕЦ ТЕКУЩЕГО МЕСЯЦА"
     },
     "profitLoss": {
       "title": "Прибыль / Убыток и Касса / Банк",
@@ -441,9 +469,18 @@
       "periodPaid": "ОПЛАЧЕНО ЗА ПЕРИОД",
       "cashBankBalance": "ОСТАТОК КАССЫ И БАНКА",
       "centralDebt": "ДОЛГ ЦЕНТРА-(Дебиторская задолженность)",
+      "centralDebtValue": "ДОЛГ ЦЕНТРА-(Дебиторская задолженность)",
       "cashAndBank": "КАССА И БАНК",
       "receivableFromMainOffice": "ДЕБИТОРСКАЯ ЗАДОЛЖЕННОСТЬ ОТ ГЛАВНОГО ОФИСА",
       "totalAssets": "ОБЩИЕ АКТИВЫ"
+    },
+    "residentsReceivables": {
+      "title": "ДЕБИТОРСКАЯ ЗАДОЛЖЕННОСТЬ ОТ ЖИЛЬЦОВ",
+      "dateRange": "Выбранный диапазон дат",
+      "totalApartments": "Общее количество квартир",
+      "indebtedApartments": "Количество квартир с долгами",
+      "indebtedInvoices": "Количество счетов с долгами",
+      "debtAmount": "Сумма долга (AZN)"
     }
   },
   "debtorApartments": {
@@ -457,6 +494,17 @@
       "owner": "Владелец квартиры",
       "status": "Статус",
       "enter": "Введите"
+    },
+    "view": {
+      "title": "Детали квартиры с долгом"
+    },
+    "pay": {
+      "title": "Оплатить долг",
+      "amount": "Сумма оплаты"
+    },
+    "invoices": {
+      "title": "Счета",
+      "message": "Список счетов для"
     },
     "actions": {
       "search": "Поиск",
@@ -517,6 +565,13 @@
     },
     "edit": {
       "title": "Редактировать расход"
+    },
+    "view": {
+      "title": "Детали расхода"
+    },
+    "delete": {
+      "title": "Удалить расход",
+      "message": "Вы уверены, что хотите удалить этот расход"
     },
     "actions": {
       "search": "Поиск",
@@ -1166,6 +1221,51 @@
       "resident": "Житель",
       "complex": "Комплекс",
       "building": "Здание"
+    }
+  },
+  "userRights": {
+    "pageTitle": "Права",
+    "subtitle": "Управление ролями пользователей",
+    "loading": "Загрузка...",
+    "rights": {
+      "title": "Права",
+      "total": "Всего",
+      "role": "роль",
+      "create": "Создать право",
+      "managePermissions": "Управление разрешениями",
+      "filter": {
+        "name": "Название права",
+        "status": "Статус"
+      },
+      "table": {
+        "name": "Название",
+        "status": "Статус",
+        "actions": "Действия"
+      },
+      "createModal": {
+        "title": "Создать новое право",
+        "name": "Название права",
+        "status": "Статус"
+      },
+      "editModal": {
+        "title": "Редактировать право",
+        "name": "Название права",
+        "status": "Статус"
+      }
+    }
+  },
+  "userPermissions": {
+    "pageTitle": "Разрешения",
+    "subtitle": "Управление разрешениями пользователей",
+    "loading": "Загрузка...",
+    "search": "Поиск...",
+    "selectRight": "Выберите право",
+    "backToRights": "Вернуться к правам",
+    "savePermissions": "Сохранить разрешения",
+    "permissions": {
+      "title": "Разрешения",
+      "total": "Всего",
+      "permission": "разрешение"
     }
   },
   "profile": {

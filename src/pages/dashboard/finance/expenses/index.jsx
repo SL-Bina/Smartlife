@@ -41,7 +41,9 @@ const ExpensesPage = () => {
   const [page, setPage] = useState(1);
   const [filterOpen, setFilterOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
+  const [viewOpen, setViewOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
   const [filterCategory, setFilterCategory] = useState("");
@@ -98,6 +100,11 @@ const ExpensesPage = () => {
     setCreateOpen(true);
   };
 
+  const openViewModal = (item) => {
+    setSelectedItem(item);
+    setViewOpen(true);
+  };
+
   const openEditModal = (item) => {
     setSelectedItem(item);
     setFormCategory(item.category);
@@ -108,6 +115,11 @@ const ExpensesPage = () => {
     setFormPaidBy(item.paidBy);
     setFormInvoiceNumber(item.invoiceNumber);
     setEditOpen(true);
+  };
+
+  const openDeleteModal = (item) => {
+    setSelectedItem(item);
+    setDeleteOpen(true);
   };
 
   const handleFilterApply = () => {
@@ -129,6 +141,12 @@ const ExpensesPage = () => {
 
   const handleEditSave = () => {
     setEditOpen(false);
+    setSelectedItem(null);
+  };
+
+  const handleDeleteConfirm = () => {
+    setDeleteOpen(false);
+    setSelectedItem(null);
   };
 
   return (
@@ -410,6 +428,128 @@ const ExpensesPage = () => {
         </DialogFooter>
       </Dialog>
 
+      {/* View expense modal */}
+      <Dialog open={viewOpen} handler={setViewOpen} size="lg" className="dark:bg-black border border-red-600 dark:border-red-600">
+        <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3">
+          <Typography variant="h5" className="font-bold">
+            {t("expenses.view.title")}
+          </Typography>
+        </DialogHeader>
+        <DialogBody divider className="space-y-4 dark:bg-black py-4">
+          {selectedItem && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("expenses.table.id")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="font-semibold dark:text-white">
+                  {selectedItem.id}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("expenses.table.category")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="font-semibold dark:text-white">
+                  {selectedItem.category}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("expenses.table.description")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  {selectedItem.description}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("expenses.table.amount")}
+                </Typography>
+                <Typography variant="small" color="red" className="font-semibold dark:text-red-300">
+                  {selectedItem.amount} ₼
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("expenses.table.paymentMethod")}
+                </Typography>
+                <Chip
+                  size="sm"
+                  value={selectedItem.paymentMethod === "Nağd" ? t("expenses.paymentMethod.cash") : t("expenses.paymentMethod.bank")}
+                  color={selectedItem.paymentMethod === "Nağd" ? "amber" : "blue"}
+                  className="dark:bg-opacity-80"
+                />
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("expenses.table.paymentDate")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  {selectedItem.paymentDate}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("expenses.table.paidBy")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  {selectedItem.paidBy}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("expenses.table.invoiceNumber")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  {selectedItem.invoiceNumber}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("expenses.table.status")}
+                </Typography>
+                <Chip
+                  size="sm"
+                  value={selectedItem.status === "Təsdiqlənib" ? t("expenses.status.approved") : t("expenses.status.pending")}
+                  color={selectedItem.status === "Təsdiqlənib" ? "green" : "amber"}
+                  className="dark:bg-opacity-80"
+                />
+              </div>
+            </div>
+          )}
+        </DialogBody>
+        <DialogFooter className="flex justify-end gap-2 dark:bg-black border-t border-gray-200 dark:border-gray-700 pt-3">
+          <Button variant="outlined" color="blue-gray" onClick={() => setViewOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+            {t("buttons.close")}
+          </Button>
+        </DialogFooter>
+      </Dialog>
+
+      {/* Delete expense modal */}
+      <Dialog open={deleteOpen} handler={setDeleteOpen} size="sm" className="dark:bg-black border border-red-600 dark:border-red-600">
+        <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3">
+          <Typography variant="h5" className="font-bold">
+            {t("expenses.delete.title")}
+          </Typography>
+        </DialogHeader>
+        <DialogBody divider className="space-y-4 dark:bg-black py-4">
+          {selectedItem && (
+            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+              {t("expenses.delete.message")} <strong>{selectedItem.description}</strong> (ID: {selectedItem.id})?
+            </Typography>
+          )}
+        </DialogBody>
+        <DialogFooter className="flex justify-end gap-2 dark:bg-black border-t border-gray-200 dark:border-gray-700 pt-3">
+          <Button variant="outlined" color="blue-gray" onClick={() => setDeleteOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+            {t("buttons.cancel")}
+          </Button>
+          <Button color="red" onClick={handleDeleteConfirm} className="dark:bg-red-600 dark:hover:bg-red-700">
+            {t("buttons.delete")}
+          </Button>
+        </DialogFooter>
+      </Dialog>
+
       <Card className="border border-red-600 dark:border-red-600 shadow-sm dark:bg-black ">
         <CardHeader
           floated={false}
@@ -541,10 +681,16 @@ const ExpensesPage = () => {
                                   />
                                 </IconButton>
                               </MenuHandler>
-                                <MenuList className="dark:bg-black ">
-                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("expenses.actions.view")}</MenuItem>
-                                <MenuItem onClick={() => openEditModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">{t("expenses.actions.edit")}</MenuItem>
-                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("expenses.actions.delete")}</MenuItem>
+                                <MenuList className="dark:bg-black dark:border-gray-800">
+                                <MenuItem onClick={() => openViewModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                                  {t("expenses.actions.view")}
+                                </MenuItem>
+                                <MenuItem onClick={() => openEditModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                                  {t("expenses.actions.edit")}
+                                </MenuItem>
+                                <MenuItem onClick={() => openDeleteModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                                  {t("expenses.actions.delete")}
+                                </MenuItem>
                               </MenuList>
                             </Menu>
                           </td>
@@ -574,10 +720,16 @@ const ExpensesPage = () => {
                               <EllipsisVerticalIcon strokeWidth={2} className="h-5 w-5" />
                             </IconButton>
                           </MenuHandler>
-                            <MenuList className="dark:bg-black ">
-                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("expenses.actions.view")}</MenuItem>
-                            <MenuItem onClick={() => openEditModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">{t("expenses.actions.edit")}</MenuItem>
-                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("expenses.actions.delete")}</MenuItem>
+                            <MenuList className="dark:bg-black dark:border-gray-800">
+                            <MenuItem onClick={() => openViewModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                              {t("expenses.actions.view")}
+                            </MenuItem>
+                            <MenuItem onClick={() => openEditModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                              {t("expenses.actions.edit")}
+                            </MenuItem>
+                            <MenuItem onClick={() => openDeleteModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                              {t("expenses.actions.delete")}
+                            </MenuItem>
                           </MenuList>
                         </Menu>
                       </div>

@@ -6,8 +6,11 @@ import {
   ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/solid";
 import routes from "@/routes";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 export function Auth() {
+  // Update document title based on current route
+  useDocumentTitle();
   const navbarRoutes = [
     {
       name: "dashboard",

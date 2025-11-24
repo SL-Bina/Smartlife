@@ -1,3 +1,4 @@
+import React from "react";
 import { useLocation, Link } from "react-router-dom";
 import {
   Navbar,
@@ -69,6 +70,8 @@ const pageTitleKeyMap = {
   transfers: "sidebar.transfers",
   debt: "sidebar.debt",
   notifications: "sidebar.notifications",
+  "user-rights": "sidebar.userRights",
+  "user-permissions": "sidebar.userPermissions",
   profile: "sidebar.profile",
   mtk: "sidebar.mtk",
   complex: "sidebar.complexes",
@@ -83,6 +86,15 @@ const pageTitleKeyMap = {
   applications: "applications.list.pageTitle",
   "applications/list": "applications.list.pageTitle",
   "applications/evaluation": "applications.evaluation.pageTitle",
+  // Nested finance routes
+  "finance/invoices": "sidebar.invoices",
+  "finance/payment-history": "sidebar.paymentHistory",
+  "finance/reports": "sidebar.reports",
+  "finance/debtor-apartments": "sidebar.debtorApartments",
+  "finance/expenses": "sidebar.expenses",
+  "finance/deposit": "sidebar.deposit",
+  "finance/transfers": "sidebar.transfers",
+  "finance/debt": "sidebar.debt",
 };
 
 export function DashboardNavbar() {
@@ -110,6 +122,55 @@ export function DashboardNavbar() {
     : pageTitleKeyMap[page]
     ? t(pageTitleKeyMap[page])
     : page;
+
+  // Helper function to translate path segments for breadcrumbs
+  const translatePathSegment = (segment) => {
+    if (pageTitleKeyMap[segment]) {
+      return t(pageTitleKeyMap[segment]);
+    }
+    // Capitalize first letter if no translation found
+    return segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ");
+  };
+
+  // Build breadcrumb items from path parts
+  const breadcrumbItems = [];
+  if (pathParts.length > 1) {
+    // Add layout (dashboard)
+    breadcrumbItems.push({
+      label: layoutTitle,
+      path: `/${layout}`,
+    });
+    
+    // Build path segments for nested routes
+    let currentPath = "";
+    for (let i = 1; i < pathParts.length; i++) {
+      currentPath += (currentPath ? "/" : "") + pathParts[i];
+      const segment = pathParts[i];
+      const isLast = i === pathParts.length - 1;
+      
+      // For the last segment, try full path translation first
+      // For intermediate segments, use individual segment translation
+      let translatedLabel;
+      if (isLast && pageTitleKeyMap[currentPath]) {
+        translatedLabel = t(pageTitleKeyMap[currentPath]);
+      } else {
+        translatedLabel = translatePathSegment(segment);
+      }
+      
+      breadcrumbItems.push({
+        label: translatedLabel,
+        path: `/${layout}/${currentPath}`,
+        isLast: isLast,
+      });
+    }
+  } else {
+    // If only layout, show just layout
+    breadcrumbItems.push({
+      label: layoutTitle,
+      path: `/${layout}`,
+      isLast: true,
+    });
+  }
 
   return (
     <Navbar
@@ -140,22 +201,29 @@ export function DashboardNavbar() {
                 fixedNavbar ? "mt-1" : ""
               }`}
             >
-              <Link to={`/${layout}`}>
-                <Typography
-                  variant="small"
-                  color="blue-gray"
-                  className="font-normal opacity-50 transition-all hover:text-blue-500 hover:opacity-100 dark:text-gray-300 text-xs sm:text-sm truncate"
-                >
-                  {layoutTitle}
-                </Typography>
-              </Link>
-              <Typography
-                variant="small"
-                color="blue-gray"
-                className="font-normal dark:text-gray-300 text-xs sm:text-sm truncate"
-              >
-                {pageTitle}
-              </Typography>
+              {breadcrumbItems.map((item, index) => (
+                <React.Fragment key={index}>
+                  {item.isLast ? (
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="font-normal dark:text-gray-300 text-xs sm:text-sm truncate"
+                    >
+                      {item.label}
+                    </Typography>
+                  ) : (
+                    <Link to={item.path}>
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="font-normal opacity-50 transition-all hover:text-blue-500 hover:opacity-100 dark:text-gray-300 text-xs sm:text-sm truncate"
+                      >
+                        {item.label}
+                      </Typography>
+                    </Link>
+                  )}
+                </React.Fragment>
+              ))}
             </Breadcrumbs>
             <Typography 
               variant="h6" 
