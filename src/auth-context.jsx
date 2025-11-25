@@ -6,7 +6,6 @@ const STORAGE_KEY = "smartlife_auth_user";
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  // İlk vəziyyəti localStorage-dan sinxron oxu ki, ilk renderdə user hazır olsun
   const [user, setUser] = useState(() => {
     try {
       const raw = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;

@@ -9,7 +9,6 @@ import routes from "@/routes";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 export function Auth() {
-  // Update document title based on current route
   useDocumentTitle();
   const navbarRoutes = [
     {

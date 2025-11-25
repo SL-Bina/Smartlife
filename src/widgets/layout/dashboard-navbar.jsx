@@ -25,7 +25,6 @@ import {
 } from "@heroicons/react/24/solid";
 import {
   useMaterialTailwindController,
-  // setOpenConfigurator,
   setOpenSidenav,
   setDarkMode,
 } from "@/context";
@@ -78,6 +77,7 @@ const pageTitleKeyMap = {
   buildings: "sidebar.buildings",
   properties: "sidebar.properties",
   residents: "sidebar.residents",
+  resident: "sidebar.resident",
   blocks: "sidebar.blocks",
   "apartment-groups": "apartmentGroups.pageTitle",
   "building-service-fee": "buildingServiceFee.pageTitle",
@@ -86,7 +86,6 @@ const pageTitleKeyMap = {
   applications: "applications.list.pageTitle",
   "applications/list": "applications.list.pageTitle",
   "applications/evaluation": "applications.evaluation.pageTitle",
-  // Nested finance routes
   "finance/invoices": "sidebar.invoices",
   "finance/payment-history": "sidebar.paymentHistory",
   "finance/reports": "sidebar.reports",
@@ -95,6 +94,11 @@ const pageTitleKeyMap = {
   "finance/deposit": "sidebar.deposit",
   "finance/transfers": "sidebar.transfers",
   "finance/debt": "sidebar.debt",
+  "resident/home": "residentDashboard.pageTitle",
+  "resident/invoices": "sidebar.invoices",
+  "resident/applications": "sidebar.applicationsList",
+  "resident/notifications": "sidebar.notifications",
+  "resident/profile": "sidebar.profile",
 };
 
 export function DashboardNavbar() {
@@ -115,7 +119,6 @@ export function DashboardNavbar() {
     ? t(layoutTitleKeyMap[layout])
     : layout;
 
-  // First try full path (e.g., "applications/list"), then try just page name
   const fullPath = pathParts.slice(1).join("/");
   const pageTitle = pageTitleKeyMap[fullPath] 
     ? t(pageTitleKeyMap[fullPath])
@@ -123,36 +126,31 @@ export function DashboardNavbar() {
     ? t(pageTitleKeyMap[page])
     : page;
 
-  // Helper function to translate path segments for breadcrumbs
   const translatePathSegment = (segment) => {
     if (pageTitleKeyMap[segment]) {
       return t(pageTitleKeyMap[segment]);
     }
-    // Capitalize first letter if no translation found
     return segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ");
   };
 
-  // Build breadcrumb items from path parts
   const breadcrumbItems = [];
   if (pathParts.length > 1) {
-    // Add layout (dashboard)
     breadcrumbItems.push({
       label: layoutTitle,
       path: `/${layout}`,
     });
     
-    // Build path segments for nested routes
     let currentPath = "";
     for (let i = 1; i < pathParts.length; i++) {
       currentPath += (currentPath ? "/" : "") + pathParts[i];
       const segment = pathParts[i];
       const isLast = i === pathParts.length - 1;
       
-      // For the last segment, try full path translation first
-      // For intermediate segments, use individual segment translation
       let translatedLabel;
       if (isLast && pageTitleKeyMap[currentPath]) {
         translatedLabel = t(pageTitleKeyMap[currentPath]);
+      } else if (pageTitleKeyMap[segment]) {
+        translatedLabel = t(pageTitleKeyMap[segment]);
       } else {
         translatedLabel = translatePathSegment(segment);
       }
@@ -164,7 +162,6 @@ export function DashboardNavbar() {
       });
     }
   } else {
-    // If only layout, show just layout
     breadcrumbItems.push({
       label: layoutTitle,
       path: `/${layout}`,

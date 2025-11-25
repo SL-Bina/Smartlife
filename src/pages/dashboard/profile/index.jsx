@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardBody,
@@ -18,17 +18,31 @@ import {
   HomeIcon,
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "@/auth-context";
 
 const Profile = () => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("personal");
   const [formData, setFormData] = useState({
-    firstName: "Smart",
-    lastName: "Lıfe",
-    birthDate: "1990-01-01",
-    address: "Baku",
-    phone: "0123456789",
+    firstName: user?.firstName || "",
+    lastName: user?.lastName || "",
+    birthDate: user?.birthDate || "",
+    address: user?.address || "",
+    phone: user?.phone || "",
   });
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        birthDate: user.birthDate || "",
+        address: user.address || "",
+        phone: user.phone || "",
+      });
+    }
+  }, [user]);
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -45,12 +59,10 @@ const Profile = () => {
   };
 
   const handleSavePersonalInfo = () => {
-    // Save personal information
     console.log("Saving personal info:", formData);
   };
 
   const handleSavePassword = () => {
-    // Save password
     console.log("Saving password");
   };
 
@@ -77,30 +89,30 @@ const Profile = () => {
             <div className="flex flex-col items-center">
               <div className="relative mb-4">
                 <div className="w-24 h-24 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-300 text-2xl font-bold">
-                  R
+                  {user?.firstName?.charAt(0) || "U"}
                 </div>
                 <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 dark:bg-green-400 rounded-full border-2 border-white dark:border-gray-800"></div>
               </div>
               <Typography variant="h5" color="blue-gray" className="mb-4 font-bold dark:text-white">
-                Test User
+                {user?.fullName || "User"}
               </Typography>
               
               <div className="w-full space-y-3">
                 <div className="flex items-center gap-3">
                   <EnvelopeIcon className="h-5 w-5 text-blue-gray-400 dark:text-gray-400" />
                   <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                    admin@mail.az
+                    {user?.email || "N/A"}
                   </Typography>
                 </div>
                 <div className="flex items-center gap-3">
                   <PhoneIcon className="h-5 w-5 text-blue-gray-400 dark:text-gray-400" />
                   <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                    {formData.phone}
+                    {user?.phone || "N/A"}
                   </Typography>
                 </div>
                 <div className="mt-4 pt-4 border-t border-blue-gray-100 dark:border-gray-800">
                   <Chip
-                    value="West"
+                    value={user?.role?.toUpperCase() || "USER"}
                     color="green"
                     icon={<HomeIcon className="h-4 w-4" />}
                     className="w-full justify-start dark:bg-green-900/20 dark:text-green-300"

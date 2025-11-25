@@ -40,7 +40,9 @@ const TransfersPage = () => {
   const [page, setPage] = useState(1);
   const [filterOpen, setFilterOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
+  const [viewOpen, setViewOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
   const [filterFromAccount, setFilterFromAccount] = useState("");
@@ -94,6 +96,11 @@ const TransfersPage = () => {
     setCreateOpen(true);
   };
 
+  const openViewModal = (item) => {
+    setSelectedItem(item);
+    setViewOpen(true);
+  };
+
   const openEditModal = (item) => {
     setSelectedItem(item);
     setFormFromAccount(item.fromAccount);
@@ -102,6 +109,11 @@ const TransfersPage = () => {
     setFormTransferDate(item.transferDate);
     setFormDescription(item.description);
     setEditOpen(true);
+  };
+
+  const openDeleteModal = (item) => {
+    setSelectedItem(item);
+    setDeleteOpen(true);
   };
 
   const handleFilterApply = () => {
@@ -123,6 +135,12 @@ const TransfersPage = () => {
 
   const handleEditSave = () => {
     setEditOpen(false);
+    setSelectedItem(null);
+  };
+
+  const handleDeleteConfirm = () => {
+    setDeleteOpen(false);
+    setSelectedItem(null);
   };
 
   return (
@@ -356,6 +374,123 @@ const TransfersPage = () => {
         </DialogFooter>
       </Dialog>
 
+      {/* View transfer modal */}
+      <Dialog open={viewOpen} handler={setViewOpen} size="lg" className="dark:bg-black border border-red-600 dark:border-red-600">
+        <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3">
+          <Typography variant="h5" className="font-bold">
+            {t("transfers.view.title")}
+          </Typography>
+        </DialogHeader>
+        <DialogBody divider className="space-y-4 dark:bg-black py-4">
+          {selectedItem && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("transfers.table.id")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="font-semibold dark:text-white">
+                  {selectedItem.id}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("transfers.table.fromAccount")}
+                </Typography>
+                <Chip
+                  size="sm"
+                  value={selectedItem.fromAccount === "Nağd" ? t("transfers.account.cash") : t("transfers.account.bank")}
+                  color={selectedItem.fromAccount === "Nağd" ? "amber" : "blue"}
+                  className="dark:bg-opacity-80"
+                />
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("transfers.table.toAccount")}
+                </Typography>
+                <Chip
+                  size="sm"
+                  value={selectedItem.toAccount === "Nağd" ? t("transfers.account.cash") : t("transfers.account.bank")}
+                  color={selectedItem.toAccount === "Nağd" ? "amber" : "blue"}
+                  className="dark:bg-opacity-80"
+                />
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("transfers.table.amount")}
+                </Typography>
+                <Typography variant="small" color="blue" className="font-semibold dark:text-blue-300">
+                  {selectedItem.amount} ₼
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("transfers.table.transferDate")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  {selectedItem.transferDate}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("transfers.table.description")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  {selectedItem.description}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("transfers.table.referenceNumber")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  {selectedItem.referenceNumber}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("transfers.table.status")}
+                </Typography>
+                <Chip
+                  size="sm"
+                  value={selectedItem.status === "Tamamlanıb" ? t("transfers.status.completed") : t("transfers.status.pending")}
+                  color={selectedItem.status === "Tamamlanıb" ? "green" : "amber"}
+                  className="dark:bg-opacity-80"
+                />
+              </div>
+            </div>
+          )}
+        </DialogBody>
+        <DialogFooter className="flex justify-end gap-2 dark:bg-black border-t border-gray-200 dark:border-gray-700 pt-3">
+          <Button variant="outlined" color="blue-gray" onClick={() => setViewOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+            {t("buttons.close")}
+          </Button>
+        </DialogFooter>
+      </Dialog>
+
+      {/* Delete transfer modal */}
+      <Dialog open={deleteOpen} handler={setDeleteOpen} size="sm" className="dark:bg-black border border-red-600 dark:border-red-600">
+        <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3">
+          <Typography variant="h5" className="font-bold">
+            {t("transfers.delete.title")}
+          </Typography>
+        </DialogHeader>
+        <DialogBody divider className="space-y-4 dark:bg-black py-4">
+          {selectedItem && (
+            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+              {t("transfers.delete.message")} <strong>{selectedItem.referenceNumber}</strong> (ID: {selectedItem.id})?
+            </Typography>
+          )}
+        </DialogBody>
+        <DialogFooter className="flex justify-end gap-2 dark:bg-black border-t border-gray-200 dark:border-gray-700 pt-3">
+          <Button variant="outlined" color="blue-gray" onClick={() => setDeleteOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+            {t("buttons.cancel")}
+          </Button>
+          <Button color="red" onClick={handleDeleteConfirm} className="dark:bg-red-600 dark:hover:bg-red-700">
+            {t("buttons.delete")}
+          </Button>
+        </DialogFooter>
+      </Dialog>
+
       <Card className="border border-red-600 dark:border-red-600 shadow-sm dark:bg-black ">
         <CardHeader
           floated={false}
@@ -477,10 +612,16 @@ const TransfersPage = () => {
                                   <EllipsisVerticalIcon strokeWidth={2} className="h-5 w-5" />
                                 </IconButton>
                               </MenuHandler>
-                              <MenuList className="dark:bg-black ">
-                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("transfers.actions.view")}</MenuItem>
-                                <MenuItem onClick={() => openEditModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">{t("transfers.actions.edit")}</MenuItem>
-                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("transfers.actions.delete")}</MenuItem>
+                              <MenuList className="dark:bg-black dark:border-gray-800">
+                                <MenuItem onClick={() => openViewModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                                  {t("transfers.actions.view")}
+                                </MenuItem>
+                                <MenuItem onClick={() => openEditModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                                  {t("transfers.actions.edit")}
+                                </MenuItem>
+                                <MenuItem onClick={() => openDeleteModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                                  {t("transfers.actions.delete")}
+                                </MenuItem>
                               </MenuList>
                             </Menu>
                           </td>
@@ -506,10 +647,16 @@ const TransfersPage = () => {
                               <EllipsisVerticalIcon strokeWidth={2} className="h-5 w-5" />
                             </IconButton>
                           </MenuHandler>
-                          <MenuList className="dark:bg-black ">
-                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("transfers.actions.view")}</MenuItem>
-                            <MenuItem onClick={() => openEditModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">{t("transfers.actions.edit")}</MenuItem>
-                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("transfers.actions.delete")}</MenuItem>
+                          <MenuList className="dark:bg-black dark:border-gray-800">
+                            <MenuItem onClick={() => openViewModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                              {t("transfers.actions.view")}
+                            </MenuItem>
+                            <MenuItem onClick={() => openEditModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                              {t("transfers.actions.edit")}
+                            </MenuItem>
+                            <MenuItem onClick={() => openDeleteModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                              {t("transfers.actions.delete")}
+                            </MenuItem>
                           </MenuList>
                         </Menu>
                       </div>

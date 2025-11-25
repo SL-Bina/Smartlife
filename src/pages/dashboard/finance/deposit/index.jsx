@@ -40,7 +40,9 @@ const DepositPage = () => {
   const [page, setPage] = useState(1);
   const [filterOpen, setFilterOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
+  const [viewOpen, setViewOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
   const [filterApartment, setFilterApartment] = useState("");
@@ -96,6 +98,11 @@ const DepositPage = () => {
     setCreateOpen(true);
   };
 
+  const openViewModal = (item) => {
+    setSelectedItem(item);
+    setViewOpen(true);
+  };
+
   const openEditModal = (item) => {
     setSelectedItem(item);
     setFormApartment(item.apartment);
@@ -105,6 +112,11 @@ const DepositPage = () => {
     setFormDepositDate(item.depositDate);
     setFormNotes(item.notes);
     setEditOpen(true);
+  };
+
+  const openDeleteModal = (item) => {
+    setSelectedItem(item);
+    setDeleteOpen(true);
   };
 
   const handleFilterApply = () => {
@@ -126,6 +138,12 @@ const DepositPage = () => {
 
   const handleEditSave = () => {
     setEditOpen(false);
+    setSelectedItem(null);
+  };
+
+  const handleDeleteConfirm = () => {
+    setDeleteOpen(false);
+    setSelectedItem(null);
   };
 
   return (
@@ -383,6 +401,120 @@ const DepositPage = () => {
         </DialogFooter>
       </Dialog>
 
+      {/* View deposit modal */}
+      <Dialog open={viewOpen} handler={setViewOpen} size="lg" className="dark:bg-black border border-red-600 dark:border-red-600">
+        <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3">
+          <Typography variant="h5" className="font-bold">
+            {t("deposit.view.title")}
+          </Typography>
+        </DialogHeader>
+        <DialogBody divider className="space-y-4 dark:bg-black py-4">
+          {selectedItem && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("deposit.table.id")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="font-semibold dark:text-white">
+                  {selectedItem.id}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("deposit.table.apartment")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="font-semibold dark:text-white">
+                  {selectedItem.apartment}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("deposit.table.owner")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  {selectedItem.owner}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("deposit.table.amount")}
+                </Typography>
+                <Typography variant="small" color="green" className="font-semibold dark:text-green-300">
+                  {selectedItem.amount} ₼
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("deposit.table.paymentMethod")}
+                </Typography>
+                <Chip
+                  size="sm"
+                  value={selectedItem.paymentMethod === "Nağd" ? t("deposit.paymentMethod.cash") : t("deposit.paymentMethod.bank")}
+                  color={selectedItem.paymentMethod === "Nağd" ? "amber" : "blue"}
+                  className="dark:bg-opacity-80"
+                />
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("deposit.table.depositDate")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  {selectedItem.depositDate}
+                </Typography>
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("deposit.table.status")}
+                </Typography>
+                <Chip
+                  size="sm"
+                  value={selectedItem.status === "Aktiv" ? t("deposit.status.active") : t("deposit.status.returned")}
+                  color={selectedItem.status === "Aktiv" ? "green" : "gray"}
+                  className="dark:bg-opacity-80"
+                />
+              </div>
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
+                  {t("deposit.table.notes")}
+                </Typography>
+                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  {selectedItem.notes}
+                </Typography>
+              </div>
+            </div>
+          )}
+        </DialogBody>
+        <DialogFooter className="flex justify-end gap-2 dark:bg-black border-t border-gray-200 dark:border-gray-700 pt-3">
+          <Button variant="outlined" color="blue-gray" onClick={() => setViewOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+            {t("buttons.close")}
+          </Button>
+        </DialogFooter>
+      </Dialog>
+
+      {/* Delete deposit modal */}
+      <Dialog open={deleteOpen} handler={setDeleteOpen} size="sm" className="dark:bg-black border border-red-600 dark:border-red-600">
+        <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3">
+          <Typography variant="h5" className="font-bold">
+            {t("deposit.delete.title")}
+          </Typography>
+        </DialogHeader>
+        <DialogBody divider className="space-y-4 dark:bg-black py-4">
+          {selectedItem && (
+            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+              {t("deposit.delete.message")} <strong>{selectedItem.apartment}</strong> (ID: {selectedItem.id})?
+            </Typography>
+          )}
+        </DialogBody>
+        <DialogFooter className="flex justify-end gap-2 dark:bg-black border-t border-gray-200 dark:border-gray-700 pt-3">
+          <Button variant="outlined" color="blue-gray" onClick={() => setDeleteOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+            {t("buttons.cancel")}
+          </Button>
+          <Button color="red" onClick={handleDeleteConfirm} className="dark:bg-red-600 dark:hover:bg-red-700">
+            {t("buttons.delete")}
+          </Button>
+        </DialogFooter>
+      </Dialog>
+
       <Card className="border border-red-600 dark:border-red-600 shadow-sm dark:bg-black ">
         <CardHeader
           floated={false}
@@ -501,10 +633,16 @@ const DepositPage = () => {
                                   <EllipsisVerticalIcon strokeWidth={2} className="h-5 w-5" />
                                 </IconButton>
                               </MenuHandler>
-                              <MenuList className="dark:bg-black ">
-                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("deposit.actions.view")}</MenuItem>
-                                <MenuItem onClick={() => openEditModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">{t("deposit.actions.edit")}</MenuItem>
-                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("deposit.actions.delete")}</MenuItem>
+                              <MenuList className="dark:bg-black dark:border-gray-800">
+                                <MenuItem onClick={() => openViewModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                                  {t("deposit.actions.view")}
+                                </MenuItem>
+                                <MenuItem onClick={() => openEditModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                                  {t("deposit.actions.edit")}
+                                </MenuItem>
+                                <MenuItem onClick={() => openDeleteModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                                  {t("deposit.actions.delete")}
+                                </MenuItem>
                               </MenuList>
                             </Menu>
                           </td>
@@ -530,10 +668,16 @@ const DepositPage = () => {
                               <EllipsisVerticalIcon strokeWidth={2} className="h-5 w-5" />
                             </IconButton>
                           </MenuHandler>
-                          <MenuList className="dark:bg-black ">
-                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("deposit.actions.view")}</MenuItem>
-                            <MenuItem onClick={() => openEditModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">{t("deposit.actions.edit")}</MenuItem>
-                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("deposit.actions.delete")}</MenuItem>
+                          <MenuList className="dark:bg-black dark:border-gray-800">
+                            <MenuItem onClick={() => openViewModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                              {t("deposit.actions.view")}
+                            </MenuItem>
+                            <MenuItem onClick={() => openEditModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                              {t("deposit.actions.edit")}
+                            </MenuItem>
+                            <MenuItem onClick={() => openDeleteModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                              {t("deposit.actions.delete")}
+                            </MenuItem>
                           </MenuList>
                         </Menu>
                       </div>

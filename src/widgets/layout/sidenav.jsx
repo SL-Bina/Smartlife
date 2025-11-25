@@ -20,7 +20,6 @@ export function Sidenav({ brandImg, brandName, routes }) {
   const [openMenus, setOpenMenus] = React.useState({});
 
   React.useEffect(() => {
-    // Aktiv child route dəyişəndə submenu-ləri vəziyyətə uyğunlaşdır
     setOpenMenus((current) => {
       const updated = {};
 
@@ -31,7 +30,6 @@ export function Sidenav({ brandImg, brandName, routes }) {
               (child) => `/${layout}${child.path}` === location.pathname
             );
 
-            // Yalnız aktiv child route-u olan submenu-ni aç
             if (hasActiveChild) {
               updated[page.name] = true;
             }
@@ -109,60 +107,60 @@ export function Sidenav({ brandImg, brandName, routes }) {
 
                 return (
                   <li key={page.name}>
-                    <Button
-                      variant={isOpen ? "filled" : "text"}
-                      color={
-                        isOpen
-                          ? sidenavColor === "dark"
-                            ? "white"
-                            : sidenavColor
-                          : sidenavType === "dark"
-                          ? "white"
-                          : "gray"
-                      }
-                        className={`flex items-center justify-between gap-2 px-4 capitalize transition-colors ${
-                        isOpen 
-                          ? "dark:bg-gray-800 dark:text-white bg-gray-100" 
-                          : "dark:text-white dark:hover:bg-gray-800/50 dark:bg-transparent hover:bg-gray-50"
-                      }`}
-                      fullWidth
-                      onClick={(e) => {
-                        // Bir submenu açılanda digərlərini bağla - yalnız bir submenu açıq olsun
-                        setOpenMenus((current) => {
-                          // Əgər bu menu açıqdırsa, onu bağla
-                          if (current[page.name]) {
-                            return {};
-                          }
-                          // Bu menu açıq deyilsə, onu aç və digərlərini bağla
-                          return { [page.name]: true };
-                        });
-                      }}
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
                     >
-                      <span className="flex items-center gap-4">
-                        <motion.div
-                          whileTap={{ scale: 0.8, rotate: 360 }}
-                          whileHover={{ scale: 1.1, rotate: 15 }}
-                          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                          className="dark:text-white"
-                        >
-                          {page.icon}
-                        </motion.div>
-                        <Typography
-                          color="inherit"
-                          className="font-medium dark:text-white"
-                        >
-                          {page.name.startsWith("sidebar.")
-                            ? t(page.name)
-                            : page.name}
-                        </Typography>
-                      </span>
-                      <ChevronDownIcon
-                        strokeWidth={2}
-                        className={`h-4 w-4 transition-transform dark:text-white ${
-                          isOpen ? "rotate-180" : ""
+                      <Button
+                        variant={isOpen ? "filled" : "text"}
+                        color={
+                          isOpen
+                            ? sidenavColor === "dark"
+                              ? "white"
+                              : sidenavColor
+                            : sidenavType === "dark"
+                            ? "white"
+                            : "gray"
+                        }
+                          className={`flex items-center justify-between gap-2 px-4 capitalize transition-colors ${
+                          isOpen 
+                            ? "dark:bg-gray-800 dark:text-white bg-gray-100" 
+                            : "dark:text-white dark:hover:bg-gray-800/50 dark:bg-transparent hover:bg-gray-50"
                         }`}
-                      />
-                    </Button>
+                        fullWidth
+                        onClick={(e) => {
+                          setOpenMenus((current) => {
+                            if (current[page.name]) {
+                              return {};
+                            }
+                            return { [page.name]: true };
+                          });
+                        }}
+                      >
+                        <span className="flex items-center gap-4">
+                          <motion.div
+                            whileTap={{ scale: 0.8, rotate: 360 }}
+                            className="dark:text-white group-hover:scale-110 group-hover:rotate-12 transition-transform"
+                          >
+                            {page.icon}
+                          </motion.div>
+                          <Typography
+                            color="inherit"
+                            className="font-medium dark:text-white"
+                          >
+                            {page.name.startsWith("sidebar.")
+                              ? t(page.name)
+                              : page.name}
+                          </Typography>
+                        </span>
+                        <ChevronDownIcon
+                          strokeWidth={2}
+                          className={`h-4 w-4 transition-transform dark:text-white ${
+                            isOpen ? "rotate-180" : ""
+                          }`}
+                        />
+                      </Button>
+                    </motion.div>
 
                     <div
                       className={`overflow-hidden transition-all duration-300 ${
@@ -176,48 +174,49 @@ export function Sidenav({ brandImg, brandName, routes }) {
                           <li key={name}>
                             <NavLink to={`/${layout}${path}`}>
                               {({ isActive }) => (
-                                <Button
-                                  variant={isActive ? "gradient" : "text"}
-                                  color={
-                                    isActive
-                                      ? sidenavColor === "dark"
-                                        ? "gray"
-                                        : sidenavColor
-                                      : sidenavType === "dark"
-                                      ? "white"
-                                      : "gray"
-                                  }
-                                  className={`flex items-center justify-start gap-3 px-3 py-2 text-sm normal-case transition-colors text-left ${
-                                    isActive 
-                                      ? "dark:bg-gray-800 dark:text-white bg-gray-100" 
-                                      : "dark:text-white dark:hover:bg-gray-800/50 dark:bg-transparent hover:bg-gray-50"
-                                  }`}
-                                  fullWidth
-                                  onClick={(e) => {
-                                    // Icon animasiyasını trigger et - icon-un öz click event-i işləyəcək
-                                    // mobil görünüşdə route dəyişəndə sidenav bağlansın
-                                    if (window.innerWidth < 1280) {
-                                      setOpenSidenav(dispatch, false);
-                                    }
-                                  }}
+                                <motion.div
+                                  whileHover={{ scale: 1.02 }}
+                                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
                                 >
-                                  <motion.div
-                                    whileTap={{ scale: 0.8, rotate: 360 }}
-                                    whileHover={{ scale: 1.1, rotate: 15 }}
-                                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                                    className="dark:text-white"
+                                  <Button
+                                    variant={isActive ? "gradient" : "text"}
+                                    color={
+                                      isActive
+                                        ? sidenavColor === "dark"
+                                          ? "gray"
+                                          : sidenavColor
+                                        : sidenavType === "dark"
+                                        ? "white"
+                                        : "gray"
+                                    }
+                                    className={`group flex items-center justify-start gap-3 px-3 py-2 text-sm normal-case transition-colors text-left ${
+                                      isActive 
+                                        ? "dark:bg-gray-800 dark:text-white bg-gray-100" 
+                                        : "dark:text-white dark:hover:bg-gray-800/50 dark:bg-transparent hover:bg-gray-50"
+                                    }`}
+                                    fullWidth
+                                    onClick={(e) => {
+                                      if (window.innerWidth < 1280) {
+                                        setOpenSidenav(dispatch, false);
+                                      }
+                                    }}
                                   >
-                                    {icon}
-                                  </motion.div>
-                                  <Typography
-                                    color="inherit"
-                                    className="font-medium dark:text-white text-left"
-                                  >
-                                    {name.startsWith("sidebar.")
-                                      ? t(name)
-                                      : name}
-                                  </Typography>
-                                </Button>
+                                    <motion.div
+                                      whileTap={{ scale: 0.8, rotate: 360 }}
+                                      className="dark:text-white group-hover:scale-110 group-hover:rotate-12 transition-transform"
+                                    >
+                                      {icon}
+                                    </motion.div>
+                                    <Typography
+                                      color="inherit"
+                                      className="font-medium dark:text-white text-left"
+                                    >
+                                      {name.startsWith("sidebar.")
+                                        ? t(name)
+                                        : name}
+                                    </Typography>
+                                  </Button>
+                                </motion.div>
                               )}
                             </NavLink>
                           </li>
@@ -232,46 +231,49 @@ export function Sidenav({ brandImg, brandName, routes }) {
                 <li key={page.name}>
                   <NavLink to={`/${layout}${page.path}`}>
                     {({ isActive }) => (
-                      <Button
-                        variant={isActive ? "gradient" : "text"}
-                        color={
-                          isActive
-                            ? sidenavColor === "dark" ? "gray" : sidenavColor
-                            : sidenavType === "dark"
-                            ? "white"
-                            : "gray"
-                        }
-                        className={`flex items-center gap-4 px-4 capitalize transition-colors ${
-                          isActive 
-                            ? "dark:bg-gray-800 dark:text-white bg-gray-100" 
-                            : "dark:text-white dark:hover:bg-gray-800/50 dark:bg-transparent hover:bg-gray-50"
-                        }`}
-                        fullWidth
-                        onClick={(e) => {
-                          // Icon animasiyasını trigger et - icon-un öz click event-i işləyəcək
-                          // mobil görünüşdə route dəyişəndə sidenav bağlansın
-                          if (window.innerWidth < 1280) {
-                            setOpenSidenav(dispatch, false);
-                          }
-                        }}
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
                       >
-                        <motion.div
-                          whileTap={{ scale: 0.8, rotate: 360 }}
-                          whileHover={{ scale: 1.1, rotate: 15 }}
-                          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                          className="dark:text-white"
+                        <Button
+                          variant={isActive ? "gradient" : "text"}
+                          color={
+                            isActive
+                              ? sidenavColor === "dark" ? "gray" : sidenavColor
+                              : sidenavType === "dark"
+                              ? "white"
+                              : "gray"
+                          }
+                          className={`group flex items-center gap-4 px-4 capitalize transition-colors ${
+                            isActive 
+                              ? "dark:bg-gray-800 dark:text-white bg-gray-100" 
+                              : "dark:text-white dark:hover:bg-gray-800/50 dark:bg-transparent hover:bg-gray-50"
+                          }`}
+                          fullWidth
+                          onClick={(e) => {
+                            // Icon animasiyasını trigger et - icon-un öz click event-i işləyəcək
+                            // mobil görünüşdə route dəyişəndə sidenav bağlansın
+                            if (window.innerWidth < 1280) {
+                              setOpenSidenav(dispatch, false);
+                            }
+                          }}
                         >
-                          {page.icon}
-                        </motion.div>
-                        <Typography
-                          color="inherit"
-                          className="font-medium dark:text-white"
-                        >
-                          {page.name.startsWith("sidebar.")
-                            ? t(page.name)
-                            : page.name}
-                        </Typography>
-                      </Button>
+                          <motion.div
+                            whileTap={{ scale: 0.8, rotate: 360 }}
+                            className="dark:text-white group-hover:scale-110 group-hover:rotate-12 transition-transform"
+                          >
+                            {page.icon}
+                          </motion.div>
+                          <Typography
+                            color="inherit"
+                            className="font-medium dark:text-white"
+                          >
+                            {page.name.startsWith("sidebar.")
+                              ? t(page.name)
+                              : page.name}
+                          </Typography>
+                        </Button>
+                      </motion.div>
                     )}
                   </NavLink>
                 </li>

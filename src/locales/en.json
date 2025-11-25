@@ -40,6 +40,7 @@
     "mtk": "HOA",
     "complexes": "Complexes",
     "residents": "Residents",
+    "resident": "Resident",
     "buildings": "Buildings",
     "properties": "Apartments",
     "blocks": "Blocks",
@@ -644,6 +645,13 @@
     "edit": {
       "title": "Edit deposit"
     },
+    "view": {
+      "title": "Deposit Details"
+    },
+    "delete": {
+      "title": "Delete Deposit",
+      "message": "Are you sure you want to delete this deposit"
+    },
     "actions": {
       "search": "Search",
       "add": "Add",
@@ -710,6 +718,13 @@
     "edit": {
       "title": "Edit transfer"
     },
+    "view": {
+      "title": "Transfer Details"
+    },
+    "delete": {
+      "title": "Delete Transfer",
+      "message": "Are you sure you want to delete this transfer"
+    },
     "actions": {
       "search": "Search",
       "add": "Add",
@@ -774,6 +789,13 @@
     },
     "edit": {
       "title": "Edit debt"
+    },
+    "view": {
+      "title": "Debt Details"
+    },
+    "delete": {
+      "title": "Delete Debt",
+      "message": "Are you sure you want to delete this debt"
     },
     "actions": {
       "search": "Search",
@@ -1457,5 +1479,19 @@
         "action": "Action"
       }
     }
+  },
+  "residentDashboard": {
+    "pageTitle": "Resident Dashboard",
+    "welcome": "Welcome",
+    "totalInvoices": "Total Invoices",
+    "unpaidInvoices": "Unpaid Invoices",
+    "totalApplications": "Total Applications",
+    "pendingApplications": "Pending Applications",
+    "unreadNotifications": "Unread Notifications",
+    "totalDebt": "Total Debt",
+    "quickActions": "Quick Actions",
+    "viewInvoices": "View Invoices",
+    "viewApplications": "View Applications",
+    "viewNotifications": "View Notifications"
   }
 }

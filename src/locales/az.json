@@ -40,6 +40,7 @@
     "mtk": "MTK",
     "complexes": "Komplekslər",
     "residents": "Sakinlər",
+    "resident": "Sakin",
     "buildings": "Binalar",
     "properties": "Mənzillər",
     "blocks": "Bloklar",
@@ -644,6 +645,13 @@
     "edit": {
       "title": "Depozit məlumatlarını dəyiş"
     },
+    "view": {
+      "title": "Depozit məlumatları"
+    },
+    "delete": {
+      "title": "Depozit sil",
+      "message": "Bu depoziti silmək istədiyinizə əminsiniz?"
+    },
     "actions": {
       "search": "Axtarış",
       "add": "Əlavə et",
@@ -710,6 +718,13 @@
     "edit": {
       "title": "Köçürmə məlumatlarını dəyiş"
     },
+    "view": {
+      "title": "Köçürmə məlumatları"
+    },
+    "delete": {
+      "title": "Köçürmə sil",
+      "message": "Bu köçürməni silmək istədiyinizə əminsiniz?"
+    },
     "actions": {
       "search": "Axtarış",
       "add": "Əlavə et",
@@ -774,6 +789,13 @@
     },
     "edit": {
       "title": "Öhdəlik məlumatlarını dəyiş"
+    },
+    "view": {
+      "title": "Öhdəlik məlumatları"
+    },
+    "delete": {
+      "title": "Öhdəlik sil",
+      "message": "Bu öhdəliyi silmək istədiyinizə əminsiniz?"
     },
     "actions": {
       "search": "Axtarış",
@@ -1469,5 +1491,19 @@
         "action": "Əməliyyat"
       }
     }
+  },
+  "residentDashboard": {
+    "pageTitle": "Sakin Paneli",
+    "welcome": "Xoş gəlmisiniz",
+    "totalInvoices": "Ümumi Fakturalar",
+    "unpaidInvoices": "Ödənilməmiş Fakturalar",
+    "totalApplications": "Ümumi Müraciətlər",
+    "pendingApplications": "Gözləmədə olan Müraciətlər",
+    "unreadNotifications": "Oxunmamış Bildirişlər",
+    "totalDebt": "Ümumi Borc",
+    "quickActions": "Sürətli Əməliyyatlar",
+    "viewInvoices": "Fakturaları Görüntülə",
+    "viewApplications": "Müraciətləri Görüntülə",
+    "viewNotifications": "Bildirişləri Görüntülə"
   }
 }

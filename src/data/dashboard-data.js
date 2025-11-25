@@ -1,4 +1,3 @@
-// Dashboard üçün məlumat strukturları
 import {
   BanknotesIcon,
   DocumentTextIcon,
@@ -11,7 +10,6 @@ import {
   HomeIcon,
 } from "@heroicons/react/24/solid";
 
-// paymentStatistics will be created in component with translations
 export const getPaymentStatistics = (t) => [
   {
     titleKey: "dashboard.paymentStats.currentMonthPayments",
@@ -144,7 +142,6 @@ export const getDepartmentStats = (t) => [
   },
 ];
 
-// residentStats will be created in component with translations
 export const getResidentStats = (t) => [
   {
     titleKey: "dashboard.residentStats.totalResidents",

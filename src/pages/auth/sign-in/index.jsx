@@ -13,6 +13,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useAuth } from "@/auth-context";
 import { useTranslation } from "react-i18next";
+import { demoUsers } from "@/auth-users";
 
 import ReactCountryFlag from "react-country-flag";
 
@@ -56,7 +57,14 @@ export function SignIn() {
       return;
     }
 
-    navigate("/dashboard/home");
+    const foundUser = demoUsers.find(
+      (u) => u.username === username && u.password === password
+    );
+    if (foundUser && foundUser.role === "resident") {
+      navigate("/dashboard/resident/home");
+    } else {
+      navigate("/dashboard/home");
+    }
   };
 
   return (
@@ -158,15 +166,30 @@ export function SignIn() {
           </Button>
 
           <div className="mt-4">
-            <Typography variant="small" className="text-blue-gray-700 font-medium">
+            <Typography variant="small" className="text-blue-gray-700 font-medium dark:text-gray-300">
               {t("auth.signIn.demoUsersTitle")}
             </Typography>
-            <ul className="mt-1 text-xs text-blue-gray-600">
-              <li>• admin / admin123</li>
-              {/* <li>• manager / manager123</li>
-              <li>• operator / operator123</li>
-              <li>• viewer / viewer123</li> */}
-            </ul>
+            <div className="mt-2 space-y-2">
+              {demoUsers
+                .filter((user) => user.role !== "resident")
+                .map((demoUser) => (
+                  <div key={demoUser.id} className="text-xs text-blue-gray-600 dark:text-gray-400">
+                    <span className="font-semibold capitalize">{demoUser.role}:</span> {demoUser.username} / {demoUser.password}
+                  </div>
+                ))}
+              <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                <Typography variant="small" className="text-blue-gray-700 font-semibold dark:text-gray-300 mb-1">
+                  Sakin hesabları:
+                </Typography>
+                {demoUsers
+                  .filter((user) => user.role === "resident")
+                  .map((demoUser) => (
+                    <div key={demoUser.id} className="text-xs text-blue-gray-600 dark:text-gray-400">
+                      <span className="font-semibold">{demoUser.fullName}:</span> {demoUser.username} / {demoUser.password}
+                    </div>
+                  ))}
+              </div>
+            </div>
           </div>
         </form>
 

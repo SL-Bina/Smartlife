@@ -34,7 +34,6 @@ export function reducer(state, action) {
 }
 
 export function MaterialTailwindControllerProvider({ children }) {
-  // Dark mode-u localStorage-dan oxu
   const getInitialDarkMode = () => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("darkMode");
@@ -55,7 +54,6 @@ export function MaterialTailwindControllerProvider({ children }) {
 
   const [controller, dispatch] = React.useReducer(reducer, initialState);
 
-  // Dark mode dəyişəndə HTML elementinə class əlavə et/çıxart
   React.useEffect(() => {
     if (controller.darkMode) {
       document.documentElement.classList.add("dark");
