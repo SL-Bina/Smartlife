@@ -33,6 +33,13 @@
     "transfers": "Köçürmələr",
     "debt": "Öhdəlik",
     "notifications": "Bildirişlər",
+    "notificationsAndQueries": "Bildirişlər və sorğular",
+    "sendNotification": "Bildiriş göndərmək",
+    "notificationArchive": "Bildiriş arxivi",
+    "sentSMS": "Göndərilən SMS-lər",
+    "createQuery": "Sorğu keçirmək",
+    "queries": "Sorğular",
+    "complexDashboard": "Kompleks lövhəsi",
     "applications": "Müraciətlər",
     "applicationsList": "Müraciətlər siyahısı",
     "applicationsEvaluation": "Müraciətlərin qiymətləndirilməsi",
@@ -46,6 +53,9 @@
     "blocks": "Bloklar",
     "apartmentGroups": "Mənzil qrupu",
     "buildingServiceFee": "Servis haqqı",
+    "reception": "Resepsiya",
+    "services": "Xidmətlər",
+    "electronicDocuments": "Elektron sənədlər",
     "buildingManagement": "idarə etmə",
     "userRights": "Hüquqlar",
     "userPermissions": "İcazələr",
@@ -860,6 +870,287 @@
     "actions": {
       "markAsRead": "Oxunmuş kimi qeyd et",
       "remove": "Siyahıdan sil"
+    },
+    "send": {
+      "pageTitle": "Bildiriş göndərmək",
+      "pageSubtitle": "Yeni bildiriş yaradın və hədəf auditoriyaya göndərin",
+      "selectFields": "Müvafiq xanaları seçin",
+      "building": "Bina",
+      "residentialBuilding": "Yaşayış Binası",
+      "block": "Blok",
+      "buildingBlock": "Bina Bloku",
+      "apartment": "Mənzil",
+      "residentialApartment": "Yaşayış Mənzili",
+      "select": "Seçin",
+      "notificationType": "Bildiriş növü",
+      "internal": "Daxili",
+      "title": "Başlıq",
+      "message": "Mesaj",
+      "sendButton": "Bildirişi göndər"
+    },
+    "archive": {
+      "pageTitle": "Bildiriş arxivi",
+      "pageSubtitle": "Göndərilən bütün bildirişlərin arxivi və statusu",
+      "search": "AXTARIŞ",
+      "internal": "Daxili",
+      "table": {
+        "requests": "Müraciətlər",
+        "building": "BINA",
+        "block": "BLOK",
+        "apartment": "MƏNZİL",
+        "type": "NÖV",
+        "date": "Tarix"
+      }
+    },
+    "sentSMS": {
+      "pageTitle": "Göndərilən SMS-lər",
+      "sent": "Göndərildi",
+      "failed": "Uğursuz",
+      "table": {
+        "apartment": "MƏNZİL",
+        "recipient": "ALICI",
+        "phone": "TELEFON",
+        "message": "MESAJ",
+        "status": "STATUS",
+        "sendDate": "GÖNDƏRİLMƏ TARİXİ"
+      }
+    }
+  },
+  "queries": {
+    "create": {
+      "pageTitle": "Sorğuların idarə edilməsi",
+      "selectFields": "Müvafiq xanaları seçin",
+      "building": "Bina",
+      "residentialBuilding": "Yaşayış Binası",
+      "block": "Blok",
+      "buildingBlock": "Bina Bloku",
+      "apartment": "Mənzil",
+      "residentialApartment": "Yaşayış Mənzili",
+      "select": "Seçin",
+      "queryTitle": "Sorğu başlığı",
+      "azerbaijani": "Azərbaycan",
+      "english": "İngilis",
+      "russian": "Rus",
+      "azerbaijaniTitle": "Azərbaycan başlığı",
+      "englishTitle": "İngilis başlığı",
+      "russianTitle": "Rus başlığı",
+      "queryDescription": "Sorğu təsviri",
+      "azerbaijaniDescription": "Azərbaycan təsviri",
+      "englishDescription": "İngilis təsviri",
+      "russianDescription": "Rus təsviri",
+      "enterQuestion": "Sualı daxil edin",
+      "azerbaijaniQuestion": "Azərbaycan sualı",
+      "englishQuestion": "İngilis sualı",
+      "enterAnswers": "Cavabları daxil edin",
+      "answer": "Cavab",
+      "azerbaijaniAnswer": "Azərbaycan cavabı",
+      "englishAnswer": "İngilis cavabı",
+      "russianAnswer": "Rus cavabı",
+      "add": "Əlavə et",
+      "queryParameters": "Sorğu parametrləri",
+      "multipleAnswerPermission": "Çoxlu cavab icazəsi",
+      "multipleAnswerDescription": "İstifadəçilər birdən çox cavab seçə bilərlər",
+      "displayResults": "Sorğuların nəticələrini əks etdirin",
+      "displayResultsDescription": "Sorğu nəticələri istifadəçilərə göstəriləcək",
+      "currentValue": "Mövcud dəyər",
+      "active": "Aktiv",
+      "inactive": "Qeyri-aktiv",
+      "back": "Geri",
+      "submit": "Göndər"
+    },
+    "list": {
+      "pageTitle": "Sorğular",
+      "search": "AXTARIŞ",
+      "createNew": "Yenisini yaradın",
+      "edit": "Düzəliş et",
+      "delete": "Sil",
+      "table": {
+        "title": "Başlıq",
+        "description": "Açıqlama",
+        "complex": "Kompleks",
+        "building": "Bina",
+        "block": "Blok",
+        "status": "Status",
+        "action": "Əməliyyat"
+      }
+    }
+  },
+  "complexDashboard": {
+    "pageTitle": "Kompleks lövhəsi",
+    "pageSubtitle": "Kompleks üzrə ümumi məlumatlar və statistikalar",
+    "content": "Kompleks lövhəsi məzmunu",
+    "statistics": {
+      "totalComplexes": "Ümumi komplekslər",
+      "totalBuildings": "Ümumi binalar",
+      "totalApartments": "Ümumi mənzillər",
+      "totalResidents": "Ümumi sakinlər",
+      "totalIncome": "Ümumi mədaxil",
+      "totalExpenses": "Ümumi xərclər",
+      "pendingApplications": "Gözləyən müraciətlər",
+      "completedApplications": "Tamamlanmış müraciətlər",
+      "thisMonth": "Bu ay",
+      "thisWeek": "Bu həftə",
+      "vsLastMonth": "Keçən aya nisbətən"
+    },
+    "summary": {
+      "title": "Ümumi xülasə",
+      "subtitle": "Kompleks üzrə əsas göstəricilər",
+      "netProfit": "Xalis mənfəət",
+      "occupancyRate": "Doluluk dərəcəsi",
+      "averageIncome": "Orta mədaxil",
+      "applicationCompletion": "Müraciət tamamlanma dərəcəsi"
+    },
+    "recentActivities": {
+      "title": "Son fəaliyyətlər",
+      "subtitle": "Kompleks üzrə son əməliyyatlar",
+      "table": {
+        "type": "Növ",
+        "description": "Təsvir",
+        "amount": "Məbləğ",
+        "status": "Status",
+        "date": "Tarix"
+      }
+    },
+    "activityTypes": {
+      "payment": "Ödəniş",
+      "application": "Müraciət",
+      "notification": "Bildiriş",
+      "resident": "Sakin",
+      "expense": "Xərc"
+    },
+    "status": {
+      "completed": "Tamamlandı",
+      "pending": "Gözləyir",
+      "sent": "Göndərildi"
+    }
+  },
+  "reception": {
+    "pageTitle": "Resepsiya",
+    "search": "AXTARIŞ",
+    "addPackage": "Yeni bağlama əlavə et",
+    "noPhoto": "Foto yoxdur",
+    "view": "Bax",
+    "edit": "Düzəliş et",
+    "delete": "Sil",
+    "cancel": "Ləğv et",
+    "save": "Yadda saxla",
+    "apply": "Tətbiq et",
+    "close": "Bağla",
+    "table": {
+      "id": "ID",
+      "apartmentNumber": "Mənzil nömrəsi",
+      "packageType": "Bağlama növü",
+      "recipient": "Təhvil alan",
+      "sender": "Təhvil verən",
+      "phoneNumber": "Telefon nömrəsi",
+      "photo": "Foto",
+      "qrCode": "QR Kod",
+      "status": "Status",
+      "date": "Tarix",
+      "actions": "Əməliyyatlar"
+    },
+    "packageTypes": {
+      "package": "Bağlama",
+      "document": "Sənəd",
+      "postalPackage": "Poçt bağlaması"
+    },
+    "status": {
+      "accepted": "Qəbul edilib",
+      "delivered": "Təhvil verilib"
+    },
+    "searchModal": {
+      "title": "Axtarış",
+      "apartmentNumber": "Mənzil nömrəsi",
+      "packageType": "Bağlama növü",
+      "status": "Status",
+      "dateFrom": "Tarix (başlanğıc)",
+      "dateTo": "Tarix (son)"
+    },
+    "createModal": {
+      "title": "Yeni bağlama əlavə et"
+    },
+    "viewModal": {
+      "title": "Bağlama məlumatları"
+    },
+    "deleteModal": {
+      "title": "Bağlama sil",
+      "message": "Bu bağlamanı silmək istədiyinizə əminsiniz?"
+    },
+    "form": {
+      "apartmentNumber": "Mənzil nömrəsi",
+      "packageType": "Bağlama növü",
+      "recipient": "Təhvil alan",
+      "sender": "Təhvil verən",
+      "phoneNumber": "Telefon nömrəsi",
+      "photo": "Foto",
+      "status": "Status",
+      "date": "Tarix"
+    }
+  },
+  "services": {
+    "pageTitle": "Təkrarlanan xidmətlər",
+    "add": "Əlavə et",
+    "edit": "Düzəliş et",
+    "delete": "Sil",
+    "cancel": "Ləğv et",
+    "save": "Yadda saxla",
+    "table": {
+      "title": "Başlıq",
+      "amount": "Məbləğ",
+      "actions": "Əməliyyatlar"
+    },
+    "createModal": {
+      "title": "Yeni xidmət əlavə et"
+    },
+    "editModal": {
+      "title": "Xidmət məlumatlarını dəyiş"
+    },
+    "deleteModal": {
+      "title": "Xidmət sil",
+      "message": "Bu xidməti silmək istədiyinizə əminsiniz?"
+    },
+    "form": {
+      "title": "Başlıq",
+      "amount": "Məbləğ"
+    }
+  },
+  "electronicDocuments": {
+    "pageTitle": "Elektron sənədlər",
+    "documentTypes": "Sənəd növləri",
+    "addDocument": "Sənəd əlavə et",
+    "edit": "Düzəliş et",
+    "delete": "Sil",
+    "cancel": "Ləğv et",
+    "save": "Yadda saxla",
+    "close": "Bağla",
+    "table": {
+      "documentName": "Sənəd adı",
+      "file": "Fayl",
+      "status": "Status",
+      "location": "Mənzil",
+      "date": "Tarix",
+      "actions": "Əməliyyatlar"
+    },
+    "status": {
+      "unknown": "Naməlum"
+    },
+    "documentTypesModal": {
+      "title": "Sənəd növləri",
+      "content": "Sənəd növləri siyahısı"
+    },
+    "createModal": {
+      "title": "Yeni sənəd əlavə et"
+    },
+    "deleteModal": {
+      "title": "Sənəd sil",
+      "message": "Bu sənədi silmək istədiyinizə əminsiniz?"
+    },
+    "form": {
+      "documentName": "Sənəd adı",
+      "file": "Fayl",
+      "status": "Status",
+      "location": "Mənzil",
+      "date": "Tarix"
     }
   },
   "mtk": {

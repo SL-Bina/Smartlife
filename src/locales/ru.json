@@ -33,6 +33,13 @@
     "transfers": "Переводы",
     "debt": "Обязательство",
     "notifications": "Уведомления",
+    "notificationsAndQueries": "Уведомления и запросы",
+    "sendNotification": "Отправить уведомление",
+    "notificationArchive": "Архив уведомлений",
+    "sentSMS": "Отправленные SMS",
+    "createQuery": "Создать запрос",
+    "queries": "Запросы",
+    "complexDashboard": "Панель комплекса",
     "applications": "Заявки",
     "applicationsList": "Список заявок",
     "applicationsEvaluation": "Оценка заявок",
@@ -46,6 +53,9 @@
     "blocks": "Блоки",
     "apartmentGroups": "Группы квартир",
     "buildingServiceFee": "Сервисный платеж",
+    "reception": "Ресепшн",
+    "services": "Услуги",
+    "electronicDocuments": "Электронные документы",
     "buildingManagement": "Управление зданиями",
     "userRights": "Права пользователей",
     "profile": "Профиль"
@@ -859,6 +869,287 @@
     "actions": {
       "markAsRead": "Отметить как прочитанное",
       "remove": "Удалить из списка"
+    },
+    "send": {
+      "pageTitle": "Отправить уведомление",
+      "pageSubtitle": "Создайте новое уведомление и отправьте его целевой аудитории",
+      "selectFields": "Выберите соответствующие поля",
+      "building": "Здание",
+      "residentialBuilding": "Жилой дом",
+      "block": "Блок",
+      "buildingBlock": "Блок здания",
+      "apartment": "Квартира",
+      "residentialApartment": "Жилая квартира",
+      "select": "Выберите",
+      "notificationType": "Тип уведомления",
+      "internal": "Внутренний",
+      "title": "Заголовок",
+      "message": "Сообщение",
+      "sendButton": "Отправить уведомление"
+    },
+    "archive": {
+      "pageTitle": "Архив уведомлений",
+      "pageSubtitle": "Архив и статус всех отправленных уведомлений",
+      "search": "ПОИСК",
+      "internal": "Внутренний",
+      "table": {
+        "requests": "Запросы",
+        "building": "ЗДАНИЕ",
+        "block": "БЛОК",
+        "apartment": "КВАРТИРА",
+        "type": "ТИП",
+        "date": "Дата"
+      }
+    },
+    "sentSMS": {
+      "pageTitle": "Отправленные SMS",
+      "sent": "Отправлено",
+      "failed": "Неудачно",
+      "table": {
+        "apartment": "КВАРТИРА",
+        "recipient": "ПОЛУЧАТЕЛЬ",
+        "phone": "ТЕЛЕФОН",
+        "message": "СООБЩЕНИЕ",
+        "status": "СТАТУС",
+        "sendDate": "ДАТА ОТПРАВКИ"
+      }
+    }
+  },
+  "queries": {
+    "create": {
+      "pageTitle": "Управление запросами",
+      "selectFields": "Выберите соответствующие поля",
+      "building": "Здание",
+      "residentialBuilding": "Жилой дом",
+      "block": "Блок",
+      "buildingBlock": "Блок здания",
+      "apartment": "Квартира",
+      "residentialApartment": "Жилая квартира",
+      "select": "Выберите",
+      "queryTitle": "Заголовок запроса",
+      "azerbaijani": "Азербайджанский",
+      "english": "Английский",
+      "russian": "Русский",
+      "azerbaijaniTitle": "Азербайджанский заголовок",
+      "englishTitle": "Английский заголовок",
+      "russianTitle": "Русский заголовок",
+      "queryDescription": "Описание запроса",
+      "azerbaijaniDescription": "Азербайджанское описание",
+      "englishDescription": "Английское описание",
+      "russianDescription": "Русское описание",
+      "enterQuestion": "Введите вопрос",
+      "azerbaijaniQuestion": "Азербайджанский вопрос",
+      "englishQuestion": "Английский вопрос",
+      "enterAnswers": "Введите ответы",
+      "answer": "Ответ",
+      "azerbaijaniAnswer": "Азербайджанский ответ",
+      "englishAnswer": "Английский ответ",
+      "russianAnswer": "Русский ответ",
+      "add": "Добавить",
+      "queryParameters": "Параметры запроса",
+      "multipleAnswerPermission": "Разрешение на несколько ответов",
+      "multipleAnswerDescription": "Пользователи могут выбрать более одного ответа",
+      "displayResults": "Отображать результаты опроса",
+      "displayResultsDescription": "Результаты опроса будут показаны пользователям",
+      "currentValue": "Текущее значение",
+      "active": "Активно",
+      "inactive": "Неактивно",
+      "back": "Назад",
+      "submit": "Отправить"
+    },
+    "list": {
+      "pageTitle": "Запросы",
+      "search": "ПОИСК",
+      "createNew": "Создать новый",
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "table": {
+        "title": "Заголовок",
+        "description": "Описание",
+        "complex": "Комплекс",
+        "building": "Здание",
+        "block": "Блок",
+        "status": "Статус",
+        "action": "Действие"
+      }
+    }
+  },
+  "complexDashboard": {
+    "pageTitle": "Панель комплекса",
+    "pageSubtitle": "Общая информация и статистика по комплексу",
+    "content": "Содержимое панели комплекса",
+    "statistics": {
+      "totalComplexes": "Всего комплексов",
+      "totalBuildings": "Всего зданий",
+      "totalApartments": "Всего квартир",
+      "totalResidents": "Всего жителей",
+      "totalIncome": "Общий доход",
+      "totalExpenses": "Общие расходы",
+      "pendingApplications": "Ожидающие заявки",
+      "completedApplications": "Завершенные заявки",
+      "thisMonth": "Этот месяц",
+      "thisWeek": "Эта неделя",
+      "vsLastMonth": "по сравнению с прошлым месяцем"
+    },
+    "summary": {
+      "title": "Сводка",
+      "subtitle": "Ключевые показатели комплекса",
+      "netProfit": "Чистая прибыль",
+      "occupancyRate": "Уровень занятости",
+      "averageIncome": "Средний доход",
+      "applicationCompletion": "Процент завершения заявок"
+    },
+    "recentActivities": {
+      "title": "Последние действия",
+      "subtitle": "Последние операции по комплексу",
+      "table": {
+        "type": "Тип",
+        "description": "Описание",
+        "amount": "Сумма",
+        "status": "Статус",
+        "date": "Дата"
+      }
+    },
+    "activityTypes": {
+      "payment": "Платеж",
+      "application": "Заявка",
+      "notification": "Уведомление",
+      "resident": "Житель",
+      "expense": "Расход"
+    },
+    "status": {
+      "completed": "Завершено",
+      "pending": "Ожидает",
+      "sent": "Отправлено"
+    }
+  },
+  "reception": {
+    "pageTitle": "Ресепшн",
+    "search": "ПОИСК",
+    "addPackage": "Добавить новую посылку",
+    "noPhoto": "Нет фото",
+    "view": "Просмотр",
+    "edit": "Редактировать",
+    "delete": "Удалить",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "apply": "Применить",
+    "close": "Закрыть",
+    "table": {
+      "id": "ID",
+      "apartmentNumber": "Номер квартиры",
+      "packageType": "Тип посылки",
+      "recipient": "Получатель",
+      "sender": "Отправитель",
+      "phoneNumber": "Номер телефона",
+      "photo": "Фото",
+      "qrCode": "QR Код",
+      "status": "Статус",
+      "date": "Дата",
+      "actions": "Действия"
+    },
+    "packageTypes": {
+      "package": "Посылка",
+      "document": "Документ",
+      "postalPackage": "Почтовая посылка"
+    },
+    "status": {
+      "accepted": "Принято",
+      "delivered": "Доставлено"
+    },
+    "searchModal": {
+      "title": "Поиск",
+      "apartmentNumber": "Номер квартиры",
+      "packageType": "Тип посылки",
+      "status": "Статус",
+      "dateFrom": "Дата (с)",
+      "dateTo": "Дата (по)"
+    },
+    "createModal": {
+      "title": "Добавить новую посылку"
+    },
+    "viewModal": {
+      "title": "Информация о посылке"
+    },
+    "deleteModal": {
+      "title": "Удалить посылку",
+      "message": "Вы уверены, что хотите удалить эту посылку?"
+    },
+    "form": {
+      "apartmentNumber": "Номер квартиры",
+      "packageType": "Тип посылки",
+      "recipient": "Получатель",
+      "sender": "Отправитель",
+      "phoneNumber": "Номер телефона",
+      "photo": "Фото",
+      "status": "Статус",
+      "date": "Дата"
+    }
+  },
+  "services": {
+    "pageTitle": "Повторяющиеся услуги",
+    "add": "Добавить",
+    "edit": "Редактировать",
+    "delete": "Удалить",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "table": {
+      "title": "Заголовок",
+      "amount": "Сумма",
+      "actions": "Действия"
+    },
+    "createModal": {
+      "title": "Добавить новую услугу"
+    },
+    "editModal": {
+      "title": "Изменить информацию об услуге"
+    },
+    "deleteModal": {
+      "title": "Удалить услугу",
+      "message": "Вы уверены, что хотите удалить эту услугу?"
+    },
+    "form": {
+      "title": "Заголовок",
+      "amount": "Сумма"
+    }
+  },
+  "electronicDocuments": {
+    "pageTitle": "Электронные документы",
+    "documentTypes": "Типы документов",
+    "addDocument": "Добавить документ",
+    "edit": "Редактировать",
+    "delete": "Удалить",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "close": "Закрыть",
+    "table": {
+      "documentName": "Название документа",
+      "file": "Файл",
+      "status": "Статус",
+      "location": "Местоположение",
+      "date": "Дата",
+      "actions": "Действия"
+    },
+    "status": {
+      "unknown": "Неизвестно"
+    },
+    "documentTypesModal": {
+      "title": "Типы документов",
+      "content": "Список типов документов"
+    },
+    "createModal": {
+      "title": "Добавить новый документ"
+    },
+    "deleteModal": {
+      "title": "Удалить документ",
+      "message": "Вы уверены, что хотите удалить этот документ?"
+    },
+    "form": {
+      "documentName": "Название документа",
+      "file": "Файл",
+      "status": "Статус",
+      "location": "Местоположение",
+      "date": "Дата"
     }
   },
   "mtk": {

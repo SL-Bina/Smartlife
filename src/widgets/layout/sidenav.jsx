@@ -104,6 +104,11 @@ export function Sidenav({ brandImg, brandName, routes }) {
                   ({ path }) => `/${layout}${path}` === location.pathname
                 );
                 const isOpen = hasActiveChild || !!openMenus[page.name];
+                // Parent button yalnız öz path-inə görə aktiv olmalıdır, child route-lara görə deyil
+                // Parent aktiv olsun yalnız o zaman ki, öz path-i aktivdir VƏ heç bir child aktiv deyil
+                const isParentActive = page.path && 
+                  `/${layout}${page.path}` === location.pathname && 
+                  !hasActiveChild;
 
                 return (
                   <li key={page.name}>
@@ -112,19 +117,19 @@ export function Sidenav({ brandImg, brandName, routes }) {
                       transition={{ type: "spring", stiffness: 300, damping: 20 }}
                     >
                       <Button
-                        variant={isOpen ? "filled" : "text"}
+                        variant={isParentActive ? "gradient" : "text"}
                         color={
-                          isOpen
-                            ? sidenavColor === "dark"
-                              ? "white"
-                              : sidenavColor
+                          isParentActive
+                            ? sidenavColor === "dark" ? "gray" : sidenavColor
                             : sidenavType === "dark"
                             ? "white"
                             : "gray"
                         }
-                          className={`flex items-center justify-between gap-2 px-4 capitalize transition-colors ${
-                          isOpen 
+                          className={`flex items-center justify-between gap-2 px-4 capitalize transition-colors min-w-0 ${
+                          isParentActive 
                             ? "dark:bg-gray-800 dark:text-white bg-gray-100" 
+                            : isOpen
+                            ? "dark:text-white dark:hover:bg-gray-800/50 dark:bg-transparent hover:bg-gray-50"
                             : "dark:text-white dark:hover:bg-gray-800/50 dark:bg-transparent hover:bg-gray-50"
                         }`}
                         fullWidth
@@ -137,16 +142,16 @@ export function Sidenav({ brandImg, brandName, routes }) {
                           });
                         }}
                       >
-                        <span className="flex items-center gap-4">
+                        <span className="flex items-center gap-4 min-w-0 flex-1">
                           <motion.div
                             whileTap={{ scale: 0.8, rotate: 360 }}
-                            className="dark:text-white group-hover:scale-110 group-hover:rotate-12 transition-transform"
+                            className="dark:text-white group-hover:scale-110 group-hover:rotate-12 transition-transform flex-shrink-0"
                           >
                             {page.icon}
                           </motion.div>
                           <Typography
                             color="inherit"
-                            className="font-medium dark:text-white"
+                            className="font-medium dark:text-white whitespace-nowrap overflow-hidden text-ellipsis text-left"
                           >
                             {page.name.startsWith("sidebar.")
                               ? t(page.name)
@@ -155,7 +160,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
                         </span>
                         <ChevronDownIcon
                           strokeWidth={2}
-                          className={`h-4 w-4 transition-transform dark:text-white ${
+                          className={`h-4 w-4 transition-transform dark:text-white flex-shrink-0 ${
                             isOpen ? "rotate-180" : ""
                           }`}
                         />
@@ -170,9 +175,21 @@ export function Sidenav({ brandImg, brandName, routes }) {
                       <ul className="mt-1 flex flex-col gap-1 pl-5 dark:bg-transparent">
                         {page.children
                           .filter((child) => !child.hideInSidenav)
-                          .map(({ icon, name, path }) => (
+                          .map(({ icon, name, path }) => {
+                            // Əgər path başqa bir path-in prefix-idirsə, end={true} istifadə edirik
+                            // Bu, yalnız tam uyğun gələndə aktiv olmasını təmin edir
+                            const isParentPath = page.children.some(
+                              (otherChild) => 
+                                otherChild.path !== path && 
+                                otherChild.path.startsWith(path + "/")
+                            );
+                            
+                            return (
                           <li key={name}>
-                            <NavLink to={`/${layout}${path}`}>
+                            <NavLink 
+                              to={`/${layout}${path}`}
+                              end={isParentPath}
+                            >
                               {({ isActive }) => (
                                 <motion.div
                                   whileHover={{ scale: 1.02 }}
@@ -189,7 +206,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
                                         ? "white"
                                         : "gray"
                                     }
-                                    className={`group flex items-center justify-start gap-3 px-3 py-2 text-sm normal-case transition-colors text-left ${
+                                    className={`group flex items-center justify-start gap-3 px-3 py-2 text-sm normal-case transition-colors text-left min-w-0 ${
                                       isActive 
                                         ? "dark:bg-gray-800 dark:text-white bg-gray-100" 
                                         : "dark:text-white dark:hover:bg-gray-800/50 dark:bg-transparent hover:bg-gray-50"
@@ -201,80 +218,106 @@ export function Sidenav({ brandImg, brandName, routes }) {
                                       }
                                     }}
                                   >
-                                    <motion.div
-                                      whileTap={{ scale: 0.8, rotate: 360 }}
-                                      className="dark:text-white group-hover:scale-110 group-hover:rotate-12 transition-transform"
-                                    >
-                                      {icon}
-                                    </motion.div>
-                                    <Typography
-                                      color="inherit"
-                                      className="font-medium dark:text-white text-left"
-                                    >
-                                      {name.startsWith("sidebar.")
-                                        ? t(name)
-                                        : name}
-                                    </Typography>
+                                  <motion.div
+                                    whileTap={{ scale: 0.8, rotate: 360 }}
+                                    className="dark:text-white group-hover:scale-110 group-hover:rotate-12 transition-transform flex-shrink-0"
+                                  >
+                                    {icon}
+                                  </motion.div>
+                                  <Typography
+                                    color="inherit"
+                                    className="font-medium dark:text-white text-left whitespace-nowrap overflow-hidden text-ellipsis min-w-0 flex-1"
+                                  >
+                                    {name.startsWith("sidebar.")
+                                      ? t(name)
+                                      : name}
+                                  </Typography>
                                   </Button>
                                 </motion.div>
                               )}
                             </NavLink>
                           </li>
-                        ))}
+                            );
+                          })}
                       </ul>
                     </div>
                   </li>
                 );
               }
 
+              // Standalone route-lar üçün: yalnız tam path uyğun olduqda aktiv olsun
+              // Child route-lar aktiv olduqda aktiv görünməsin
+              const currentPath = `/${layout}${page.path}`;
+              // Bütün route-larda child route-ları yoxlayırıq
+              const hasAnyChildRouteActive = routes.some(({ layout: routeLayout, pages: routePages }) =>
+                routePages.some((routePage) => {
+                  if (Array.isArray(routePage.children) && routePage.children.length > 0) {
+                    return routePage.children.some(
+                      (child) => {
+                        const childPath = `/${routeLayout}${child.path}`;
+                        return childPath === location.pathname && childPath.startsWith(currentPath + "/");
+                      }
+                    );
+                  }
+                  return false;
+                })
+              );
+              // Yalnız tam path uyğun olduqda və heç bir child route aktiv olmadıqda aktiv olsun
+              const isStandaloneActive = currentPath === location.pathname && !hasAnyChildRouteActive;
+
               return (
                 <li key={page.name}>
-                  <NavLink to={`/${layout}${page.path}`}>
-                    {({ isActive }) => (
-                      <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                      >
-                        <Button
-                          variant={isActive ? "gradient" : "text"}
-                          color={
-                            isActive
-                              ? sidenavColor === "dark" ? "gray" : sidenavColor
-                              : sidenavType === "dark"
-                              ? "white"
-                              : "gray"
-                          }
-                          className={`group flex items-center gap-4 px-4 capitalize transition-colors ${
-                            isActive 
-                              ? "dark:bg-gray-800 dark:text-white bg-gray-100" 
-                              : "dark:text-white dark:hover:bg-gray-800/50 dark:bg-transparent hover:bg-gray-50"
-                          }`}
-                          fullWidth
-                          onClick={(e) => {
-                            // Icon animasiyasını trigger et - icon-un öz click event-i işləyəcək
-                            // mobil görünüşdə route dəyişəndə sidenav bağlansın
-                            if (window.innerWidth < 1280) {
-                              setOpenSidenav(dispatch, false);
-                            }
-                          }}
+                  <NavLink to={currentPath} end={true}>
+                    {({ isActive }) => {
+                      // NavLink-in isActive-i ilə bizim məntiqimizi birləşdiririk
+                      const shouldBeActive = isStandaloneActive;
+                      
+                      return (
+                        <motion.div
+                          whileHover={{ scale: 1.02 }}
+                          transition={{ type: "spring", stiffness: 300, damping: 20 }}
                         >
-                          <motion.div
-                            whileTap={{ scale: 0.8, rotate: 360 }}
-                            className="dark:text-white group-hover:scale-110 group-hover:rotate-12 transition-transform"
+                          <Button
+                            variant={shouldBeActive ? "gradient" : "text"}
+                            color={
+                              shouldBeActive
+                                ? sidenavColor === "dark" ? "gray" : sidenavColor
+                                : sidenavType === "dark"
+                                ? "white"
+                                : "gray"
+                            }
+                            className={`group flex items-center gap-4 px-4 capitalize transition-colors min-w-0 ${
+                              shouldBeActive 
+                                ? "dark:bg-gray-800 dark:text-white bg-gray-100" 
+                                : "dark:text-white dark:hover:bg-gray-800/50 dark:bg-transparent hover:bg-gray-50"
+                            }`}
+                            fullWidth
+                            onClick={(e) => {
+                              // Icon animasiyasını trigger et - icon-un öz click event-i işləyəcək
+                              // mobil görünüşdə route dəyişəndə sidenav bağlansın
+                              if (window.innerWidth < 1280) {
+                                setOpenSidenav(dispatch, false);
+                              }
+                            }}
                           >
-                            {page.icon}
-                          </motion.div>
-                          <Typography
-                            color="inherit"
-                            className="font-medium dark:text-white"
-                          >
-                            {page.name.startsWith("sidebar.")
-                              ? t(page.name)
-                              : page.name}
-                          </Typography>
-                        </Button>
-                      </motion.div>
-                    )}
+                            <motion.div
+                              whileTap={{ scale: 0.8, rotate: 360 }}
+                              className="dark:text-white group-hover:scale-110 group-hover:rotate-12 transition-transform flex-shrink-0"
+                            >
+                              {page.icon}
+                            </motion.div>
+                            <Typography
+                              color="inherit"
+                              className="font-medium dark:text-white whitespace-nowrap overflow-hidden text-ellipsis min-w-0 flex-1 text-left"
+                            >
+                              {page.name.startsWith("sidebar.")
+                                ? t(page.name)
+                                : page.name}
+                            </Typography>
+                          </Button>
+                        </motion.div>
+                      );
+                    }}
                   </NavLink>
                 </li>
               );

@@ -33,6 +33,13 @@
     "transfers": "Transfers",
     "debt": "Debt",
     "notifications": "Notifications",
+    "notificationsAndQueries": "Notifications and Queries",
+    "sendNotification": "Send Notification",
+    "notificationArchive": "Notification Archive",
+    "sentSMS": "Sent SMS",
+    "createQuery": "Create Query",
+    "queries": "Queries",
+    "complexDashboard": "Complex Dashboard",
     "applications": "Applications",
     "applicationsList": "Applications List",
     "applicationsEvaluation": "Applications Evaluation",
@@ -46,6 +53,9 @@
     "blocks": "Blocks",
     "apartmentGroups": "Apartment Groups",
     "buildingServiceFee": "Service Fee",
+    "reception": "Reception",
+    "services": "Services",
+    "electronicDocuments": "Electronic Documents",
     "buildingManagement": "Building Management",
     "userRights": "Rights",
     "userPermissions": "Permissions",
@@ -860,6 +870,287 @@
     "actions": {
       "markAsRead": "Mark as read",
       "remove": "Remove from list"
+    },
+    "send": {
+      "pageTitle": "Send Notification",
+      "pageSubtitle": "Create a new notification and send it to the target audience",
+      "selectFields": "Select relevant fields",
+      "building": "Building",
+      "residentialBuilding": "Residential Building",
+      "block": "Block",
+      "buildingBlock": "Building Block",
+      "apartment": "Apartment",
+      "residentialApartment": "Residential Apartment",
+      "select": "Select",
+      "notificationType": "Notification type",
+      "internal": "Internal",
+      "title": "Title",
+      "message": "Message",
+      "sendButton": "Send notification"
+    },
+    "archive": {
+      "pageTitle": "Notification Archive",
+      "pageSubtitle": "Archive and status of all sent notifications",
+      "search": "SEARCH",
+      "internal": "Internal",
+      "table": {
+        "requests": "Requests",
+        "building": "BUILDING",
+        "block": "BLOCK",
+        "apartment": "APARTMENT",
+        "type": "TYPE",
+        "date": "Date"
+      }
+    },
+    "sentSMS": {
+      "pageTitle": "Sent SMS",
+      "sent": "Sent",
+      "failed": "Failed",
+      "table": {
+        "apartment": "APARTMENT",
+        "recipient": "RECIPIENT",
+        "phone": "PHONE",
+        "message": "MESSAGE",
+        "status": "STATUS",
+        "sendDate": "SEND DATE"
+      }
+    }
+  },
+  "queries": {
+    "create": {
+      "pageTitle": "Query Management",
+      "selectFields": "Select relevant fields",
+      "building": "Building",
+      "residentialBuilding": "Residential Building",
+      "block": "Block",
+      "buildingBlock": "Building Block",
+      "apartment": "Apartment",
+      "residentialApartment": "Residential Apartment",
+      "select": "Select",
+      "queryTitle": "Query title",
+      "azerbaijani": "Azerbaijani",
+      "english": "English",
+      "russian": "Russian",
+      "azerbaijaniTitle": "Azerbaijani title",
+      "englishTitle": "English title",
+      "russianTitle": "Russian title",
+      "queryDescription": "Query description",
+      "azerbaijaniDescription": "Azerbaijani description",
+      "englishDescription": "English description",
+      "russianDescription": "Russian description",
+      "enterQuestion": "Enter question",
+      "azerbaijaniQuestion": "Azerbaijani question",
+      "englishQuestion": "English question",
+      "enterAnswers": "Enter Answers",
+      "answer": "Answer",
+      "azerbaijaniAnswer": "Azerbaijani answer",
+      "englishAnswer": "English answer",
+      "russianAnswer": "Russian answer",
+      "add": "Add",
+      "queryParameters": "Query parameters",
+      "multipleAnswerPermission": "Multiple answer permission",
+      "multipleAnswerDescription": "Users can select more than one answer",
+      "displayResults": "Display survey results",
+      "displayResultsDescription": "Survey results will be shown to users",
+      "currentValue": "Current value",
+      "active": "Active",
+      "inactive": "Inactive",
+      "back": "Back",
+      "submit": "Submit"
+    },
+    "list": {
+      "pageTitle": "Queries",
+      "search": "SEARCH",
+      "createNew": "Create New",
+      "edit": "Edit",
+      "delete": "Delete",
+      "table": {
+        "title": "Title",
+        "description": "Description",
+        "complex": "Complex",
+        "building": "Building",
+        "block": "Block",
+        "status": "Status",
+        "action": "Action"
+      }
+    }
+  },
+  "complexDashboard": {
+    "pageTitle": "Complex Dashboard",
+    "pageSubtitle": "General information and statistics for the complex",
+    "content": "Complex dashboard content",
+    "statistics": {
+      "totalComplexes": "Total Complexes",
+      "totalBuildings": "Total Buildings",
+      "totalApartments": "Total Apartments",
+      "totalResidents": "Total Residents",
+      "totalIncome": "Total Income",
+      "totalExpenses": "Total Expenses",
+      "pendingApplications": "Pending Applications",
+      "completedApplications": "Completed Applications",
+      "thisMonth": "This Month",
+      "thisWeek": "This Week",
+      "vsLastMonth": "vs Last Month"
+    },
+    "summary": {
+      "title": "Summary",
+      "subtitle": "Key indicators for the complex",
+      "netProfit": "Net Profit",
+      "occupancyRate": "Occupancy Rate",
+      "averageIncome": "Average Income",
+      "applicationCompletion": "Application Completion Rate"
+    },
+    "recentActivities": {
+      "title": "Recent Activities",
+      "subtitle": "Latest operations for the complex",
+      "table": {
+        "type": "Type",
+        "description": "Description",
+        "amount": "Amount",
+        "status": "Status",
+        "date": "Date"
+      }
+    },
+    "activityTypes": {
+      "payment": "Payment",
+      "application": "Application",
+      "notification": "Notification",
+      "resident": "Resident",
+      "expense": "Expense"
+    },
+    "status": {
+      "completed": "Completed",
+      "pending": "Pending",
+      "sent": "Sent"
+    }
+  },
+  "reception": {
+    "pageTitle": "Reception",
+    "search": "SEARCH",
+    "addPackage": "Add new package",
+    "noPhoto": "No photo",
+    "view": "View",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "apply": "Apply",
+    "close": "Close",
+    "table": {
+      "id": "ID",
+      "apartmentNumber": "Apartment number",
+      "packageType": "Package type",
+      "recipient": "Recipient",
+      "sender": "Sender",
+      "phoneNumber": "Phone number",
+      "photo": "Photo",
+      "qrCode": "QR Code",
+      "status": "Status",
+      "date": "Date",
+      "actions": "Actions"
+    },
+    "packageTypes": {
+      "package": "Package",
+      "document": "Document",
+      "postalPackage": "Postal package"
+    },
+    "status": {
+      "accepted": "Accepted",
+      "delivered": "Delivered"
+    },
+    "searchModal": {
+      "title": "Search",
+      "apartmentNumber": "Apartment number",
+      "packageType": "Package type",
+      "status": "Status",
+      "dateFrom": "Date (from)",
+      "dateTo": "Date (to)"
+    },
+    "createModal": {
+      "title": "Add new package"
+    },
+    "viewModal": {
+      "title": "Package information"
+    },
+    "deleteModal": {
+      "title": "Delete package",
+      "message": "Are you sure you want to delete this package?"
+    },
+    "form": {
+      "apartmentNumber": "Apartment number",
+      "packageType": "Package type",
+      "recipient": "Recipient",
+      "sender": "Sender",
+      "phoneNumber": "Phone number",
+      "photo": "Photo",
+      "status": "Status",
+      "date": "Date"
+    }
+  },
+  "services": {
+    "pageTitle": "Recurring Services",
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "table": {
+      "title": "Title",
+      "amount": "Amount",
+      "actions": "Actions"
+    },
+    "createModal": {
+      "title": "Add new service"
+    },
+    "editModal": {
+      "title": "Edit service information"
+    },
+    "deleteModal": {
+      "title": "Delete service",
+      "message": "Are you sure you want to delete this service?"
+    },
+    "form": {
+      "title": "Title",
+      "amount": "Amount"
+    }
+  },
+  "electronicDocuments": {
+    "pageTitle": "Electronic Documents",
+    "documentTypes": "Document Types",
+    "addDocument": "Add Document",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "close": "Close",
+    "table": {
+      "documentName": "Document Name",
+      "file": "File",
+      "status": "Status",
+      "location": "Location",
+      "date": "Date",
+      "actions": "Actions"
+    },
+    "status": {
+      "unknown": "Unknown"
+    },
+    "documentTypesModal": {
+      "title": "Document Types",
+      "content": "Document types list"
+    },
+    "createModal": {
+      "title": "Add new document"
+    },
+    "deleteModal": {
+      "title": "Delete document",
+      "message": "Are you sure you want to delete this document?"
+    },
+    "form": {
+      "documentName": "Document Name",
+      "file": "File",
+      "status": "Status",
+      "location": "Location",
+      "date": "Date"
     }
   },
   "mtk": {

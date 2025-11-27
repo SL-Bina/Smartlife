@@ -7,8 +7,17 @@ export { default as ApplicationsListPage } from "@/pages/dashboard/applications/
 export { default as ApplicationsEvaluationPage } from "@/pages/dashboard/applications/evaluation";
 export * from "@/pages/dashboard/mtk";
 export { default as ComplexPage } from "@/pages/dashboard/complex";
+export { default as ComplexDashboardPage } from "@/pages/dashboard/complex-dashboard";
 export { default as ResidentsPage } from "@/pages/dashboard/residents";
 export { default as BuildingsPage } from "@/pages/dashboard/buildings";
 export { default as PropertiesPage } from "@/pages/dashboard/properties";
 export { default as BlocksPage } from "@/pages/dashboard/blocks";
 export { default as ResidentDashboard } from "@/pages/dashboard/resident-dashboard";
+export { default as SendNotificationPage } from "@/pages/dashboard/notifications/send";
+export { default as NotificationArchivePage } from "@/pages/dashboard/notifications/archive";
+export { default as SentSMSPage } from "@/pages/dashboard/notifications/sent-sms";
+export { default as CreateQueryPage } from "@/pages/dashboard/queries/create";
+export { default as QueriesListPage } from "@/pages/dashboard/queries/list";
+export { default as ReceptionPage } from "@/pages/dashboard/reception";
+export { default as ServicesPage } from "@/pages/dashboard/services";
+export { default as ElectronicDocumentsPage } from "@/pages/dashboard/electronic-documents";

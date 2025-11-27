@@ -78,6 +78,10 @@ export function Notifications() {
     setNotifications((prev) => prev.filter((item) => item.id !== id));
   };
 
+  const handleDelete = (id) => {
+    setNotifications((prev) => prev.filter((item) => item.id !== id));
+  };
+
   const getTypeConfig = (type) => {
     switch (type) {
       case "payment":

@@ -21,8 +21,11 @@ import {
   ArrowsRightLeftIcon,
   ShieldCheckIcon,
   UserGroupIcon,
+  InboxIcon,
+  CogIcon,
+  BookOpenIcon,
 } from "@heroicons/react/24/solid";
-import { Home, Tables, Notifications, KPI, ApplicationsListPage, ApplicationsEvaluationPage, ResidentDashboard } from "@/pages/dashboard";
+import { Home, Tables, Notifications, KPI, ApplicationsListPage, ApplicationsEvaluationPage, ResidentDashboard, ComplexDashboardPage, SendNotificationPage, NotificationArchivePage, SentSMSPage, CreateQueryPage, QueriesListPage, ReceptionPage, ServicesPage, ElectronicDocumentsPage } from "@/pages/dashboard";
 import Profile from "./pages/dashboard/profile";
 import { SignIn } from "@/pages/auth";
 import MTK from "./pages/dashboard/mtk";
@@ -152,6 +155,55 @@ export const routes = [
         ],
       },
       {
+        icon: <BellIcon {...icon} />,
+        name: "sidebar.notificationsAndQueries",
+        allowedRoles: ["admin", "manager", "operator", "viewer"],
+        children: [
+          {
+            icon: <BellIcon {...icon} />,
+            name: "sidebar.sendNotification",
+            path: "/notifications/send",
+            element: <SendNotificationPage />,
+            allowedRoles: ["admin", "manager", "operator"],
+          },
+          {
+            icon: <BellIcon {...icon} />,
+            name: "sidebar.notificationArchive",
+            path: "/notifications/archive",
+            element: <NotificationArchivePage />,
+            allowedRoles: ["admin", "manager", "operator", "viewer"],
+          },
+          {
+            icon: <BellIcon {...icon} />,
+            name: "sidebar.sentSMS",
+            path: "/notifications/sent-sms",
+            element: <SentSMSPage />,
+            allowedRoles: ["admin", "manager", "operator", "viewer"],
+          },
+          {
+            icon: <QuestionMarkCircleIcon {...icon} />,
+            name: "sidebar.createQuery",
+            path: "/queries/create",
+            element: <CreateQueryPage />,
+            allowedRoles: ["admin", "manager", "operator"],
+          },
+          {
+            icon: <QuestionMarkCircleIcon {...icon} />,
+            name: "sidebar.queries",
+            path: "/queries",
+            element: <QueriesListPage />,
+            allowedRoles: ["admin", "manager", "operator", "viewer"],
+          },
+        ],
+      },
+      {
+        icon: <PresentationChartLineIcon {...icon} />,
+        name: "sidebar.complexDashboard",
+        path: "/complex-dashboard",
+        element: <ComplexDashboardPage />,
+        allowedRoles: ["admin", "manager", "operator", "viewer"],
+      },
+      {
         icon: <PresentationChartLineIcon {...icon} />,
         name: "sidebar.kpi",
         path: "/kpi",
@@ -230,6 +282,27 @@ export const routes = [
             allowedRoles: ["admin", "manager", "operator"],
           },
         ],
+      },
+      {
+        icon: <CogIcon {...icon} />,
+        name: "sidebar.services",
+        path: "/services",
+        element: <ServicesPage />,
+        allowedRoles: ["admin", "manager", "operator", "viewer"],
+      },
+      {
+        icon: <BookOpenIcon {...icon} />,
+        name: "sidebar.electronicDocuments",
+        path: "/electronic-documents",
+        element: <ElectronicDocumentsPage />,
+        allowedRoles: ["admin", "manager", "operator", "viewer"],
+      },
+      {
+        icon: <InboxIcon {...icon} />,
+        name: "sidebar.reception",
+        path: "/reception",
+        element: <ReceptionPage />,
+        allowedRoles: ["admin", "manager", "operator", "viewer"],
       },
       {
         icon: <UserGroupIcon {...icon} />,
