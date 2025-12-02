@@ -48,6 +48,7 @@
     "complexes": "Komplekslər",
     "residents": "Sakinlər",
     "resident": "Sakin",
+    "devices": "Cihazlar",
     "buildings": "Binalar",
     "properties": "Mənzillər",
     "blocks": "Bloklar",
@@ -1837,5 +1838,108 @@
     "viewInvoices": "Fakturaları Görüntülə",
     "viewApplications": "Müraciətləri Görüntülə",
     "viewNotifications": "Bildirişləri Görüntülə"
+  },
+  "devices": {
+    "pageTitle": "Cihazlar",
+    "loading": "Yüklənir...",
+    "actions": {
+      "accessRules": "Cihaz icazələri",
+      "deviceUsers": "Cihaz istifadəçiləri",
+      "deviceIdentifiers": "Cihaz identifikatorları",
+      "deviceLogs": "Cihaz qeydləri",
+      "search": "Axtarış",
+      "add": "Əlavə et",
+      "edit": "Redaktə et",
+      "delete": "Sil",
+      "save": "Yadda saxla",
+      "close": "Bağla",
+      "cancel": "Ləğv et"
+    },
+    "table": {
+      "id": "ID",
+      "name": "Ad",
+      "building": "Bina",
+      "apartment": "Mənzil",
+      "device": "Cihaz",
+      "userStatus": "İstifadəçi Status",
+      "actions": "Əməliyyatlar",
+      "serial": "Serial"
+    },
+    "filter": {
+      "title": "Filter",
+      "name": "Ad",
+      "building": "Bina",
+      "status": "Status",
+      "enterName": "Ad daxil edin",
+      "enterBuilding": "Bina daxil edin",
+      "enterStatus": "Status seçin",
+      "clear": "Təmizlə",
+      "close": "Bağla",
+      "apply": "Tətbiq et",
+      "online": "Onlayn",
+      "offline": "Oflayn"
+    },
+    "create": {
+      "title": "Cihaz əlavə et",
+      "name": "Ad",
+      "building": "Bina",
+      "apartment": "Mənzil",
+      "status": "Status",
+      "enterName": "Ad daxil edin",
+      "enterBuilding": "Bina daxil edin",
+      "enterApartment": "Mənzil daxil edin",
+      "enterStatus": "Status seçin",
+      "enabled": "Aktiv",
+      "cancel": "Ləğv et",
+      "save": "Yadda saxla"
+    },
+    "edit": {
+      "title": "Redaktə et",
+      "name": "Ad",
+      "building": "Bina",
+      "apartment": "Mənzil",
+      "status": "Status",
+      "enterName": "Ad daxil edin",
+      "enterBuilding": "Bina daxil edin",
+      "enterApartment": "Mənzil daxil edin",
+      "enterStatus": "Status seçin",
+      "cancel": "Ləğv et",
+      "save": "Yadda saxla"
+    },
+    "accessRules": {
+      "title": "Cihaz icazələri",
+      "name": "Ad",
+      "deviceCount": "Cihaz sayı"
+    },
+    "deviceUsers": {
+      "title": "Cihaz istifadəçiləri",
+      "userName": "İstifadəçi adı",
+      "email": "Email",
+      "phone": "Telefon"
+    },
+    "deviceIdentifiers": {
+      "title": "Cihaz identifikatorları",
+      "name": "Ad",
+      "value": "Dəyər",
+      "type": "Tip"
+    },
+    "deviceLogs": {
+      "title": "Cihaz qeydləri",
+      "date": "Tarix",
+      "device": "Cihaz",
+      "identifier": "İdentifikator",
+      "type": "Tip",
+      "acsMessage": "ACS mesajı"
+    },
+    "pagination": {
+      "prev": "Əvvəlki",
+      "next": "Növbəti"
+    },
+    "status": {
+      "online": "Onlayn",
+      "offline": "Oflayn",
+      "enabled": "Aktiv",
+      "disabled": "Deaktiv"
+    }
   }
 }

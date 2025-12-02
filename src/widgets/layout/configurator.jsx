@@ -56,7 +56,7 @@ export function Configurator() {
   };
 
   // React.useEffect(() => {
-  //   fetch("https://api.github.com/repos/creativetimofficial/west")
+  //   fetch("https://api.github.com/repos/creativetimofficial/SmartLife")
   //     .then((response) => (response.ok ? response.json() : null))
   //     .then((data) => {
   //       if (data && typeof data.stargazers_count === "number") {

@@ -77,6 +77,7 @@ const pageTitleKeyMap = {
   buildings: "sidebar.buildings",
   properties: "sidebar.properties",
   residents: "sidebar.residents",
+  devices: "sidebar.devices",
   resident: "sidebar.resident",
   blocks: "sidebar.blocks",
   "apartment-groups": "apartmentGroups.pageTitle",
@@ -417,9 +418,10 @@ export function DashboardNavbar() {
                     className="hidden items-center gap-2 px-3 sm:px-4 xl:flex normal-case dark:text-gray-300 dark:hover:bg-gray-700"
                   >
                     <Avatar
-                      src="https://ui-avatars.com/api/?name="
+                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || 'User')}&background=random&color=fff&size=128`}
                       alt={user.fullName}
                       size="sm"
+                      variant="circular"
                     />
                     <span className="text-sm sm:text-base">{user.fullName}</span>
                   </Button>
@@ -446,7 +448,12 @@ export function DashboardNavbar() {
                     className="grid xl:hidden dark:text-gray-300 dark:hover:bg-gray-700 p-1"
                     size="sm"
                   >
-                    <UserCircleIcon className="h-5 w-5" />
+                    <Avatar
+                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || 'User')}&background=random&color=fff&size=128`}
+                      alt={user.fullName}
+                      size="sm"
+                      variant="circular"
+                    />
                   </IconButton>
                 </MenuHandler>
                 <MenuList className="dark:bg-gray-800 dark:border-gray-700 min-w-[180px]">

@@ -83,10 +83,10 @@ export function Navbar({ brandName, routes, action }) {
 }
 
 Navbar.defaultProps = {
-  brandName: "West",
+  brandName: "SmartLife",
   action: (
     <a
-      href="https://www.creative-tim.com/product/west"
+      href="https://www.creative-tim.com/product/SmartLife"
       target="_blank"
     >
       <Button variant="gradient" size="sm" fullWidth>

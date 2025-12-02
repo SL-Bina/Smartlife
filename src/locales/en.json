@@ -48,6 +48,7 @@
     "complexes": "Complexes",
     "residents": "Residents",
     "resident": "Resident",
+    "devices": "Devices",
     "buildings": "Buildings",
     "properties": "Apartments",
     "blocks": "Blocks",
@@ -1825,5 +1826,108 @@
     "viewInvoices": "View Invoices",
     "viewApplications": "View Applications",
     "viewNotifications": "View Notifications"
+  },
+  "devices": {
+    "pageTitle": "Devices",
+    "loading": "Loading...",
+    "actions": {
+      "accessRules": "Device Access Rules",
+      "deviceUsers": "Device Users",
+      "deviceIdentifiers": "Device Identifiers",
+      "deviceLogs": "Device Logs",
+      "search": "Search",
+      "add": "Add",
+      "edit": "Edit",
+      "delete": "Delete",
+      "save": "Save",
+      "close": "Close",
+      "cancel": "Cancel"
+    },
+    "table": {
+      "id": "ID",
+      "name": "Name",
+      "building": "Building",
+      "apartment": "Apartment",
+      "device": "Device",
+      "userStatus": "User Status",
+      "actions": "Actions",
+      "serial": "Serial"
+    },
+    "filter": {
+      "title": "Filter",
+      "name": "Name",
+      "building": "Building",
+      "status": "Status",
+      "enterName": "Enter name",
+      "enterBuilding": "Enter building",
+      "enterStatus": "Select status",
+      "clear": "Clear",
+      "close": "Close",
+      "apply": "Apply",
+      "online": "Online",
+      "offline": "Offline"
+    },
+    "create": {
+      "title": "Add Device",
+      "name": "Name",
+      "building": "Building",
+      "apartment": "Apartment",
+      "status": "Status",
+      "enterName": "Enter name",
+      "enterBuilding": "Enter building",
+      "enterApartment": "Enter apartment",
+      "enterStatus": "Select status",
+      "enabled": "Enabled",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "edit": {
+      "title": "Edit",
+      "name": "Name",
+      "building": "Building",
+      "apartment": "Apartment",
+      "status": "Status",
+      "enterName": "Enter name",
+      "enterBuilding": "Enter building",
+      "enterApartment": "Enter apartment",
+      "enterStatus": "Select status",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "accessRules": {
+      "title": "Device Access Rules",
+      "name": "Name",
+      "deviceCount": "Device Count"
+    },
+    "deviceUsers": {
+      "title": "Device Users",
+      "userName": "User Name",
+      "email": "Email",
+      "phone": "Phone"
+    },
+    "deviceIdentifiers": {
+      "title": "Device Identifiers",
+      "name": "Name",
+      "value": "Value",
+      "type": "Type"
+    },
+    "deviceLogs": {
+      "title": "Device Logs",
+      "date": "Date",
+      "device": "Device",
+      "identifier": "Identifier",
+      "type": "Type",
+      "acsMessage": "ACS Message"
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next"
+    },
+    "status": {
+      "online": "Online",
+      "offline": "Offline",
+      "enabled": "Enabled",
+      "disabled": "Disabled"
+    }
   }
 }

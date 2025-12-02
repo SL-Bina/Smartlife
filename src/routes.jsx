@@ -24,6 +24,7 @@ import {
   InboxIcon,
   CogIcon,
   BookOpenIcon,
+  CpuChipIcon,
 } from "@heroicons/react/24/solid";
 import { Home, Tables, Notifications, KPI, ApplicationsListPage, ApplicationsEvaluationPage, ResidentDashboard, ComplexDashboardPage, SendNotificationPage, NotificationArchivePage, SentSMSPage, CreateQueryPage, QueriesListPage, ReceptionPage, ServicesPage, ElectronicDocumentsPage } from "@/pages/dashboard";
 import Profile from "./pages/dashboard/profile";
@@ -33,6 +34,7 @@ import ComplexPage from "./pages/dashboard/complex";
 import ResidentsPage from "./pages/dashboard/residents";
 import BuildingsPage from "./pages/dashboard/buildings";
 import PropertiesPage from "./pages/dashboard/properties";
+import DevicesPage from "./pages/devices";
 import BlocksPage from "./pages/dashboard/blocks";
 import ApartmentGroupsPage from "./pages/dashboard/apartment-groups";
 import BuildingServiceFeePage from "./pages/dashboard/building-service-fee";
@@ -265,7 +267,13 @@ export const routes = [
             element: <ResidentsPage />,
             allowedRoles: ["admin", "manager", "operator", "viewer"],
           },
-          
+          {
+            icon: <CpuChipIcon {...icon} />,
+            name: "sidebar.devices",
+            path: "/devices",
+            element: <DevicesPage />,
+            allowedRoles: ["admin", "manager", "operator", "viewer"],
+          },
           {
             icon: <HomeModernIcon {...icon} />,
             name: "sidebar.apartmentGroups",

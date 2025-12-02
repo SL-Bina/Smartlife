@@ -48,6 +48,7 @@
     "complexes": "Комплексы",
     "residents": "Жители",
     "resident": "Житель",
+    "devices": "Устройства",
     "buildings": "Здания",
     "properties": "Квартиры",
     "blocks": "Блоки",
@@ -1830,5 +1831,108 @@
     "viewInvoices": "Просмотр счетов",
     "viewApplications": "Просмотр заявок",
     "viewNotifications": "Просмотр уведомлений"
+  },
+  "devices": {
+    "pageTitle": "Устройства",
+    "loading": "Загрузка...",
+    "actions": {
+      "accessRules": "Правила доступа устройств",
+      "deviceUsers": "Пользователи устройств",
+      "deviceIdentifiers": "Идентификаторы устройств",
+      "deviceLogs": "Журналы устройств",
+      "search": "Поиск",
+      "add": "Добавить",
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "save": "Сохранить",
+      "close": "Закрыть",
+      "cancel": "Отмена"
+    },
+    "table": {
+      "id": "ID",
+      "name": "Название",
+      "building": "Здание",
+      "apartment": "Квартира",
+      "device": "Устройство",
+      "userStatus": "Статус пользователя",
+      "actions": "Действия",
+      "serial": "Серийный номер"
+    },
+    "filter": {
+      "title": "Фильтр",
+      "name": "Название",
+      "building": "Здание",
+      "status": "Статус",
+      "enterName": "Введите название",
+      "enterBuilding": "Введите здание",
+      "enterStatus": "Выберите статус",
+      "clear": "Очистить",
+      "close": "Закрыть",
+      "apply": "Применить",
+      "online": "Онлайн",
+      "offline": "Офлайн"
+    },
+    "create": {
+      "title": "Добавить устройство",
+      "name": "Название",
+      "building": "Здание",
+      "apartment": "Квартира",
+      "status": "Статус",
+      "enterName": "Введите название",
+      "enterBuilding": "Введите здание",
+      "enterApartment": "Введите квартиру",
+      "enterStatus": "Выберите статус",
+      "enabled": "Включено",
+      "cancel": "Отмена",
+      "save": "Сохранить"
+    },
+    "edit": {
+      "title": "Редактировать",
+      "name": "Название",
+      "building": "Здание",
+      "apartment": "Квартира",
+      "status": "Статус",
+      "enterName": "Введите название",
+      "enterBuilding": "Введите здание",
+      "enterApartment": "Введите квартиру",
+      "enterStatus": "Выберите статус",
+      "cancel": "Отмена",
+      "save": "Сохранить"
+    },
+    "accessRules": {
+      "title": "Правила доступа устройств",
+      "name": "Название",
+      "deviceCount": "Количество устройств"
+    },
+    "deviceUsers": {
+      "title": "Пользователи устройств",
+      "userName": "Имя пользователя",
+      "email": "Email",
+      "phone": "Телефон"
+    },
+    "deviceIdentifiers": {
+      "title": "Идентификаторы устройств",
+      "name": "Название",
+      "value": "Значение",
+      "type": "Тип"
+    },
+    "deviceLogs": {
+      "title": "Журналы устройств",
+      "date": "Дата",
+      "device": "Устройство",
+      "identifier": "Идентификатор",
+      "type": "Тип",
+      "acsMessage": "ACS сообщение"
+    },
+    "pagination": {
+      "prev": "Предыдущий",
+      "next": "Следующий"
+    },
+    "status": {
+      "online": "Онлайн",
+      "offline": "Офлайн",
+      "enabled": "Включено",
+      "disabled": "Выключено"
+    }
   }
 }

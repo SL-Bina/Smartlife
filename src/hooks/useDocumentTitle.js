@@ -87,7 +87,7 @@ export function useDocumentTitle() {
       pageTitle = layoutTitleKeyMap[layout] ? t(layoutTitleKeyMap[layout]) : "Dashboard";
     }
 
-    document.title = `West | ${pageTitle}`;
+    document.title = `SmartLife | ${pageTitle}`;
   }, [pathname, t]);
 }
 
