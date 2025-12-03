@@ -267,13 +267,7 @@ export const routes = [
             element: <ResidentsPage />,
             allowedRoles: ["admin", "manager", "operator", "viewer"],
           },
-          {
-            icon: <CpuChipIcon {...icon} />,
-            name: "sidebar.devices",
-            path: "/devices",
-            element: <DevicesPage />,
-            allowedRoles: ["admin", "manager", "operator", "viewer"],
-          },
+          
           {
             icon: <HomeModernIcon {...icon} />,
             name: "sidebar.apartmentGroups",
@@ -291,6 +285,13 @@ export const routes = [
           },
         ],
       },
+      {
+            icon: <CpuChipIcon {...icon} />,
+            name: "sidebar.devices",
+            path: "/devices",
+            element: <DevicesPage />,
+            allowedRoles: ["admin", "manager", "operator", "viewer"],
+          },
       {
         icon: <CogIcon {...icon} />,
         name: "sidebar.services",
