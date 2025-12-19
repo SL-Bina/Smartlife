@@ -28,6 +28,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { Home, Tables, Notifications, KPI, ApplicationsListPage, ApplicationsEvaluationPage, ResidentDashboard, ComplexDashboardPage, SendNotificationPage, NotificationArchivePage, SentSMSPage, CreateQueryPage, QueriesListPage, ReceptionPage, ServicesPage, ElectronicDocumentsPage } from "@/pages/dashboard";
 import Profile from "./pages/dashboard/profile";
+import Settings from "./pages/dashboard/settings";
 import { SignIn } from "@/pages/auth";
 import MTK from "./pages/dashboard/mtk";
 import ComplexPage from "./pages/dashboard/complex";
@@ -64,11 +65,13 @@ export const routes = [
         path: "/home",
         element: <Home />,
         allowedRoles: ["admin", "manager", "operator", "viewer"],
+        moduleName: "dashboard", // API modül ismi
       },
       {
         icon: <BanknotesIcon {...icon} />,
         name: "sidebar.finance",
         allowedRoles: ["admin", "manager", "operator"],
+        moduleName: "finance", // API modül ismi
         children: [
           {
             icon: <DocumentTextIcon {...icon} />,
@@ -223,6 +226,7 @@ export const routes = [
             path: "/mtk",
             element: <MTK />,
             allowedRoles: ["admin", "manager"],
+            moduleName: "mtk", // API modül ismi
           },
           {
             icon: <BuildingOfficeIcon {...icon} />,
@@ -230,6 +234,7 @@ export const routes = [
             path: "/complex",
             element: <ComplexPage />,
             allowedRoles: ["admin", "manager", "operator"],
+            moduleName: "complex", // API modül ismi
           },
           {
             icon: <BuildingOffice2Icon {...icon} />,
@@ -237,6 +242,7 @@ export const routes = [
             path: "/buildings",
             element: <BuildingsPage />,
             allowedRoles: ["admin", "manager", "operator"],
+            moduleName: "building", // API modül ismi
           },
           {
             icon: <RectangleStackIcon {...icon} />,
@@ -244,6 +250,7 @@ export const routes = [
             path: "/blocks",
             element: <BlocksPage />,
             allowedRoles: ["admin", "manager", "operator"],
+            moduleName: "block", // API modül ismi
           },
           {
             icon: <HomeModernIcon {...icon} />,
@@ -251,6 +258,7 @@ export const routes = [
             path: "/properties",
             element: <PropertiesPage />,
             allowedRoles: ["admin", "manager", "operator", "viewer"],
+            moduleName: "apartment", // API modül ismi (apartment = properties)
           },
           {
             icon: <BuildingOfficeIcon {...icon} />,
@@ -266,6 +274,7 @@ export const routes = [
             path: "/residents",
             element: <ResidentsPage />,
             allowedRoles: ["admin", "manager", "operator", "viewer"],
+            moduleName: "resident", // API modül ismi
           },
           
           {
@@ -298,6 +307,7 @@ export const routes = [
         path: "/services",
         element: <ServicesPage />,
         allowedRoles: ["admin", "manager", "operator", "viewer"],
+        moduleName: "service", // API modül ismi
       },
       {
         icon: <BookOpenIcon {...icon} />,
@@ -327,6 +337,7 @@ export const routes = [
         element: <UserPermissionsPage />,
         hideInSidenav: true,
         allowedRoles: ["admin"],
+        moduleName: "permission", // API modül ismi
       },
       {
         icon: <UserCircleIcon {...icon} />,
@@ -334,6 +345,14 @@ export const routes = [
         path: "/profile",
         element: <Profile />,
         allowedRoles: ["admin", "manager", "operator", "viewer"], // Sakin üçün ayrı profil var
+      },
+      {
+        icon: <CogIcon {...icon} />,
+        name: "sidebar.settings",
+        path: "/settings",
+        element: <Settings />,
+        hideInSidenav: true, // Sidebar'da gösterme, sadece header menüsünden erişilebilir
+        allowedRoles: ["admin", "manager", "operator", "viewer", "resident"],
       },
     ],
   },

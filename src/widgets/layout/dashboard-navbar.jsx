@@ -1,5 +1,5 @@
 import React from "react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, NavLink } from "react-router-dom";
 import {
   Navbar,
   Typography,
@@ -35,20 +35,20 @@ import { useTranslation } from "react-i18next";
 import ReactCountryFlag from "react-country-flag";
 
 const languages = [
-  { 
-    code: "az", 
-    label: "Azərbaycan dili", 
-    flag: <ReactCountryFlag countryCode="AZ" svg style={{ width: "1.5em", height: "1.5em" }} /> 
+  {
+    code: "az",
+    label: "Azərbaycan dili",
+    flag: <ReactCountryFlag countryCode="AZ" svg style={{ width: "1.5em", height: "1.5em" }} />
   },
-  { 
-    code: "en", 
-    label: "English", 
-    flag: <ReactCountryFlag countryCode="GB" svg style={{ width: "1.5em", height: "1.5em" }} /> 
+  {
+    code: "en",
+    label: "English",
+    flag: <ReactCountryFlag countryCode="GB" svg style={{ width: "1.5em", height: "1.5em" }} />
   },
-  { 
-    code: "ru", 
-    label: "Русский", 
-    flag: <ReactCountryFlag countryCode="RU" svg style={{ width: "1.5em", height: "1.5em" }} /> 
+  {
+    code: "ru",
+    label: "Русский",
+    flag: <ReactCountryFlag countryCode="RU" svg style={{ width: "1.5em", height: "1.5em" }} />
   },
 ];
 
@@ -109,6 +109,7 @@ const pageTitleKeyMap = {
   "resident/applications": "sidebar.applicationsList",
   "resident/notifications": "sidebar.notifications",
   "resident/profile": "sidebar.profile",
+  "settings": "header.settings",
 };
 
 export function DashboardNavbar() {
@@ -118,7 +119,7 @@ export function DashboardNavbar() {
   const pathParts = pathname.split("/").filter((el) => el !== "");
   const layout = pathParts[0] || "";
   const page = pathParts.slice(1).join("/") || pathParts[0] || "";
-  const { user, logout } = useAuth();
+  const { user, logout, isInitialized } = useAuth();
   const { t, i18n } = useTranslation();
 
   const changeLanguage = (lng) => {
@@ -130,11 +131,11 @@ export function DashboardNavbar() {
     : layout;
 
   const fullPath = pathParts.slice(1).join("/");
-  const pageTitle = pageTitleKeyMap[fullPath] 
+  const pageTitle = pageTitleKeyMap[fullPath]
     ? t(pageTitleKeyMap[fullPath])
     : pageTitleKeyMap[page]
-    ? t(pageTitleKeyMap[page])
-    : page;
+      ? t(pageTitleKeyMap[page])
+      : page;
 
   const translatePathSegment = (segment) => {
     if (pageTitleKeyMap[segment]) {
@@ -149,13 +150,13 @@ export function DashboardNavbar() {
       label: layoutTitle,
       path: `/${layout}`,
     });
-    
+
     let currentPath = "";
     for (let i = 1; i < pathParts.length; i++) {
       currentPath += (currentPath ? "/" : "") + pathParts[i];
       const segment = pathParts[i];
       const isLast = i === pathParts.length - 1;
-      
+
       let translatedLabel;
       if (isLast && pageTitleKeyMap[currentPath]) {
         translatedLabel = t(pageTitleKeyMap[currentPath]);
@@ -164,7 +165,7 @@ export function DashboardNavbar() {
       } else {
         translatedLabel = translatePathSegment(segment);
       }
-      
+
       breadcrumbItems.push({
         label: translatedLabel,
         path: `/${layout}/${currentPath}`,
@@ -182,11 +183,10 @@ export function DashboardNavbar() {
   return (
     <Navbar
       color={fixedNavbar ? "white" : "transparent"}
-      className={`rounded-xl transition-all dark:bg-gray-900 border border-red-600 dark:border-gray-700 ${
-        fixedNavbar
-          ? "sticky top-4 z-40 py-3 shadow-lg shadow-blue-gray-500/5"
-          : "px-4 sm:px-6 py-2 sm:py-3"
-      }`}
+      className={`rounded-xl transition-all dark:bg-gray-900 border border-red-600 dark:border-gray-700 ${fixedNavbar
+        ? "sticky top-4 z-40 py-3 shadow-lg shadow-blue-gray-500/5"
+        : "px-4 sm:px-6 py-2 sm:py-3"
+        }`}
       fullWidth
       blurred={fixedNavbar}
     >
@@ -204,9 +204,8 @@ export function DashboardNavbar() {
           </IconButton>
           <div className="min-w-0 flex-1 hidden sm:block">
             <Breadcrumbs
-              className={`bg-transparent p-0 transition-all ${
-                fixedNavbar ? "mt-1" : ""
-              }`}
+              className={`bg-transparent p-0 transition-all ${fixedNavbar ? "mt-1" : ""
+                }`}
             >
               {breadcrumbItems.map((item, index) => (
                 <React.Fragment key={index}>
@@ -232,9 +231,9 @@ export function DashboardNavbar() {
                 </React.Fragment>
               ))}
             </Breadcrumbs>
-            <Typography 
-              variant="h6" 
-              color="blue-gray" 
+            <Typography
+              variant="h6"
+              color="blue-gray"
               className="dark:text-white text-sm sm:text-base lg:text-lg font-bold truncate"
             >
               {pageTitle}
@@ -263,18 +262,16 @@ export function DashboardNavbar() {
             <MenuList className="dark:bg-gray-800 dark:border-gray-700 min-w-[140px]">
               <MenuItem
                 onClick={() => setDarkMode(dispatch, false)}
-                className={`dark:text-gray-300 dark:hover:bg-gray-800 flex items-center gap-2 ${
-                  !darkMode ? "bg-blue-50 dark:bg-blue-900/20" : ""
-                }`}
+                className={`dark:text-gray-300 dark:hover:bg-gray-800 flex items-center gap-2 ${!darkMode ? "bg-blue-50 dark:bg-blue-900/20" : ""
+                  }`}
               >
                 <SunIcon className="h-4 w-4 text-yellow-500" />
                 <span>{t("header.lightMode")}</span>
               </MenuItem>
               <MenuItem
                 onClick={() => setDarkMode(dispatch, true)}
-                className={`dark:text-gray-300 dark:hover:bg-gray-800 flex items-center gap-2 ${
-                  darkMode ? "bg-blue-50 dark:bg-blue-900/20" : ""
-                }`}
+                className={`dark:text-gray-300 dark:hover:bg-gray-800 flex items-center gap-2 ${darkMode ? "bg-blue-50 dark:bg-blue-900/20" : ""
+                  }`}
               >
                 <MoonIcon className="h-4 w-4 text-blue-gray-700 dark:text-gray-300" />
                 <span>{t("header.darkMode")}</span>
@@ -302,12 +299,11 @@ export function DashboardNavbar() {
             </MenuHandler>
             <MenuList className="min-w-[160px] dark:bg-gray-800 dark:border-gray-700">
               {languages.map((lng) => (
-                <MenuItem 
-                  key={lng.code} 
-                  onClick={() => changeLanguage(lng.code)} 
-                  className={`dark:text-gray-300 dark:hover:bg-gray-800 flex items-center gap-2 ${
-                    i18n.language === lng.code ? "bg-blue-50 dark:bg-blue-900/20" : ""
-                  }`}
+                <MenuItem
+                  key={lng.code}
+                  onClick={() => changeLanguage(lng.code)}
+                  className={`dark:text-gray-300 dark:hover:bg-gray-800 flex items-center gap-2 ${i18n.language === lng.code ? "bg-blue-50 dark:bg-blue-900/20" : ""
+                    }`}
                 >
                   <span className="text-base">{lng.flag}</span>
                   <span>{lng.label}</span>
@@ -319,8 +315,8 @@ export function DashboardNavbar() {
           {/* Notifications */}
           <Menu placement="bottom-end">
             <MenuHandler>
-              <IconButton 
-                variant="text" 
+              <IconButton
+                variant="text"
                 color="blue-gray"
                 className="dark:text-gray-300 dark:hover:bg-gray-700 relative p-1"
                 size="sm"
@@ -408,7 +404,11 @@ export function DashboardNavbar() {
           </Menu>
 
           {/* User info / auth */}
-          {user ? (
+          {!isInitialized ? (
+            <div className="flex items-center gap-2">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600"></div>
+            </div>
+          ) : user ? (
             <>
               <Menu placement="bottom-end">
                 <MenuHandler>
@@ -428,12 +428,22 @@ export function DashboardNavbar() {
                 </MenuHandler>
                 <MenuList className="dark:bg-gray-800 dark:border-gray-700 min-w-[180px]">
                   <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-800 flex items-center gap-2">
-                    <UserCircleIcon className="h-4 w-4" />
-                    <span>{t("header.profile")}</span>
+                    <NavLink
+                      to="/dashboard/profile"
+                      className="flex items-center gap-2"
+                    >
+                      <UserCircleIcon className="h-4 w-4" />
+                      <span>{t("header.profile")}</span>
+                    </NavLink>
                   </MenuItem>
                   <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-800 flex items-center gap-2">
-                    <Cog6ToothIcon className="h-4 w-4" />
-                    <span>{t("header.settings")}</span>
+                    <NavLink
+                      to="/dashboard/settings"
+                      className="flex items-center gap-2"
+                    >
+                      <Cog6ToothIcon className="h-4 w-4" />
+                      <span>{t("header.settings")}</span>
+                    </NavLink>
                   </MenuItem>
                   <MenuItem onClick={logout} className="dark:hover:bg-gray-800 flex items-center gap-2 text-red-600 dark:text-red-400">
                     <span>{t("common.logout")}</span>
@@ -458,12 +468,22 @@ export function DashboardNavbar() {
                 </MenuHandler>
                 <MenuList className="dark:bg-gray-800 dark:border-gray-700 min-w-[180px]">
                   <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-800 flex items-center gap-2">
-                    <UserCircleIcon className="h-4 w-4" />
-                    <span>{t("header.profile")}</span>
+                    <NavLink
+                      to="/dashboard/profile"
+                      className="flex items-center gap-2"
+                    >
+                      <UserCircleIcon className="h-4 w-4" />
+                      <span>{t("header.profile")}</span>
+                    </NavLink>
                   </MenuItem>
                   <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-800 flex items-center gap-2">
-                    <Cog6ToothIcon className="h-4 w-4" />
-                    <span>{t("header.settings")}</span>
+                    <NavLink
+                      to="/dashboard/settings"
+                      className="flex items-center gap-2"
+                    >
+                      <Cog6ToothIcon className="h-4 w-4" />
+                      <span>{t("header.settings")}</span>
+                    </NavLink>
                   </MenuItem>
                   <MenuItem onClick={logout} className="dark:hover:bg-gray-800 flex items-center gap-2 text-red-600 dark:text-red-400">
                     <span>{t("common.logout")}</span>

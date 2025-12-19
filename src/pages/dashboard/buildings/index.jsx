@@ -395,7 +395,7 @@ const BuildingsPage = () => {
                 {pageData.map((row) => (
                   <Card
                     key={row.id}
-                    className="border border-red-600 dark:border-gray-700 shadow-sm dark:bg-gray-800 dark:border-gray-700"
+                    className="border border-red-600 dark:border-gray-700 shadow-sm dark:bg-gray-800"
                     >
                     <CardBody className="space-y-3 dark:bg-gray-800">
                       <div className="flex items-center justify-between gap-2">

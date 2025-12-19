@@ -10,10 +10,9 @@ import {
   MenuItem,
 } from "@material-tailwind/react";
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/auth-context";
 import { useTranslation } from "react-i18next";
-import { demoUsers } from "@/auth-users";
 
 import ReactCountryFlag from "react-country-flag";
 
@@ -36,36 +35,62 @@ const languages = [
 ];
 
 export function SignIn() {
-  const { login } = useAuth();
+  const { login, loading, user, isAuthenticated, isInitialized } = useAuth();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const [username, setUsername] = useState("admin");
-  const [password, setPassword] = useState("admin123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+
+  // Eğer kullanıcı zaten giriş yapmışsa, otomatik olarak dashboard'a yönlendir
+  // isInitialized kontrolü ile user bilgileri yüklenene kadar bekliyoruz
+  useEffect(() => {
+    if (isInitialized && isAuthenticated && user) {
+      const userRole = user?.role?.name?.toLowerCase();
+      if (userRole === "resident") {
+        navigate("/dashboard/resident/home", { replace: true });
+      } else {
+        navigate("/dashboard/home", { replace: true });
+      }
+    }
+  }, [isInitialized, isAuthenticated, user, navigate]);
 
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
 
-    const ok = login(username, password);
-    if (!ok) {
-      setError(t("auth.signIn.invalidCredentialsError"));
+    const result = await login(email, password);
+    if (!result.success) {
+      setError(result.message || t("auth.signIn.invalidCredentialsError"));
       return;
     }
 
-    const foundUser = demoUsers.find(
-      (u) => u.username === username && u.password === password
-    );
-    if (foundUser && foundUser.role === "resident") {
+    // Başarılı login - kullanıcı tipine göre yönlendir
+    // Sadece role "resident" ise resident paneline yönlendir
+    // Root, admin, manager gibi roller admin panelinde kalmalı
+    const userRole = result.user?.role?.name?.toLowerCase();
+    if (userRole === "resident") {
       navigate("/dashboard/resident/home");
     } else {
       navigate("/dashboard/home");
     }
   };
+
+  // User bilgileri yüklenene kadar loading göster
+  if (!isInitialized) {
+    return (
+      <section className="h-full flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">{t("auth.signIn.loading") || "Yüklənir..."}</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="h-full flex gap-4 relative px-8 py-6">
@@ -111,13 +136,14 @@ export function SignIn() {
         <form className="mt-6 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2" onSubmit={handleSubmit}>
           <div className="mb-1 flex flex-col gap-6">
             <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
-              {t("auth.signIn.usernameLabel")}
+              {t("auth.signIn.emailLabel") || "Email"}
             </Typography>
             <Input
+              type="email"
               size="lg"
-              placeholder="admin"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              placeholder="root@smartlife.az"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
               labelProps={{
                 className: "before:content-none after:content-none",
@@ -161,36 +187,14 @@ export function SignIn() {
             }
             containerProps={{ className: "-ml-2.5" }}
           /> */}
-          <Button type="submit" className="mt-6" fullWidth>
-            {t("auth.signIn.submit")}
+          <Button 
+            type="submit" 
+            className="mt-6" 
+            fullWidth
+            disabled={loading}
+          >
+            {loading ? t("auth.signIn.loading") || "Yüklənir..." : t("auth.signIn.submit")}
           </Button>
-
-          <div className="mt-4">
-            <Typography variant="small" className="text-blue-gray-700 font-medium dark:text-gray-300">
-              {t("auth.signIn.demoUsersTitle")}
-            </Typography>
-            <div className="mt-2 space-y-2">
-              {demoUsers
-                .filter((user) => user.role !== "resident")
-                .map((demoUser) => (
-                  <div key={demoUser.id} className="text-xs text-blue-gray-600 dark:text-gray-400">
-                    <span className="font-semibold capitalize">{demoUser.role}:</span> {demoUser.username} / {demoUser.password}
-                  </div>
-                ))}
-              <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
-                <Typography variant="small" className="text-blue-gray-700 font-semibold dark:text-gray-300 mb-1">
-                  Sakin hesabları:
-                </Typography>
-                {demoUsers
-                  .filter((user) => user.role === "resident")
-                  .map((demoUser) => (
-                    <div key={demoUser.id} className="text-xs text-blue-gray-600 dark:text-gray-400">
-                      <span className="font-semibold">{demoUser.fullName}:</span> {demoUser.username} / {demoUser.password}
-                    </div>
-                  ))}
-              </div>
-            </div>
-          </div>
         </form>
 
       </div>
