@@ -59,11 +59,11 @@ api.interceptors.response.use(
 
 // Auth API
 export const authAPI = {
-  // Login - API email ve password bekliyor
-  login: async (email, password) => {
+  // Login - API email, username, phone və ya name qəbul edir
+  login: async (identifier, password) => {
     try {
       const response = await api.post("/auth/login", {
-        email,
+        email: identifier, // Backend hələ də email field-ı gözləyir, amma identifier dəyərini göndəririk
         password,
       });
       return response.data;

@@ -61,8 +61,19 @@ export function SignIn() {
     e.preventDefault();
     setError(null);
 
+    // Validation
+    if (!identifier.trim()) {
+      setError(t("auth.signIn.identifierRequired") || "Email, Username, Phone və ya Name daxil edin");
+      return;
+    }
+
+    if (!password.trim()) {
+      setError(t("auth.signIn.passwordRequired") || "Şifrə daxil edin");
+      return;
+    }
+
     // identifier email, username, phone və ya name ola bilər
-    const result = await login(identifier, password);
+    const result = await login(identifier.trim(), password);
     if (!result.success) {
       setError(result.message || t("auth.signIn.invalidCredentialsError"));
       return;
