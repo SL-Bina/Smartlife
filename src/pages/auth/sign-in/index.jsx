@@ -8,11 +8,13 @@ import {
   MenuHandler,
   MenuList,
   MenuItem,
+  IconButton,
 } from "@material-tailwind/react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/auth-context";
 import { useTranslation } from "react-i18next";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
 import ReactCountryFlag from "react-country-flag";
 
@@ -40,6 +42,7 @@ export function SignIn() {
   const { t, i18n } = useTranslation();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -158,17 +161,32 @@ export function SignIn() {
             <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
               {t("auth.signIn.passwordLabel")}
             </Typography>
-            <Input
-              type="password"
-              size="lg"
-              placeholder="********"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
-              labelProps={{
-                className: "before:content-none after:content-none",
-              }}
-            />
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                size="lg"
+                placeholder="********"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className=" !border-t-blue-gray-200 focus:!border-t-gray-900 pr-12"
+                labelProps={{
+                  className: "before:content-none after:content-none",
+                }}
+              />
+              <IconButton
+                variant="text"
+                size="sm"
+                className="!absolute right-1 top-1/2 -translate-y-1/2 rounded-full hover:bg-blue-gray-50 dark:hover:bg-gray-700"
+                onClick={() => setShowPassword(!showPassword)}
+                type="button"
+              >
+                {showPassword ? (
+                  <EyeSlashIcon className="h-5 w-5 text-blue-gray-500 dark:text-gray-400" />
+                ) : (
+                  <EyeIcon className="h-5 w-5 text-blue-gray-500 dark:text-gray-400" />
+                )}
+              </IconButton>
+            </div>
           </div>
           {error && (
             <Typography variant="small" color="red" className="mt-2 font-medium">
