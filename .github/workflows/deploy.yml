@@ -78,6 +78,14 @@ jobs:
       - name: Build (Vite)
         run: npm run build
 
+      - name: Clear server folder
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: rm -rf /home/frontend/design/Smartlife/*
+
       - name: Upload dist to server
         uses: appleboy/scp-action@v0.1.7
         with:
