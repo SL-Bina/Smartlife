@@ -1,26 +1,58 @@
-name: Auto Deploy
+# name: Auto Deploy
+
+# on:
+#   push:
+#     branches: [ "main" ]
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Run commands on Ubuntu server
+#         uses: appleboy/ssh-action@v0.1.10
+#         with:
+#           host: ${{ secrets.SERVER_IP }}
+#           username: ${{ secrets.SERVER_USER }}
+#           key: ${{ secrets.SERVER_SSH_KEY }}
+#           script: |
+#             cd /var/www/smartlife
+#             git pull origin main
+#             npm run build
+#             # Buraya build lazımdırsa əlavə et:
+#             # npm install
+#             # python manage.py migrate
+#             # systemctl restart nginx
+#             pm2 restart smartlife
+
+
+name: Deploy Vite React App
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Run commands on Ubuntu server
-        uses: appleboy/ssh-action@v0.1.10
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build (Vite)
+        run: npm run build
+
+      - name: Upload dist to server
+        uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.SERVER_IP }}
+          host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            cd /var/www/myproject
-            git pull origin main
-            npm run build
-            # Buraya build lazımdırsa əlavə et:
-            # npm install
-            # python manage.py migrate
-            # systemctl restart nginx
-            # pm2 restart app
+          source: "dist/*"
+          target: "/home/frontend/design/Smartlife"
+          strip_components: 1

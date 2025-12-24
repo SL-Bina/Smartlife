@@ -7,7 +7,7 @@ import {
   DashboardNavbar,
 } from "@/widgets/layout";
 import routes from "@/routes";
-import { useMaterialTailwindController } from "@/context";
+import { useMaterialTailwindController, ManagementProvider } from "@/context";
 import { useAuth } from "@/auth-context";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
@@ -184,17 +184,18 @@ export function Dashboard() {
     : routes.filter((r) => r.layout === "dashboard");
 
   return (
-    <div className="min-h-screen bg-blue-gray-50/50 dark:bg-black flex flex-col">
-      <Sidenav
-        routes={filteredRoutes}
-        brandImg={
-          sidenavType === "dark" ? "/img/logo-ct.png" : "/img/logo-ct-dark.png"
-        }
-      />
-      <div className="p-4 xl:ml-80">
-        <DashboardNavbar />
-        <div>
-          <Routes>
+    <ManagementProvider>
+      <div className="min-h-screen bg-blue-gray-50/50 dark:bg-black flex flex-col">
+        <Sidenav
+          routes={filteredRoutes}
+          brandImg={
+            sidenavType === "dark" ? "/img/logo-ct.png" : "/img/logo-ct-dark.png"
+          }
+        />
+        <div className="p-4 xl:ml-80">
+          <DashboardNavbar />
+          <div>
+            <Routes>
           {filteredRoutes.map(
             ({ layout, pages }) =>
               layout === "dashboard" &&
@@ -232,10 +233,11 @@ export function Dashboard() {
               />
             }
           />
-        </Routes>
+            </Routes>
+          </div>
         </div>
       </div>
-    </div>
+    </ManagementProvider>
   );
 }
 

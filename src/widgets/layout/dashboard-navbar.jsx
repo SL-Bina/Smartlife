@@ -104,6 +104,16 @@ const pageTitleKeyMap = {
   "finance/deposit": "sidebar.deposit",
   "finance/transfers": "sidebar.transfers",
   "finance/debt": "sidebar.debt",
+  "management": "sidebar.buildingManagement",
+  "management/mtk": "sidebar.mtk",
+  "management/complex": "sidebar.complexes",
+  "management/buildings": "sidebar.buildings",
+  "management/blocks": "sidebar.blocks",
+  "management/properties": "sidebar.properties",
+  "management/residents": "sidebar.residents",
+  "management/apartment-groups": "apartmentGroups.pageTitle",
+  "management/service-fee": "serviceFee.pageTitle",
+  "management/building-service-fee": "buildingServiceFee.pageTitle",
   "resident/home": "residentDashboard.pageTitle",
   "resident/invoices": "sidebar.invoices",
   "resident/applications": "sidebar.applicationsList",
@@ -140,6 +150,10 @@ export function DashboardNavbar() {
   const translatePathSegment = (segment) => {
     if (pageTitleKeyMap[segment]) {
       return t(pageTitleKeyMap[segment]);
+    }
+    // Special handling for "management" segment
+    if (segment === "management") {
+      return t("sidebar.buildingManagement");
     }
     return segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ");
   };

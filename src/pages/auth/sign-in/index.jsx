@@ -38,12 +38,10 @@ export function SignIn() {
   const { login, loading, user, isAuthenticated, isInitialized } = useAuth();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
 
-  // Eğer kullanıcı zaten giriş yapmışsa, otomatik olarak dashboard'a yönlendir
-  // isInitialized kontrolü ile user bilgileri yüklenene kadar bekliyoruz
   useEffect(() => {
     if (isInitialized && isAuthenticated && user) {
       const userRole = user?.role?.name?.toLowerCase();
@@ -63,15 +61,13 @@ export function SignIn() {
     e.preventDefault();
     setError(null);
 
-    const result = await login(email, password);
+    // identifier email, username, phone və ya name ola bilər
+    const result = await login(identifier, password);
     if (!result.success) {
       setError(result.message || t("auth.signIn.invalidCredentialsError"));
       return;
     }
 
-    // Başarılı login - kullanıcı tipine göre yönlendir
-    // Sadece role "resident" ise resident paneline yönlendir
-    // Root, admin, manager gibi roller admin panelinde kalmalı
     const userRole = result.user?.role?.name?.toLowerCase();
     if (userRole === "resident") {
       navigate("/dashboard/resident/home");
@@ -80,7 +76,6 @@ export function SignIn() {
     }
   };
 
-  // User bilgileri yüklenene kadar loading göster
   if (!isInitialized) {
     return (
       <section className="h-full flex items-center justify-center">
@@ -136,14 +131,14 @@ export function SignIn() {
         <form className="mt-6 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2" onSubmit={handleSubmit}>
           <div className="mb-1 flex flex-col gap-6">
             <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
-              {t("auth.signIn.emailLabel") || "Email"}
+              {t("auth.signIn.identifierLabel") || "Email, Username, Phone və ya Name"}
             </Typography>
             <Input
-              type="email"
+              type="text"
               size="lg"
-              placeholder="root@smartlife.az"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              placeholder={t("auth.signIn.identifierPlaceholder") || "Email, Username, Phone və ya Name daxil edin"}
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
               labelProps={{
                 className: "before:content-none after:content-none",

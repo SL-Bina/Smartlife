@@ -1,100 +1,54 @@
-import React, { useEffect, useState } from "react";
-import {
-  Typography,
-  Card,
-  CardHeader,
-  CardBody,
-  Button,
-  IconButton,
-  Menu,
-  MenuHandler,
-  MenuList,
-  MenuItem,
-  Spinner,
-  Dialog,
-  DialogHeader,
-  DialogBody,
-  DialogFooter,
-  Input,
-  Chip,
-} from "@material-tailwind/react";
-import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
+import React, { useState, useEffect } from "react";
+import { Card, CardHeader, CardBody, Spinner, Typography } from "@material-tailwind/react";
 import { useTranslation } from "react-i18next";
-
-const depositData = Array.from({ length: 50 }, (_, index) => ({
-  id: index + 1,
-  apartment: `Mənzil ${index + 1}`,
-  owner: `Sahib ${index + 1}`,
-  amount: (100 + (index % 20) * 50).toFixed(2),
-  paymentMethod: index % 2 === 0 ? "Nağd" : "Bank",
-  depositDate: `2025-11-${String(1 + (index % 20)).padStart(2, "0")}`,
-  status: index % 3 === 0 ? "Aktiv" : "Qaytarılıb",
-  notes: `Qeyd ${index + 1}`,
-}));
-
-const ITEMS_PER_PAGE = 10;
+import { useDepositData } from "./hooks/useDepositData";
+import { useDepositFilters } from "./hooks/useDepositFilters";
+import { useDepositForm } from "./hooks/useDepositForm";
+import { createDeposit, updateDeposit, deleteDeposit } from "./api";
+import { DepositHeader } from "./components/DepositHeader";
+import { DepositSummaryCard } from "./components/DepositSummaryCard";
+import { DepositActions } from "./components/DepositActions";
+import { DepositTable } from "./components/DepositTable";
+import { DepositCardList } from "./components/DepositCardList";
+import { DepositPagination } from "./components/DepositPagination";
+import { DepositFilterModal } from "./components/modals/DepositFilterModal";
+import { DepositFormModal } from "./components/modals/DepositFormModal";
+import { DepositViewModal } from "./components/modals/DepositViewModal";
+import { DepositDeleteModal } from "./components/modals/DepositDeleteModal";
 
 const DepositPage = () => {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [filterOpen, setFilterOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [page, setPage] = useState(1);
 
-  const [filterApartment, setFilterApartment] = useState("");
-  const [filterOwner, setFilterOwner] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
+  const { filters, filterOpen, setFilterOpen, updateFilter, clearFilters, applyFilters } = useDepositFilters();
+  const { deposits, totalDeposit, loading, error, pagination } = useDepositData(filters, page, refreshKey);
+  const { formData, updateField, resetForm, setFormFromDeposit } = useDepositForm();
 
-  const [formApartment, setFormApartment] = useState("");
-  const [formOwner, setFormOwner] = useState("");
-  const [formAmount, setFormAmount] = useState("");
-  const [formPaymentMethod, setFormPaymentMethod] = useState("");
-  const [formDepositDate, setFormDepositDate] = useState("");
-  const [formNotes, setFormNotes] = useState("");
-
+  // Reset page when filters change
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 400);
-    return () => clearTimeout(timer);
-  }, []);
+    if (page > (pagination.totalPages || 1) && pagination.totalPages > 0) {
+      setPage(1);
+    }
+  }, [pagination.totalPages, page]);
 
-  const filteredData = React.useMemo(
-    () =>
-      depositData.filter((item) => {
-        const matchesApartment = filterApartment
-          ? item.apartment.toLowerCase().includes(filterApartment.toLowerCase())
-          : true;
-        const matchesOwner = filterOwner
-          ? item.owner.toLowerCase().includes(filterOwner.toLowerCase())
-          : true;
-        const matchesStatus = filterStatus ? item.status === filterStatus : true;
-        return matchesApartment && matchesOwner && matchesStatus;
-      }),
-    [filterApartment, filterOwner, filterStatus]
-  );
+  const handleFilterApply = () => {
+    setPage(1);
+    applyFilters();
+  };
 
-  const totalDeposit = filteredData
-    .filter((item) => item.status === "Aktiv")
-    .reduce((sum, item) => sum + parseFloat(item.amount), 0)
-    .toFixed(2);
-
-  const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
-  const startIndex = (page - 1) * ITEMS_PER_PAGE;
-  const pageData = filteredData.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-
-  const handlePrev = () => setPage((prev) => Math.max(1, prev - 1));
-  const handleNext = () => setPage((prev) => Math.min(totalPages, prev + 1));
+  const handleFilterClear = () => {
+    clearFilters();
+    setPage(1);
+  };
 
   const openCreateModal = () => {
-    setFormApartment("");
-    setFormOwner("");
-    setFormAmount("");
-    setFormPaymentMethod("");
-    setFormDepositDate("");
-    setFormNotes("");
+    resetForm();
     setCreateOpen(true);
   };
 
@@ -105,12 +59,7 @@ const DepositPage = () => {
 
   const openEditModal = (item) => {
     setSelectedItem(item);
-    setFormApartment(item.apartment);
-    setFormOwner(item.owner);
-    setFormAmount(item.amount);
-    setFormPaymentMethod(item.paymentMethod);
-    setFormDepositDate(item.depositDate);
-    setFormNotes(item.notes);
+    setFormFromDeposit(item);
     setEditOpen(true);
   };
 
@@ -119,417 +68,76 @@ const DepositPage = () => {
     setDeleteOpen(true);
   };
 
-  const handleFilterApply = () => {
-    setPage(1);
-    setFilterOpen(false);
+  const handleCreateSave = async () => {
+    try {
+      await createDeposit(formData);
+      setCreateOpen(false);
+      resetForm();
+      setRefreshKey((prev) => prev + 1);
+    } catch (error) {
+      console.error("Error creating deposit:", error);
+    }
   };
 
-  const handleFilterClear = () => {
-    setFilterApartment("");
-    setFilterOwner("");
-    setFilterStatus("");
-    setPage(1);
-    setFilterOpen(false);
+  const handleEditSave = async () => {
+    try {
+      if (selectedItem) {
+        await updateDeposit(selectedItem.id, formData);
+        setEditOpen(false);
+        setSelectedItem(null);
+        resetForm();
+        setRefreshKey((prev) => prev + 1);
+      }
+    } catch (error) {
+      console.error("Error updating deposit:", error);
+    }
   };
 
-  const handleCreateSave = () => {
-    setCreateOpen(false);
+  const handleDeleteConfirm = async () => {
+    try {
+      if (selectedItem) {
+        await deleteDeposit(selectedItem.id);
+        setDeleteOpen(false);
+        setSelectedItem(null);
+        setRefreshKey((prev) => prev + 1);
+      }
+    } catch (error) {
+      console.error("Error deleting deposit:", error);
+    }
   };
 
-  const handleEditSave = () => {
-    setEditOpen(false);
-    setSelectedItem(null);
+  // Pagination functions
+  const goToPage = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= (pagination.totalPages || 1)) {
+      setPage(pageNumber);
+    }
   };
 
-  const handleDeleteConfirm = () => {
-    setDeleteOpen(false);
-    setSelectedItem(null);
+  const goToPrev = () => {
+    if (page > 1) {
+      setPage((prev) => prev - 1);
+    }
+  };
+
+  const goToNext = () => {
+    if (page < (pagination.totalPages || 1)) {
+      setPage((prev) => prev + 1);
+    }
   };
 
   return (
     <div className="">
-      {/* Section title bar */}
-      <div className="w-full bg-black dark:bg-gray-800 my-4 p-4 rounded-lg shadow-lg mb-6 border border-red-600 dark:border-gray-700">
-        <h3 className="text-white font-bold">{t("deposit.pageTitle")}</h3>
-      </div>
+      <DepositHeader />
+      <DepositSummaryCard totalDeposit={totalDeposit} />
 
-      {/* Summary card */}
-      <div className="mb-6 flex justify-end">
-        <Card className="border border-red-600 dark:border-gray-700 shadow-sm dark:bg-gray-800 ">
-          <CardBody className="p-4">
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("deposit.summary.totalDeposit")}
-            </Typography>
-            <Typography variant="h5" color="green" className="font-bold dark:text-green-300">
-              {totalDeposit} ₼
-            </Typography>
-          </CardBody>
-        </Card>
-      </div>
-
-      {/* Filter modal */}
-      <Dialog open={filterOpen} handler={setFilterOpen} size="sm" className="dark:bg-gray-800 border border-red-600 dark:border-gray-700">
-        <DialogHeader className="dark:text-white">{t("deposit.filter.title")}</DialogHeader>
-        <DialogBody divider className="space-y-4 dark:bg-gray-800 ">
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("deposit.filter.apartment")}
-            </Typography>
-            <Input
-              label={t("deposit.filter.enter")}
-              value={filterApartment}
-              onChange={(e) => setFilterApartment(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("deposit.filter.owner")}
-            </Typography>
-            <Input
-              label={t("deposit.filter.enter")}
-              value={filterOwner}
-              onChange={(e) => setFilterOwner(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("deposit.filter.status")}
-            </Typography>
-            <Input
-              label={t("deposit.filter.enter")}
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-        </DialogBody>
-        <DialogFooter className="flex justify-between gap-2 dark:bg-gray-800 ">
-          <Button variant="text" color="blue-gray" onClick={handleFilterClear} className="dark:text-gray-300 dark:hover:bg-gray-700">
-            {t("buttons.clear")}
-          </Button>
-          <div className="flex gap-2">
-            <Button variant="outlined" color="blue-gray" onClick={() => setFilterOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
-              {t("buttons.cancel")}
-            </Button>
-            <Button color="blue" onClick={handleFilterApply} className="dark:bg-blue-600 dark:hover:bg-blue-700">
-              {t("buttons.apply")}
-            </Button>
-          </div>
-        </DialogFooter>
-      </Dialog>
-
-      {/* Create deposit modal */}
-      <Dialog open={createOpen} handler={setCreateOpen} size="sm" className="dark:bg-gray-800 border border-red-600 dark:border-gray-700">
-        <DialogHeader className="dark:text-white">{t("deposit.create.title")}</DialogHeader>
-        <DialogBody divider className="space-y-4 dark:bg-gray-800 ">
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("deposit.form.apartment")}
-            </Typography>
-            <Input
-              label={t("deposit.form.enter")}
-              value={formApartment}
-              onChange={(e) => setFormApartment(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("deposit.form.owner")}
-            </Typography>
-            <Input
-              label={t("deposit.form.enter")}
-              value={formOwner}
-              onChange={(e) => setFormOwner(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("deposit.form.amount")}
-            </Typography>
-            <Input
-              type="number"
-              label={t("deposit.form.enter")}
-              value={formAmount}
-              onChange={(e) => setFormAmount(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("deposit.form.paymentMethod")}
-            </Typography>
-            <Input
-              label={t("deposit.form.enter")}
-              value={formPaymentMethod}
-              onChange={(e) => setFormPaymentMethod(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("deposit.form.depositDate")}
-            </Typography>
-            <Input
-              type="date"
-              label={t("deposit.form.enter")}
-              value={formDepositDate}
-              onChange={(e) => setFormDepositDate(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("deposit.form.notes")}
-            </Typography>
-            <Input
-              label={t("deposit.form.enter")}
-              value={formNotes}
-              onChange={(e) => setFormNotes(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-        </DialogBody>
-        <DialogFooter className="flex justify-end gap-2 dark:bg-gray-800 ">
-          <Button variant="outlined" color="blue-gray" onClick={() => setCreateOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
-            {t("buttons.cancel")}
-          </Button>
-          <Button color="green" onClick={handleCreateSave} className="dark:bg-green-600 dark:hover:bg-green-700">
-            {t("buttons.save")}
-          </Button>
-        </DialogFooter>
-      </Dialog>
-
-      {/* Edit deposit modal */}
-      <Dialog open={editOpen} handler={setEditOpen} size="sm" className="dark:bg-gray-800 border border-red-600 dark:border-gray-700">
-        <DialogHeader className="dark:text-white">{t("deposit.edit.title")}</DialogHeader>
-        <DialogBody divider className="space-y-4 dark:bg-gray-800 ">
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("deposit.form.apartment")}
-            </Typography>
-            <Input
-              label={t("deposit.form.enter")}
-              value={formApartment}
-              onChange={(e) => setFormApartment(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("deposit.form.owner")}
-            </Typography>
-            <Input
-              label={t("deposit.form.enter")}
-              value={formOwner}
-              onChange={(e) => setFormOwner(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("deposit.form.amount")}
-            </Typography>
-            <Input
-              type="number"
-              label={t("deposit.form.enter")}
-              value={formAmount}
-              onChange={(e) => setFormAmount(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("deposit.form.paymentMethod")}
-            </Typography>
-            <Input
-              label={t("deposit.form.enter")}
-              value={formPaymentMethod}
-              onChange={(e) => setFormPaymentMethod(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("deposit.form.depositDate")}
-            </Typography>
-            <Input
-              type="date"
-              label={t("deposit.form.enter")}
-              value={formDepositDate}
-              onChange={(e) => setFormDepositDate(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("deposit.form.notes")}
-            </Typography>
-            <Input
-              label={t("deposit.form.enter")}
-              value={formNotes}
-              onChange={(e) => setFormNotes(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-        </DialogBody>
-        <DialogFooter className="flex justify-end gap-2 dark:bg-gray-800 ">
-          <Button variant="outlined" color="blue-gray" onClick={() => setEditOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
-            {t("buttons.cancel")}
-          </Button>
-          <Button color="blue" onClick={handleEditSave} className="dark:bg-blue-600 dark:hover:bg-blue-700">
-            {t("buttons.save")}
-          </Button>
-        </DialogFooter>
-      </Dialog>
-
-      {/* View deposit modal */}
-      <Dialog open={viewOpen} handler={setViewOpen} size="lg" className="dark:bg-gray-800 border border-red-600 dark:border-gray-700">
-        <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3">
-          <Typography variant="h5" className="font-bold">
-            {t("deposit.view.title")}
-          </Typography>
-        </DialogHeader>
-        <DialogBody divider className="space-y-4 dark:bg-gray-800 py-4">
-          {selectedItem && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
-                  {t("deposit.table.id")}
-                </Typography>
-                <Typography variant="small" color="blue-gray" className="font-semibold dark:text-white">
-                  {selectedItem.id}
-                </Typography>
-              </div>
-              <div>
-                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
-                  {t("deposit.table.apartment")}
-                </Typography>
-                <Typography variant="small" color="blue-gray" className="font-semibold dark:text-white">
-                  {selectedItem.apartment}
-                </Typography>
-              </div>
-              <div>
-                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
-                  {t("deposit.table.owner")}
-                </Typography>
-                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                  {selectedItem.owner}
-                </Typography>
-              </div>
-              <div>
-                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
-                  {t("deposit.table.amount")}
-                </Typography>
-                <Typography variant="small" color="green" className="font-semibold dark:text-green-300">
-                  {selectedItem.amount} ₼
-                </Typography>
-              </div>
-              <div>
-                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
-                  {t("deposit.table.paymentMethod")}
-                </Typography>
-                <Chip
-                  size="sm"
-                  value={selectedItem.paymentMethod === "Nağd" ? t("deposit.paymentMethod.cash") : t("deposit.paymentMethod.bank")}
-                  color={selectedItem.paymentMethod === "Nağd" ? "amber" : "blue"}
-                  className="dark:bg-opacity-80"
-                />
-              </div>
-              <div>
-                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
-                  {t("deposit.table.depositDate")}
-                </Typography>
-                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                  {selectedItem.depositDate}
-                </Typography>
-              </div>
-              <div>
-                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
-                  {t("deposit.table.status")}
-                </Typography>
-                <Chip
-                  size="sm"
-                  value={selectedItem.status === "Aktiv" ? t("deposit.status.active") : t("deposit.status.returned")}
-                  color={selectedItem.status === "Aktiv" ? "green" : "gray"}
-                  className="dark:bg-opacity-80"
-                />
-              </div>
-              <div>
-                <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
-                  {t("deposit.table.notes")}
-                </Typography>
-                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                  {selectedItem.notes}
-                </Typography>
-              </div>
-            </div>
-          )}
-        </DialogBody>
-        <DialogFooter className="flex justify-end gap-2 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pt-3">
-          <Button variant="outlined" color="blue-gray" onClick={() => setViewOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
-            {t("buttons.close")}
-          </Button>
-        </DialogFooter>
-      </Dialog>
-
-      {/* Delete deposit modal */}
-      <Dialog open={deleteOpen} handler={setDeleteOpen} size="sm" className="dark:bg-gray-800 border border-red-600 dark:border-gray-700">
-        <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3">
-          <Typography variant="h5" className="font-bold">
-            {t("deposit.delete.title")}
-          </Typography>
-        </DialogHeader>
-        <DialogBody divider className="space-y-4 dark:bg-gray-800 py-4">
-          {selectedItem && (
-            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-              {t("deposit.delete.message")} <strong>{selectedItem.apartment}</strong> (ID: {selectedItem.id})?
-            </Typography>
-          )}
-        </DialogBody>
-        <DialogFooter className="flex justify-end gap-2 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pt-3">
-          <Button variant="outlined" color="blue-gray" onClick={() => setDeleteOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
-            {t("buttons.cancel")}
-          </Button>
-          <Button color="red" onClick={handleDeleteConfirm} className="dark:bg-red-600 dark:hover:bg-red-700">
-            {t("buttons.delete")}
-          </Button>
-        </DialogFooter>
-      </Dialog>
-
-      <Card className="border border-red-600 dark:border-gray-700 shadow-sm dark:bg-gray-800 ">
+      <Card className="border border-red-600 dark:border-gray-700 shadow-sm dark:bg-gray-800">
         <CardHeader
           floated={false}
           shadow={false}
           color="transparent"
           className="m-0 flex items-center justify-between p-6 dark:bg-gray-800"
         >
-          <div className="flex items-center gap-3">
-            <Button variant="outlined" color="blue" onClick={() => setFilterOpen(true)} className="dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-600/20">
-              {t("deposit.actions.search")}
-            </Button>
-            <Button color="green" onClick={openCreateModal} className="dark:bg-green-600 dark:hover:bg-green-700">
-              {t("deposit.actions.add")}
-            </Button>
-          </div>
+          <DepositActions onFilterClick={() => setFilterOpen(true)} onCreateClick={openCreateModal} />
         </CardHeader>
         <CardBody className="px-0 pt-0 pb-2 dark:bg-gray-800">
           {loading ? (
@@ -539,217 +147,72 @@ const DepositPage = () => {
                 {t("deposit.actions.loading")}
               </Typography>
             </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-10">
+              <Typography variant="small" className="text-red-600 dark:text-red-400">
+                {t("deposit.error.loading")}: {error}
+              </Typography>
+            </div>
           ) : (
             <>
-              {/* Desktop table */}
-              <div className="hidden lg:block">
-                <table className="w-full table-auto min-w-[1200px]">
-                  <thead>
-                    <tr>
-                      {[
-                        t("deposit.table.id"),
-                        t("deposit.table.apartment"),
-                        t("deposit.table.owner"),
-                        t("deposit.table.amount"),
-                        t("deposit.table.paymentMethod"),
-                        t("deposit.table.depositDate"),
-                        t("deposit.table.status"),
-                        t("deposit.table.notes"),
-                        t("deposit.table.operations"),
-                      ].map((el, idx) => (
-                        <th
-                          key={el}
-                          className={`border-b border-blue-gray-100 dark:border-gray-800 py-3 px-6 text-left ${
-                            idx === 8 ? "text-right" : ""
-                          }`}
-                        >
-                          <Typography
-                            variant="small"
-                            className="text-[11px] font-medium uppercase text-blue-gray-400 dark:text-gray-400"
-                          >
-                            {el}
-                          </Typography>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pageData.map((row, key) => {
-                      const className = `py-3 px-6 ${
-                        key === pageData.length - 1 ? "" : "border-b border-blue-gray-50 dark:border-gray-800"
-                      }`;
-                      return (
-                        <tr key={row.id} className="dark:hover:bg-gray-700/50">
-                          <td className={className}>
-                            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                              {row.id}
-                            </Typography>
-                          </td>
-                          <td className={className}>
-                            <Typography variant="small" color="blue-gray" className="font-semibold dark:text-white">
-                              {row.apartment}
-                            </Typography>
-                          </td>
-                          <td className={className}>
-                            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                              {row.owner}
-                            </Typography>
-                          </td>
-                          <td className={className}>
-                            <Typography variant="small" color="green" className="font-semibold dark:text-green-300">
-                              {row.amount} ₼
-                            </Typography>
-                          </td>
-                          <td className={className}>
-                            <Chip
-                              size="sm"
-                              value={row.paymentMethod === "Nağd" ? t("deposit.paymentMethod.cash") : t("deposit.paymentMethod.bank")}
-                              color={row.paymentMethod === "Nağd" ? "amber" : "blue"}
-                              className="dark:bg-opacity-80"
-                            />
-                          </td>
-                          <td className={className}>
-                            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                              {row.depositDate}
-                            </Typography>
-                          </td>
-                          <td className={className}>
-                            <Chip
-                              size="sm"
-                              value={row.status === "Aktiv" ? t("deposit.status.active") : t("deposit.status.returned")}
-                              color={row.status === "Aktiv" ? "green" : "gray"}
-                              className="dark:bg-opacity-80"
-                            />
-                          </td>
-                          <td className={className}>
-                            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                              {row.notes}
-                            </Typography>
-                          </td>
-                          <td className={`${className} text-right`}>
-                            <Menu placement="left-start">
-                              <MenuHandler>
-                                <IconButton size="sm" variant="text" color="blue-gray" className="dark:text-gray-300 dark:hover:bg-gray-700">
-                                  <EllipsisVerticalIcon strokeWidth={2} className="h-5 w-5" />
-                                </IconButton>
-                              </MenuHandler>
-                              <MenuList className="dark:bg-gray-800 dark:border-gray-800">
-                                <MenuItem onClick={() => openViewModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
-                                  {t("deposit.actions.view")}
-                                </MenuItem>
-                                <MenuItem onClick={() => openEditModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
-                                  {t("deposit.actions.edit")}
-                                </MenuItem>
-                                <MenuItem onClick={() => openDeleteModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
-                                  {t("deposit.actions.delete")}
-                                </MenuItem>
-                              </MenuList>
-                            </Menu>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Tablet & mobile cards */}
-              <div className="grid gap-4 sm:grid-cols-2 lg:hidden px-4 pt-4">
-                {pageData.map((row) => (
-                  <Card key={row.id} className="border border-red-600 dark:border-gray-700 shadow-sm dark:bg-gray-800 ">
-                    <CardBody className="space-y-2 dark:bg-gray-800">
-                      <div className="flex items-center justify-between">
-                        <Typography variant="small" color="blue-gray" className="font-semibold dark:text-white">
-                          {row.apartment}
-                        </Typography>
-                        <Menu placement="left-start">
-                          <MenuHandler>
-                            <IconButton size="sm" variant="text" color="blue-gray" className="dark:text-gray-300 dark:hover:bg-gray-700">
-                              <EllipsisVerticalIcon strokeWidth={2} className="h-5 w-5" />
-                            </IconButton>
-                          </MenuHandler>
-                          <MenuList className="dark:bg-gray-800 dark:border-gray-800">
-                            <MenuItem onClick={() => openViewModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
-                              {t("deposit.actions.view")}
-                            </MenuItem>
-                            <MenuItem onClick={() => openEditModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
-                              {t("deposit.actions.edit")}
-                            </MenuItem>
-                            <MenuItem onClick={() => openDeleteModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
-                              {t("deposit.actions.delete")}
-                            </MenuItem>
-                          </MenuList>
-                        </Menu>
-                      </div>
-                      <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                        {t("deposit.mobile.id")}: {row.id}
-                      </Typography>
-                      <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                        {t("deposit.mobile.owner")}: {row.owner}
-                      </Typography>
-                      <Typography variant="small" color="green" className="font-semibold dark:text-green-300">
-                        {t("deposit.mobile.amount")}: {row.amount} ₼
-                      </Typography>
-                      <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                        {t("deposit.mobile.paymentMethod")}: {row.paymentMethod === "Nağd" ? t("deposit.paymentMethod.cash") : t("deposit.paymentMethod.bank")}
-                      </Typography>
-                      <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                        {t("deposit.mobile.depositDate")}: {row.depositDate}
-                      </Typography>
-                      <Chip
-                        size="sm"
-                        value={row.status === "Aktiv" ? t("deposit.status.active") : t("deposit.status.returned")}
-                        color={row.status === "Aktiv" ? "green" : "gray"}
-                        className="dark:bg-opacity-80"
-                      />
-                    </CardBody>
-                  </Card>
-                ))}
-              </div>
-
-              {/* Pagination */}
-              <div className="flex items-center justify-end gap-2 px-6 pt-4">
-                <Button
-                  variant="text"
-                  size="sm"
-                  color="blue-gray"
-                  onClick={handlePrev}
-                  disabled={page === 1}
-                  className="dark:text-gray-300 dark:hover:bg-gray-700 dark:disabled:text-gray-600"
-                >
-                  {t("deposit.pagination.prev")}
-                </Button>
-                {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
-                  <Button
-                    key={pageNumber}
-                    variant={pageNumber === page ? "filled" : "text"}
-                    size="sm"
-                    color={pageNumber === page ? "blue" : "blue-gray"}
-                    onClick={() => setPage(pageNumber)}
-                    className={`min-w-[32px] px-2 ${
-                      pageNumber === page
-                        ? "dark:bg-blue-600 dark:hover:bg-blue-700"
-                        : "dark:text-gray-300 dark:hover:bg-gray-700"
-                    }`}
-                  >
-                    {pageNumber}
-                  </Button>
-                ))}
-                <Button
-                  variant="text"
-                  size="sm"
-                  color="blue-gray"
-                  onClick={handleNext}
-                  disabled={page === totalPages}
-                  className="dark:text-gray-300 dark:hover:bg-gray-700 dark:disabled:text-gray-600"
-                >
-                  {t("deposit.pagination.next")}
-                </Button>
-              </div>
+              <DepositTable deposits={deposits} onView={openViewModal} onEdit={openEditModal} onDelete={openDeleteModal} />
+              <DepositCardList deposits={deposits} onView={openViewModal} onEdit={openEditModal} onDelete={openDeleteModal} />
+              <DepositPagination
+                page={page}
+                totalPages={pagination.totalPages}
+                onPageChange={goToPage}
+                onPrev={goToPrev}
+                onNext={goToNext}
+              />
             </>
           )}
         </CardBody>
       </Card>
+
+      {/* Modals */}
+      <DepositFilterModal
+        open={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        filters={filters}
+        onFilterChange={updateFilter}
+        onApply={handleFilterApply}
+        onClear={handleFilterClear}
+      />
+
+      <DepositFormModal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        title={t("deposit.create.title")}
+        formData={formData}
+        onFieldChange={updateField}
+        onSave={handleCreateSave}
+        isEdit={false}
+      />
+
+      <DepositFormModal
+        open={editOpen}
+        onClose={() => {
+          setEditOpen(false);
+          setSelectedItem(null);
+        }}
+        title={t("deposit.edit.title")}
+        formData={formData}
+        onFieldChange={updateField}
+        onSave={handleEditSave}
+        isEdit={true}
+      />
+
+      <DepositViewModal open={viewOpen} onClose={() => setViewOpen(false)} deposit={selectedItem} />
+
+      <DepositDeleteModal
+        open={deleteOpen}
+        onClose={() => {
+          setDeleteOpen(false);
+          setSelectedItem(null);
+        }}
+        deposit={selectedItem}
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   );
 };

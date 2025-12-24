@@ -275,8 +275,12 @@
       "title": "Sign In",
       "subtitle": "Enter your credentials to sign in",
       "usernameLabel": "Username",
+      "identifierLabel": "Email, Username, Phone or Name",
+      "identifierPlaceholder": "Enter Email, Username, Phone or Name",
+      "emailLabel": "Email",
       "passwordLabel": "Password",
       "submit": "Sign In",
+      "loading": "Loading...",
       "invalidCredentialsError": "Invalid username or password",
       "demoUsersTitle": "Demo users:"
     },

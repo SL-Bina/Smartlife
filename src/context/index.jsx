@@ -107,3 +107,6 @@ export const setOpenConfigurator = (dispatch, value) =>
   dispatch({ type: "OPEN_CONFIGURATOR", value });
 export const setDarkMode = (dispatch, value) =>
   dispatch({ type: "DARK_MODE", value });
+
+// Export Management Context
+export { ManagementProvider, useManagement } from "./ManagementContext";

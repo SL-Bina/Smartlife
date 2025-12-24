@@ -274,8 +274,12 @@
       "title": "Вход",
       "subtitle": "Введите данные для входа",
       "usernameLabel": "Логин",
+      "identifierLabel": "Email, Имя пользователя, Телефон или Имя",
+      "identifierPlaceholder": "Введите Email, Username, Phone или Name",
+      "emailLabel": "Email",
       "passwordLabel": "Пароль",
       "submit": "Войти",
+      "loading": "Загрузка...",
       "invalidCredentialsError": "Неверный логин или пароль",
       "demoUsersTitle": "Демо пользователи:"
     },

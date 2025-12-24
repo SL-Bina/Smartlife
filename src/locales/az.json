@@ -275,8 +275,12 @@
       "title": "Daxil ol",
       "subtitle": "Sistemə daxil olmaq üçün məlumatları daxil edin",
       "usernameLabel": "İstifadəçi adı",
+      "identifierLabel": "Email, İstifadəçi adı, Telefon və ya Ad",
+      "identifierPlaceholder": "Daxil edin",
+      "emailLabel": "Email",
       "passwordLabel": "Şifrə",
       "submit": "Daxil ol",
+      "loading": "Yüklənir...",
       "invalidCredentialsError": "İstifadəçi adı və ya şifrə yanlışdır",
       "demoUsersTitle": "Demo istifadəçilər:"
     },

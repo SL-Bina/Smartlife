@@ -30,16 +30,16 @@ import { Home, Tables, Notifications, KPI, ApplicationsListPage, ApplicationsEva
 import Profile from "./pages/dashboard/profile";
 import Settings from "./pages/dashboard/settings";
 import { SignIn } from "@/pages/auth";
-import MTK from "./pages/dashboard/mtk";
-import ComplexPage from "./pages/dashboard/complex";
-import ResidentsPage from "./pages/dashboard/residents";
-import BuildingsPage from "./pages/dashboard/buildings";
-import PropertiesPage from "./pages/dashboard/properties";
+import MTK from "./pages/dashboard/management/mtk";
+import ComplexPage from "./pages/dashboard/management/complex";
+import ResidentsPage from "./pages/dashboard/management/residents";
+import BuildingsPage from "./pages/dashboard/management/buildings";
+import PropertiesPage from "./pages/dashboard/management/properties";
 import DevicesPage from "./pages/devices";
-import BlocksPage from "./pages/dashboard/blocks";
-import ApartmentGroupsPage from "./pages/dashboard/apartment-groups";
-import BuildingServiceFeePage from "./pages/dashboard/building-service-fee";
-import PropertyServiceFeePage from "./pages/dashboard/service-fee";
+import BlocksPage from "./pages/dashboard/management/blocks";
+import ApartmentGroupsPage from "./pages/dashboard/management/apartment-groups";
+import BuildingServiceFeePage from "./pages/dashboard/management/building-service-fee";
+import PropertyServiceFeePage from "./pages/dashboard/management/service-fee";
 import InvoicesPage from "./pages/dashboard/finance/invoices";
 import PaymentHistoryPage from "./pages/dashboard/finance/payment-history";
 import ReportsPage from "./pages/dashboard/finance/reports";
@@ -223,7 +223,7 @@ export const routes = [
           {
             icon: <TableCellsIcon {...icon} />,
             name: "sidebar.mtk",
-            path: "/mtk",
+            path: "/management/mtk",
             element: <MTK />,
             allowedRoles: ["admin", "manager"],
             moduleName: "mtk", // API modül ismi
@@ -231,7 +231,7 @@ export const routes = [
           {
             icon: <BuildingOfficeIcon {...icon} />,
             name: "sidebar.complexes",
-            path: "/complex",
+            path: "/management/complex",
             element: <ComplexPage />,
             allowedRoles: ["admin", "manager", "operator"],
             moduleName: "complex", // API modül ismi
@@ -239,7 +239,7 @@ export const routes = [
           {
             icon: <BuildingOffice2Icon {...icon} />,
             name: "sidebar.buildings",
-            path: "/buildings",
+            path: "/management/buildings",
             element: <BuildingsPage />,
             allowedRoles: ["admin", "manager", "operator"],
             moduleName: "building", // API modül ismi
@@ -247,7 +247,7 @@ export const routes = [
           {
             icon: <RectangleStackIcon {...icon} />,
             name: "sidebar.blocks",
-            path: "/blocks",
+            path: "/management/blocks",
             element: <BlocksPage />,
             allowedRoles: ["admin", "manager", "operator"],
             moduleName: "block", // API modül ismi
@@ -255,7 +255,7 @@ export const routes = [
           {
             icon: <HomeModernIcon {...icon} />,
             name: "sidebar.properties",
-            path: "/properties",
+            path: "/management/properties",
             element: <PropertiesPage />,
             allowedRoles: ["admin", "manager", "operator", "viewer"],
             moduleName: "apartment", // API modül ismi (apartment = properties)
@@ -263,7 +263,7 @@ export const routes = [
           {
             icon: <BuildingOfficeIcon {...icon} />,
             name: "sidebar.propertyServiceFee",
-            path: "/service-fee/:id",
+            path: "/management/service-fee/:id",
             element: <PropertyServiceFeePage />,
             hideInSidenav: true,
             allowedRoles: ["admin", "manager", "operator"],
@@ -271,7 +271,7 @@ export const routes = [
           {
             icon: <UsersIcon {...icon} />,
             name: "sidebar.residents",
-            path: "/residents",
+            path: "/management/residents",
             element: <ResidentsPage />,
             allowedRoles: ["admin", "manager", "operator", "viewer"],
             moduleName: "resident", // API modül ismi
@@ -280,14 +280,14 @@ export const routes = [
           {
             icon: <HomeModernIcon {...icon} />,
             name: "sidebar.apartmentGroups",
-            path: "/apartment-groups",
+            path: "/management/apartment-groups",
             element: <ApartmentGroupsPage />,
             allowedRoles: ["admin", "manager", "operator"],
           },
           {
             icon: <BuildingOfficeIcon {...icon} />,
             name: "sidebar.buildingServiceFee",
-            path: "/building-service-fee",
+            path: "/management/building-service-fee",
             element: <BuildingServiceFeePage />,
             hideInSidenav: true,
             allowedRoles: ["admin", "manager", "operator"],
