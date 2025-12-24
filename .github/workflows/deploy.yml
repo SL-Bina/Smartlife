@@ -84,7 +84,9 @@ jobs:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          script: rm -rf /home/frontend/design/Smartlife/*
+          script: |
+            rm -rf /home/frontend/design/Smartlife/*
+            mkdir -p /home/frontend/design/Smartlife
 
       - name: Upload dist to server
         uses: appleboy/scp-action@v0.1.7
@@ -95,3 +97,14 @@ jobs:
           source: "dist/*"
           target: "/home/frontend/design/Smartlife"
           strip_components: 1
+
+      - name: Set permissions and reload nginx
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            chown -R www-data:www-data /home/frontend/design/Smartlife
+            chmod -R 755 /home/frontend/design/Smartlife
+            nginx -t && systemctl reload nginx
