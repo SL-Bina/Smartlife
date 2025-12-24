@@ -98,13 +98,34 @@ jobs:
           target: "/home/frontend/design/Smartlife"
           strip_components: 1
 
-      - name: Set permissions and reload nginx
+      - name: Set permissions and verify deployment
         uses: appleboy/ssh-action@v0.1.5
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
+            # Permissions təyin et
             chown -R www-data:www-data /home/frontend/design/Smartlife
             chmod -R 755 /home/frontend/design/Smartlife
-            nginx -t && systemctl reload nginx
+            
+            # Faylların mövcud olduğunu yoxla
+            echo "Checking files..."
+            ls -la /home/frontend/design/Smartlife/ | head -20
+            if [ ! -f /home/frontend/design/Smartlife/index.html ]; then
+              echo "ERROR: index.html not found!"
+              exit 1
+            fi
+            
+            # Nginx konfiqurasiyasını test et
+            if nginx -t; then
+              echo "Nginx configuration is valid"
+              systemctl reload nginx
+              echo "Nginx reloaded successfully"
+            else
+              echo "ERROR: Nginx configuration test failed!"
+              exit 1
+            fi
+            
+            # Nginx status yoxla
+            systemctl status nginx --no-pager -l

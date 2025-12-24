@@ -1,6 +1,7 @@
 # Nginx konfiqurasiyası - /etc/nginx/sites-available/front.smartlife.az
 # Bu faylı /etc/nginx/sites-enabled/ qovluğuna symlink edin:
 # ln -s /etc/nginx/sites-available/front.smartlife.az /etc/nginx/sites-enabled/
+# Sonra: nginx -t && systemctl reload nginx
 
 server {
     listen 80;
@@ -19,7 +20,6 @@ server {
     # React Router üçün SPA routes - bütün route-lar index.html-ə yönləndirilir
     location / {
         try_files $uri $uri/ /index.html;
-        add_header Cache-Control "no-store";
     }
 
     # Statik fayllar üçün cache control (assets, img, və s.)
@@ -45,9 +45,6 @@ server {
         add_header Cache-Control "public, immutable";
         access_log off;
     }
-
-    # 404 error handling
-    error_page 404 /index.html;
 
     # Gzip compression
     gzip on;
