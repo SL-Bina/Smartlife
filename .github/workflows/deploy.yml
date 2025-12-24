@@ -57,6 +57,80 @@
 #           target: "/home/frontend/design/Smartlife"
 #           strip_components: 1
 
+# name: Deploy Vite React App
+
+# on:
+#   push:
+#     branches:
+#       - main
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       - name: Install dependencies
+#         run: npm ci
+
+#       - name: Build (Vite)
+#         run: npm run build
+
+#       - name: Clear server folder
+#         uses: appleboy/ssh-action@v0.1.5
+#         with:
+#           host: ${{ secrets.SERVER_IP }}
+#           username: ${{ secrets.SERVER_USER }}
+#           key: ${{ secrets.SERVER_SSH_KEY }}
+#           script: |
+#             rm -rf /home/frontend/design/Smartlife/*
+#             mkdir -p /home/frontend/design/Smartlife
+
+#       - name: Upload dist to server
+#         uses: appleboy/scp-action@v0.1.7
+#         with:
+#           host: ${{ secrets.SERVER_IP }}
+#           username: ${{ secrets.SERVER_USER }}
+#           key: ${{ secrets.SERVER_SSH_KEY }}
+#           source: "dist/*"
+#           target: "/home/frontend/design/Smartlife"
+#           strip_components: 1
+
+#       - name: Set permissions and verify deployment
+#         uses: appleboy/ssh-action@v0.1.5
+#         with:
+#           host: ${{ secrets.SERVER_IP }}
+#           username: ${{ secrets.SERVER_USER }}
+#           key: ${{ secrets.SERVER_SSH_KEY }}
+#           script: |
+#             # Permissions təyin et
+#             chown -R www-data:www-data /home/frontend/design/Smartlife
+#             chmod -R 755 /home/frontend/design/Smartlife
+            
+#             # Faylların mövcud olduğunu yoxla
+#             echo "Checking files..."
+#             ls -la /home/frontend/design/Smartlife/ | head -20
+#             if [ ! -f /home/frontend/design/Smartlife/index.html ]; then
+#               echo "ERROR: index.html not found!"
+#               exit 1
+#             fi
+            
+#             # Nginx konfiqurasiyasını test et
+#             if nginx -t; then
+#               echo "Nginx configuration is valid"
+#               systemctl reload nginx
+#               echo "Nginx reloaded successfully"
+#             else
+#               echo "ERROR: Nginx configuration test failed!"
+#               exit 1
+#             fi
+            
+#             # Nginx status yoxla
+#             systemctl status nginx --no-pager -l
+
+
 name: Deploy Vite React App
 
 on:
@@ -72,60 +146,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build (Vite)
-        run: npm run build
-
-      - name: Clear server folder
+      # Serverə SSH ilə qoşulub əmrləri işlətmək
+      - name: Deploy on server
         uses: appleboy/ssh-action@v0.1.5
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            rm -rf /home/frontend/design/Smartlife/*
-            mkdir -p /home/frontend/design/Smartlife
-
-      - name: Upload dist to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          source: "dist/*"
-          target: "/home/frontend/design/Smartlife"
-          strip_components: 1
-
-      - name: Set permissions and verify deployment
-        uses: appleboy/ssh-action@v0.1.5
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            # Permissions təyin et
-            chown -R www-data:www-data /home/frontend/design/Smartlife
-            chmod -R 755 /home/frontend/design/Smartlife
-            
-            # Faylların mövcud olduğunu yoxla
-            echo "Checking files..."
-            ls -la /home/frontend/design/Smartlife/ | head -20
-            if [ ! -f /home/frontend/design/Smartlife/index.html ]; then
-              echo "ERROR: index.html not found!"
-              exit 1
-            fi
-            
-            # Nginx konfiqurasiyasını test et
-            if nginx -t; then
-              echo "Nginx configuration is valid"
-              systemctl reload nginx
-              echo "Nginx reloaded successfully"
-            else
-              echo "ERROR: Nginx configuration test failed!"
-              exit 1
-            fi
-            
-            # Nginx status yoxla
-            systemctl status nginx --no-pager -l
+            cd /home/frontend/design/Smartlife
+            git pull origin main
+            rm -rf dist
+            npm ci
+            npm run build

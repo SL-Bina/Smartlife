@@ -153,7 +153,7 @@ export function SignIn() {
               placeholder={t("auth.signIn.identifierPlaceholder") || "Email, Username, Phone və ya Name daxil edin"}
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
-              className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
+              className=" !border-t-red-500 !border-red-500 focus:!border-red-600"
               labelProps={{
                 className: "before:content-none after:content-none",
               }}
@@ -168,7 +168,7 @@ export function SignIn() {
                 placeholder="********"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className=" !border-t-blue-gray-200 focus:!border-t-gray-900 pr-12"
+                className=" !border-t-red-500 !border-red-500 focus:!border-red-600 pr-12"
                 labelProps={{
                   className: "before:content-none after:content-none",
                 }}
