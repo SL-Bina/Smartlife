@@ -102,11 +102,29 @@ export function SignIn() {
   }
 
   return (
-    <section className="h-full flex gap-4 relative px-8 py-6">
-      <div className="absolute right-8 top-6 z-10">
+    <section className="h-full flex gap-4 relative px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-6 overflow-hidden">
+      {/* Background Image - Mobile Only */}
+      <div 
+        className="absolute inset-0 lg:hidden bg-cover bg-center opacity-40 dark:opacity-25 -z-10"
+        style={{ backgroundImage: "url('/img/pattern.png')" }}
+      ></div>
+
+      {/* Logo - Mobile Top Center, Desktop Hidden (will be in form section) */}
+      <div className="absolute left-1/2 -translate-x-1/2 top-6 sm:top-8 lg:hidden z-20">
+        <Link to="/">
+          <img
+            src="/img/logo-jira.svg"
+            alt="SmartLife Logo"
+            className="w-24 h-24 sm:w-28 sm:h-28 object-contain"
+          />
+        </Link>
+      </div>
+
+      {/* Language Selector - Top Right */}
+      <div className="absolute right-4 sm:right-6 lg:right-8 top-4 sm:top-6 lg:top-6 z-10">
         <Menu placement="bottom-end">
           <MenuHandler>
-            <Button variant="text" className="flex items-center gap-1 px-2 normal-case bg-gray-100 hover:bg-gray-200">
+            <Button variant="text" className="flex items-center gap-1 px-2 normal-case bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700">
               {languages.map((lng) =>
                 lng.code === i18n.language ? (
                   <span key={lng.code} className="flex items-center gap-1">
@@ -129,20 +147,35 @@ export function SignIn() {
           </MenuList>
         </Menu>
       </div>
-      <div className="w-full lg:w-3/5 flex flex-col justify-center">
-        <div className="text-center">
-          <Typography variant="h2" className="font-bold mb-4">
-            {t("auth.signIn.title")}
-          </Typography>
-          {/* <Typography
-            variant="paragraph"
-            color="blue-gray"
-            className="text-lg font-normal"
-          >
-            {t("auth.signIn.subtitle")}
-          </Typography> */}
-        </div>
-        <form className="mt-6 mb-2 mx-auto w-80 max-w-screen-lg lg:w-1/2" onSubmit={handleSubmit}>
+
+      {/* Form Section */}
+      <div className="w-full lg:w-3/5 flex flex-col justify-center items-center lg:items-start mt-32 sm:mt-36 lg:mt-0 relative z-10">
+        <div className="w-full max-w-md mx-auto lg:mx-0 " style={{margin: "0 auto"}}>
+          {/* Logo - Desktop Only (Top of Form Section) */}
+          <div className="lg:flex mb-6 hidden justify-center items-center" style={{margin: "0 auto"}}>
+            <Link to="/" className="flex items-center" style={{margin: "0 auto"}}>
+              <img
+                src="/img/logo-jira.svg"
+                alt="SmartLife Logo"
+                className="w-28 h-28 object-contain"
+              />
+            </Link>
+          </div>
+
+          {/* Title */}
+          <div className="text-center lg:text-left mb-4 lg:mb-6">
+            <Typography variant="h2" className="font-bold text-xl sm:text-2xl lg:text-3xl text-center">
+              {t("auth.signIn.title")}
+            </Typography>
+            {/* <Typography
+              variant="paragraph"
+              color="blue-gray"
+              className="text-lg font-normal"
+            >
+              {t("auth.signIn.subtitle")}
+            </Typography> */}
+          </div>
+          <form className="mt-6 mb-2 w-full" onSubmit={handleSubmit}>
           <div className="mb-1 flex flex-col gap-6">
             <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
               {t("auth.signIn.identifierLabel") || "Email, Username, Phone və ya Name"}
@@ -220,6 +253,7 @@ export function SignIn() {
             {loading ? t("auth.signIn.loading") || "Yüklənir..." : t("auth.signIn.submit")}
           </Button>
         </form>
+        </div>
 
       </div>
       <div className="w-2/5 h-full hidden lg:block">
