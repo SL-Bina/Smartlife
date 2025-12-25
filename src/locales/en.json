@@ -22,6 +22,7 @@
     "settings": "Settings"
   },
   "sidebar": {
+    "welcome": "Welcome",
     "dashboard": "Dashboard",
     "finance": "Finance",
     "invoices": "Invoices",

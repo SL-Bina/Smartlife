@@ -22,6 +22,7 @@
     "settings": "Настройки"
   },
   "sidebar": {
+    "welcome": "Добро пожаловать",
     "dashboard": "Панель",
     "finance": "Финансы",
     "invoices": "Счета",

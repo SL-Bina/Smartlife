@@ -23,6 +23,7 @@ import {
   SunIcon,
   MoonIcon,
 } from "@heroicons/react/24/solid";
+import { motion } from "framer-motion";
 import {
   useMaterialTailwindController,
   setOpenSidenav,
@@ -197,8 +198,8 @@ export function DashboardNavbar() {
   return (
     <Navbar
       color={fixedNavbar ? "white" : "transparent"}
-      className={`rounded-xl transition-all dark:bg-gray-900 border border-red-600 dark:border-gray-700 ${fixedNavbar
-        ? "sticky top-4 z-40 py-3 shadow-lg shadow-blue-gray-500/5"
+      className={`rounded-2xl transition-all duration-300 backdrop-blur-xl bg-gradient-to-br from-white/90 via-white/70 to-white/90 dark:from-gray-900/90 dark:via-gray-800/70 dark:to-gray-900/90 border border-gray-200/50 dark:border-gray-700/50 ${fixedNavbar
+        ? "sticky top-4 z-40 py-3 shadow-2xl shadow-gray-200/50 dark:shadow-gray-900/50"
         : "px-4 sm:px-6 py-2 sm:py-3"
         }`}
       fullWidth
@@ -207,18 +208,22 @@ export function DashboardNavbar() {
       <div className="flex items-center justify-between gap-2 sm:gap-4">
         {/* Left side - Mobile: only hamburger, Desktop: hamburger + title */}
         <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-          <IconButton
-            variant="text"
-            color="blue-gray"
-            className="grid xl:hidden dark:text-gray-300 dark:hover:bg-gray-800 flex-shrink-0"
-            onClick={() => setOpenSidenav(dispatch, !openSidenav)}
-            size="sm"
-          >
-            <Bars3Icon strokeWidth={3} className="h-5 w-5" />
-          </IconButton>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <IconButton
+              variant="text"
+              color="blue-gray"
+              className="grid xl:hidden dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700/70 flex-shrink-0 rounded-xl transition-all duration-200"
+              onClick={() => setOpenSidenav(dispatch, !openSidenav)}
+              size="sm"
+            >
+              <div className="w-8 h-8 rounded-lg bg-gray-200/50 dark:bg-gray-700/50 flex items-center justify-center">
+                <Bars3Icon strokeWidth={3} className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+              </div>
+            </IconButton>
+          </motion.div>
           <div className="min-w-0 flex-1 hidden sm:block">
             <Breadcrumbs
-              className={`bg-transparent p-0 transition-all ${fixedNavbar ? "mt-1" : ""
+              className={`bg-transparent p-0 transition-all ${fixedNavbar ? "mt-1 mb-1" : "mb-1"
                 }`}
             >
               {breadcrumbItems.map((item, index) => (
@@ -226,8 +231,7 @@ export function DashboardNavbar() {
                   {item.isLast ? (
                     <Typography
                       variant="small"
-                      color="blue-gray"
-                      className="font-normal dark:text-gray-300 text-xs sm:text-sm truncate"
+                      className="font-bold text-gray-900 dark:text-white text-xs sm:text-sm truncate"
                     >
                       {item.label}
                     </Typography>
@@ -235,8 +239,7 @@ export function DashboardNavbar() {
                     <Link to={item.path}>
                       <Typography
                         variant="small"
-                        color="blue-gray"
-                        className="font-normal opacity-50 transition-all hover:text-blue-500 hover:opacity-100 dark:text-gray-300 text-xs sm:text-sm truncate"
+                        className="font-semibold text-gray-500 dark:text-gray-400 transition-all hover:text-red-600 dark:hover:text-red-400 text-xs sm:text-sm truncate"
                       >
                         {item.label}
                       </Typography>
@@ -247,48 +250,55 @@ export function DashboardNavbar() {
             </Breadcrumbs>
             <Typography
               variant="h6"
-              color="blue-gray"
-              className="dark:text-white text-sm sm:text-base lg:text-lg font-bold truncate"
+              className="text-gray-900 dark:text-white text-base sm:text-lg lg:text-xl font-bold truncate"
             >
               {pageTitle}
             </Typography>
           </div>
         </div>
         {/* Right side - Icons */}
-        <div className="flex items-center justify-end gap-1 sm:gap-2 flex-shrink-0">
+        <div className="flex items-center justify-end gap-1.5 sm:gap-2 flex-shrink-0">
           {/* Dark Mode Toggle - Button Style */}
           <Menu placement="bottom-end">
             <MenuHandler>
-              <IconButton
-                variant="text"
-                color="blue-gray"
-                className="dark:text-gray-300 dark:hover:bg-gray-800"
-                title={darkMode ? t("header.lightMode") : t("header.darkMode")}
-                size="sm"
-              >
-                {darkMode ? (
-                  <SunIcon className="h-5 w-5 text-yellow-500" />
-                ) : (
-                  <MoonIcon className="h-5 w-5 text-blue-gray-700 dark:text-gray-300" />
-                )}
-              </IconButton>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <IconButton
+                  variant="text"
+                  color="blue-gray"
+                  className="dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700/70 rounded-xl transition-all duration-200 p-1"
+                  title={darkMode ? t("header.lightMode") : t("header.darkMode")}
+                  size="sm"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-gray-200/50 dark:bg-gray-700/50 flex items-center justify-center group-hover:bg-gray-300/50 dark:group-hover:bg-gray-600/50 transition-all">
+                    {darkMode ? (
+                      <SunIcon className="h-4 w-4 text-yellow-500" />
+                    ) : (
+                      <MoonIcon className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+                    )}
+                  </div>
+                </IconButton>
+              </motion.div>
             </MenuHandler>
-            <MenuList className="dark:bg-gray-800 dark:border-gray-700 min-w-[140px]">
+            <MenuList className="dark:bg-gray-800 dark:border-gray-700 min-w-[160px] rounded-xl shadow-xl">
               <MenuItem
                 onClick={() => setDarkMode(dispatch, false)}
-                className={`dark:text-gray-300 dark:hover:bg-gray-800 flex items-center gap-2 ${!darkMode ? "bg-blue-50 dark:bg-blue-900/20" : ""
+                className={`dark:text-gray-300 dark:hover:bg-gray-800/50 hover:bg-gray-100/50 flex items-center gap-3 rounded-lg transition-all ${!darkMode ? "bg-gradient-to-r from-red-600/10 to-red-500/5 dark:from-red-600/20 dark:to-red-500/10" : ""
                   }`}
               >
-                <SunIcon className="h-4 w-4 text-yellow-500" />
-                <span>{t("header.lightMode")}</span>
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${!darkMode ? "bg-red-600/20 dark:bg-red-600/30" : "bg-gray-200/50 dark:bg-gray-700/50"}`}>
+                  <SunIcon className="h-4 w-4 text-yellow-500" />
+                </div>
+                <span className="font-semibold">{t("header.lightMode")}</span>
               </MenuItem>
               <MenuItem
                 onClick={() => setDarkMode(dispatch, true)}
-                className={`dark:text-gray-300 dark:hover:bg-gray-800 flex items-center gap-2 ${darkMode ? "bg-blue-50 dark:bg-blue-900/20" : ""
+                className={`dark:text-gray-300 dark:hover:bg-gray-800/50 hover:bg-gray-100/50 flex items-center gap-3 rounded-lg transition-all ${darkMode ? "bg-gradient-to-r from-red-600/10 to-red-500/5 dark:from-red-600/20 dark:to-red-500/10" : ""
                   }`}
               >
-                <MoonIcon className="h-4 w-4 text-blue-gray-700 dark:text-gray-300" />
-                <span>{t("header.darkMode")}</span>
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${darkMode ? "bg-red-600/20 dark:bg-red-600/30" : "bg-gray-200/50 dark:bg-gray-700/50"}`}>
+                  <MoonIcon className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+                </div>
+                <span className="font-semibold">{t("header.darkMode")}</span>
               </MenuItem>
             </MenuList>
           </Menu>
@@ -296,31 +306,37 @@ export function DashboardNavbar() {
           {/* Language selector */}
           <Menu placement="bottom-end">
             <MenuHandler>
-              <IconButton
-                variant="text"
-                color="blue-gray"
-                className="dark:text-gray-300 dark:hover:bg-gray-700 p-1"
-                size="sm"
-              >
-                {languages.map((lng) => (
-                  lng.code === i18n.language && (
-                    <span key={lng.code} className="text-lg">
-                      {lng.flag}
-                    </span>
-                  )
-                ))}
-              </IconButton>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <IconButton
+                  variant="text"
+                  color="blue-gray"
+                  className="dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700/70 rounded-xl transition-all duration-200 p-1"
+                  size="sm"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-gray-200/50 dark:bg-gray-700/50 flex items-center justify-center group-hover:bg-gray-300/50 dark:group-hover:bg-gray-600/50 transition-all">
+                    {languages.map((lng) => (
+                      lng.code === i18n.language && (
+                        <span key={lng.code} className="text-base">
+                          {lng.flag}
+                        </span>
+                      )
+                    ))}
+                  </div>
+                </IconButton>
+              </motion.div>
             </MenuHandler>
-            <MenuList className="min-w-[160px] dark:bg-gray-800 dark:border-gray-700">
+            <MenuList className="min-w-[180px] dark:bg-gray-800 dark:border-gray-700 rounded-xl shadow-xl">
               {languages.map((lng) => (
                 <MenuItem
                   key={lng.code}
                   onClick={() => changeLanguage(lng.code)}
-                  className={`dark:text-gray-300 dark:hover:bg-gray-800 flex items-center gap-2 ${i18n.language === lng.code ? "bg-blue-50 dark:bg-blue-900/20" : ""
+                  className={`dark:text-gray-300 dark:hover:bg-gray-800/50 hover:bg-gray-100/50 flex items-center gap-3 rounded-lg transition-all ${i18n.language === lng.code ? "bg-gradient-to-r from-red-600/10 to-red-500/5 dark:from-red-600/20 dark:to-red-500/10" : ""
                     }`}
                 >
-                  <span className="text-base">{lng.flag}</span>
-                  <span>{lng.label}</span>
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${i18n.language === lng.code ? "bg-red-600/20 dark:bg-red-600/30" : "bg-gray-200/50 dark:bg-gray-700/50"}`}>
+                    <span className="text-base">{lng.flag}</span>
+                  </div>
+                  <span className="font-semibold">{lng.label}</span>
                 </MenuItem>
               ))}
             </MenuList>
@@ -329,86 +345,92 @@ export function DashboardNavbar() {
           {/* Notifications */}
           <Menu placement="bottom-end">
             <MenuHandler>
-              <IconButton
-                variant="text"
-                color="blue-gray"
-                className="dark:text-gray-300 dark:hover:bg-gray-700 relative p-1"
-                size="sm"
-              >
-                <BellIcon className="h-5 w-5" />
-                <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full border border-white dark:border-gray-800"></span>
-              </IconButton>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <IconButton
+                  variant="text"
+                  color="blue-gray"
+                  className="dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700/70 relative rounded-xl transition-all duration-200 p-1"
+                  size="sm"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-gray-200/50 dark:bg-gray-700/50 flex items-center justify-center group-hover:bg-gray-300/50 dark:group-hover:bg-gray-600/50 transition-all relative">
+                    <BellIcon className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+                    <span className="absolute -top-0.5 -right-0.5 h-3 w-3 bg-gradient-to-br from-red-600 to-red-700 rounded-full border-2 border-white dark:border-gray-800 shadow-lg shadow-red-500/50"></span>
+                  </div>
+                </IconButton>
+              </motion.div>
             </MenuHandler>
-            <MenuList className="w-80 sm:w-96 border-0 dark:bg-gray-800 dark:border-gray-700 max-h-[400px] overflow-y-auto">
-              <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-800">
-                <Typography variant="h6" className="text-blue-gray-900 dark:text-white font-semibold">
+            <MenuList className="w-80 sm:w-96 border-0 dark:bg-gray-800 dark:border-gray-700 max-h-[400px] overflow-y-auto rounded-xl shadow-2xl">
+              <div className="px-4 py-3 border-b border-gray-200/50 dark:border-gray-800/50 bg-gradient-to-br from-red-600/5 via-red-500/3 to-transparent dark:from-red-600/10 dark:via-red-500/5 dark:to-transparent">
+                <Typography variant="h6" className="text-gray-900 dark:text-white font-bold text-base">
                   {t("header.notifications")}
                 </Typography>
               </div>
-              <MenuItem className="flex items-center gap-3 dark:hover:bg-gray-800">
-                <Avatar
-                  src="https://demos.creative-tim.com/material-dashboard/assets/img/team-2.jpg"
-                  alt="item-1"
-                  size="sm"
-                  variant="circular"
-                />
-                <div>
+              <MenuItem className="flex items-center gap-3 dark:hover:bg-gray-800/50 hover:bg-gray-100/50 rounded-xl mx-1 my-0.5 transition-all">
+                <div className="flex-shrink-0">
+                  <Avatar
+                    src="https://demos.creative-tim.com/material-dashboard/assets/img/team-2.jpg"
+                    alt="item-1"
+                    size="sm"
+                    variant="circular"
+                    className="border-2 border-gray-200 dark:border-gray-700 shadow-md"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
                   <Typography
                     variant="small"
-                    color="blue-gray"
-                    className="mb-1 font-normal dark:text-gray-300"
+                    className="mb-1 font-semibold text-gray-900 dark:text-gray-200"
                   >
                     <strong>New message</strong> from Laur
                   </Typography>
                   <Typography
                     variant="small"
-                    color="blue-gray"
-                    className="flex items-center gap-1 text-xs font-normal opacity-60 dark:text-gray-400"
+                    className="flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400"
                   >
                     <ClockIcon className="h-3.5 w-3.5" /> 13 minutes ago
                   </Typography>
                 </div>
               </MenuItem>
-              <MenuItem className="flex items-center gap-4 dark:hover:bg-gray-700">
-                <Avatar
-                  src="https://demos.creative-tim.com/material-dashboard/assets/img/small-logos/logo-spotify.svg"
-                  alt="item-1"
-                  size="sm"
-                  variant="circular"
-                />
-                <div>
+              <MenuItem className="flex items-center gap-3 dark:hover:bg-gray-800/50 hover:bg-gray-100/50 rounded-xl mx-1 my-0.5 transition-all">
+                <div className="flex-shrink-0">
+                  <Avatar
+                    src="https://demos.creative-tim.com/material-dashboard/assets/img/small-logos/logo-spotify.svg"
+                    alt="item-1"
+                    size="sm"
+                    variant="circular"
+                    className="border-2 border-gray-200 dark:border-gray-700 shadow-md"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
                   <Typography
                     variant="small"
-                    color="blue-gray"
-                    className="mb-1 font-normal dark:text-gray-300"
+                    className="mb-1 font-semibold text-gray-900 dark:text-gray-200"
                   >
                     <strong>New album</strong> by Travis Scott
                   </Typography>
                   <Typography
                     variant="small"
-                    color="blue-gray"
-                    className="flex items-center gap-1 text-xs font-normal opacity-60 dark:text-gray-400"
+                    className="flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400"
                   >
                     <ClockIcon className="h-3.5 w-3.5" /> 1 day ago
                   </Typography>
                 </div>
               </MenuItem>
-              <MenuItem className="flex items-center gap-4 dark:hover:bg-gray-700">
-                <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-tr from-blue-gray-800 to-blue-gray-900 dark:from-blue-900 dark:to-gray-800">
-                  <CreditCardIcon className="h-4 w-4 text-white" />
+              <MenuItem className="flex items-center gap-3 dark:hover:bg-gray-800/50 hover:bg-gray-100/50 rounded-xl mx-1 my-0.5 transition-all">
+                <div className="flex-shrink-0">
+                  <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-red-600 to-red-700 shadow-lg shadow-red-500/30">
+                    <CreditCardIcon className="h-4 w-4 text-white" />
+                  </div>
                 </div>
-                <div>
+                <div className="flex-1 min-w-0">
                   <Typography
                     variant="small"
-                    color="blue-gray"
-                    className="mb-1 font-normal dark:text-gray-300"
+                    className="mb-1 font-semibold text-gray-900 dark:text-gray-200"
                   >
                     Payment successfully completed
                   </Typography>
                   <Typography
                     variant="small"
-                    color="blue-gray"
-                    className="flex items-center gap-1 text-xs font-normal opacity-60 dark:text-gray-400"
+                    className="flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400"
                   >
                     <ClockIcon className="h-3.5 w-3.5" /> 2 days ago
                   </Typography>
@@ -426,103 +448,131 @@ export function DashboardNavbar() {
             <>
               <Menu placement="bottom-end">
                 <MenuHandler>
-                  <Button
-                    variant="text"
-                    color="blue-gray"
-                    className="hidden items-center gap-2 px-3 sm:px-4 xl:flex normal-case dark:text-gray-300 dark:hover:bg-gray-700"
-                  >
-                    <Avatar
-                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || 'User')}&background=random&color=fff&size=128`}
-                      alt={user.fullName}
-                      size="sm"
-                      variant="circular"
-                    />
-                    <span className="text-sm sm:text-base">{user.fullName}</span>
-                  </Button>
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <Button
+                      variant="text"
+                      color="blue-gray"
+                      className="hidden items-center gap-3 px-3 sm:px-4 xl:flex normal-case dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700/70 rounded-xl transition-all duration-200"
+                    >
+                      <Avatar
+                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || 'User')}&background=random&color=fff&size=128`}
+                        alt={user.fullName}
+                        size="sm"
+                        variant="circular"
+                        className="border-2 border-gray-200 dark:border-gray-700 shadow-md"
+                      />
+                      <span className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">{user.fullName}</span>
+                    </Button>
+                  </motion.div>
                 </MenuHandler>
-                <MenuList className="dark:bg-gray-800 dark:border-gray-700 min-w-[180px]">
-                  <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-800 flex items-center gap-2">
+                <MenuList className="dark:bg-gray-800 dark:border-gray-700 min-w-[180px] rounded-xl">
+                  <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-800/50 hover:bg-gray-100/50 flex items-center gap-2 rounded-lg">
                     <NavLink
                       to="/dashboard/profile"
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 w-full"
                     >
-                      <UserCircleIcon className="h-4 w-4" />
+                      <div className="w-8 h-8 rounded-lg bg-gray-200/50 dark:bg-gray-700/50 flex items-center justify-center">
+                        <UserCircleIcon className="h-4 w-4" />
+                      </div>
                       <span>{t("header.profile")}</span>
                     </NavLink>
                   </MenuItem>
-                  <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-800 flex items-center gap-2">
+                  <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-800/50 hover:bg-gray-100/50 flex items-center gap-2 rounded-lg">
                     <NavLink
                       to="/dashboard/settings"
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 w-full"
                     >
-                      <Cog6ToothIcon className="h-4 w-4" />
+                      <div className="w-8 h-8 rounded-lg bg-gray-200/50 dark:bg-gray-700/50 flex items-center justify-center">
+                        <Cog6ToothIcon className="h-4 w-4" />
+                      </div>
                       <span>{t("header.settings")}</span>
                     </NavLink>
                   </MenuItem>
-                  <MenuItem onClick={logout} className="dark:hover:bg-gray-800 flex items-center gap-2 text-red-600 dark:text-red-400">
-                    <span>{t("common.logout")}</span>
+                  <MenuItem onClick={logout} className="dark:hover:bg-gray-800/50 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 text-red-600 dark:text-red-400 rounded-lg">
+                    <div className="w-8 h-8 rounded-lg bg-red-100/50 dark:bg-red-900/20 flex items-center justify-center">
+                      <span className="text-red-600 dark:text-red-400">→</span>
+                    </div>
+                    <span className="font-semibold">{t("common.logout")}</span>
                   </MenuItem>
                 </MenuList>
               </Menu>
               <Menu placement="bottom-end">
                 <MenuHandler>
-                  <IconButton
-                    variant="text"
-                    color="blue-gray"
-                    className="grid xl:hidden dark:text-gray-300 dark:hover:bg-gray-700 p-1"
-                    size="sm"
-                  >
-                    <Avatar
-                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || 'User')}&background=random&color=fff&size=128`}
-                      alt={user.fullName}
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <IconButton
+                      variant="text"
+                      color="blue-gray"
+                      className="grid xl:hidden dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700/70 rounded-xl transition-all duration-200 p-1"
                       size="sm"
-                      variant="circular"
-                    />
-                  </IconButton>
+                    >
+                      <Avatar
+                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || 'User')}&background=random&color=fff&size=128`}
+                        alt={user.fullName}
+                        size="sm"
+                        variant="circular"
+                        className="border-2 border-gray-200 dark:border-gray-700 shadow-md"
+                      />
+                    </IconButton>
+                  </motion.div>
                 </MenuHandler>
-                <MenuList className="dark:bg-gray-800 dark:border-gray-700 min-w-[180px]">
-                  <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-800 flex items-center gap-2">
+                <MenuList className="dark:bg-gray-800 dark:border-gray-700 min-w-[200px] rounded-xl shadow-xl">
+                  <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-800/50 hover:bg-gray-100/50 flex items-center gap-3 rounded-lg transition-all">
                     <NavLink
                       to="/dashboard/profile"
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-3 w-full"
                     >
-                      <UserCircleIcon className="h-4 w-4" />
-                      <span>{t("header.profile")}</span>
+                      <div className="w-8 h-8 rounded-lg bg-gray-200/50 dark:bg-gray-700/50 flex items-center justify-center group-hover:bg-gray-300/50 dark:group-hover:bg-gray-600/50 transition-all">
+                        <UserCircleIcon className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+                      </div>
+                      <span className="font-semibold">{t("header.profile")}</span>
                     </NavLink>
                   </MenuItem>
-                  <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-800 flex items-center gap-2">
+                  <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-800/50 hover:bg-gray-100/50 flex items-center gap-3 rounded-lg transition-all">
                     <NavLink
                       to="/dashboard/settings"
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-3 w-full"
                     >
-                      <Cog6ToothIcon className="h-4 w-4" />
-                      <span>{t("header.settings")}</span>
+                      <div className="w-8 h-8 rounded-lg bg-gray-200/50 dark:bg-gray-700/50 flex items-center justify-center group-hover:bg-gray-300/50 dark:group-hover:bg-gray-600/50 transition-all">
+                        <Cog6ToothIcon className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+                      </div>
+                      <span className="font-semibold">{t("header.settings")}</span>
                     </NavLink>
                   </MenuItem>
-                  <MenuItem onClick={logout} className="dark:hover:bg-gray-800 flex items-center gap-2 text-red-600 dark:text-red-400">
-                    <span>{t("common.logout")}</span>
+                  <MenuItem onClick={logout} className="dark:hover:bg-gray-800/50 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 text-red-600 dark:text-red-400 rounded-lg transition-all">
+                    <div className="w-8 h-8 rounded-lg bg-red-100/50 dark:bg-red-900/20 flex items-center justify-center">
+                      <span className="text-red-600 dark:text-red-400 font-bold">→</span>
+                    </div>
+                    <span className="font-bold">{t("common.logout")}</span>
                   </MenuItem>
                 </MenuList>
               </Menu>
             </>
           ) : (
             <Link to="/auth/sign-in">
-              <Button
-                variant="text"
-                color="blue-gray"
-                className="hidden items-center gap-1 px-3 sm:px-4 xl:flex normal-case dark:text-gray-300 dark:hover:bg-gray-700"
-              >
-                <UserCircleIcon className="h-5 w-5" />
-                <span className="text-sm sm:text-base">{t("common.login")}</span>
-              </Button>
-              <IconButton
-                variant="text"
-                color="blue-gray"
-                className="grid xl:hidden dark:text-gray-300 dark:hover:bg-gray-700 p-1"
-                size="sm"
-              >
-                <UserCircleIcon className="h-5 w-5" />
-              </IconButton>
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Button
+                  variant="text"
+                  color="blue-gray"
+                  className="hidden items-center gap-2 px-3 sm:px-4 xl:flex normal-case dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700/70 rounded-xl transition-all duration-200"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-gray-200/50 dark:bg-gray-700/50 flex items-center justify-center">
+                    <UserCircleIcon className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+                  </div>
+                  <span className="text-sm sm:text-base font-semibold">{t("common.login")}</span>
+                </Button>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <IconButton
+                  variant="text"
+                  color="blue-gray"
+                  className="grid xl:hidden dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700/70 rounded-xl transition-all duration-200 p-1"
+                  size="sm"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-gray-200/50 dark:bg-gray-700/50 flex items-center justify-center">
+                    <UserCircleIcon className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+                  </div>
+                </IconButton>
+              </motion.div>
             </Link>
           )}
           {/* <IconButton
