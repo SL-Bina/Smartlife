@@ -8,6 +8,7 @@ import { ApplicationStatusChart } from "./components/ApplicationStatusChart";
 import { DepartmentStatsChart } from "./components/DepartmentStatsChart";
 import { ResidentStatsCards } from "./components/ResidentStatsCards";
 import { fetchAllDashboardData } from "./api";
+import { StatisticsHeader } from "./components/StatisticsHeader";
 
 export function Home() {
   const { t } = useTranslation();
@@ -80,10 +81,11 @@ export function Home() {
   }
 
   return (
-    <div className="space-y-5 sm:space-y-7 lg:space-y-9 py-3 sm:py-5 lg:py-7 px-2 sm:px-4">
+    <div className="">
+      <StatisticsHeader />
       <StatisticsCards paymentStatistics={dashboardData.paymentStatistics} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mt-16">
         <PaymentDynamicsChart
           options={paymentChartOptions}
           series={paymentChartSeries}
@@ -97,7 +99,7 @@ export function Home() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mt-16 mb-12">
         <ApplicationStatusChart
           options={pieChartOptions}
           series={pieChartSeries}

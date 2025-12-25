@@ -20,7 +20,7 @@ export function StatisticsCards({ paymentStatistics: paymentStatisticsFromProps 
           whileHover={{ scale: 1.02, y: -4 }}
           whileTap={{ scale: 0.98 }}
         >
-          <Card className="border border-red-600 dark:border-gray-700/50 shadow-xl shadow-gray-200/50 dark:shadow-gray-900/50 bg-gradient-to-br from-white via-white to-gray-50/50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-900 rounded-2xl overflow-hidden h-full transition-all duration-300">
+          <Card className=" dark:border-gray-700/50 shadow-xl shadow-red-200/50 dark:shadow-gray-900/50 bg-gradient-to-br from-white via-white to-gray-50/50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-900 rounded-2xl overflow-hidden h-full transition-all duration-300">
             <CardBody className="p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-red-600 to-red-700 flex items-center justify-center shadow-lg shadow-red-500/30">
@@ -39,11 +39,7 @@ export function StatisticsCards({ paymentStatistics: paymentStatisticsFromProps 
               >
                 {t(stat.titleKey)}
               </Typography>
-              {stat.subtitleKey && (
-                <Typography className="font-medium text-gray-500 dark:text-gray-400 text-xs sm:text-sm">
-                  {t(stat.subtitleKey)}
-                </Typography>
-              )}
+
             </CardBody>
           </Card>
         </motion.div>

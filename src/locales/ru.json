@@ -198,6 +198,7 @@
     }
   },
   "statistics": {
+    "pageTitle": "Статистика",
     "todayMoney": {
       "title": "Доход за сегодня",
       "subtitle": "Доход за сегодня",

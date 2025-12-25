@@ -13,7 +13,7 @@ import {
 export const getPaymentStatistics = (t) => [
   {
     titleKey: "dashboard.paymentStats.currentMonthPayments",
-    subtitleKey: "dashboard.paymentStats.paidServicesCount",
+    titleKey: "dashboard.paymentStats.paidServicesCount",
     value: "4",
     icon: BanknotesIcon,
   },
