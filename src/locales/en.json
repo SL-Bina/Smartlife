@@ -1098,29 +1098,73 @@
   },
   "services": {
     "pageTitle": "Recurring Services",
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "deleting": "Deleting...",
+    "noData": "No data found",
     "add": "Add",
     "edit": "Edit",
     "delete": "Delete",
     "cancel": "Cancel",
     "save": "Save",
     "table": {
-      "title": "Title",
-      "amount": "Amount",
+      "id": "ID",
+      "name": "Name",
+      "description": "Description",
+      "price": "Price",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
       "actions": "Actions"
     },
-    "createModal": {
-      "title": "Add new service"
+    "actions": {
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete"
     },
-    "editModal": {
-      "title": "Edit service information"
+    "create": {
+      "title": "Add new service",
+      "success": "Service created successfully",
+      "error": "Error creating service"
     },
-    "deleteModal": {
-      "title": "Delete service",
-      "message": "Are you sure you want to delete this service?"
+    "edit": {
+      "title": "Edit service information",
+      "success": "Service updated successfully",
+      "error": "Error updating service"
+    },
+    "delete": {
+      "title": "Delete Service",
+      "message": "Are you sure you want to delete this service?",
+      "warning": "This action cannot be undone.",
+      "success": "Service deleted successfully",
+      "error": "Error deleting service"
+    },
+    "view": {
+      "title": "Service Details",
+      "close": "Close",
+      "notProvided": "Not provided",
+      "createdAt": "Created at",
+      "updatedAt": "Updated at"
+    },
+    "filter": {
+      "title": "Service filter",
+      "name": "Service name",
+      "enterName": "Enter",
+      "apply": "Apply",
+      "clear": "Clear",
+      "close": "Close"
     },
     "form": {
-      "title": "Title",
-      "amount": "Amount"
+      "basicInfo": "Basic Information",
+      "name": "Name",
+      "enterName": "Enter name",
+      "description": "Description",
+      "enterDescription": "Enter description",
+      "price": "Price",
+      "enterPrice": "Enter price"
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next"
     }
   },
   "electronicDocuments": {

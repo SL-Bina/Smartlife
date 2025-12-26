@@ -1098,29 +1098,73 @@
   },
   "services": {
     "pageTitle": "Təkrarlanan xidmətlər",
+    "loading": "Yüklənir...",
+    "saving": "Yadda saxlanılır...",
+    "deleting": "Silinir...",
+    "noData": "Məlumat tapılmadı",
     "add": "Əlavə et",
     "edit": "Düzəliş et",
     "delete": "Sil",
     "cancel": "Ləğv et",
     "save": "Yadda saxla",
     "table": {
-      "title": "Başlıq",
-      "amount": "Məbləğ",
+      "id": "ID",
+      "name": "Ad",
+      "description": "Təsvir",
+      "price": "Qiymət",
+      "createdAt": "Yaradılma tarixi",
+      "updatedAt": "Yenilənmə tarixi",
       "actions": "Əməliyyatlar"
     },
-    "createModal": {
-      "title": "Yeni xidmət əlavə et"
+    "actions": {
+      "view": "Bax",
+      "edit": "Düzəliş et",
+      "delete": "Sil"
     },
-    "editModal": {
-      "title": "Xidmət məlumatlarını dəyiş"
+    "create": {
+      "title": "Yeni xidmət əlavə et",
+      "success": "Servis uğurla yaradıldı",
+      "error": "Servis yaradılarkən xəta baş verdi"
     },
-    "deleteModal": {
-      "title": "Xidmət sil",
-      "message": "Bu xidməti silmək istədiyinizə əminsiniz?"
+    "edit": {
+      "title": "Xidmət məlumatlarını dəyiş",
+      "success": "Servis uğurla yeniləndi",
+      "error": "Servis yenilənərkən xəta baş verdi"
+    },
+    "delete": {
+      "title": "Servis Sil",
+      "message": "Bu servisi silmək istədiyinizə əminsiniz?",
+      "warning": "Bu əməliyyat geri alına bilməz.",
+      "success": "Servis uğurla silindi",
+      "error": "Servis silinərkən xəta baş verdi"
+    },
+    "view": {
+      "title": "Servis Məlumatları",
+      "close": "Bağla",
+      "notProvided": "Təmin edilməyib",
+      "createdAt": "Yaradılma tarixi",
+      "updatedAt": "Yenilənmə tarixi"
+    },
+    "filter": {
+      "title": "Servis filter",
+      "name": "Servis adı",
+      "enterName": "Daxil et",
+      "apply": "Tətbiq et",
+      "clear": "Təmizlə",
+      "close": "Bağla"
     },
     "form": {
-      "title": "Başlıq",
-      "amount": "Məbləğ"
+      "basicInfo": "Əsas Məlumatlar",
+      "name": "Ad",
+      "enterName": "Ad daxil edin",
+      "description": "Təsvir",
+      "enterDescription": "Təsvir daxil edin",
+      "price": "Qiymət",
+      "enterPrice": "Qiymət daxil edin"
+    },
+    "pagination": {
+      "prev": "Əvvəlki",
+      "next": "Növbəti"
     }
   },
   "electronicDocuments": {
