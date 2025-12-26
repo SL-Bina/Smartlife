@@ -1165,9 +1165,15 @@
   "mtk": {
     "pageTitle": "MTK",
     "loading": "Yüklənir...",
+    "saving": "Yadda saxlanılır...",
+    "noData": "Məlumat tapılmadı",
     "table": {
       "id": "ID",
       "name": "Ad",
+      "status": "Status",
+      "email": "Email",
+      "phone": "Telefon",
+      "address": "Ünvan",
       "actions": "Əməliyyatlar"
     },
     "actions": {
@@ -1177,28 +1183,86 @@
       "edit": "Düzəliş et",
       "delete": "Sil"
     },
+    "view": {
+      "title": "MTK Məlumatları",
+      "close": "Bağla",
+      "notProvided": "Təmin edilməyib"
+    },
     "filter": {
       "title": "MTK filter",
       "name": "MTK adı",
       "enterName": "Daxil et",
+      "status": "Status",
+      "allStatus": "Hamısı",
+      "email": "Email",
+      "enterEmail": "Email daxil edin",
+      "phone": "Telefon",
+      "enterPhone": "Telefon daxil edin",
+      "address": "Ünvan",
+      "enterAddress": "Ünvan daxil edin",
+      "basicFilters": "Əsas Filterlər",
+      "contactFilters": "Əlaqə Filterləri",
+      "activeFilters": "Aktiv filterlər mövcuddur",
       "clear": "Təmizlə",
       "close": "Bağla",
       "apply": "Tətbiq et"
+    },
+    "form": {
+      "basicInfo": "Əsas Məlumatlar",
+      "name": "Ad",
+      "enterName": "Ad daxil edin",
+      "status": "Status",
+      "active": "Aktiv",
+      "inactive": "Passiv",
+      "metaInfo": "Əlavə Məlumatlar",
+      "latitude": "Enlik",
+      "enterLatitude": "Enlik daxil edin",
+      "longitude": "Uzunluq",
+      "enterLongitude": "Uzunluq daxil edin",
+      "description": "Təsvir",
+      "enterDescription": "Təsvir daxil edin",
+      "email": "Email",
+      "enterEmail": "Email daxil edin",
+      "phone": "Telefon",
+      "enterPhone": "Telefon daxil edin",
+      "address": "Ünvan",
+      "enterAddress": "Ünvan daxil edin",
+      "website": "Vebsayt",
+      "enterWebsite": "Vebsayt daxil edin",
+      "colorCode": "Rəng Kodu",
+      "enterColorCode": "Rəng kodu daxil edin",
+      "colorPicker": "Rəng seçin",
+      "contactInfo": "Əlaqə Məlumatları",
+      "latValidation": "Enlik -90 ilə 90 arasında olmalıdır",
+      "lngValidation": "Uzunluq -180 ilə 180 arasında olmalıdır"
     },
     "create": {
       "title": "Yeni MTK əlavə et",
       "name": "MTK adı",
       "enterName": "Daxil et",
       "cancel": "Ləğv et",
-      "save": "Yadda saxla"
+      "save": "Yadda saxla",
+      "success": "MTK uğurla yaradıldı",
+      "error": "MTK yaradılarkən xəta baş verdi"
     },
     "edit": {
       "title": "MTK məlumatlarını dəyiş",
       "name": "MTK adı",
       "enterName": "Daxil et",
       "cancel": "Ləğv et",
-      "save": "Yadda saxla"
+      "save": "Yadda saxla",
+      "success": "MTK uğurla yeniləndi",
+      "error": "MTK yenilənərkən xəta baş verdi"
     },
+    "delete": {
+      "title": "MTK Sil",
+      "confirm": "MTK silinsin?",
+      "message": "Bu MTK-nı silmək istədiyinizə əminsiniz?",
+      "warning": "Bu əməliyyat geri alına bilməz.",
+      "success": "MTK uğurla silindi",
+      "error": "MTK silinərkən xəta baş verdi"
+    },
+    "deleting": "Silinir...",
     "pagination": {
       "prev": "Geri",
       "next": "İrəli"

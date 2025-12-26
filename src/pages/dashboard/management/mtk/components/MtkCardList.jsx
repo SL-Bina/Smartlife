@@ -3,7 +3,7 @@ import { Card, CardBody, Typography, IconButton, Menu, MenuHandler, MenuList, Me
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
-export function MtkCardList({ mtk, onEdit, onDelete }) {
+export function MtkCardList({ mtk, onView, onEdit, onDelete }) {
   const { t } = useTranslation();
 
   return (
@@ -22,6 +22,11 @@ export function MtkCardList({ mtk, onEdit, onDelete }) {
                   </IconButton>
                 </MenuHandler>
                 <MenuList className="dark:bg-gray-800 dark:border-gray-700">
+                  {onView && (
+                    <MenuItem onClick={() => onView(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
+                      {t("mtk.actions.view")}
+                    </MenuItem>
+                  )}
                   <MenuItem onClick={() => onEdit(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
                     {t("mtk.actions.edit")}
                   </MenuItem>
@@ -31,9 +36,37 @@ export function MtkCardList({ mtk, onEdit, onDelete }) {
                 </MenuList>
               </Menu>
             </div>
-            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-              {t("mtk.table.id")}: {row.id}
-            </Typography>
+            <div className="space-y-1">
+              <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                {t("mtk.table.id") || "ID"}: {row.id}
+              </Typography>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                    row.status === "active"
+                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                      : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
+                  }`}
+                >
+                  {row.status === "active" ? (t("mtk.form.active") || "Aktiv") : (t("mtk.form.inactive") || "Passiv")}
+                </span>
+              </div>
+              {row.meta?.email && (
+                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  {t("mtk.table.email") || "Email"}: {row.meta.email}
+                </Typography>
+              )}
+              {row.meta?.phone && (
+                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  {t("mtk.table.phone") || "Telefon"}: {row.meta.phone}
+                </Typography>
+              )}
+              {row.meta?.address && (
+                <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  {t("mtk.table.address") || "Ünvan"}: {row.meta.address}
+                </Typography>
+              )}
+            </div>
           </CardBody>
         </Card>
       ))}

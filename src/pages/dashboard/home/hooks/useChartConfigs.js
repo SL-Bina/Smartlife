@@ -17,27 +17,23 @@ export function useChartConfigs(
   const { t } = useTranslation();
   const windowWidth = useWindowWidth();
 
-  // Responsive chart heights
   const getChartHeight = (mobile, tablet, desktop) => {
     if (windowWidth < 640) return mobile;
     if (windowWidth < 1024) return tablet;
     return desktop;
   };
 
-  // Pie chart height - larger for better visibility
   const getPieChartHeight = () => {
     if (windowWidth < 640) return 500;
     if (windowWidth < 1024) return 650;
     return 700;
   };
 
-  // Use API data if available, otherwise fallback to mock data
   const paymentDynamicsData = paymentDynamicsDataFromApi || getPaymentDynamicsData(t);
   const employeePerformanceData = employeePerformanceDataFromApi || getEmployeePerformanceData(t);
   const applicationStatusData = applicationStatusDataFromApi || getApplicationStatusData(t);
   const departmentStats = departmentStatsFromApi || getDepartmentStats(t);
 
-  // Payment Dynamics Chart
   const paymentChartOptions = useMemo(
     () => ({
       chart: {

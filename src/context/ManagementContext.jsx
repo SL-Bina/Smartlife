@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useMemo } from "react";
+import { mtkAPI } from "@/pages/dashboard/management/mtk/api";
 
 const ManagementContext = createContext(null);
 
@@ -171,28 +172,46 @@ export function ManagementProvider({ children }) {
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Data update funksiyaları
-  const updateMtk = (id, updates) => {
-    setData((prev) => ({
-      ...prev,
-      mtk: prev.mtk.map((item) => (item.id === id ? { ...item, ...updates } : item)),
-    }));
-    setRefreshKey((prev) => prev + 1);
+  const updateMtk = async (id, updates) => {
+    try {
+      const response = await mtkAPI.update(id, updates);
+      if (response.success) {
+        setRefreshKey((prev) => prev + 1);
+        return response;
+      }
+      throw new Error(response.message || "Failed to update MTK");
+    } catch (error) {
+      console.error("Error updating MTK:", error);
+      throw error;
+    }
   };
 
-  const addMtk = (newMtk) => {
-    setData((prev) => ({
-      ...prev,
-      mtk: [...prev.mtk, { ...newMtk, id: prev.mtk.length + 1 }],
-    }));
-    setRefreshKey((prev) => prev + 1);
+  const addMtk = async (newMtk) => {
+    try {
+      const response = await mtkAPI.create(newMtk);
+      if (response.success) {
+        setRefreshKey((prev) => prev + 1);
+        return response;
+      }
+      throw new Error(response.message || "Failed to create MTK");
+    } catch (error) {
+      console.error("Error creating MTK:", error);
+      throw error;
+    }
   };
 
-  const deleteMtk = (id) => {
-    setData((prev) => ({
-      ...prev,
-      mtk: prev.mtk.filter((item) => item.id !== id),
-    }));
-    setRefreshKey((prev) => prev + 1);
+  const deleteMtk = async (id) => {
+    try {
+      const response = await mtkAPI.delete(id);
+      if (response.success) {
+        setRefreshKey((prev) => prev + 1);
+        return response;
+      }
+      throw new Error(response.message || "Failed to delete MTK");
+    } catch (error) {
+      console.error("Error deleting MTK:", error);
+      throw error;
+    }
   };
 
   const updateComplex = (id, updates) => {

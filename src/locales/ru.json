@@ -1164,9 +1164,15 @@
   "mtk": {
     "pageTitle": "МТК",
     "loading": "Загрузка...",
+    "saving": "Сохранение...",
+    "noData": "Данные не найдены",
     "table": {
       "id": "ID",
       "name": "Название",
+      "status": "Статус",
+      "email": "Email",
+      "phone": "Телефон",
+      "address": "Адрес",
       "actions": "Действия"
     },
     "actions": {
@@ -1176,28 +1182,86 @@
       "edit": "Редактировать",
       "delete": "Удалить"
     },
+    "view": {
+      "title": "Информация о МТК",
+      "close": "Закрыть",
+      "notProvided": "Не предоставлено"
+    },
     "filter": {
       "title": "Фильтр МТК",
       "name": "Название МТК",
       "enterName": "Введите",
+      "status": "Статус",
+      "allStatus": "Все",
+      "email": "Email",
+      "enterEmail": "Введите email",
+      "phone": "Телефон",
+      "enterPhone": "Введите телефон",
+      "address": "Адрес",
+      "enterAddress": "Введите адрес",
+      "basicFilters": "Основные фильтры",
+      "contactFilters": "Фильтры контактов",
+      "activeFilters": "Есть активные фильтры",
       "clear": "Очистить",
       "close": "Закрыть",
       "apply": "Применить"
+    },
+    "form": {
+      "basicInfo": "Основная информация",
+      "name": "Название",
+      "enterName": "Введите название",
+      "status": "Статус",
+      "active": "Активный",
+      "inactive": "Неактивный",
+      "metaInfo": "Дополнительная информация",
+      "latitude": "Широта",
+      "enterLatitude": "Введите широту",
+      "longitude": "Долгота",
+      "enterLongitude": "Введите долготу",
+      "description": "Описание",
+      "enterDescription": "Введите описание",
+      "email": "Email",
+      "enterEmail": "Введите email",
+      "phone": "Телефон",
+      "enterPhone": "Введите телефон",
+      "address": "Адрес",
+      "enterAddress": "Введите адрес",
+      "website": "Веб-сайт",
+      "enterWebsite": "Введите веб-сайт",
+      "colorCode": "Цветовой код",
+      "enterColorCode": "Введите цветовой код",
+      "colorPicker": "Выберите цвет",
+      "contactInfo": "Контактная информация",
+      "latValidation": "Широта должна быть между -90 и 90",
+      "lngValidation": "Долгота должна быть между -180 и 180"
     },
     "create": {
       "title": "Добавить новый МТК",
       "name": "Название МТК",
       "enterName": "Введите",
       "cancel": "Отмена",
-      "save": "Сохранить"
+      "save": "Сохранить",
+      "success": "МТК успешно создан",
+      "error": "Ошибка при создании МТК"
     },
     "edit": {
       "title": "Изменить информацию МТК",
       "name": "Название МТК",
       "enterName": "Введите",
       "cancel": "Отмена",
-      "save": "Сохранить"
+      "save": "Сохранить",
+      "success": "МТК успешно обновлен",
+      "error": "Ошибка при обновлении МТК"
     },
+    "delete": {
+      "title": "Удалить МТК",
+      "confirm": "Удалить МТК?",
+      "message": "Вы уверены, что хотите удалить этот МТК?",
+      "warning": "Это действие нельзя отменить.",
+      "success": "МТК успешно удален",
+      "error": "Ошибка при удалении МТК"
+    },
+    "deleting": "Удаление...",
     "pagination": {
       "prev": "Назад",
       "next": "Вперед"
