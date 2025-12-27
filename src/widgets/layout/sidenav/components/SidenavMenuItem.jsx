@@ -64,7 +64,7 @@ export function SidenavMenuItem({ page, layout, routes, openMenus, setOpenMenus 
               </div>
               <Typography
                 variant="small"
-                className={`font-semibold text-xs xl:text-sm truncate ${
+                className={`font-semibold text-sm xl:text-base truncate ${
                   isParentActive
                     ? "text-white"
                     : "text-gray-700 dark:text-gray-300"
@@ -191,7 +191,7 @@ export function SidenavMenuItem({ page, layout, routes, openMenus, setOpenMenus 
                 </div>
                 <Typography
                   variant="small"
-                  className={`font-semibold text-xs xl:text-sm truncate ${
+                  className={`font-semibold text-sm xl:text-base truncate ${
                     shouldBeActive
                       ? "text-white"
                       : "text-gray-700 dark:text-gray-300"

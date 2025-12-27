@@ -146,7 +146,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Serverə SSH ilə qoşulub əmrləri işlətmək
       - name: Deploy on server
         uses: appleboy/ssh-action@v0.1.5
         with:

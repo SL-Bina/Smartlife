@@ -1,284 +1,103 @@
-import React, { useEffect, useState } from "react";
-import {
-  Typography,
-  Card,
-  CardHeader,
-  CardBody,
-  Button,
-  IconButton,
-  Menu,
-  MenuHandler,
-  MenuList,
-  MenuItem,
-  Spinner,
-  Dialog,
-  DialogHeader,
-  DialogBody,
-  DialogFooter,
-  Input,
-} from "@material-tailwind/react";
-import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
+import React, { useState, useEffect } from "react";
+import { Card, CardHeader, CardBody, Spinner, Typography } from "@material-tailwind/react";
 import { useTranslation } from "react-i18next";
-
-const data = Array.from({ length: 50 }, (_, index) => ({
-  id: index + 1,
-  name: `Blok ${String.fromCharCode(65 + (index % 5))}-${Math.floor(index / 5) + 1}`,
-  building: `Bina ${Math.floor(index / 5) + 1}`,
-  floors: (index % 16) + 5,
-  apartments: Math.floor(Math.random() * 40) + 10,
-}));
-
-const ITEMS_PER_PAGE = 10;
+import { useBlocksData } from "./hooks/useBlocksData";
+import { useBlocksFilters } from "./hooks/useBlocksFilters";
+import { useBlocksForm } from "./hooks/useBlocksForm";
+import { BlocksHeader } from "./components/BlocksHeader";
+import { BlocksActions } from "./components/BlocksActions";
+import { BlocksTable } from "./components/BlocksTable";
+import { BlocksCardList } from "./components/BlocksCardList";
+import { BlocksPagination } from "./components/BlocksPagination";
+import { BlocksFilterModal } from "./components/modals/BlocksFilterModal";
+import { BlocksFormModal } from "./components/modals/BlocksFormModal";
 
 const BlocksPage = () => {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [filterOpen, setFilterOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [viewOpen, setViewOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [page, setPage] = useState(1);
 
-  const [filterName, setFilterName] = useState("");
-  const [filterBuilding, setFilterBuilding] = useState("");
-
-  const [formName, setFormName] = useState("");
-  const [formBuilding, setFormBuilding] = useState("");
-  const [formFloors, setFormFloors] = useState("");
-  const [formApartments, setFormApartments] = useState("");
+  const { filters, filterOpen, setFilterOpen, updateFilter, clearFilters, applyFilters } = useBlocksFilters();
+  const { blocks, loading, pagination } = useBlocksData(filters, page);
+  const { formData, updateField, resetForm, setFormFromBlock } = useBlocksForm();
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 400);
-    return () => clearTimeout(timer);
-  }, []);
+    if (page > (pagination.totalPages || 1) && pagination.totalPages > 0) {
+      setPage(1);
+    }
+  }, [pagination.totalPages, page]);
 
-  const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE);
-  const startIndex = (page - 1) * ITEMS_PER_PAGE;
-  const pageData = data.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const handleFilterApply = () => {
+    setPage(1);
+    applyFilters();
+  };
 
-  const handlePrev = () => setPage((prev) => Math.max(1, prev - 1));
-  const handleNext = () => setPage((prev) => Math.min(totalPages, prev + 1));
+  const handleFilterClear = () => {
+    clearFilters();
+    setPage(1);
+  };
 
   const openCreateModal = () => {
+    resetForm();
     setSelectedItem(null);
-    setFormName("");
-    setFormBuilding("");
-    setFormFloors("");
-    setFormApartments("");
     setCreateOpen(true);
   };
 
   const openEditModal = (item) => {
     setSelectedItem(item);
-    setFormName(item.name);
-    setFormBuilding(item.building);
-    setFormFloors(String(item.floors));
-    setFormApartments(String(item.apartments));
+    setFormFromBlock(item);
     setEditOpen(true);
   };
 
-  const handleFilterApply = () => {
-    setFilterOpen(false);
-  };
-
-  const handleFilterClear = () => {
-    setFilterName("");
-    setFilterBuilding("");
-    setFilterOpen(false);
+  const openViewModal = (item) => {
+    setSelectedItem(item);
+    setViewOpen(true);
   };
 
   const handleCreateSave = () => {
+    // TODO: API call for creating block
     setCreateOpen(false);
+    resetForm();
   };
 
   const handleEditSave = () => {
+    // TODO: API call for updating block
     setEditOpen(false);
+    setSelectedItem(null);
+    resetForm();
+  };
+
+  const handleDelete = (item) => {
+    if (window.confirm(t("blocks.delete.confirm") || `Blok ${item.name} silinsin?`)) {
+      // TODO: API call for deleting block
+      console.log("Delete block:", item.id);
+    }
+  };
+
+  const goToPage = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= (pagination.totalPages || 1)) {
+      setPage(pageNumber);
+    }
+  };
+
+  const goToPrev = () => {
+    if (page > 1) {
+      setPage((prev) => prev - 1);
+    }
+  };
+
+  const goToNext = () => {
+    if (page < (pagination.totalPages || 1)) {
+      setPage((prev) => prev + 1);
+    }
   };
 
   return (
-    <div className=" ">
-      {/* Section title bar to match Home design */}
-      <div className="w-full bg-black dark:bg-gray-800 my-4 p-4 rounded-lg shadow-lg mb-6 border border-red-600 dark:border-gray-700">
-        <h3 className="text-white font-bold">{t("blocks.pageTitle")}</h3>
-      </div>
-
-      {/* Filter modal */}
-      <Dialog open={filterOpen} handler={setFilterOpen} size="sm" className="dark:bg-gray-900">
-        <DialogHeader className="dark:bg-gray-800 dark:text-white">{t("blocks.filter.title")}</DialogHeader>
-        <DialogBody divider className="space-y-4 dark:bg-gray-800 dark:border-gray-700">
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("blocks.filter.block")}
-            </Typography>
-            <Input
-              label={t("blocks.filter.enterBlock")}
-              value={filterName}
-              onChange={(e) => setFilterName(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("blocks.filter.building")}
-            </Typography>
-            <Input
-              label={t("blocks.filter.enterBuilding")}
-              value={filterBuilding}
-              onChange={(e) => setFilterBuilding(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-        </DialogBody>
-        <DialogFooter className="flex justify-between gap-2 dark:bg-gray-800 dark:border-gray-700">
-          <Button variant="text" color="blue-gray" onClick={handleFilterClear} className="dark:text-gray-300 dark:hover:bg-gray-700">
-            {t("blocks.filter.clear")}
-          </Button>
-          <div className="flex gap-2">
-            <Button variant="outlined" color="blue-gray" onClick={() => setFilterOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
-              {t("blocks.filter.close")}
-            </Button>
-            <Button color="blue" onClick={handleFilterApply} className="dark:bg-blue-600 dark:hover:bg-blue-700">
-              {t("blocks.filter.apply")}
-            </Button>
-          </div>
-        </DialogFooter>
-      </Dialog>
-
-      {/* Create block modal */}
-      <Dialog open={createOpen} handler={setCreateOpen} size="sm" className="dark:bg-gray-900">
-        <DialogHeader className="dark:bg-gray-800 dark:text-white">{t("blocks.create.title")}</DialogHeader>
-        <DialogBody divider className="space-y-4 dark:bg-gray-800 dark:border-gray-700">
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("blocks.create.block")}
-            </Typography>
-            <Input
-              label={t("blocks.create.enterBlock")}
-              value={formName}
-              onChange={(e) => setFormName(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("blocks.create.building")}
-            </Typography>
-            <Input
-              label={t("blocks.create.enterBuilding")}
-              value={formBuilding}
-              onChange={(e) => setFormBuilding(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-                {t("blocks.create.floorsCount")}
-              </Typography>
-              <Input
-                type="number"
-                label={t("blocks.create.enterFloors")}
-                value={formFloors}
-                onChange={(e) => setFormFloors(e.target.value)}
-                className="dark:text-white"
-                labelProps={{ className: "dark:text-gray-400" }}
-              />
-            </div>
-            <div>
-              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-                {t("blocks.create.apartmentsCount")}
-              </Typography>
-              <Input
-                type="number"
-                label={t("blocks.create.enterApartments")}
-                value={formApartments}
-                onChange={(e) => setFormApartments(e.target.value)}
-                className="dark:text-white"
-                labelProps={{ className: "dark:text-gray-400" }}
-              />
-            </div>
-          </div>
-        </DialogBody>
-        <DialogFooter className="flex justify-end gap-2 dark:bg-gray-800 dark:border-gray-700">
-          <Button variant="outlined" color="blue-gray" onClick={() => setCreateOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
-            {t("blocks.create.cancel")}
-          </Button>
-          <Button color="green" onClick={handleCreateSave} className="dark:bg-green-600 dark:hover:bg-green-700">
-            {t("blocks.create.save")}
-          </Button>
-        </DialogFooter>
-      </Dialog>
-
-      {/* Edit block modal */}
-      <Dialog open={editOpen} handler={setEditOpen} size="sm" className="dark:bg-gray-900">
-        <DialogHeader className="dark:bg-gray-800 dark:text-white">{t("blocks.edit.title")}</DialogHeader>
-        <DialogBody divider className="space-y-4 dark:bg-gray-800 dark:border-gray-700">
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("blocks.edit.block")}
-            </Typography>
-            <Input
-              label={t("blocks.edit.enterBlock")}
-              value={formName}
-              onChange={(e) => setFormName(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("blocks.edit.building")}
-            </Typography>
-            <Input
-              label={t("blocks.edit.enterBuilding")}
-              value={formBuilding}
-              onChange={(e) => setFormBuilding(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-                {t("blocks.edit.floorsCount")}
-              </Typography>
-              <Input
-                type="number"
-                label={t("blocks.edit.enterFloors")}
-                value={formFloors}
-                onChange={(e) => setFormFloors(e.target.value)}
-                className="dark:text-white"
-                labelProps={{ className: "dark:text-gray-400" }}
-              />
-            </div>
-            <div>
-              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-                {t("blocks.edit.apartmentsCount")}
-              </Typography>
-              <Input
-                type="number"
-                label={t("blocks.edit.enterApartments")}
-                value={formApartments}
-                onChange={(e) => setFormApartments(e.target.value)}
-                className="dark:text-white"
-                labelProps={{ className: "dark:text-gray-400" }}
-              />
-            </div>
-          </div>
-        </DialogBody>
-        <DialogFooter className="flex justify-end gap-2 dark:bg-gray-800 dark:border-gray-700">
-          <Button variant="outlined" color="blue-gray" onClick={() => setEditOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
-            {t("blocks.edit.cancel")}
-          </Button>
-          <Button color="blue" onClick={handleEditSave} className="dark:bg-blue-600 dark:hover:bg-blue-700">
-            {t("blocks.edit.save")}
-          </Button>
-        </DialogFooter>
-      </Dialog>
+    <div className="">
+      <BlocksHeader />
 
       <Card className="border border-red-600 dark:border-gray-700 shadow-sm dark:bg-gray-800">
         <CardHeader
@@ -287,14 +106,7 @@ const BlocksPage = () => {
           color="transparent"
           className="m-0 flex items-center justify-between p-6 dark:bg-gray-800"
         >
-          <div className="flex items-center gap-3">
-            <Button variant="outlined" color="blue" onClick={() => setFilterOpen(true)} className="dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-900/20">
-              {t("blocks.actions.search")}
-            </Button>
-            <Button color="green" onClick={openCreateModal} className="dark:bg-green-600 dark:hover:bg-green-700">
-              {t("blocks.actions.add")}
-            </Button>
-          </div>
+          <BlocksActions onFilterClick={() => setFilterOpen(true)} onCreateClick={openCreateModal} />
         </CardHeader>
         <CardBody className="px-0 pt-0 pb-2 dark:bg-gray-800">
           {loading ? (
@@ -306,185 +118,65 @@ const BlocksPage = () => {
             </div>
           ) : (
             <>
-              {/* Desktop table */}
-              <div className="hidden lg:block">
-                <table className="w-full table-auto">
-                  <thead>
-                    <tr>
-                      {[t("blocks.table.id"), t("blocks.table.block"), t("blocks.table.building"), t("blocks.table.floorsCount"), t("blocks.table.apartmentsCount"), t("blocks.table.actions")].map(
-                        (el, idx) => (
-                          <th
-                            key={el}
-                            className={`border-b border-blue-gray-100 dark:border-gray-800 py-3 px-6 text-left ${
-                              idx === 5 ? "text-right" : ""
-                            }`}
-                          >
-                            <Typography
-                              variant="small"
-                              className="text-[11px] font-medium uppercase text-blue-gray-400 dark:text-gray-400"
-                            >
-                              {el}
-                            </Typography>
-                          </th>
-                        )
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pageData.map((row, key) => {
-                      const className = `py-3 px-6 ${
-                        key === pageData.length - 1 ? "" : "border-b border-blue-gray-50 dark:border-gray-800"
-                      }`;
-                      return (
-                        <tr key={row.id} className="dark:hover:bg-gray-700/50">
-                          <td className={className}>
-                            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                              {row.id}
-                            </Typography>
-                          </td>
-                          <td className={className}>
-                            <Typography
-                              variant="small"
-                              color="blue-gray"
-                              className="font-semibold dark:text-white"
-                            >
-                              {row.name}
-                            </Typography>
-                          </td>
-                          <td className={className}>
-                            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                              {row.building}
-                            </Typography>
-                          </td>
-                          <td className={className}>
-                            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                              {row.floors}
-                            </Typography>
-                          </td>
-                          <td className={className}>
-                            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                              {row.apartments}
-                            </Typography>
-                          </td>
-                          <td className={`${className} text-right`}>
-                            <Menu placement="left-start">
-                              <MenuHandler>
-                                <IconButton size="sm" variant="text" color="blue-gray" className="dark:text-gray-300 dark:hover:bg-gray-700">
-                                  <EllipsisVerticalIcon
-                                    strokeWidth={2}
-                                    className="h-5 w-5"
-                                  />
-                                </IconButton>
-                              </MenuHandler>
-                              <MenuList className="dark:bg-gray-800 dark:border-gray-700">
-                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("blocks.actions.view")}</MenuItem>
-                                <MenuItem onClick={() => openEditModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">{t("blocks.actions.edit")}</MenuItem>
-                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("blocks.actions.delete")}</MenuItem>
-                              </MenuList>
-                            </Menu>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Tablet & mobile cards */}
-              <div className="grid gap-4 sm:grid-cols-2 lg:hidden px-4 pt-4">
-                {pageData.map((row) => (
-                  <Card
-                    key={row.id}
-                    className="border border-red-600 dark:border-gray-700 shadow-sm dark:bg-gray-800 dark:border-gray-700"
-                    >
-                    <CardBody className="space-y-3 dark:bg-gray-800">
-                      <div className="flex items-center justify-between gap-2">
-                        <div>
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-semibold dark:text-white"
-                          >
-                            {row.name}
-                          </Typography>
-                          <Typography variant="small" className="text-xs text-blue-gray-400 dark:text-gray-400">
-                            {t("blocks.table.id")}: {row.id}
-                          </Typography>
-                        </div>
-                        <Menu placement="left-start">
-                          <MenuHandler>
-                            <IconButton size="sm" variant="text" color="blue-gray" className="dark:text-gray-300 dark:hover:bg-gray-700">
-                              <EllipsisVerticalIcon
-                                strokeWidth={2}
-                                className="h-5 w-5"
-                              />
-                            </IconButton>
-                          </MenuHandler>
-                          <MenuList className="dark:bg-gray-800 dark:border-gray-700">
-                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("blocks.actions.view")}</MenuItem>
-                            <MenuItem onClick={() => openEditModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">{t("blocks.actions.edit")}</MenuItem>
-                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("blocks.actions.delete")}</MenuItem>
-                          </MenuList>
-                        </Menu>
-                      </div>
-                      <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                        {t("blocks.table.building")}: {row.building}
-                      </Typography>
-                      <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                        {t("blocks.table.floorsCount")}: {row.floors}
-                      </Typography>
-                      <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                        {t("blocks.table.apartmentsCount")}: {row.apartments}
-                      </Typography>
-                    </CardBody>
-                  </Card>
-                ))}
-              </div>
-
-              <div className="flex items-center justify-end gap-2 px-6 pt-4">
-                <Button
-                  variant="text"
-                  size="sm"
-                  color="blue-gray"
-                  onClick={handlePrev}
-                  disabled={page === 1}
-                  className="dark:text-gray-300 dark:hover:bg-gray-700 dark:disabled:text-gray-600"
-                >
-                  {t("blocks.pagination.prev")}
-                </Button>
-                {Array.from({ length: totalPages }, (_, index) => index + 1).map(
-                  (pageNumber) => (
-                    <Button
-                      key={pageNumber}
-                      variant={pageNumber === page ? "filled" : "text"}
-                      size="sm"
-                      color={pageNumber === page ? "blue" : "blue-gray"}
-                      onClick={() => setPage(pageNumber)}
-                      className={`min-w-[32px] px-2 ${
-                        pageNumber === page 
-                          ? "dark:bg-blue-600 dark:hover:bg-blue-700" 
-                          : "dark:text-gray-300 dark:hover:bg-gray-700"
-                      }`}
-                    >
-                      {pageNumber}
-                    </Button>
-                  )
-                )}
-                <Button
-                  variant="text"
-                  size="sm"
-                  color="blue-gray"
-                  onClick={handleNext}
-                  disabled={page === totalPages}
-                  className="dark:text-gray-300 dark:hover:bg-gray-700 dark:disabled:text-gray-600"
-                >
-                  {t("blocks.pagination.next")}
-                </Button>
-              </div>
+              <BlocksTable
+                blocks={blocks}
+                onView={openViewModal}
+                onEdit={openEditModal}
+                onDelete={handleDelete}
+              />
+              <BlocksCardList
+                blocks={blocks}
+                onView={openViewModal}
+                onEdit={openEditModal}
+                onDelete={handleDelete}
+              />
+              <BlocksPagination
+                page={page}
+                totalPages={pagination.totalPages}
+                onPageChange={goToPage}
+                onPrev={goToPrev}
+                onNext={goToNext}
+              />
             </>
           )}
         </CardBody>
       </Card>
+
+      <BlocksFilterModal
+        open={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        filters={filters}
+        onFilterChange={updateFilter}
+        onApply={handleFilterApply}
+        onClear={handleFilterClear}
+      />
+
+      <BlocksFormModal
+        open={createOpen}
+        onClose={() => {
+          setCreateOpen(false);
+          resetForm();
+        }}
+        title={t("blocks.create.title")}
+        formData={formData}
+        onFieldChange={updateField}
+        onSave={handleCreateSave}
+        isEdit={false}
+      />
+
+      <BlocksFormModal
+        open={editOpen}
+        onClose={() => {
+          setEditOpen(false);
+          setSelectedItem(null);
+          resetForm();
+        }}
+        title={t("blocks.edit.title")}
+        formData={formData}
+        onFieldChange={updateField}
+        onSave={handleEditSave}
+        isEdit={true}
+      />
     </div>
   );
 };

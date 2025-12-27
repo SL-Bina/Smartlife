@@ -1,7 +1,5 @@
-// API Base URL - yalnız .env-dən gəlir (Vite üçün import.meta.env istifadə olunur)
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
-// Mock data - real API hazır olduqda comment-ə alınacaq
 const mockResidentsData = Array.from({ length: 50 }, (_, index) => {
   const isLegalEntity = index % 3 === 0;
   const type = isLegalEntity ? "legal" : "physical";
@@ -63,7 +61,6 @@ export const fetchResidents = async (filters = {}, page = 1, itemsPerPage = 10) 
     // Mock data - real API hazır olduqda comment-ə alınacaq
     return new Promise((resolve) => {
       setTimeout(() => {
-        // Filter logic
         let filtered = [...mockResidentsData];
         if (filters.fullName) {
           filtered = filtered.filter((item) =>
@@ -74,7 +71,6 @@ export const fetchResidents = async (filters = {}, page = 1, itemsPerPage = 10) 
           filtered = filtered.filter((item) => item.status === filters.status);
         }
 
-        // Pagination
         const total = filtered.length;
         const startIndex = (page - 1) * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
@@ -104,7 +100,6 @@ export const fetchResidents = async (filters = {}, page = 1, itemsPerPage = 10) 
  */
 export const createResident = async (residentData) => {
   try {
-    // Real API çağırışı - hazır olduqda comment-dən çıxarılacaq
     // if (!API_BASE_URL) {
     //   throw new Error("API_BASE_URL is not defined in .env file");
     // }
@@ -144,7 +139,6 @@ export const createResident = async (residentData) => {
  */
 export const updateResident = async (id, residentData) => {
   try {
-    // Real API çağırışı - hazır olduqda comment-dən çıxarılacaq
     // if (!API_BASE_URL) {
     //   throw new Error("API_BASE_URL is not defined in .env file");
     // }
@@ -183,7 +177,6 @@ export const updateResident = async (id, residentData) => {
  */
 export const deleteResident = async (id) => {
   try {
-    // Real API çağırışı - hazır olduqda comment-dən çıxarılacaq
     // if (!API_BASE_URL) {
     //   throw new Error("API_BASE_URL is not defined in .env file");
     // }
@@ -197,7 +190,6 @@ export const deleteResident = async (id) => {
     // if (!response.ok) throw new Error("Failed to delete resident");
     // return;
 
-    // Mock data - real API hazır olduqda comment-ə alınacaq
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve();
@@ -216,7 +208,6 @@ export const deleteResident = async (id) => {
  */
 export const fetchResidentById = async (id) => {
   try {
-    // Real API çağırışı - hazır olduqda comment-dən çıxarılacaq
     // if (!API_BASE_URL) {
     //   throw new Error("API_BASE_URL is not defined in .env file");
     // }
@@ -231,7 +222,6 @@ export const fetchResidentById = async (id) => {
     // const data = await response.json();
     // return data;
 
-    // Mock data - real API hazır olduqda comment-ə alınacaq
     return new Promise((resolve) => {
       setTimeout(() => {
         const resident = mockResidentsData.find((item) => item.id === id);

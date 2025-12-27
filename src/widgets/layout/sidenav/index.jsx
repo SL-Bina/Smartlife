@@ -17,7 +17,6 @@ export function Sidenav({ brandImg, brandName, routes }) {
     transparent: "bg-transparent",
   };
 
-  // Check if mobile view
   React.useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 1280);
@@ -27,7 +26,6 @@ export function Sidenav({ brandImg, brandName, routes }) {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Prevent body scroll when sidenav is open on mobile
   React.useEffect(() => {
     if (openSidenav && isMobile) {
       document.body.style.overflow = "hidden";
@@ -41,7 +39,6 @@ export function Sidenav({ brandImg, brandName, routes }) {
 
   return (
     <>
-      {/* Backdrop Overlay - Mobile Only */}
       <AnimatePresence>
         {openSidenav && (
           <motion.div
@@ -55,7 +52,6 @@ export function Sidenav({ brandImg, brandName, routes }) {
         )}
       </AnimatePresence>
 
-      {/* Sidenav */}
       <motion.aside
         initial={false}
         animate={{

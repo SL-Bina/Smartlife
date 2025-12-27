@@ -14,7 +14,6 @@ export function ResidentsDetailModal({ open, onClose, resident, onEdit }) {
       </DialogHeader>
       <DialogBody divider className="dark:bg-gray-800 dark:border-gray-700 max-h-[70vh] overflow-y-auto">
         <div className="space-y-6">
-          {/* Əsas məlumatlar */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
               <Typography variant="small" className="text-blue-gray-600 dark:text-gray-400 mb-1">
@@ -34,7 +33,6 @@ export function ResidentsDetailModal({ open, onClose, resident, onEdit }) {
             </div>
           </div>
 
-          {/* Fiziki şəxs məlumatları */}
           {resident.type === "physical" && (
             <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
               <Typography variant="h6" className="text-blue-gray-900 dark:text-white font-bold mb-4">
@@ -69,7 +67,6 @@ export function ResidentsDetailModal({ open, onClose, resident, onEdit }) {
             </div>
           )}
 
-          {/* Hüquqi şəxs məlumatları */}
           {resident.type === "legal" && (
             <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
               <Typography variant="h6" className="text-blue-gray-900 dark:text-white font-bold mb-4">
@@ -96,7 +93,6 @@ export function ResidentsDetailModal({ open, onClose, resident, onEdit }) {
             </div>
           )}
 
-          {/* Əlaqə məlumatları */}
           <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
             <Typography variant="h6" className="text-blue-gray-900 dark:text-white font-bold mb-4">
               {t("residents.detail.contactInfo")}
@@ -129,7 +125,6 @@ export function ResidentsDetailModal({ open, onClose, resident, onEdit }) {
             </div>
           </div>
 
-          {/* Mənzil məlumatları */}
           <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
             <Typography variant="h6" className="text-blue-gray-900 dark:text-white font-bold mb-4">
               {t("residents.detail.apartmentInfo")}
@@ -162,7 +157,6 @@ export function ResidentsDetailModal({ open, onClose, resident, onEdit }) {
             </div>
           </div>
 
-          {/* Ünvan məlumatları */}
           <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
             <Typography variant="h6" className="text-blue-gray-900 dark:text-white font-bold mb-4">
               {t("residents.detail.addressInfo")}
@@ -187,7 +181,6 @@ export function ResidentsDetailModal({ open, onClose, resident, onEdit }) {
             </div>
           </div>
 
-          {/* Maliyyə məlumatları */}
           <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
             <Typography variant="h6" className="text-blue-gray-900 dark:text-white font-bold mb-4">
               {t("residents.detail.financialInfo")}
@@ -218,7 +211,6 @@ export function ResidentsDetailModal({ open, onClose, resident, onEdit }) {
             </div>
           </div>
 
-          {/* Digər məlumatlar */}
           <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
             <Typography variant="h6" className="text-blue-gray-900 dark:text-white font-bold mb-4">
               {t("residents.detail.otherInfo")}

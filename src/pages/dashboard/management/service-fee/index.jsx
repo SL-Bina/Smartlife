@@ -27,7 +27,6 @@ const PropertyServiceFeePage = () => {
     try {
       await updateServiceFee(apartment.id, parseFloat(feeValue), t("serviceFee.reasons.manualChange"));
       
-      // Yeni tarixçə qeydi əlavə et
       const newHistoryEntry = {
         id: feeHistory.length + 1,
         date: new Date().toISOString().split("T")[0],
@@ -60,7 +59,6 @@ const PropertyServiceFeePage = () => {
       <ServiceFeeHeader apartmentNumber={apartment.number} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Sol tərəf - Mənzil məlumatları və form */}
         <div className="lg:col-span-2 space-y-6">
           <ApartmentInfoCard apartment={apartment} />
           <ServiceFeeFormCard
@@ -72,7 +70,6 @@ const PropertyServiceFeePage = () => {
           />
         </div>
 
-        {/* Sağ tərəf - Tarixçə */}
         <div className="lg:col-span-1">
           <FeeHistoryCard feeHistory={feeHistory} />
         </div>

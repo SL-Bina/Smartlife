@@ -11,7 +11,7 @@ export function ResidentsCardList({ residents, onView, onEdit, onDelete }) {
       {residents.map((row) => (
         <Card
           key={row.id}
-          className="border border-red-600 dark:border-gray-700 shadow-sm dark:bg-gray-800 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow"
+          className="border border-red-600 dark:border-gray-700 shadow-sm dark:bg-gray-800 cursor-pointer hover:shadow-md transition-shadow"
           onClick={() => onView(row)}
         >
           <CardBody className="space-y-3 dark:bg-gray-800">

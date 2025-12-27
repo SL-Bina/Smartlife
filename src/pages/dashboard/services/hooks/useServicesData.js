@@ -35,7 +35,6 @@ export function useServicesData(filters, page, refreshKey = 0) {
   const filteredData = useMemo(() => {
     let filtered = [...services];
     
-    // Name filter
     if (filters.name) {
       filtered = filtered.filter((item) =>
         item.name?.toLowerCase().includes(filters.name.toLowerCase())

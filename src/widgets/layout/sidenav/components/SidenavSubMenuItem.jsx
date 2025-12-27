@@ -52,7 +52,7 @@ export function SidenavSubMenuItem({ icon, name, path, layout, isParentPath }) {
               </div>
               <Typography
                 variant="small"
-                className={`text-[11px] xl:text-xs font-medium truncate ${
+                className={`text-xs xl:text-sm font-medium truncate ${
                   isActive
                     ? "text-white"
                     : "text-gray-600 dark:text-gray-400"

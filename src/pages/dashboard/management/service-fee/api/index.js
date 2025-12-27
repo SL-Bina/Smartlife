@@ -1,7 +1,5 @@
-// API Base URL - yalnız .env-dən gəlir (Vite üçün import.meta.env istifadə olunur)
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
-// Mock data - real API hazır olduqda comment-ə alınacaq
 const mockApartmentData = Array.from({ length: 50 }, (_, index) => ({
   id: index + 1,
   number: `Mənzil ${index + 1}`,
@@ -14,7 +12,6 @@ const mockApartmentData = Array.from({ length: 50 }, (_, index) => ({
   building: `Bina ${Math.floor(index / 5) + 1}`,
 }));
 
-// Mock servis haqqı tarixçəsi
 const mockFeeHistoryData = [
   {
     id: 1,

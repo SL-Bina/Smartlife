@@ -1,8 +1,6 @@
 import api from "@/services/api";
 
-// Services API
 export const servicesAPI = {
-  // Tüm servisləri getir
   getAll: async (params = {}) => {
     try {
       const response = await api.get("/services/list", { params });
@@ -12,7 +10,6 @@ export const servicesAPI = {
     }
   },
 
-  // Tek servis getir
   getById: async (id) => {
     try {
       const response = await api.get(`/services/${id}`);
@@ -22,7 +19,6 @@ export const servicesAPI = {
     }
   },
 
-  // Yeni servis oluştur
   create: async (data) => {
     try {
       const cleanedData = {
@@ -53,7 +49,6 @@ export const servicesAPI = {
     }
   },
 
-  // Servis güncelle
   update: async (id, data) => {
     try {
       const cleanedData = {
@@ -82,7 +77,6 @@ export const servicesAPI = {
     }
   },
 
-  // Servis sil
   delete: async (id) => {
     try {
       const response = await api.delete(`/services/${id}`);

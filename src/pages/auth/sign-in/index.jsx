@@ -64,7 +64,6 @@ export function SignIn() {
     e.preventDefault();
     setError(null);
 
-    // Validation
     if (!identifier.trim()) {
       setError(t("auth.signIn.identifierRequired") || "Email, Username, Phone və ya Name daxil edin");
       return;
@@ -75,7 +74,6 @@ export function SignIn() {
       return;
     }
 
-    // identifier email, username, phone və ya name ola bilər
     const result = await login(identifier.trim(), password);
     if (!result.success) {
       setError(result.message || t("auth.signIn.invalidCredentialsError"));
@@ -103,13 +101,11 @@ export function SignIn() {
 
   return (
     <section className="h-full flex gap-4 relative px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-6 overflow-hidden">
-      {/* Background Image - Mobile Only */}
       <div 
         className="absolute inset-0 lg:hidden bg-cover bg-center opacity-40 dark:opacity-25 -z-10"
         style={{ backgroundImage: "url('/img/pattern.png')" }}
       ></div>
 
-      {/* Logo - Mobile Top Center, Desktop Hidden (will be in form section) */}
       <div className="absolute left-1/2 -translate-x-1/2 top-6 sm:top-8 lg:hidden z-20">
         <Link to="/">
           <img
@@ -120,7 +116,6 @@ export function SignIn() {
         </Link>
       </div>
 
-      {/* Language Selector - Top Right */}
       <div className="absolute right-4 sm:right-6 lg:right-8 top-4 sm:top-6 lg:top-6 z-10">
         <Menu placement="bottom-end">
           <MenuHandler>
@@ -148,10 +143,8 @@ export function SignIn() {
         </Menu>
       </div>
 
-      {/* Form Section */}
       <div className="w-full lg:w-3/5 flex flex-col justify-center items-center lg:items-start mt-32 sm:mt-36 lg:mt-0 relative z-10">
         <div className="w-full max-w-md mx-auto lg:mx-0 " style={{margin: "0 auto"}}>
-          {/* Logo - Desktop Only (Top of Form Section) */}
           <div className="lg:flex mb-6 hidden justify-center items-center" style={{margin: "0 auto"}}>
             <Link to="/" className="flex items-center" style={{margin: "0 auto"}}>
               <img
@@ -162,7 +155,6 @@ export function SignIn() {
             </Link>
           </div>
 
-          {/* Title */}
           <div className="text-center lg:text-left mb-4 lg:mb-6">
             <Typography variant="h2" className="font-bold text-xl sm:text-2xl lg:text-3xl text-center">
               {t("auth.signIn.title")}

@@ -27,7 +27,6 @@ const ResidentsPage = () => {
   const { residents, loading, error, pagination } = useResidentsData(filters, page, refreshKey);
   const { formData, updateField, resetForm, setFormFromResident } = useResidentsForm();
 
-  // Reset page when filters change
   useEffect(() => {
     if (page > (pagination.totalPages || 1) && pagination.totalPages > 0) {
       setPage(1);
@@ -97,7 +96,6 @@ const ResidentsPage = () => {
     }
   };
 
-  // Pagination functions
   const goToPage = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= (pagination.totalPages || 1)) {
       setPage(pageNumber);
@@ -169,7 +167,6 @@ const ResidentsPage = () => {
         </CardBody>
       </Card>
 
-      {/* Modals */}
       <ResidentsFilterModal
         open={filterOpen}
         onClose={() => setFilterOpen(false)}

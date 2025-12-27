@@ -3,15 +3,12 @@ import { mtkAPI } from "@/pages/dashboard/management/mtk/api";
 
 const ManagementContext = createContext(null);
 
-// Mock data - bütün management məlumatları
 const generateMockData = () => {
-  // MTK data
   const mtkData = Array.from({ length: 10 }, (_, index) => ({
     id: index + 1,
     name: `MTK ${index + 1}`,
   }));
 
-  // Complex data
   const complexData = Array.from({ length: 20 }, (_, index) => ({
     id: index + 1,
     name: `Kompleks ${index + 1}`,
@@ -21,7 +18,6 @@ const generateMockData = () => {
     residents: Math.floor(Math.random() * 200) + 20,
   }));
 
-  // Buildings data
   const buildingsData = Array.from({ length: 50 }, (_, index) => ({
     id: index + 1,
     name: `Bina ${index + 1}`,
@@ -31,7 +27,6 @@ const generateMockData = () => {
     apartments: Math.floor(Math.random() * 80) + 20,
   }));
 
-  // Blocks data
   const blocksData = Array.from({ length: 50 }, (_, index) => ({
     id: index + 1,
     name: `Blok ${String.fromCharCode(65 + (index % 5))}-${Math.floor(index / 5) + 1}`,
@@ -41,7 +36,6 @@ const generateMockData = () => {
     apartments: Math.floor(Math.random() * 40) + 10,
   }));
 
-  // Properties data
   const TOTAL_APARTMENTS = 200;
   const APARTMENTS_PER_FLOOR = 5;
   const propertiesData = Array.from({ length: TOTAL_APARTMENTS }, (_, index) => {
@@ -63,7 +57,6 @@ const generateMockData = () => {
     };
   });
 
-  // Residents data
   const residentsData = Array.from({ length: 150 }, (_, index) => {
     const isLegalEntity = index % 3 === 0;
     const type = isLegalEntity ? "legal" : "physical";
@@ -94,7 +87,6 @@ const generateMockData = () => {
     };
   });
 
-  // Apartment Groups data
   const apartmentGroupsData = [
     {
       id: 1,
@@ -131,7 +123,6 @@ const generateMockData = () => {
     },
   ];
 
-  // Building Service Fee data
   const buildingServiceFeeData = [
     {
       id: 1,
@@ -171,7 +162,6 @@ export function ManagementProvider({ children }) {
   const [data, setData] = useState(() => generateMockData());
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Data update funksiyaları
   const updateMtk = async (id, updates) => {
     try {
       const response = await mtkAPI.update(id, updates);

@@ -32,21 +32,21 @@ export function SidenavHeader({ brandName }) {
         <div className="flex flex-col gap-0.5 xl:gap-1 min-w-0 flex-1 xl:flex-none xl:items-center">
           <Typography
             variant="h5"
-            className="font-bold text-sm xl:text-lg bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 dark:from-white dark:via-gray-100 dark:to-white bg-clip-text text-transparent truncate xl:truncate-none"
+            className="font-bold text-base xl:text-xl bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 dark:from-white dark:via-gray-100 dark:to-white bg-clip-text text-transparent truncate xl:truncate-none"
           >
             {brandName}
           </Typography>
           <div className="flex flex-col gap-0.5 xl:gap-1 xl:items-center">
             <Typography
               variant="small"
-              className="text-[10px] xl:text-xs font-medium text-gray-600 dark:text-gray-400"
+              className="text-xs xl:text-sm font-medium text-gray-600 dark:text-gray-400"
             >
               {t("sidebar.welcome") || "Xoş gəldin"}
             </Typography>
             {user?.username && (
               <Typography
                 variant="small"
-                className="text-xs xl:text-sm font-semibold text-gray-900 dark:text-white truncate xl:truncate-none"
+                className="text-sm xl:text-base font-semibold text-gray-900 dark:text-white truncate xl:truncate-none"
               >
                 {user.username}
               </Typography>

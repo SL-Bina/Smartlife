@@ -35,7 +35,6 @@ const ServicesPage = () => {
   const { services, loading, error: dataError, pagination } = useServicesData(filters, page, refreshKey);
   const { formData, updateField, resetForm, setFormFromService } = useServicesForm();
 
-  // Reset page when filters change
   useEffect(() => {
     if (page > (pagination.totalPages || 1) && pagination.totalPages > 0) {
       setPage(1);
@@ -154,7 +153,6 @@ const ServicesPage = () => {
     }
   };
 
-  // Pagination functions
   const goToPage = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= (pagination.totalPages || 1)) {
       setPage(pageNumber);
@@ -177,7 +175,6 @@ const ServicesPage = () => {
     <div className="mt-12 mb-8">
       <ServicesHeader />
 
-      {/* Error and Success Messages */}
       {error && (
         <Alert color="red" className="mb-4" onClose={() => setError(null)}>
           {typeof error === "string" ? error : JSON.stringify(error)}
@@ -233,7 +230,6 @@ const ServicesPage = () => {
         </CardBody>
       </Card>
 
-      {/* Modals */}
       <ServicesFilterModal
         open={filterOpen}
         onClose={() => setFilterOpen(false)}

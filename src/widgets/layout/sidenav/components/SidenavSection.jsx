@@ -13,7 +13,7 @@ export function SidenavSection({ title }) {
     >
       <Typography
         variant="small"
-        className="text-[9px] xl:text-[10px] font-bold uppercase tracking-[0.15em] text-gray-400 dark:text-gray-500"
+        className="text-[10px] xl:text-[11px] font-bold uppercase tracking-[0.15em] text-gray-400 dark:text-gray-500"
       >
         {title}
       </Typography>
