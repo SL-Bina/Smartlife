@@ -27,6 +27,9 @@ export function reducer(state, action) {
     case "DARK_MODE": {
       return { ...state, darkMode: action.value };
     }
+    case "SIDENAV_COLLAPSED": {
+      return { ...state, sidenavCollapsed: action.value };
+    }
     default: {
       throw new Error(`Unhandled action type: ${action.type}`);
     }
@@ -42,6 +45,14 @@ export function MaterialTailwindControllerProvider({ children }) {
     return false;
   };
 
+  const getInitialSidenavCollapsed = () => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("sidenavCollapsed");
+      return saved === "true";
+    }
+    return false;
+  };
+
   const initialState = {
     openSidenav: false,
     sidenavColor: "dark",
@@ -50,6 +61,7 @@ export function MaterialTailwindControllerProvider({ children }) {
     fixedNavbar: false,
     openConfigurator: false,
     darkMode: getInitialDarkMode(),
+    sidenavCollapsed: getInitialSidenavCollapsed(),
   };
 
   const [controller, dispatch] = React.useReducer(reducer, initialState);
@@ -62,6 +74,10 @@ export function MaterialTailwindControllerProvider({ children }) {
     }
     localStorage.setItem("darkMode", String(controller.darkMode));
   }, [controller.darkMode]);
+
+  React.useEffect(() => {
+    localStorage.setItem("sidenavCollapsed", String(controller.sidenavCollapsed));
+  }, [controller.sidenavCollapsed]);
 
   const value = React.useMemo(
     () => [controller, dispatch],
@@ -107,6 +123,8 @@ export const setOpenConfigurator = (dispatch, value) =>
   dispatch({ type: "OPEN_CONFIGURATOR", value });
 export const setDarkMode = (dispatch, value) =>
   dispatch({ type: "DARK_MODE", value });
+export const setSidenavCollapsed = (dispatch, value) =>
+  dispatch({ type: "SIDENAV_COLLAPSED", value });
 
 // Export Management Context
 export { ManagementProvider, useManagement } from "./ManagementContext";

@@ -7,7 +7,7 @@ import { useMaterialTailwindController, setOpenSidenav } from "@/context";
 import { useTranslation } from "react-i18next";
 import { SidenavSubMenuItem } from "./SidenavSubMenuItem";
 
-export function SidenavMenuItem({ page, layout, routes, openMenus, setOpenMenus }) {
+export function SidenavMenuItem({ page, layout, routes, openMenus, setOpenMenus, collapsed = false }) {
   const location = useLocation();
   const [controller, dispatch] = useMaterialTailwindController();
   const { t } = useTranslation();
@@ -38,7 +38,9 @@ export function SidenavMenuItem({ page, layout, routes, openMenus, setOpenMenus 
                 return { [page.name]: true };
               });
             }}
-            className={`w-full flex items-center justify-between gap-2 xl:gap-3 px-2 xl:px-3 py-2 xl:py-2.5 rounded-lg xl:rounded-xl transition-all duration-200 group ${
+            className={`w-full flex items-center ${collapsed ? "justify-center" : "justify-between"} gap-2 xl:gap-3 ${
+              collapsed ? "px-1 xl:px-1" : "px-2 xl:px-3"
+            } py-2 xl:py-2.5 rounded-lg xl:rounded-xl transition-all duration-200 group ${
               isParentActive
                 ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-500/30"
                 : isOpen
@@ -46,44 +48,56 @@ export function SidenavMenuItem({ page, layout, routes, openMenus, setOpenMenus 
                 : "text-gray-700 dark:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-800/30"
             }`}
           >
-            <div className="flex items-center gap-2 xl:gap-3 min-w-0 flex-1">
+            <div className={`flex items-center ${collapsed ? "justify-center" : ""} gap-2 xl:gap-3 ${collapsed ? "" : "min-w-0 flex-1"}`}>
               <div
-                className={`flex-shrink-0 w-7 h-7 xl:w-8 xl:h-8 rounded-lg flex items-center justify-center transition-all duration-200 ${
+                className={`flex-shrink-0 rounded-lg flex items-center justify-center transition-all duration-200 ${
+                  collapsed 
+                    ? "w-10 h-10 xl:w-10 xl:h-10"
+                    : "w-7 h-7 xl:w-8 xl:h-8"
+                } ${
                   isParentActive
                     ? "bg-white/20"
                     : "bg-gray-200/50 dark:bg-gray-700/50 group-hover:bg-gray-300/50 dark:group-hover:bg-gray-600/50"
                 }`}
               >
                 {React.cloneElement(page.icon, {
-                  className: `w-3.5 h-3.5 xl:w-4 xl:h-4 ${
+                  className: `${
+                    collapsed 
+                      ? "w-5 h-5 xl:w-5 xl:h-5"
+                      : "w-3.5 h-3.5 xl:w-4 xl:h-4"
+                  } ${
                     isParentActive
                       ? "text-white"
                       : "text-gray-600 dark:text-gray-400"
                   }`,
                 })}
               </div>
-              <Typography
-                variant="small"
-                className={`font-semibold text-sm xl:text-base truncate ${
+              {!collapsed && (
+                <Typography
+                  variant="small"
+                  className={`font-semibold text-sm xl:text-base truncate ${
+                    isParentActive
+                      ? "text-white"
+                      : "text-gray-700 dark:text-gray-300"
+                  }`}
+                >
+                  {page.name.startsWith("sidebar.")
+                    ? t(page.name)
+                    : page.name}
+                </Typography>
+              )}
+            </div>
+            {!collapsed && (
+              <ChevronDownIcon
+                className={`w-3.5 h-3.5 xl:w-4 xl:h-4 transition-transform duration-200 flex-shrink-0 ${
+                  isOpen ? "rotate-180" : ""
+                } ${
                   isParentActive
                     ? "text-white"
-                    : "text-gray-700 dark:text-gray-300"
+                    : "text-gray-500 dark:text-gray-400"
                 }`}
-              >
-                {page.name.startsWith("sidebar.")
-                  ? t(page.name)
-                  : page.name}
-              </Typography>
-            </div>
-            <ChevronDownIcon
-              className={`w-3.5 h-3.5 xl:w-4 xl:h-4 transition-transform duration-200 flex-shrink-0 ${
-                isOpen ? "rotate-180" : ""
-              } ${
-                isParentActive
-                  ? "text-white"
-                  : "text-gray-500 dark:text-gray-400"
-              }`}
-            />
+              />
+            )}
           </button>
         </motion.div>
 
@@ -96,7 +110,8 @@ export function SidenavMenuItem({ page, layout, routes, openMenus, setOpenMenus 
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <ul className="mt-1 xl:mt-1.5 ml-3 xl:ml-4 pl-3 xl:pl-4 border-l-2 border-gray-200 dark:border-gray-700 space-y-0.5">
+              {!collapsed && (
+                <ul className="mt-1 xl:mt-1.5 ml-3 xl:ml-4 pl-3 xl:pl-4 border-l-2 border-gray-200 dark:border-gray-700 space-y-0.5">
                 {page.children
                   .filter((child) => !child.hideInSidenav)
                   .map(({ icon, name, path }) => {
@@ -117,7 +132,8 @@ export function SidenavMenuItem({ page, layout, routes, openMenus, setOpenMenus 
                       />
                     );
                   })}
-              </ul>
+                </ul>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -163,7 +179,9 @@ export function SidenavMenuItem({ page, layout, routes, openMenus, setOpenMenus 
               }}
             >
               <div
-                className={`flex items-center gap-2 xl:gap-3 px-2 xl:px-3 py-2 xl:py-2.5 rounded-lg xl:rounded-xl transition-all duration-200 group ${
+                className={`flex items-center ${collapsed ? "justify-center" : ""} gap-2 xl:gap-3 ${
+                  collapsed ? "px-1 xl:px-1" : "px-2 xl:px-3"
+                } py-2 xl:py-2.5 rounded-lg xl:rounded-xl transition-all duration-200 group ${
                   shouldBeActive
                     ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-500/30"
                     : "text-gray-700 dark:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-800/30"
@@ -175,32 +193,42 @@ export function SidenavMenuItem({ page, layout, routes, openMenus, setOpenMenus 
                 }}
               >
                 <div
-                  className={`flex-shrink-0 w-7 h-7 xl:w-8 xl:h-8 rounded-lg flex items-center justify-center transition-all duration-200 ${
+                  className={`flex-shrink-0 rounded-lg flex items-center justify-center transition-all duration-200 ${
+                    collapsed 
+                      ? "w-10 h-10 xl:w-10 xl:h-10"
+                      : "w-7 h-7 xl:w-8 xl:h-8"
+                  } ${
                     shouldBeActive
                       ? "bg-white/20"
                       : "bg-gray-200/50 dark:bg-gray-700/50 group-hover:bg-gray-300/50 dark:group-hover:bg-gray-600/50"
                   }`}
                 >
                   {React.cloneElement(page.icon, {
-                    className: `w-3.5 h-3.5 xl:w-4 xl:h-4 ${
+                    className: `${
+                      collapsed 
+                        ? "w-5 h-5 xl:w-5 xl:h-5"
+                        : "w-3.5 h-3.5 xl:w-4 xl:h-4"
+                    } ${
                       shouldBeActive
                         ? "text-white"
                         : "text-gray-600 dark:text-gray-400"
                     }`,
                   })}
                 </div>
-                <Typography
-                  variant="small"
-                  className={`font-semibold text-sm xl:text-base truncate ${
-                    shouldBeActive
-                      ? "text-white"
-                      : "text-gray-700 dark:text-gray-300"
-                  }`}
-                >
-                  {page.name.startsWith("sidebar.")
-                    ? t(page.name)
-                    : page.name}
-                </Typography>
+                {!collapsed && (
+                  <Typography
+                    variant="small"
+                    className={`font-semibold text-sm xl:text-base truncate ${
+                      shouldBeActive
+                        ? "text-white"
+                        : "text-gray-700 dark:text-gray-300"
+                    }`}
+                  >
+                    {page.name.startsWith("sidebar.")
+                      ? t(page.name)
+                      : page.name}
+                  </Typography>
+                )}
               </div>
             </motion.div>
           );

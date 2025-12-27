@@ -1,10 +1,12 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Cog6ToothIcon } from "@heroicons/react/24/solid";
 import { IconButton } from "@material-tailwind/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import {
   Sidenav,
   DashboardNavbar,
+  Configurator,
 } from "@/widgets/layout";
 import routes from "@/routes";
 import { useMaterialTailwindController, ManagementProvider } from "@/context";
@@ -14,7 +16,6 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 function ProtectedRoute({ element, allowedRoles, moduleName }) {
   const { user, isInitialized, hasModuleAccess } = useAuth();
 
-  // User bilgileri yüklenene kadar bekle
   if (!isInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -30,16 +31,13 @@ function ProtectedRoute({ element, allowedRoles, moduleName }) {
     return <Navigate to="/auth/sign-in" replace />;
   }
 
-  // Role kontrolü - user.role bir obje olabilir { id, name }
   const userRole = user.role?.name?.toLowerCase() || (typeof user.role === 'string' ? user.role.toLowerCase() : null);
   const originalRole = user.role?.name?.toLowerCase();
   
-  // Root kullanıcısı için tüm sayfalara erişim ver
   if (originalRole === "root") {
     return element;
   }
 
-  // Modül yetkisi kontrolü - eğer moduleName varsa ve yetki yoksa dashboard'a yönlendir
   if (moduleName && !hasModuleAccess(moduleName)) {
     if (userRole === "resident") {
       return <Navigate to="/dashboard/resident/home" replace />;
@@ -146,10 +144,20 @@ const filterRoutesByRole = (routes, user, hasModuleAccess) => {
 
 export function Dashboard() {
   const [controller, dispatch] = useMaterialTailwindController();
-  const { sidenavType } = controller;
+  const { sidenavType, sidenavCollapsed } = controller;
   const { user, hasModuleAccess, refreshUser, isInitialized } = useAuth();
+  const [isDesktop, setIsDesktop] = useState(false);
   
   useDocumentTitle();
+
+  useEffect(() => {
+    const checkDesktop = () => {
+      setIsDesktop(window.innerWidth >= 1280);
+    };
+    checkDesktop();
+    window.addEventListener("resize", checkDesktop);
+    return () => window.removeEventListener("resize", checkDesktop);
+  }, []);
 
   // Belirli aralıklarla permission'ları backend'den yenile
   // Backend'de yeni permission eklendiğinde veya değiştiğinde otomatik olarak güncellenir
@@ -192,7 +200,20 @@ export function Dashboard() {
             sidenavType === "dark" ? "/img/logo-ct.png" : "/img/logo-ct-dark.png"
           }
         />
-        <div className="p-4 xl:ml-80">
+        <motion.div
+          initial={false}
+          animate={{
+            marginLeft: isDesktop 
+              ? (sidenavCollapsed ? 80 : 320)
+              : 0,
+          }}
+          transition={{
+            type: "spring",
+            stiffness: 300,
+            damping: 30,
+          }}
+          className="p-4"
+        >
           <DashboardNavbar />
           <div>
             <Routes>
@@ -235,7 +256,8 @@ export function Dashboard() {
           />
             </Routes>
           </div>
-        </div>
+        </motion.div>
+        <Configurator />
       </div>
     </ManagementProvider>
   );

@@ -7,9 +7,10 @@ import { SidenavMenu } from "./components/SidenavMenu";
 
 export function Sidenav({ brandImg, brandName, routes }) {
   const [controller, dispatch] = useMaterialTailwindController();
-  const { sidenavType, openSidenav } = controller;
+  const { sidenavType, openSidenav, sidenavCollapsed } = controller;
   const [openMenus, setOpenMenus] = React.useState({});
   const [isMobile, setIsMobile] = React.useState(false);
+  const [isHovered, setIsHovered] = React.useState(false);
 
   const sidenavTypes = {
     dark: "bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900",
@@ -56,6 +57,11 @@ export function Sidenav({ brandImg, brandName, routes }) {
         initial={false}
         animate={{
           x: isMobile ? (openSidenav ? 0 : -288) : 0,
+          width: isMobile 
+            ? 288 
+            : sidenavCollapsed 
+              ? (isHovered ? 320 : 80)
+              : 320,
         }}
         transition={
           isMobile
@@ -64,12 +70,30 @@ export function Sidenav({ brandImg, brandName, routes }) {
                 stiffness: 300,
                 damping: 30,
               }
-            : { duration: 0 }
+            : {
+                type: "spring",
+                stiffness: 300,
+                damping: 30,
+              }
         }
-        className={`${sidenavTypes[sidenavType]} fixed inset-y-0 left-0 z-50 w-72 xl:w-80 xl:translate-x-0 flex flex-col backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-700/50 shadow-2xl`}
+        onMouseEnter={() => {
+          if (!isMobile && sidenavCollapsed) {
+            setIsHovered(true);
+          }
+        }}
+        onMouseLeave={() => {
+          if (!isMobile && sidenavCollapsed) {
+            setIsHovered(false);
+          }
+        }}
+        className={`${sidenavTypes[sidenavType]} fixed inset-y-0 left-0 ${
+          sidenavCollapsed && isHovered ? "z-[60]" : "z-50"
+        } xl:translate-x-0 flex flex-col backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-700/50 shadow-2xl ${
+          sidenavCollapsed && !isHovered ? "xl:overflow-hidden" : "overflow-y-auto"
+        }`}
       >
-        <SidenavHeader brandName={brandName} />
-        <SidenavMenu routes={routes} openMenus={openMenus} setOpenMenus={setOpenMenus} />
+        <SidenavHeader brandName={brandName} collapsed={sidenavCollapsed && !isHovered} />
+        <SidenavMenu routes={routes} openMenus={openMenus} setOpenMenus={setOpenMenus} collapsed={sidenavCollapsed && !isHovered} />
       </motion.aside>
     </>
   );

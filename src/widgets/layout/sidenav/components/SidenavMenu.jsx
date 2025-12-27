@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import { SidenavSection } from "./SidenavSection";
 import { SidenavMenuItem } from "./SidenavMenuItem";
 
-export function SidenavMenu({ routes, openMenus, setOpenMenus }) {
+export function SidenavMenu({ routes, openMenus, setOpenMenus, collapsed = false }) {
   const location = useLocation();
 
   React.useEffect(() => {
@@ -29,11 +29,15 @@ export function SidenavMenu({ routes, openMenus, setOpenMenus }) {
   }, [location.pathname, routes]);
 
   return (
-    <div className="flex-1 overflow-y-auto overflow-x-hidden px-2 xl:px-3 py-3 xl:py-4 custom-sidenav-scrollbar">
+    <div className={`flex-1 py-3 xl:py-4 ${
+      collapsed 
+        ? "px-1 xl:px-1 overflow-hidden" 
+        : "px-2 xl:px-3 overflow-y-auto overflow-x-hidden custom-sidenav-scrollbar"
+    }`}>
       {routes.map(({ layout, title, pages }, key) => (
-        <div key={key} className="mb-4 xl:mb-6">
-          <SidenavSection title={title} />
-          <ul className="space-y-0.5 xl:space-y-1">
+        <div key={key} className={collapsed ? "mb-2 xl:mb-3" : "mb-4 xl:mb-6"}>
+          {!collapsed && <SidenavSection title={title} />}
+          <ul className={collapsed ? "space-y-1" : "space-y-0.5 xl:space-y-1"}>
             {pages
               .filter((page) => !page.hideInSidenav)
               .map((page) => (
@@ -44,6 +48,7 @@ export function SidenavMenu({ routes, openMenus, setOpenMenus }) {
                   routes={routes}
                   openMenus={openMenus}
                   setOpenMenus={setOpenMenus}
+                  collapsed={collapsed}
                 />
               ))}
           </ul>
