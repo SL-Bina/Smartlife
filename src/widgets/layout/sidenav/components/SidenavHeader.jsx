@@ -9,9 +9,29 @@ import { useAuth } from "@/auth-context";
 
 export function SidenavHeader({ brandName, collapsed = false }) {
   const [controller, dispatch] = useMaterialTailwindController();
+  const { sidenavSize } = controller;
   const { t } = useTranslation();
   const { user } = useAuth();
   const [isMobile, setIsMobile] = React.useState(false);
+
+  // Size-based classes
+  const getTextSize = (small, medium, large) => {
+    if (sidenavSize === "small") return small;
+    if (sidenavSize === "large") return large;
+    return medium;
+  };
+
+  const getIconSize = (small, medium, large) => {
+    if (sidenavSize === "small") return small;
+    if (sidenavSize === "large") return large;
+    return medium;
+  };
+
+  const getLogoSize = (small, medium, large) => {
+    if (sidenavSize === "small") return small;
+    if (sidenavSize === "large") return large;
+    return medium;
+  };
 
   React.useEffect(() => {
     const checkMobile = () => {
@@ -38,13 +58,17 @@ export function SidenavHeader({ brandName, collapsed = false }) {
           className="relative"
         >
           <div className={`rounded-xl bg-white dark:bg-gray-800 flex items-center justify-center shadow-lg shadow-gray-200/50 dark:shadow-gray-900/50 group-hover:shadow-xl group-hover:shadow-gray-300/50 dark:group-hover:shadow-gray-800/50 transition-all duration-300 relative overflow-hidden border border-gray-200/50 dark:border-gray-700/50 ${
-            collapsed ? "w-10 h-10 xl:w-12 xl:h-12" : "w-12 h-12 xl:w-20 xl:h-20 xl:rounded-2xl"
+            collapsed 
+              ? getLogoSize("w-10 h-10 xl:w-10 xl:h-10", "w-10 h-10 xl:w-12 xl:h-12", "w-12 h-12 xl:w-14 xl:h-14")
+              : getLogoSize("w-10 h-10 xl:w-16 xl:h-16", "w-12 h-12 xl:w-20 xl:h-20 xl:rounded-2xl", "w-14 h-14 xl:w-24 xl:h-24 xl:rounded-2xl")
           }`}>
             <img 
               src="/img/logo-jira.svg" 
               alt="Logo" 
               className={`object-contain ${
-                collapsed ? "w-6 h-6 xl:w-7 xl:h-7" : "w-8 h-8 xl:w-14 xl:h-14"
+                collapsed 
+                  ? getIconSize("w-5 h-5 xl:w-6 xl:h-6", "w-6 h-6 xl:w-7 xl:h-7", "w-7 h-7 xl:w-8 xl:h-8")
+                  : getIconSize("w-6 h-6 xl:w-10 xl:h-10", "w-8 h-8 xl:w-14 xl:h-14", "w-10 h-10 xl:w-18 xl:h-18")
               }`}
             />
             <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent dark:from-gray-700/30 dark:to-transparent"></div>
@@ -54,21 +78,21 @@ export function SidenavHeader({ brandName, collapsed = false }) {
           <div className="flex flex-col gap-0.5 xl:gap-1 min-w-0 flex-1 xl:flex-none xl:items-center">
             <Typography
               variant="h5"
-              className="font-bold text-base xl:text-xl bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 dark:from-white dark:via-gray-100 dark:to-white bg-clip-text text-transparent truncate xl:truncate-none"
+              className={`font-bold ${getTextSize("text-sm xl:text-base", "text-base xl:text-xl", "text-lg xl:text-2xl")} bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 dark:from-white dark:via-gray-100 dark:to-white bg-clip-text text-transparent truncate xl:truncate-none`}
             >
               {brandName}
             </Typography>
             <div className="flex flex-col gap-0.5 xl:gap-1 xl:items-center">
               <Typography
                 variant="small"
-                className="text-xs xl:text-sm font-medium text-gray-600 dark:text-gray-400"
+                className={`${getTextSize("text-[10px] xl:text-xs", "text-xs xl:text-sm", "text-sm xl:text-base")} font-medium text-gray-600 dark:text-gray-400`}
               >
                 {t("sidebar.welcome") || "Xoş gəldin"}
               </Typography>
               {user?.username && (
                 <Typography
                   variant="small"
-                  className="text-sm xl:text-base font-semibold text-gray-900 dark:text-white truncate xl:truncate-none"
+                  className={`${getTextSize("text-xs xl:text-sm", "text-sm xl:text-base", "text-base xl:text-lg")} font-semibold text-gray-900 dark:text-white truncate xl:truncate-none`}
                 >
                   {user.username}
                 </Typography>

@@ -7,7 +7,27 @@ import { useTranslation } from "react-i18next";
 
 export function SidenavSubMenuItem({ icon, name, path, layout, isParentPath }) {
   const [controller, dispatch] = useMaterialTailwindController();
+  const { sidenavSize } = controller;
   const { t } = useTranslation();
+
+  // Size-based classes
+  const getTextSize = (small, medium, large) => {
+    if (sidenavSize === "small") return small;
+    if (sidenavSize === "large") return large;
+    return medium;
+  };
+
+  const getIconSize = (small, medium, large) => {
+    if (sidenavSize === "small") return small;
+    if (sidenavSize === "large") return large;
+    return medium;
+  };
+
+  const getIconBoxSize = (small, medium, large) => {
+    if (sidenavSize === "small") return small;
+    if (sidenavSize === "large") return large;
+    return medium;
+  };
 
   return (
     <li>
@@ -36,14 +56,14 @@ export function SidenavSubMenuItem({ icon, name, path, layout, isParentPath }) {
               }}
             >
               <div
-                className={`flex-shrink-0 w-5 h-5 xl:w-6 xl:h-6 rounded-md flex items-center justify-center ${
+                className={`flex-shrink-0 ${getIconBoxSize("w-4 h-4 xl:w-5 xl:h-5", "w-5 h-5 xl:w-6 xl:h-6", "w-6 h-6 xl:w-7 xl:h-7")} rounded-md flex items-center justify-center ${
                   isActive
                     ? "bg-white/20"
                     : "bg-gray-200/30 dark:bg-gray-700/30"
                 }`}
               >
                 {React.cloneElement(icon, {
-                  className: `w-3 h-3 xl:w-3.5 xl:h-3.5 ${
+                  className: `${getIconSize("w-2.5 h-2.5 xl:w-3 xl:h-3", "w-3 h-3 xl:w-3.5 xl:h-3.5", "w-3.5 h-3.5 xl:w-4 xl:h-4")} ${
                     isActive
                       ? "text-white"
                       : "text-gray-500 dark:text-gray-400"
@@ -52,7 +72,7 @@ export function SidenavSubMenuItem({ icon, name, path, layout, isParentPath }) {
               </div>
               <Typography
                 variant="small"
-                className={`text-xs xl:text-sm font-medium truncate ${
+                className={`${getTextSize("text-[10px] xl:text-xs", "text-xs xl:text-sm", "text-sm xl:text-base")} font-medium truncate ${
                   isActive
                     ? "text-white"
                     : "text-gray-600 dark:text-gray-400"

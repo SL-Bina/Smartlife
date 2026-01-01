@@ -2102,5 +2102,77 @@
     "securitySettings": "Təhlükəsizlik Parametrləri",
     "securityDescription": "Şifrə dəyişdirmək üçün Profil səhifəsinə keçin",
     "goToProfile": "Profili Dəyişdir"
+  },
+  "configurator": {
+    "title": "Dashboard Konfiquratoru",
+    "description": "Dashboard seçimlərinizi görün",
+    "sections": {
+      "sidenav": {
+        "title": "Yan Panəl",
+        "collapsed": {
+          "title": "Yığılmış",
+          "description": "Yan paneli yığılmış vəziyyətə gətirir, yalnız ikonlar görünür. Hover zamanı genişlənir."
+        },
+        "flatMenu": {
+          "title": "Düz Menyu",
+          "description": "Alt menyuları gizlədir və bütün elementləri düz siyahıda göstərir. Alt menyu başlıqları görünməz olur."
+        },
+        "expandAll": {
+          "title": "Bütün Alt Menyuları Aç",
+          "description": "Bütün alt menyuları avtomatik olaraq açıq vəziyyətdə saxlayır. Düz menyu ilə birlikdə işləmir."
+        },
+        "size": {
+          "title": "Ölçü",
+          "description": "Yan panelin ölçüsünü dəyişdirir (Kiçik, Orta, Böyük).",
+          "options": {
+            "small": "Kiçik",
+            "medium": "Orta",
+            "large": "Böyük"
+          }
+        },
+        "position": {
+          "title": "Mövqe",
+          "description": "Yan panelin mövqeyini dəyişdirir (Sol, Sağ).",
+          "options": {
+            "left": "Sol",
+            "right": "Sağ"
+          }
+        },
+        "shadow": {
+          "title": "Kölgə",
+          "description": "Yan panelə kölgə əlavə edir və ya çıxarır."
+        },
+        "border": {
+          "title": "Sərhəd",
+          "description": "Yan panelin sərhədini göstərir və ya gizlədir."
+        }
+      },
+      "navbar": {
+        "title": "Navbar",
+        "fixed": {
+          "title": "Sabit",
+          "description": "Navbar-ı ekranın yuxarısında sabitləyir, səhifə scroll olanda da yerində qalır."
+        },
+        "transparent": {
+          "title": "Şəffaf",
+          "description": "Navbar-ı şəffaf edir, arxadakı məzmun görünür."
+        },
+        "size": {
+          "title": "Ölçü",
+          "description": "Navbar-ın ölçüsünü dəyişdirir (Kiçik, Orta, Böyük)."
+        }
+      },
+      "layout": {
+        "title": "Layout",
+        "compactMode": {
+          "title": "Kompakt Rejim",
+          "description": "İnterfeysi daha kompakt edir, elementlər arasındakı boşluqları azaldır."
+        },
+        "rtlMode": {
+          "title": "RTL Rejim",
+          "description": "İnterfeysi sağdan sola (RTL) rejiminə keçirir, ərəb və ivrit dilləri üçün uyğundur."
+        }
+      }
+    }
   }
 }

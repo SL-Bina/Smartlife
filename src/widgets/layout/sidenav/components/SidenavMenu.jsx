@@ -3,30 +3,46 @@ import { useLocation } from "react-router-dom";
 import { SidenavSection } from "./SidenavSection";
 import { SidenavMenuItem } from "./SidenavMenuItem";
 
-export function SidenavMenu({ routes, openMenus, setOpenMenus, collapsed = false }) {
+export function SidenavMenu({ routes, openMenus, setOpenMenus, collapsed = false, flatMenu = false, expandAll = false }) {
   const location = useLocation();
 
   React.useEffect(() => {
-    setOpenMenus((current) => {
-      const updated = {};
-
-      routes.forEach(({ layout, pages }) => {
-        pages.forEach((page) => {
-          if (Array.isArray(page.children) && page.children.length > 0) {
-            const hasActiveChild = page.children.some(
-              (child) => `/${layout}${child.path}` === location.pathname
-            );
-
-            if (hasActiveChild) {
+    if (expandAll) {
+      // If expandAll is true, open all menus with children
+      setOpenMenus((current) => {
+        const updated = {};
+        routes.forEach(({ layout, pages }) => {
+          pages.forEach((page) => {
+            if (Array.isArray(page.children) && page.children.length > 0) {
               updated[page.name] = true;
             }
-          }
+          });
         });
+        return updated;
       });
+    } else {
+      // Normal behavior: only open menus with active children
+      setOpenMenus((current) => {
+        const updated = {};
 
-      return updated;
-    });
-  }, [location.pathname, routes]);
+        routes.forEach(({ layout, pages }) => {
+          pages.forEach((page) => {
+            if (Array.isArray(page.children) && page.children.length > 0) {
+              const hasActiveChild = page.children.some(
+                (child) => `/${layout}${child.path}` === location.pathname
+              );
+
+              if (hasActiveChild) {
+                updated[page.name] = true;
+              }
+            }
+          });
+        });
+
+        return updated;
+      });
+    }
+  }, [location.pathname, routes, expandAll]);
 
   return (
     <div className={`flex-1 py-3 xl:py-4 ${
@@ -49,6 +65,8 @@ export function SidenavMenu({ routes, openMenus, setOpenMenus, collapsed = false
                   openMenus={openMenus}
                   setOpenMenus={setOpenMenus}
                   collapsed={collapsed}
+                  flatMenu={flatMenu}
+                  expandAll={expandAll}
                 />
               ))}
           </ul>

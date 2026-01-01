@@ -144,7 +144,7 @@ const filterRoutesByRole = (routes, user, hasModuleAccess) => {
 
 export function Dashboard() {
   const [controller, dispatch] = useMaterialTailwindController();
-  const { sidenavType, sidenavCollapsed } = controller;
+  const { sidenavType, sidenavCollapsed, sidenavSize, sidenavPosition } = controller;
   const { user, hasModuleAccess, refreshUser, isInitialized } = useAuth();
   const [isDesktop, setIsDesktop] = useState(false);
   
@@ -203,8 +203,11 @@ export function Dashboard() {
         <motion.div
           initial={false}
           animate={{
-            marginLeft: isDesktop 
-              ? (sidenavCollapsed ? 80 : 320)
+            marginLeft: isDesktop && sidenavPosition === "left"
+              ? (sidenavCollapsed ? 80 : (sidenavSize === "small" ? 240 : sidenavSize === "large" ? 400 : 320))
+              : 0,
+            marginRight: isDesktop && sidenavPosition === "right"
+              ? (sidenavCollapsed ? 80 : (sidenavSize === "small" ? 240 : sidenavSize === "large" ? 400 : 320))
               : 0,
           }}
           transition={{

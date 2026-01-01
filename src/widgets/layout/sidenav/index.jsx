@@ -7,7 +7,7 @@ import { SidenavMenu } from "./components/SidenavMenu";
 
 export function Sidenav({ brandImg, brandName, routes }) {
   const [controller, dispatch] = useMaterialTailwindController();
-  const { sidenavType, openSidenav, sidenavCollapsed } = controller;
+  const { sidenavType, openSidenav, sidenavCollapsed, sidenavFlatMenu, sidenavExpandAll, sidenavSize, sidenavPosition } = controller;
   const [openMenus, setOpenMenus] = React.useState({});
   const [isMobile, setIsMobile] = React.useState(false);
   const [isHovered, setIsHovered] = React.useState(false);
@@ -26,6 +26,25 @@ export function Sidenav({ brandImg, brandName, routes }) {
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  // Size mapping
+  const sizeMap = {
+    small: 240,
+    medium: 320,
+    large: 400,
+  };
+
+  const getSidenavWidth = () => {
+    if (isMobile) return 288;
+    if (sidenavCollapsed) {
+      return isHovered ? sizeMap[sidenavSize] || 320 : 80;
+    }
+    return sizeMap[sidenavSize] || 320;
+  };
+
+  const getCollapsedWidth = () => {
+    return isHovered ? sizeMap[sidenavSize] || 320 : 80;
+  };
 
   React.useEffect(() => {
     if (openSidenav && isMobile) {
@@ -57,11 +76,9 @@ export function Sidenav({ brandImg, brandName, routes }) {
         initial={false}
         animate={{
           x: isMobile ? (openSidenav ? 0 : -288) : 0,
-          width: isMobile 
-            ? 288 
-            : sidenavCollapsed 
-              ? (isHovered ? 320 : 80)
-              : 320,
+          width: getSidenavWidth(),
+          left: sidenavPosition === "right" ? "auto" : 0,
+          right: sidenavPosition === "right" ? 0 : "auto",
         }}
         transition={
           isMobile
@@ -86,14 +103,25 @@ export function Sidenav({ brandImg, brandName, routes }) {
             setIsHovered(false);
           }
         }}
-        className={`${sidenavTypes[sidenavType]} fixed inset-y-0 left-0 ${
+        className={`${sidenavTypes[sidenavType]} fixed inset-y-0 ${
+          sidenavPosition === "right" ? "right-0" : "left-0"
+        } ${
           sidenavCollapsed && isHovered ? "z-[60]" : "z-50"
-        } xl:translate-x-0 flex flex-col backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-700/50 shadow-2xl ${
+        } xl:translate-x-0 flex flex-col backdrop-blur-xl ${
+          sidenavPosition === "right" ? "border-l" : "border-r"
+        } border-gray-200/50 dark:border-gray-700/50 shadow-2xl ${
           sidenavCollapsed && !isHovered ? "xl:overflow-hidden" : "overflow-y-auto"
         }`}
       >
         <SidenavHeader brandName={brandName} collapsed={sidenavCollapsed && !isHovered} />
-        <SidenavMenu routes={routes} openMenus={openMenus} setOpenMenus={setOpenMenus} collapsed={sidenavCollapsed && !isHovered} />
+        <SidenavMenu 
+          routes={routes} 
+          openMenus={openMenus} 
+          setOpenMenus={setOpenMenus} 
+          collapsed={sidenavCollapsed && !isHovered}
+          flatMenu={sidenavFlatMenu}
+          expandAll={sidenavExpandAll}
+        />
       </motion.aside>
     </>
   );

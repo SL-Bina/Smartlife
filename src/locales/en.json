@@ -2090,5 +2090,77 @@
     "securitySettings": "Security Settings",
     "securityDescription": "Go to Profile page to change password",
     "goToProfile": "Go to Profile"
+  },
+  "configurator": {
+    "title": "Dashboard Configurator",
+    "description": "See our dashboard options",
+    "sections": {
+      "sidenav": {
+        "title": "Sidenav",
+        "collapsed": {
+          "title": "Collapsed",
+          "description": "Collapses the sidenav to show only icons. Expands on hover."
+        },
+        "flatMenu": {
+          "title": "Flat Menu",
+          "description": "Hides submenus and displays all items in a flat list. Parent menu titles are hidden."
+        },
+        "expandAll": {
+          "title": "Expand All Submenus",
+          "description": "Keeps all submenus automatically open. Does not work with flat menu."
+        },
+        "size": {
+          "title": "Size",
+          "description": "Changes the sidenav size (Small, Medium, Large).",
+          "options": {
+            "small": "Small",
+            "medium": "Medium",
+            "large": "Large"
+          }
+        },
+        "position": {
+          "title": "Position",
+          "description": "Changes the sidenav position (Left, Right).",
+          "options": {
+            "left": "Left",
+            "right": "Right"
+          }
+        },
+        "shadow": {
+          "title": "Shadow",
+          "description": "Adds or removes shadow from the sidenav."
+        },
+        "border": {
+          "title": "Border",
+          "description": "Shows or hides the sidenav border."
+        }
+      },
+      "navbar": {
+        "title": "Navbar",
+        "fixed": {
+          "title": "Fixed",
+          "description": "Fixes the navbar at the top of the screen, stays in place when scrolling."
+        },
+        "transparent": {
+          "title": "Transparent",
+          "description": "Makes the navbar transparent, allowing background content to show through."
+        },
+        "size": {
+          "title": "Size",
+          "description": "Changes the navbar size (Small, Medium, Large)."
+        }
+      },
+      "layout": {
+        "title": "Layout",
+        "compactMode": {
+          "title": "Compact Mode",
+          "description": "Makes the interface more compact by reducing spacing between elements."
+        },
+        "rtlMode": {
+          "title": "RTL Mode",
+          "description": "Switches the interface to right-to-left (RTL) mode, suitable for Arabic and Hebrew languages."
+        }
+      }
+    }
   }
 }
