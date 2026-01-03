@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useMemo } from "react";
 import { mtkAPI } from "@/pages/dashboard/management/mtk/api";
+import { complexAPI } from "@/pages/dashboard/management/complex/api";
 
 const ManagementContext = createContext(null);
 
@@ -204,28 +205,46 @@ export function ManagementProvider({ children }) {
     }
   };
 
-  const updateComplex = (id, updates) => {
-    setData((prev) => ({
-      ...prev,
-      complexes: prev.complexes.map((item) => (item.id === id ? { ...item, ...updates } : item)),
-    }));
-    setRefreshKey((prev) => prev + 1);
+  const updateComplex = async (id, updates) => {
+    try {
+      const response = await complexAPI.update(id, updates);
+      if (response.success) {
+        setRefreshKey((prev) => prev + 1);
+        return response;
+      }
+      throw new Error(response.message || "Failed to update Complex");
+    } catch (error) {
+      console.error("Error updating Complex:", error);
+      throw error;
+    }
   };
 
-  const addComplex = (newComplex) => {
-    setData((prev) => ({
-      ...prev,
-      complexes: [...prev.complexes, { ...newComplex, id: prev.complexes.length + 1 }],
-    }));
-    setRefreshKey((prev) => prev + 1);
+  const addComplex = async (newComplex) => {
+    try {
+      const response = await complexAPI.create(newComplex);
+      if (response.success) {
+        setRefreshKey((prev) => prev + 1);
+        return response;
+      }
+      throw new Error(response.message || "Failed to create Complex");
+    } catch (error) {
+      console.error("Error creating Complex:", error);
+      throw error;
+    }
   };
 
-  const deleteComplex = (id) => {
-    setData((prev) => ({
-      ...prev,
-      complexes: prev.complexes.filter((item) => item.id !== id),
-    }));
-    setRefreshKey((prev) => prev + 1);
+  const deleteComplex = async (id) => {
+    try {
+      const response = await complexAPI.delete(id);
+      if (response.success) {
+        setRefreshKey((prev) => prev + 1);
+        return response;
+      }
+      throw new Error(response.message || "Failed to delete Complex");
+    } catch (error) {
+      console.error("Error deleting Complex:", error);
+      throw error;
+    }
   };
 
   const updateBuilding = (id, updates) => {

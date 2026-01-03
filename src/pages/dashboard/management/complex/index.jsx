@@ -16,84 +16,175 @@ import {
   DialogBody,
   DialogFooter,
   Input,
+  Alert,
+  Select,
+  Option,
 } from "@material-tailwind/react";
-import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
+import {
+  EllipsisVerticalIcon,
+  InformationCircleIcon,
+  MapPinIcon,
+  EnvelopeIcon,
+  PhoneIcon,
+  GlobeAltIcon,
+  SwatchIcon,
+} from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
-
-const data = Array.from({ length: 50 }, (_, index) => ({
-  id: index + 1,
-  name: `Kompleks ${index + 1}`,
-  address: `Ünvan ${index + 1}`,
-  buildings: Math.floor(Math.random() * 10) + 1,
-  residents: Math.floor(Math.random() * 200) + 20,
-}));
-
-const ITEMS_PER_PAGE = 10;
+import { useManagement } from "@/context";
+import { useComplexData } from "./hooks/useComplexData";
+import { useComplexFilters } from "./hooks/useComplexFilters";
+import { useComplexForm } from "./hooks/useComplexForm";
 
 const ComplexPage = () => {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [filterOpen, setFilterOpen] = useState(false);
+  const { addComplex, updateComplex, deleteComplex, refreshKey } = useManagement();
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [viewOpen, setViewOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [itemToDelete, setItemToDelete] = useState(null);
+  const [itemToView, setItemToView] = useState(null);
+  const [page, setPage] = useState(1);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-  const [filterName, setFilterName] = useState("");
+  const { filters, filterOpen, setFilterOpen, updateFilter, clearFilters, applyFilters } = useComplexFilters();
+  const { complexes, loading, error: dataError, pagination } = useComplexData(filters, page, refreshKey);
+  const { formData, updateField, resetForm, setFormFromComplex } = useComplexForm();
 
-  const [formName, setFormName] = useState("");
-  const [formAddress, setFormAddress] = useState("");
-  const [formBuildings, setFormBuildings] = useState("");
-  const [formResidents, setFormResidents] = useState("");
-
+  // Reset page when filters change
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 400);
-    return () => clearTimeout(timer);
-  }, []);
+    if (page > (pagination.totalPages || 1) && pagination.totalPages > 0) {
+      setPage(1);
+    }
+  }, [pagination.totalPages, page]);
 
-  const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE);
-  const startIndex = (page - 1) * ITEMS_PER_PAGE;
-  const pageData = data.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const handleFilterApply = () => {
+    setPage(1);
+    applyFilters();
+  };
 
-  const handlePrev = () => setPage((prev) => Math.max(1, prev - 1));
-  const handleNext = () => setPage((prev) => Math.min(totalPages, prev + 1));
+  const handleFilterClear = () => {
+    clearFilters();
+    setPage(1);
+  };
 
   const openCreateModal = () => {
+    resetForm();
     setSelectedItem(null);
-    setFormName("");
-    setFormAddress("");
-    setFormBuildings("");
-    setFormResidents("");
     setCreateOpen(true);
+  };
+
+  const openViewModal = (item) => {
+    setItemToView(item);
+    setViewOpen(true);
   };
 
   const openEditModal = (item) => {
     setSelectedItem(item);
-    setFormName(item.name);
-    setFormAddress(item.address);
-    setFormBuildings(String(item.buildings));
-    setFormResidents(String(item.residents));
+    setFormFromComplex(item);
     setEditOpen(true);
   };
 
-  const handleFilterApply = () => {
-    // Filter apply logic backend və ya state ilə inteqrasiya edilə bilər
-    setFilterOpen(false);
+  const handleCreateSave = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+      setSuccess(null);
+      await addComplex(formData);
+      setSuccess(t("complexes.create.success") || "Kompleks uğurla yaradıldı");
+      setCreateOpen(false);
+      resetForm();
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error("Create Complex Error:", err);
+      
+      // Xəta mesajını formatla
+      let errorMessage = t("complexes.create.error") || "Kompleks yaradılarkən xəta baş verdi";
+      
+      if (err.allErrors && Array.isArray(err.allErrors)) {
+        // Bütün xəta mesajlarını göstər
+        errorMessage = err.allErrors.join(", ");
+      } else if (err.errors) {
+        // Xəta obyektindən mesajları çıxar
+        const errorMessages = Object.values(err.errors).flat();
+        errorMessage = errorMessages.join(", ");
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleFilterClear = () => {
-    setFilterName("");
-    setFilterOpen(false);
+  const handleEditSave = async () => {
+    if (selectedItem) {
+      try {
+        setSaving(true);
+        setError(null);
+        setSuccess(null);
+        await updateComplex(selectedItem.id, formData);
+        setSuccess(t("complexes.edit.success") || "Kompleks uğurla yeniləndi");
+        setEditOpen(false);
+        setSelectedItem(null);
+        resetForm();
+        setTimeout(() => setSuccess(null), 3000);
+      } catch (err) {
+        const errorMessage = err.message || err.errors || (t("complexes.edit.error") || "Kompleks yenilənərkən xəta baş verdi");
+        setError(errorMessage);
+      } finally {
+        setSaving(false);
+      }
+    }
   };
 
-  const handleCreateSave = () => {
-    // Yeni kompleks yaratmaq üçün API çağırışı burada ola bilər
-    setCreateOpen(false);
+  const handleDelete = (item) => {
+    setItemToDelete(item);
+    setDeleteOpen(true);
   };
 
-  const handleEditSave = () => {
-    // Seçilmiş kompleks üçün dəyişiklikləri saxlamaq üçün API çağırışı burada ola bilər
-    setEditOpen(false);
+  const handleDeleteConfirm = async () => {
+    if (!itemToDelete) return;
+
+    try {
+      setDeleting(true);
+      setError(null);
+      setSuccess(null);
+      await deleteComplex(itemToDelete.id);
+      setSuccess(t("complexes.delete.success") || "Kompleks uğurla silindi");
+      setDeleteOpen(false);
+      setItemToDelete(null);
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      const errorMessage = err.message || (t("complexes.delete.error") || "Kompleks silinərkən xəta baş verdi");
+      setError(errorMessage);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // Pagination functions
+  const goToPage = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= (pagination.totalPages || 1)) {
+      setPage(pageNumber);
+    }
+  };
+
+  const goToPrev = () => {
+    if (page > 1) {
+      setPage((prev) => prev - 1);
+    }
+  };
+
+  const goToNext = () => {
+    if (page < (pagination.totalPages || 1)) {
+      setPage((prev) => prev + 1);
+    }
   };
 
   return (
@@ -103,21 +194,93 @@ const ComplexPage = () => {
         <h3 className="text-white font-bold">{t("complexes.pageTitle")}</h3>
       </div>
 
+      {/* Error and Success Messages */}
+      {error && (
+        <Alert color="red" className="mb-4" onClose={() => setError(null)}>
+          {typeof error === "string" ? error : JSON.stringify(error)}
+        </Alert>
+      )}
+      {success && (
+        <Alert color="green" className="mb-4" onClose={() => setSuccess(null)}>
+          {success}
+        </Alert>
+      )}
+      {dataError && (
+        <Alert color="red" className="mb-4">
+          {dataError}
+        </Alert>
+      )}
+
       {/* Filter modal */}
-      <Dialog open={filterOpen} handler={setFilterOpen} size="sm" className="dark:bg-gray-900">
+      <Dialog open={filterOpen} handler={setFilterOpen} size="lg" className="dark:bg-gray-900">
         <DialogHeader className="dark:bg-gray-800 dark:text-white">{t("complexes.filter.title")}</DialogHeader>
-        <DialogBody divider className="space-y-4 dark:bg-gray-800 dark:border-gray-700">
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("complexes.filter.name")}
-            </Typography>
-            <Input
-              label={t("complexes.filter.enterName")}
-              value={filterName}
-              onChange={(e) => setFilterName(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
+        <DialogBody divider className="space-y-4 dark:bg-gray-800 dark:border-gray-700 max-h-[70vh] overflow-y-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+                {t("complexes.filter.name")}
+              </Typography>
+              <Input
+                label={t("complexes.filter.enterName")}
+                value={filters.name}
+                onChange={(e) => updateFilter("name", e.target.value)}
+                className="dark:text-white"
+                labelProps={{ className: "dark:text-gray-400" }}
+              />
+            </div>
+            <div>
+              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+                {t("complexes.filter.address") || "Ünvan"}
+              </Typography>
+              <Input
+                label={t("complexes.filter.enterAddress") || "Ünvan daxil edin"}
+                value={filters.address}
+                onChange={(e) => updateFilter("address", e.target.value)}
+                className="dark:text-white"
+                labelProps={{ className: "dark:text-gray-400" }}
+              />
+            </div>
+            <div>
+              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+                {t("complexes.filter.status") || "Status"}
+              </Typography>
+              <Select
+                value={filters.status}
+                onChange={(value) => updateFilter("status", value)}
+                className="dark:text-white"
+                labelProps={{ className: "dark:text-gray-400" }}
+              >
+                <Option value="">{t("complexes.filter.all") || "Hamısı"}</Option>
+                <Option value="active">{t("complexes.filter.active") || "Aktiv"}</Option>
+                <Option value="inactive">{t("complexes.filter.inactive") || "Passiv"}</Option>
+              </Select>
+            </div>
+            <div>
+              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+                {t("complexes.filter.email") || "Email"}
+              </Typography>
+              <Input
+                label={t("complexes.filter.enterEmail") || "Email daxil edin"}
+                value={filters.email}
+                onChange={(e) => updateFilter("email", e.target.value)}
+                className="dark:text-white"
+                labelProps={{ className: "dark:text-gray-400" }}
+                type="email"
+              />
+            </div>
+            <div>
+              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+                {t("complexes.filter.phone") || "Telefon"}
+              </Typography>
+              <Input
+                label={t("complexes.filter.enterPhone") || "Telefon daxil edin"}
+                value={filters.phone}
+                onChange={(e) => updateFilter("phone", e.target.value)}
+                className="dark:text-white"
+                labelProps={{ className: "dark:text-gray-400" }}
+                type="tel"
+              />
+            </div>
           </div>
         </DialogBody>
         <DialogFooter className="flex justify-between gap-2 dark:bg-gray-800 dark:border-gray-700">
@@ -136,135 +299,593 @@ const ComplexPage = () => {
       </Dialog>
 
       {/* Create complex modal */}
-      <Dialog open={createOpen} handler={setCreateOpen} size="sm" className="dark:bg-gray-900">
-        <DialogHeader className="dark:bg-gray-800 dark:text-white">{t("complexes.create.title")}</DialogHeader>
-        <DialogBody divider className="space-y-4 dark:bg-gray-800 dark:border-gray-700">
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("complexes.create.name")}
-            </Typography>
-            <Input
-              label={t("complexes.create.enterName")}
-              value={formName}
-              onChange={(e) => setFormName(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("complexes.create.address")}
-            </Typography>
-            <Input
-              label={t("complexes.create.enterAddress")}
-              value={formAddress}
-              onChange={(e) => setFormAddress(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-                {t("complexes.create.buildingsCount")}
-              </Typography>
-              <Input
-                type="number"
-                label={t("complexes.create.enterBuildings")}
-                value={formBuildings}
-                onChange={(e) => setFormBuildings(e.target.value)}
-                className="dark:text-white"
-                labelProps={{ className: "dark:text-gray-400" }}
-              />
+      <Dialog open={createOpen} handler={setCreateOpen} size="xl" className="dark:bg-gray-900 border border-red-600 dark:border-gray-700" dismiss={{ enabled: false }}>
+        <DialogHeader className="dark:bg-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-4">
+          <Typography variant="h5" className="font-bold">
+            {t("complexes.create.title")}
+          </Typography>
+        </DialogHeader>
+        <DialogBody divider className="dark:bg-gray-800 dark:border-gray-700 max-h-[75vh] overflow-y-auto">
+          <div className="space-y-6 py-2">
+            {/* Basic Information Section */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+                <InformationCircleIcon className="h-5 w-5 text-blue-500 dark:text-blue-400" />
+                <Typography variant="h6" className="font-semibold dark:text-white">
+                  {t("complexes.form.basicInfo") || "Əsas Məlumatlar"}
+                </Typography>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                    {t("complexes.form.name")} <span className="text-red-500">*</span>
+                  </Typography>
+                  <Input
+                    label={t("complexes.form.enterName")}
+                    value={formData.name || ""}
+                    onChange={(e) => updateField("name", e.target.value)}
+                    className="dark:text-white"
+                    labelProps={{ className: "dark:text-gray-400" }}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                    {t("complexes.form.status")} <span className="text-red-500">*</span>
+                  </Typography>
+                  <Select
+                    value={formData.status || "active"}
+                    onChange={(value) => updateField("status", value)}
+                    className="dark:text-white"
+                    labelProps={{ className: "dark:text-gray-400" }}
+                  >
+                    <Option value="active">{t("complexes.form.active") || "Aktiv"}</Option>
+                    <Option value="inactive">{t("complexes.form.inactive") || "Passiv"}</Option>
+                  </Select>
+                </div>
+              </div>
             </div>
-            <div>
-              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-                {t("complexes.create.residentsCount")}
-              </Typography>
-              <Input
-                type="number"
-                label={t("complexes.create.enterResidents")}
-                value={formResidents}
-                onChange={(e) => setFormResidents(e.target.value)}
-                className="dark:text-white"
-                labelProps={{ className: "dark:text-gray-400" }}
-              />
+
+            {/* Location Information Section */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+                <MapPinIcon className="h-5 w-5 text-green-500 dark:text-green-400" />
+                <Typography variant="h6" className="font-semibold dark:text-white">
+                  {t("complexes.form.metaInfo") || "Yerləşmə Məlumatları"}
+                </Typography>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                    {t("complexes.form.latitude") || "Enlik"}
+                  </Typography>
+                  <Input
+                    label={t("complexes.form.enterLatitude") || "Enlik daxil edin"}
+                    value={formData.meta?.lat || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "" || (!isNaN(parseFloat(value)) && parseFloat(value) >= -90 && parseFloat(value) <= 90)) {
+                        updateField("meta.lat", value);
+                      }
+                    }}
+                    className="dark:text-white"
+                    labelProps={{ className: "dark:text-gray-400" }}
+                    type="number"
+                    step="any"
+                    min="-90"
+                    max="90"
+                    placeholder="-90 ilə 90 arası"
+                  />
+                </div>
+
+                <div>
+                  <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                    {t("complexes.form.longitude") || "Uzunluq"}
+                  </Typography>
+                  <Input
+                    label={t("complexes.form.enterLongitude") || "Uzunluq daxil edin"}
+                    value={formData.meta?.lng || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "" || (!isNaN(parseFloat(value)) && parseFloat(value) >= -180 && parseFloat(value) <= 180)) {
+                        updateField("meta.lng", value);
+                      }
+                    }}
+                    className="dark:text-white"
+                    labelProps={{ className: "dark:text-gray-400" }}
+                    type="number"
+                    step="any"
+                    min="-180"
+                    max="180"
+                    placeholder="-180 ilə 180 arası"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                    {t("complexes.form.description") || "Təsvir"}
+                  </Typography>
+                  <textarea
+                    placeholder={t("complexes.form.enterDescription") || "Təsvir daxil edin"}
+                    value={formData.meta?.desc || ""}
+                    onChange={(e) => updateField("meta.desc", e.target.value)}
+                    className="w-full px-3 py-2.5 border border-blue-gray-200 rounded-lg focus:border-blue-500 focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-400 resize-none"
+                    rows={3}
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                    {t("complexes.form.address") || "Ünvan"}
+                  </Typography>
+                  <Input
+                    label={t("complexes.form.enterAddress") || "Ünvan daxil edin"}
+                    value={formData.meta?.address || ""}
+                    onChange={(e) => updateField("meta.address", e.target.value)}
+                    className="dark:text-white"
+                    labelProps={{ className: "dark:text-gray-400" }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Information Section */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+                <EnvelopeIcon className="h-5 w-5 text-purple-500 dark:text-purple-400" />
+                <Typography variant="h6" className="font-semibold dark:text-white">
+                  {t("complexes.form.contactInfo") || "Əlaqə Məlumatları"}
+                </Typography>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                    <EnvelopeIcon className="h-4 w-4 inline mr-1" />
+                    {t("complexes.form.email") || "Email"}
+                  </Typography>
+                  <Input
+                    label={t("complexes.form.enterEmail") || "Email daxil edin"}
+                    value={formData.meta?.email || ""}
+                    onChange={(e) => updateField("meta.email", e.target.value)}
+                    className="dark:text-white"
+                    labelProps={{ className: "dark:text-gray-400" }}
+                    type="email"
+                  />
+                </div>
+
+                <div>
+                  <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                    <PhoneIcon className="h-4 w-4 inline mr-1" />
+                    {t("complexes.form.phone") || "Telefon"}
+                  </Typography>
+                  <Input
+                    label={t("complexes.form.enterPhone") || "Telefon daxil edin"}
+                    value={formData.meta?.phone || ""}
+                    onChange={(e) => updateField("meta.phone", e.target.value)}
+                    className="dark:text-white"
+                    labelProps={{ className: "dark:text-gray-400" }}
+                    type="tel"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                    <GlobeAltIcon className="h-4 w-4 inline mr-1" />
+                    {t("complexes.form.website") || "Veb sayt"}
+                  </Typography>
+                  <Input
+                    label={t("complexes.form.enterWebsite") || "Veb sayt daxil edin"}
+                    value={formData.meta?.website || ""}
+                    onChange={(e) => updateField("meta.website", e.target.value)}
+                    className="dark:text-white"
+                    labelProps={{ className: "dark:text-gray-400" }}
+                    type="url"
+                    placeholder="https://example.com"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Color Code Section */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+                <SwatchIcon className="h-5 w-5 text-pink-500 dark:text-pink-400" />
+                <Typography variant="h6" className="font-semibold dark:text-white">
+                  {t("complexes.form.colorCode") || "Rəng Kodu"}
+                </Typography>
+              </div>
+
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                  {t("complexes.form.enterColorCode") || "Rəng kodu daxil edin"}
+                </Typography>
+                <div className="flex gap-3 items-end">
+                  <div className="flex flex-col">
+                    <label className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+                      {t("complexes.form.colorPicker") || "Rəng seçin"}
+                    </label>
+                    <input
+                      type="color"
+                      value={formData.meta?.color_code || "#237832"}
+                      onChange={(e) => updateField("meta.color_code", e.target.value)}
+                      className="w-16 h-12 rounded cursor-pointer border border-gray-300 dark:border-gray-600"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <Input
+                      label={t("complexes.form.enterColorCode") || "Rəng kodu"}
+                      value={formData.meta?.color_code || ""}
+                      onChange={(e) => updateField("meta.color_code", e.target.value)}
+                      className="dark:text-white"
+                      labelProps={{ className: "dark:text-gray-400" }}
+                      placeholder="#237832"
+                      pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+                    />
+                  </div>
+                  {formData.meta?.color_code && (
+                    <div
+                      className="w-12 h-12 rounded border border-gray-300 dark:border-gray-600"
+                      style={{ backgroundColor: formData.meta.color_code }}
+                      title={formData.meta.color_code}
+                    />
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </DialogBody>
-        <DialogFooter className="flex justify-end gap-2 dark:bg-gray-800 dark:border-gray-700">
-          <Button variant="outlined" color="blue-gray" onClick={() => setCreateOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+        <DialogFooter className="flex justify-end gap-3 dark:bg-gray-800 dark:border-gray-700 pt-4">
+          <Button
+            variant="outlined"
+            color="blue-gray"
+            onClick={() => { setCreateOpen(false); resetForm(); setError(null); }}
+            disabled={saving}
+            className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 min-w-[100px]"
+          >
             {t("complexes.create.cancel")}
           </Button>
-          <Button color="green" onClick={handleCreateSave} className="dark:bg-green-600 dark:hover:bg-green-700">
-            {t("complexes.create.save")}
+          <Button
+            color="green"
+            onClick={handleCreateSave}
+            disabled={saving}
+            className="dark:bg-green-600 dark:hover:bg-green-700 min-w-[120px]"
+          >
+            {saving ? (
+              <span className="flex items-center gap-2">
+                <svg
+                  className="animate-spin h-4 w-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                {t("complexes.create.saving") || "Saxlanılır..."}
+              </span>
+            ) : (
+              t("complexes.create.save")
+            )}
           </Button>
         </DialogFooter>
       </Dialog>
 
-      {/* Edit complex modal */}
-      <Dialog open={editOpen} handler={setEditOpen} size="sm" className="dark:bg-gray-900">
-        <DialogHeader className="dark:bg-gray-800 dark:text-white">{t("complexes.edit.title")}</DialogHeader>
-        <DialogBody divider className="space-y-4 dark:bg-gray-800 dark:border-gray-700">
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("complexes.edit.name")}
-            </Typography>
-            <Input
-              label={t("complexes.edit.enterName")}
-              value={formName}
-              onChange={(e) => setFormName(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("complexes.edit.address")}
-            </Typography>
-            <Input
-              label={t("complexes.edit.enterAddress")}
-              value={formAddress}
-              onChange={(e) => setFormAddress(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-                {t("complexes.edit.buildingsCount")}
-              </Typography>
-              <Input
-                type="number"
-                label={t("complexes.edit.enterBuildings")}
-                value={formBuildings}
-                onChange={(e) => setFormBuildings(e.target.value)}
-                className="dark:text-white"
-                labelProps={{ className: "dark:text-gray-400" }}
-              />
+      {/* Edit complex modal - same as create but with edit title */}
+      <Dialog open={editOpen} handler={setEditOpen} size="xl" className="dark:bg-gray-900 border border-red-600 dark:border-gray-700" dismiss={{ enabled: false }}>
+        <DialogHeader className="dark:bg-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-4">
+          <Typography variant="h5" className="font-bold">
+            {t("complexes.edit.title")}
+          </Typography>
+        </DialogHeader>
+        <DialogBody divider className="dark:bg-gray-800 dark:border-gray-700 max-h-[75vh] overflow-y-auto">
+          <div className="space-y-6 py-2">
+            {/* Basic Information Section */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+                <InformationCircleIcon className="h-5 w-5 text-blue-500 dark:text-blue-400" />
+                <Typography variant="h6" className="font-semibold dark:text-white">
+                  {t("complexes.form.basicInfo") || "Əsas Məlumatlar"}
+                </Typography>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                    {t("complexes.form.name")} <span className="text-red-500">*</span>
+                  </Typography>
+                  <Input
+                    label={t("complexes.form.enterName")}
+                    value={formData.name || ""}
+                    onChange={(e) => updateField("name", e.target.value)}
+                    className="dark:text-white"
+                    labelProps={{ className: "dark:text-gray-400" }}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                    {t("complexes.form.status")} <span className="text-red-500">*</span>
+                  </Typography>
+                  <Select
+                    value={formData.status || "active"}
+                    onChange={(value) => updateField("status", value)}
+                    className="dark:text-white"
+                    labelProps={{ className: "dark:text-gray-400" }}
+                  >
+                    <Option value="active">{t("complexes.form.active") || "Aktiv"}</Option>
+                    <Option value="inactive">{t("complexes.form.inactive") || "Passiv"}</Option>
+                  </Select>
+                </div>
+              </div>
             </div>
-            <div>
-              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-                {t("complexes.edit.residentsCount")}
-              </Typography>
-              <Input
-                type="number"
-                label={t("complexes.edit.enterResidents")}
-                value={formResidents}
-                onChange={(e) => setFormResidents(e.target.value)}
-                className="dark:text-white"
-                labelProps={{ className: "dark:text-gray-400" }}
-              />
+
+            {/* Location Information Section */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+                <MapPinIcon className="h-5 w-5 text-green-500 dark:text-green-400" />
+                <Typography variant="h6" className="font-semibold dark:text-white">
+                  {t("complexes.form.metaInfo") || "Yerləşmə Məlumatları"}
+                </Typography>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                    {t("complexes.form.latitude") || "Enlik"}
+                  </Typography>
+                  <Input
+                    label={t("complexes.form.enterLatitude") || "Enlik daxil edin"}
+                    value={formData.meta?.lat || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "" || (!isNaN(parseFloat(value)) && parseFloat(value) >= -90 && parseFloat(value) <= 90)) {
+                        updateField("meta.lat", value);
+                      }
+                    }}
+                    className="dark:text-white"
+                    labelProps={{ className: "dark:text-gray-400" }}
+                    type="number"
+                    step="any"
+                    min="-90"
+                    max="90"
+                    placeholder="-90 ilə 90 arası"
+                  />
+                </div>
+
+                <div>
+                  <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                    {t("complexes.form.longitude") || "Uzunluq"}
+                  </Typography>
+                  <Input
+                    label={t("complexes.form.enterLongitude") || "Uzunluq daxil edin"}
+                    value={formData.meta?.lng || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "" || (!isNaN(parseFloat(value)) && parseFloat(value) >= -180 && parseFloat(value) <= 180)) {
+                        updateField("meta.lng", value);
+                      }
+                    }}
+                    className="dark:text-white"
+                    labelProps={{ className: "dark:text-gray-400" }}
+                    type="number"
+                    step="any"
+                    min="-180"
+                    max="180"
+                    placeholder="-180 ilə 180 arası"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                    {t("complexes.form.description") || "Təsvir"}
+                  </Typography>
+                  <textarea
+                    placeholder={t("complexes.form.enterDescription") || "Təsvir daxil edin"}
+                    value={formData.meta?.desc || ""}
+                    onChange={(e) => updateField("meta.desc", e.target.value)}
+                    className="w-full px-3 py-2.5 border border-blue-gray-200 rounded-lg focus:border-blue-500 focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-400 resize-none"
+                    rows={3}
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                    {t("complexes.form.address") || "Ünvan"}
+                  </Typography>
+                  <Input
+                    label={t("complexes.form.enterAddress") || "Ünvan daxil edin"}
+                    value={formData.meta?.address || ""}
+                    onChange={(e) => updateField("meta.address", e.target.value)}
+                    className="dark:text-white"
+                    labelProps={{ className: "dark:text-gray-400" }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Information Section */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+                <EnvelopeIcon className="h-5 w-5 text-purple-500 dark:text-purple-400" />
+                <Typography variant="h6" className="font-semibold dark:text-white">
+                  {t("complexes.form.contactInfo") || "Əlaqə Məlumatları"}
+                </Typography>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                    <EnvelopeIcon className="h-4 w-4 inline mr-1" />
+                    {t("complexes.form.email") || "Email"}
+                  </Typography>
+                  <Input
+                    label={t("complexes.form.enterEmail") || "Email daxil edin"}
+                    value={formData.meta?.email || ""}
+                    onChange={(e) => updateField("meta.email", e.target.value)}
+                    className="dark:text-white"
+                    labelProps={{ className: "dark:text-gray-400" }}
+                    type="email"
+                  />
+                </div>
+
+                <div>
+                  <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                    <PhoneIcon className="h-4 w-4 inline mr-1" />
+                    {t("complexes.form.phone") || "Telefon"}
+                  </Typography>
+                  <Input
+                    label={t("complexes.form.enterPhone") || "Telefon daxil edin"}
+                    value={formData.meta?.phone || ""}
+                    onChange={(e) => updateField("meta.phone", e.target.value)}
+                    className="dark:text-white"
+                    labelProps={{ className: "dark:text-gray-400" }}
+                    type="tel"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                    <GlobeAltIcon className="h-4 w-4 inline mr-1" />
+                    {t("complexes.form.website") || "Veb sayt"}
+                  </Typography>
+                  <Input
+                    label={t("complexes.form.enterWebsite") || "Veb sayt daxil edin"}
+                    value={formData.meta?.website || ""}
+                    onChange={(e) => updateField("meta.website", e.target.value)}
+                    className="dark:text-white"
+                    labelProps={{ className: "dark:text-gray-400" }}
+                    type="url"
+                    placeholder="https://example.com"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Color Code Section */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+                <SwatchIcon className="h-5 w-5 text-pink-500 dark:text-pink-400" />
+                <Typography variant="h6" className="font-semibold dark:text-white">
+                  {t("complexes.form.colorCode") || "Rəng Kodu"}
+                </Typography>
+              </div>
+
+              <div>
+                <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                  {t("complexes.form.enterColorCode") || "Rəng kodu daxil edin"}
+                </Typography>
+                <div className="flex gap-3 items-end">
+                  <div className="flex flex-col">
+                    <label className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+                      {t("complexes.form.colorPicker") || "Rəng seçin"}
+                    </label>
+                    <input
+                      type="color"
+                      value={formData.meta?.color_code || "#237832"}
+                      onChange={(e) => updateField("meta.color_code", e.target.value)}
+                      className="w-16 h-12 rounded cursor-pointer border border-gray-300 dark:border-gray-600"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <Input
+                      label={t("complexes.form.enterColorCode") || "Rəng kodu"}
+                      value={formData.meta?.color_code || ""}
+                      onChange={(e) => updateField("meta.color_code", e.target.value)}
+                      className="dark:text-white"
+                      labelProps={{ className: "dark:text-gray-400" }}
+                      placeholder="#237832"
+                      pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+                    />
+                  </div>
+                  {formData.meta?.color_code && (
+                    <div
+                      className="w-12 h-12 rounded border border-gray-300 dark:border-gray-600"
+                      style={{ backgroundColor: formData.meta.color_code }}
+                      title={formData.meta.color_code}
+                    />
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </DialogBody>
-        <DialogFooter className="flex justify-end gap-2 dark:bg-gray-800 dark:border-gray-700">
-          <Button variant="outlined" color="blue-gray" onClick={() => setEditOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+        <DialogFooter className="flex justify-end gap-3 dark:bg-gray-800 dark:border-gray-700 pt-4">
+          <Button
+            variant="outlined"
+            color="blue-gray"
+            onClick={() => { setEditOpen(false); setSelectedItem(null); resetForm(); setError(null); }}
+            disabled={saving}
+            className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 min-w-[100px]"
+          >
             {t("complexes.edit.cancel")}
           </Button>
-          <Button color="blue" onClick={handleEditSave} className="dark:bg-blue-600 dark:hover:bg-blue-700">
-            {t("complexes.edit.save")}
+          <Button
+            color="blue"
+            onClick={handleEditSave}
+            disabled={saving}
+            className="dark:bg-blue-600 dark:hover:bg-blue-700 min-w-[120px]"
+          >
+            {saving ? (
+              <span className="flex items-center gap-2">
+                <svg
+                  className="animate-spin h-4 w-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                {t("complexes.edit.saving") || "Saxlanılır..."}
+              </span>
+            ) : (
+              t("complexes.edit.save")
+            )}
+          </Button>
+        </DialogFooter>
+      </Dialog>
+
+      {/* Delete complex modal */}
+      <Dialog open={deleteOpen} handler={setDeleteOpen} size="sm" className="dark:bg-gray-900">
+        <DialogHeader className="dark:bg-gray-800 dark:text-white">{t("complexes.delete.title") || "Kompleksi sil"}</DialogHeader>
+        <DialogBody divider className="dark:bg-gray-800 dark:border-gray-700">
+          <Typography className="dark:text-gray-300">
+            {t("complexes.delete.message") || "Bu kompleksi silmək istədiyinizə əminsiniz?"} {itemToDelete?.name}
+          </Typography>
+        </DialogBody>
+        <DialogFooter className="flex justify-end gap-2 dark:bg-gray-800 dark:border-gray-700">
+          <Button variant="outlined" color="blue-gray" onClick={() => { setDeleteOpen(false); setItemToDelete(null); }} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+            {t("complexes.delete.cancel") || "Ləğv et"}
+          </Button>
+          <Button color="red" onClick={handleDeleteConfirm} disabled={deleting} className="dark:bg-red-600 dark:hover:bg-red-700">
+            {deleting ? t("complexes.delete.deleting") || "Silinir..." : t("complexes.delete.confirm") || "Sil"}
           </Button>
         </DialogFooter>
       </Dialog>
@@ -293,6 +914,12 @@ const ComplexPage = () => {
                 {t("complexes.loading")}
               </Typography>
             </div>
+          ) : complexes.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-10">
+              <Typography variant="h6" className="text-blue-gray-400 dark:text-gray-400">
+                {t("complexes.noData") || "Məlumat tapılmadı"}
+              </Typography>
+            </div>
           ) : (
             <>
               {/* Desktop table */}
@@ -300,12 +927,12 @@ const ComplexPage = () => {
                 <table className="w-full table-auto">
                   <thead>
                     <tr>
-                      {[t("complexes.table.id"), t("complexes.table.name"), t("complexes.table.address"), t("complexes.table.buildingsCount"), t("complexes.table.residentsCount"), t("complexes.table.actions")].map(
+                      {[t("complexes.table.id"), t("complexes.table.name"), t("complexes.table.address"), t("complexes.table.buildingsCount"), t("complexes.table.actions")].map(
                         (el, idx) => (
                           <th
                             key={el}
                             className={`border-b border-blue-gray-100 dark:border-gray-800 py-3 px-6 text-left ${
-                              idx === 5 ? "text-right" : ""
+                              idx === 4 ? "text-right" : ""
                             }`}
                           >
                             <Typography
@@ -320,9 +947,9 @@ const ComplexPage = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {pageData.map((row, key) => {
+                    {complexes.map((row, key) => {
                       const className = `py-3 px-6 ${
-                        key === pageData.length - 1 ? "" : "border-b border-blue-gray-50 dark:border-gray-800"
+                        key === complexes.length - 1 ? "" : "border-b border-blue-gray-50 dark:border-gray-800"
                       }`;
                       return (
                         <tr key={row.id} className="dark:hover:bg-gray-700/50">
@@ -342,17 +969,12 @@ const ComplexPage = () => {
                           </td>
                           <td className={className}>
                             <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                              {row.address}
+                              {row.meta?.address || "-"}
                             </Typography>
                           </td>
                           <td className={className}>
                             <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                              {row.buildings}
-                            </Typography>
-                          </td>
-                          <td className={className}>
-                            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                              {row.residents}
+                              {row.buildings?.length || 0}
                             </Typography>
                           </td>
                           <td className={`${className} text-right`}>
@@ -366,9 +988,9 @@ const ComplexPage = () => {
                                 </IconButton>
                               </MenuHandler>
                               <MenuList className="dark:bg-gray-800 dark:border-gray-700">
-                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("complexes.actions.view")}</MenuItem>
+                                <MenuItem onClick={() => openViewModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">{t("complexes.actions.view")}</MenuItem>
                                 <MenuItem onClick={() => openEditModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">{t("complexes.actions.edit")}</MenuItem>
-                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("complexes.actions.delete")}</MenuItem>
+                                <MenuItem onClick={() => handleDelete(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">{t("complexes.actions.delete")}</MenuItem>
                               </MenuList>
                             </Menu>
                           </td>
@@ -381,10 +1003,10 @@ const ComplexPage = () => {
 
               {/* Tablet & mobile cards */}
               <div className="grid gap-4 sm:grid-cols-2 lg:hidden px-4 pt-4">
-                {pageData.map((row) => (
+                {complexes.map((row) => (
                   <Card
                     key={row.id}
-                    className="border border-red-600 dark:border-gray-700 shadow-sm dark:bg-gray-800 dark:border-gray-700"
+                    className="border border-red-600 dark:border-gray-700 shadow-sm dark:bg-gray-800"
                     >
                     <CardBody className="space-y-2 dark:bg-gray-800">
                       <div className="flex items-center justify-between">
@@ -405,9 +1027,9 @@ const ComplexPage = () => {
                             </IconButton>
                           </MenuHandler>
                           <MenuList className="dark:bg-gray-800 dark:border-gray-700">
-                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("complexes.actions.view")}</MenuItem>
+                            <MenuItem onClick={() => openViewModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">{t("complexes.actions.view")}</MenuItem>
                             <MenuItem onClick={() => openEditModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">{t("complexes.actions.edit")}</MenuItem>
-                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("complexes.actions.delete")}</MenuItem>
+                            <MenuItem onClick={() => handleDelete(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">{t("complexes.actions.delete")}</MenuItem>
                           </MenuList>
                         </Menu>
                       </div>
@@ -415,13 +1037,10 @@ const ComplexPage = () => {
                         {t("complexes.table.id")}: {row.id}
                       </Typography>
                       <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                        {t("complexes.table.address")}: {row.address}
+                        {t("complexes.table.address")}: {row.meta?.address || "-"}
                       </Typography>
                       <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                        {t("complexes.table.buildingsCount")}: {row.buildings}
-                      </Typography>
-                      <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                        {t("complexes.table.residentsCount")}: {row.residents}
+                        {t("complexes.table.buildingsCount")}: {row.buildings?.length || 0}
                       </Typography>
                     </CardBody>
                   </Card>
@@ -433,20 +1052,20 @@ const ComplexPage = () => {
                   variant="text"
                   size="sm"
                   color="blue-gray"
-                  onClick={handlePrev}
+                  onClick={goToPrev}
                   disabled={page === 1}
                   className="dark:text-gray-300 dark:hover:bg-gray-700 dark:disabled:text-gray-600"
                 >
                   {t("complexes.pagination.prev")}
                 </Button>
-                {Array.from({ length: totalPages }, (_, index) => index + 1).map(
+                {Array.from({ length: pagination.totalPages || 1 }, (_, index) => index + 1).map(
                   (pageNumber) => (
                     <Button
                       key={pageNumber}
                       variant={pageNumber === page ? "filled" : "text"}
                       size="sm"
                       color={pageNumber === page ? "blue" : "blue-gray"}
-                      onClick={() => setPage(pageNumber)}
+                      onClick={() => goToPage(pageNumber)}
                       className={`min-w-[32px] px-2 ${
                         pageNumber === page 
                           ? "dark:bg-blue-600 dark:hover:bg-blue-700" 
@@ -461,8 +1080,8 @@ const ComplexPage = () => {
                   variant="text"
                   size="sm"
                   color="blue-gray"
-                  onClick={handleNext}
-                  disabled={page === totalPages}
+                  onClick={goToNext}
+                  disabled={page >= (pagination.totalPages || 1)}
                   className="dark:text-gray-300 dark:hover:bg-gray-700 dark:disabled:text-gray-600"
                 >
                   {t("complexes.pagination.next")}

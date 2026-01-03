@@ -1,28 +1,28 @@
 import api from "@/services/api";
 
-// MTK API
-export const mtkAPI = {
-  // Tüm MTK-ları getir
+// Complex API
+export const complexAPI = {
+  // Tüm kompleksləri getir (pagination ilə)
   getAll: async (params = {}) => {
     try {
-      const response = await api.get("/mtk/list", { params });
+      const response = await api.get("/complexes/list", { params });
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }
   },
 
-  // Tek MTK getir
+  // Tek kompleks getir
   getById: async (id) => {
     try {
-      const response = await api.get(`/mtk/${id}`);
+      const response = await api.get(`/complexes/${id}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }
   },
 
-  // Yeni MTK oluştur
+  // Yeni kompleks oluştur
   create: async (data) => {
     try {
       // Lat/Lng validation - yalnız düzgün dəyərləri göndər
@@ -34,10 +34,13 @@ export const mtkAPI = {
       const isValidLng = lng !== null && !isNaN(lng) && lng >= -180 && lng <= 180;
 
       // Məlumatları backend-in gözlədiyi formatda hazırla
-      // Backend bütün field-ləri gözləyir, hətta boş olsalar belə
+      // Backend name, status, meta, mtk_id, modules, avaliable_modules gözləyir
       const cleanedData = {
         name: data.name || "",
         status: data.status || "active",
+        mtk_id: data.bind_mtk?.id || data.mtk_id || 1, // Default 1 göndərək
+        modules: Array.isArray(data.modules) && data.modules.length > 0 ? data.modules : [1], // Default [1] göndərək
+        avaliable_modules: Array.isArray(data.avaliable_modules) && data.avaliable_modules.length > 0 ? data.avaliable_modules : [1], // Default [1] göndərək
         meta: {
           lat: isValidLat ? String(lat) : (data.meta?.lat || ""),
           lng: isValidLng ? String(lng) : (data.meta?.lng || ""),
@@ -50,14 +53,16 @@ export const mtkAPI = {
         },
       };
 
-      console.log("MTK Create Request:", cleanedData);
-      const response = await api.put("/mtk/add", cleanedData);
+      console.log("Complex Create Request:", cleanedData);
+      console.log("Complex Create Request (JSON):", JSON.stringify(cleanedData, null, 2));
+      const response = await api.put("/complexes/add", cleanedData);
       return response.data;
     } catch (error) {
       // 400 və 422 validation hatası için detaylı hata mesajı
       if (error.response?.status === 400 || error.response?.status === 422) {
         const errorData = error.response.data;
-        console.error("MTK Create Error Response:", errorData);
+        console.error("Complex Create Error Response:", errorData);
+        console.error("Complex Create Error Details:", JSON.stringify(errorData, null, 2));
         
         if (errorData.errors) {
           // Bütün xəta mesajlarını topla
@@ -81,12 +86,12 @@ export const mtkAPI = {
         }
         throw errorData;
       }
-      console.error("MTK Create Error:", error);
+      console.error("Complex Create Error:", error);
       throw error.response?.data || error.message;
     }
   },
 
-  // MTK güncelle
+  // Kompleks güncelle
   update: async (id, data) => {
     try {
       // Lat/Lng validation - yalnız düzgün dəyərləri göndər
@@ -98,10 +103,13 @@ export const mtkAPI = {
       const isValidLng = lng !== null && !isNaN(lng) && lng >= -180 && lng <= 180;
 
       // Məlumatları backend-in gözlədiyi formatda hazırla
-      // Backend bütün field-ləri gözləyir, hətta boş olsalar belə
+      // Backend name, status, meta, mtk_id, modules, avaliable_modules gözləyir
       const cleanedData = {
         name: data.name || "",
         status: data.status || "active",
+        mtk_id: data.bind_mtk?.id || data.mtk_id || 1, // Default 1 göndərək
+        modules: Array.isArray(data.modules) && data.modules.length > 0 ? data.modules : [1], // Default [1] göndərək
+        avaliable_modules: Array.isArray(data.avaliable_modules) && data.avaliable_modules.length > 0 ? data.avaliable_modules : [1], // Default [1] göndərək
         meta: {
           lat: isValidLat ? String(lat) : (data.meta?.lat || ""),
           lng: isValidLng ? String(lng) : (data.meta?.lng || ""),
@@ -114,8 +122,8 @@ export const mtkAPI = {
         },
       };
 
-      console.log("MTK Update Request:", cleanedData);
-      const response = await api.patch(`/mtk/${id}`, cleanedData);
+      console.log("Complex Update Request:", cleanedData);
+      const response = await api.patch(`/complexes/${id}`, cleanedData);
       return response.data;
     } catch (error) {
       // 400 və 422 validation hatası için detaylı hata mesajı
@@ -135,10 +143,10 @@ export const mtkAPI = {
     }
   },
 
-  // MTK sil
+  // Kompleks sil
   delete: async (id) => {
     try {
-      const response = await api.delete(`/mtk/${id}`);
+      const response = await api.delete(`/complexes/${id}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -146,5 +154,5 @@ export const mtkAPI = {
   },
 };
 
-export default mtkAPI;
+export default complexAPI;
 
