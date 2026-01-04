@@ -70,6 +70,7 @@
     "save": "Yadda saxla",
     "edit": "Düzəliş et",
     "apply": "Tətbiq et",
+    "search": "Axtar",
     "close": "Bağla",
     "delete": "Sil"
   },
@@ -302,11 +303,24 @@
       "consumption": "İstehlak həcmi"
     },
     "filter": {
-      "title": "Faktura filter",
+      "title": "Axtarış",
       "serviceName": "Xidmət adı",
       "owner": "Mənzil sahibi",
       "status": "Status",
-      "enter": "Daxil et"
+      "enter": "Daxil et",
+      "select": "Seçin",
+      "selectWithDots": "Seçin...",
+      "all": "Hamısı",
+      "paid": "Ödənilib",
+      "unpaid": "Ödənilməmiş",
+      "dateRange": "Tarix aralığı",
+      "paymentDateRange": "Ödəniş tarixi aralığı",
+      "startDate": "Başlanğıc tarixi",
+      "endDate": "Bitmə tarixi",
+      "building": "Bina",
+      "block": "Blok",
+      "apartment": "Mənzil",
+      "floor": "Mərtəbə"
     },
     "create": {
       "title": "Yeni faktura əlavə et",
@@ -1372,13 +1386,17 @@
   "buildings": {
     "pageTitle": "Binalar",
     "loading": "Yüklənir...",
+    "noData": "Məlumat tapılmadı",
     "table": {
       "id": "ID",
       "name": "Ad",
       "complex": "Kompleks",
+      "description": "Təsvir",
+      "status": "Status",
       "blocksCount": "Blok sayı",
       "apartmentsCount": "Mənzil sayı",
-      "actions": "Əməliyyatlar"
+      "actions": "Əməliyyatlar",
+      "noData": "Məlumat yoxdur"
     },
     "actions": {
       "search": "Axtarış",
@@ -1386,6 +1404,10 @@
       "view": "Bax",
       "edit": "Düzəliş et",
       "delete": "Sil"
+    },
+    "status": {
+      "active": "Aktiv",
+      "inactive": "Passiv"
     },
     "filter": {
       "title": "Bina filter",
@@ -1397,31 +1419,68 @@
       "close": "Bağla",
       "apply": "Tətbiq et"
     },
+    "form": {
+      "selectComplex": "Kompleks seçin",
+      "active": "Aktiv",
+      "inactive": "Passiv"
+    },
     "create": {
       "title": "Yeni bina əlavə et",
       "name": "Ad",
-      "enterName": "Daxil et",
+      "enterName": "Ad daxil edin",
       "complex": "Kompleks",
-      "enterComplex": "Daxil et",
+      "enterComplex": "Kompleks seçin",
+      "status": "Status",
+      "description": "Təsvir",
+      "enterDescription": "Təsvir daxil edin",
       "blocksCount": "Blok sayı",
       "enterBlocks": "Daxil et",
       "apartmentsCount": "Mənzil sayı",
       "enterApartments": "Daxil et",
       "cancel": "Ləğv et",
-      "save": "Yadda saxla"
+      "save": "Yadda saxla",
+      "saving": "Yaradılır...",
+      "success": "Bina uğurla yaradıldı",
+      "error": "Bina yaradılarkən xəta baş verdi"
     },
     "edit": {
       "title": "Bina məlumatlarını dəyiş",
       "name": "Ad",
-      "enterName": "Daxil et",
+      "enterName": "Ad daxil edin",
       "complex": "Kompleks",
-      "enterComplex": "Daxil et",
+      "enterComplex": "Kompleks seçin",
+      "status": "Status",
+      "description": "Təsvir",
+      "enterDescription": "Təsvir daxil edin",
       "blocksCount": "Blok sayı",
       "enterBlocks": "Daxil et",
       "apartmentsCount": "Mənzil sayı",
       "enterApartments": "Daxil et",
       "cancel": "Ləğv et",
-      "save": "Yadda saxla"
+      "save": "Yadda saxla",
+      "saving": "Saxlanılır...",
+      "success": "Bina uğurla yeniləndi",
+      "error": "Bina yenilənərkən xəta baş verdi"
+    },
+    "view": {
+      "title": "Bina məlumatları",
+      "basicInfo": "Əsas Məlumatlar",
+      "id": "ID",
+      "name": "Ad",
+      "complex": "Kompleks",
+      "status": "Status",
+      "description": "Təsvir",
+      "noData": "Məlumat tapılmadı",
+      "close": "Bağla"
+    },
+    "delete": {
+      "title": "Binani sil",
+      "message": "Bu binani silmək istədiyinizə əminsiniz?",
+      "cancel": "Ləğv et",
+      "confirm": "Sil",
+      "deleting": "Silinir...",
+      "success": "Bina uğurla silindi",
+      "error": "Bina silinərkən xəta baş verdi"
     },
     "pagination": {
       "prev": "Geri",

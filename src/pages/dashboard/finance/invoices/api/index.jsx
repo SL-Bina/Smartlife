@@ -60,13 +60,56 @@ export const fetchInvoices = async (filters = {}, page = 1, itemsPerPage = 10) =
             item.serviceName.toLowerCase().includes(filters.serviceName.toLowerCase())
           );
         }
-        if (filters.owner) {
-          filtered = filtered.filter((item) =>
-            item.owner.toLowerCase().includes(filters.owner.toLowerCase())
-          );
-        }
         if (filters.status) {
           filtered = filtered.filter((item) => item.status === filters.status);
+        }
+        if (filters.apartment) {
+          filtered = filtered.filter((item) =>
+            item.apartment.toLowerCase().includes(filters.apartment.toLowerCase())
+          );
+        }
+        if (filters.building) {
+          filtered = filtered.filter((item) =>
+            item.building.toLowerCase().includes(filters.building.toLowerCase())
+          );
+        }
+        if (filters.block) {
+          filtered = filtered.filter((item) =>
+            item.block.toLowerCase().includes(filters.block.toLowerCase())
+          );
+        }
+        if (filters.floor) {
+          filtered = filtered.filter((item) => item.floor === parseInt(filters.floor));
+        }
+        if (filters.dateStart) {
+          // Date filtering logic - can be improved based on actual date format
+          filtered = filtered.filter((item) => {
+            // Mock implementation - adjust based on actual date format
+            return true;
+          });
+        }
+        if (filters.dateEnd) {
+          // Date filtering logic - can be improved based on actual date format
+          filtered = filtered.filter((item) => {
+            // Mock implementation - adjust based on actual date format
+            return true;
+          });
+        }
+        if (filters.paymentDateStart) {
+          // Payment date filtering logic
+          filtered = filtered.filter((item) => {
+            if (!item.paymentDate) return false;
+            // Mock implementation - adjust based on actual date format
+            return true;
+          });
+        }
+        if (filters.paymentDateEnd) {
+          // Payment date filtering logic
+          filtered = filtered.filter((item) => {
+            if (!item.paymentDate) return false;
+            // Mock implementation - adjust based on actual date format
+            return true;
+          });
         }
 
         // Pagination
@@ -124,13 +167,26 @@ export const fetchTotalPaid = async (filters = {}) => {
             item.serviceName.toLowerCase().includes(filters.serviceName.toLowerCase())
           );
         }
-        if (filters.owner) {
-          filtered = filtered.filter((item) =>
-            item.owner.toLowerCase().includes(filters.owner.toLowerCase())
-          );
-        }
         if (filters.status) {
           filtered = filtered.filter((item) => item.status === filters.status);
+        }
+        if (filters.apartment) {
+          filtered = filtered.filter((item) =>
+            item.apartment.toLowerCase().includes(filters.apartment.toLowerCase())
+          );
+        }
+        if (filters.building) {
+          filtered = filtered.filter((item) =>
+            item.building.toLowerCase().includes(filters.building.toLowerCase())
+          );
+        }
+        if (filters.block) {
+          filtered = filtered.filter((item) =>
+            item.block.toLowerCase().includes(filters.block.toLowerCase())
+          );
+        }
+        if (filters.floor) {
+          filtered = filtered.filter((item) => item.floor === parseInt(filters.floor));
         }
 
         const total = filtered
@@ -178,13 +234,26 @@ export const fetchTotalConsumption = async (filters = {}) => {
             item.serviceName.toLowerCase().includes(filters.serviceName.toLowerCase())
           );
         }
-        if (filters.owner) {
-          filtered = filtered.filter((item) =>
-            item.owner.toLowerCase().includes(filters.owner.toLowerCase())
-          );
-        }
         if (filters.status) {
           filtered = filtered.filter((item) => item.status === filters.status);
+        }
+        if (filters.apartment) {
+          filtered = filtered.filter((item) =>
+            item.apartment.toLowerCase().includes(filters.apartment.toLowerCase())
+          );
+        }
+        if (filters.building) {
+          filtered = filtered.filter((item) =>
+            item.building.toLowerCase().includes(filters.building.toLowerCase())
+          );
+        }
+        if (filters.block) {
+          filtered = filtered.filter((item) =>
+            item.block.toLowerCase().includes(filters.block.toLowerCase())
+          );
+        }
+        if (filters.floor) {
+          filtered = filtered.filter((item) => item.floor === parseInt(filters.floor));
         }
 
         const total = filtered

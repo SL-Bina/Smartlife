@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useMemo } from "react";
 import { mtkAPI } from "@/pages/dashboard/management/mtk/api";
 import { complexAPI } from "@/pages/dashboard/management/complex/api";
+import { buildingsAPI } from "@/pages/dashboard/management/buildings/api";
 
 const ManagementContext = createContext(null);
 
@@ -247,28 +248,46 @@ export function ManagementProvider({ children }) {
     }
   };
 
-  const updateBuilding = (id, updates) => {
-    setData((prev) => ({
-      ...prev,
-      buildings: prev.buildings.map((item) => (item.id === id ? { ...item, ...updates } : item)),
-    }));
-    setRefreshKey((prev) => prev + 1);
+  const updateBuilding = async (id, updates) => {
+    try {
+      const response = await buildingsAPI.update(id, updates);
+      if (response.success) {
+        setRefreshKey((prev) => prev + 1);
+        return response;
+      }
+      throw new Error(response.message || "Failed to update Building");
+    } catch (error) {
+      console.error("Error updating Building:", error);
+      throw error;
+    }
   };
 
-  const addBuilding = (newBuilding) => {
-    setData((prev) => ({
-      ...prev,
-      buildings: [...prev.buildings, { ...newBuilding, id: prev.buildings.length + 1 }],
-    }));
-    setRefreshKey((prev) => prev + 1);
+  const addBuilding = async (newBuilding) => {
+    try {
+      const response = await buildingsAPI.create(newBuilding);
+      if (response.success) {
+        setRefreshKey((prev) => prev + 1);
+        return response;
+      }
+      throw new Error(response.message || "Failed to create Building");
+    } catch (error) {
+      console.error("Error creating Building:", error);
+      throw error;
+    }
   };
 
-  const deleteBuilding = (id) => {
-    setData((prev) => ({
-      ...prev,
-      buildings: prev.buildings.filter((item) => item.id !== id),
-    }));
-    setRefreshKey((prev) => prev + 1);
+  const deleteBuilding = async (id) => {
+    try {
+      const response = await buildingsAPI.delete(id);
+      if (response.success) {
+        setRefreshKey((prev) => prev + 1);
+        return response;
+      }
+      throw new Error(response.message || "Failed to delete Building");
+    } catch (error) {
+      console.error("Error deleting Building:", error);
+      throw error;
+    }
   };
 
   const updateBlock = (id, updates) => {

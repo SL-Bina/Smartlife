@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardHeader, CardBody, Spinner, Typography } from "@material-tailwind/react";
+import { Card, CardHeader, CardBody, Spinner, Typography, Alert } from "@material-tailwind/react";
 import { useTranslation } from "react-i18next";
+import { useManagement } from "@/context";
 import { useBuildingsData } from "./hooks/useBuildingsData";
 import { useBuildingsFilters } from "./hooks/useBuildingsFilters";
 import { useBuildingsForm } from "./hooks/useBuildingsForm";
@@ -11,17 +12,26 @@ import { BuildingsCardList } from "./components/BuildingsCardList";
 import { BuildingsPagination } from "./components/BuildingsPagination";
 import { BuildingsFilterModal } from "./components/modals/BuildingsFilterModal";
 import { BuildingsFormModal } from "./components/modals/BuildingsFormModal";
+import { BuildingsViewModal } from "./components/modals/BuildingsViewModal";
+import { BuildingsDeleteModal } from "./components/modals/BuildingsDeleteModal";
 
 const BuildingsPage = () => {
   const { t } = useTranslation();
+  const { addBuilding, updateBuilding, deleteBuilding, refreshKey } = useManagement();
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [itemToDelete, setItemToDelete] = useState(null);
   const [page, setPage] = useState(1);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const { filters, filterOpen, setFilterOpen, updateFilter, clearFilters, applyFilters } = useBuildingsFilters();
-  const { buildings, loading, pagination } = useBuildingsData(filters, page);
+  const { buildings, loading, error: dataError, pagination } = useBuildingsData(filters, page, refreshKey);
   const { formData, updateField, resetForm, setFormFromBuilding } = useBuildingsForm();
 
   useEffect(() => {
@@ -57,23 +67,82 @@ const BuildingsPage = () => {
     setViewOpen(true);
   };
 
-  const handleCreateSave = () => {
-    // TODO: API call for creating building
-    setCreateOpen(false);
-    resetForm();
+  const handleCreateSave = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+      setSuccess(null);
+      await addBuilding(formData);
+      setSuccess(t("buildings.create.success") || "Bina uğurla yaradıldı");
+      setCreateOpen(false);
+      resetForm();
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error("Create Building Error:", err);
+      
+      // Xəta mesajını formatla
+      let errorMessage = t("buildings.create.error") || "Bina yaradılarkən xəta baş verdi";
+      
+      if (err.allErrors && Array.isArray(err.allErrors)) {
+        // Bütün xəta mesajlarını göstər
+        errorMessage = err.allErrors.join(", ");
+      } else if (err.errors) {
+        // Xəta obyektindən mesajları çıxar
+        const errorMessages = Object.values(err.errors).flat();
+        errorMessage = errorMessages.join(", ");
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleEditSave = () => {
-    // TODO: API call for updating building
-    setEditOpen(false);
-    setSelectedItem(null);
-    resetForm();
+  const handleEditSave = async () => {
+    if (selectedItem) {
+      try {
+        setSaving(true);
+        setError(null);
+        setSuccess(null);
+        await updateBuilding(selectedItem.id, formData);
+        setSuccess(t("buildings.edit.success") || "Bina uğurla yeniləndi");
+        setEditOpen(false);
+        setSelectedItem(null);
+        resetForm();
+        setTimeout(() => setSuccess(null), 3000);
+      } catch (err) {
+        const errorMessage = err.message || err.errors || (t("buildings.edit.error") || "Bina yenilənərkən xəta baş verdi");
+        setError(errorMessage);
+      } finally {
+        setSaving(false);
+      }
+    }
   };
 
   const handleDelete = (item) => {
-    if (window.confirm(t("buildings.delete.confirm") || `Bina ${item.name} silinsin?`)) {
-      // TODO: API call for deleting building
-      console.log("Delete building:", item.id);
+    setItemToDelete(item);
+    setDeleteOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!itemToDelete) return;
+
+    try {
+      setDeleting(true);
+      setError(null);
+      setSuccess(null);
+      await deleteBuilding(itemToDelete.id);
+      setSuccess(t("buildings.delete.success") || "Bina uğurla silindi");
+      setDeleteOpen(false);
+      setItemToDelete(null);
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      const errorMessage = err.message || (t("buildings.delete.error") || "Bina silinərkən xəta baş verdi");
+      setError(errorMessage);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -98,6 +167,23 @@ const BuildingsPage = () => {
   return (
     <div className="">
       <BuildingsHeader />
+
+      {/* Error and Success Messages */}
+      {error && (
+        <Alert color="red" className="mb-4" onClose={() => setError(null)}>
+          {typeof error === "string" ? error : JSON.stringify(error)}
+        </Alert>
+      )}
+      {success && (
+        <Alert color="green" className="mb-4" onClose={() => setSuccess(null)}>
+          {success}
+        </Alert>
+      )}
+      {dataError && (
+        <Alert color="red" className="mb-4">
+          {dataError}
+        </Alert>
+      )}
 
       <Card className="border border-red-600 dark:border-gray-700 shadow-sm dark:bg-gray-800">
         <CardHeader
@@ -156,12 +242,14 @@ const BuildingsPage = () => {
         onClose={() => {
           setCreateOpen(false);
           resetForm();
+          setError(null);
         }}
         title={t("buildings.create.title")}
         formData={formData}
         onFieldChange={updateField}
         onSave={handleCreateSave}
         isEdit={false}
+        saving={saving}
       />
 
       <BuildingsFormModal
@@ -170,12 +258,36 @@ const BuildingsPage = () => {
           setEditOpen(false);
           setSelectedItem(null);
           resetForm();
+          setError(null);
         }}
         title={t("buildings.edit.title")}
         formData={formData}
         onFieldChange={updateField}
         onSave={handleEditSave}
         isEdit={true}
+        saving={saving}
+      />
+
+      {/* View building modal */}
+      <BuildingsViewModal
+        open={viewOpen}
+        onClose={() => {
+          setViewOpen(false);
+          setSelectedItem(null);
+        }}
+        building={selectedItem}
+      />
+
+      {/* Delete building modal */}
+      <BuildingsDeleteModal
+        open={deleteOpen}
+        onClose={() => {
+          setDeleteOpen(false);
+          setItemToDelete(null);
+        }}
+        building={itemToDelete}
+        onConfirm={handleDeleteConfirm}
+        deleting={deleting}
       />
     </div>
   );

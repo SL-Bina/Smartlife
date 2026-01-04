@@ -3,7 +3,14 @@ import { useState } from "react";
 export function useInvoicesFilters() {
   const [filters, setFilters] = useState({
     serviceName: "",
-    owner: "",
+    dateStart: "",
+    dateEnd: "",
+    paymentDateStart: "",
+    paymentDateEnd: "",
+    building: "",
+    block: "",
+    apartment: "",
+    floor: "",
     status: "",
   });
   const [filterOpen, setFilterOpen] = useState(false);
@@ -18,7 +25,14 @@ export function useInvoicesFilters() {
   const clearFilters = () => {
     setFilters({
       serviceName: "",
-      owner: "",
+      dateStart: "",
+      dateEnd: "",
+      paymentDateStart: "",
+      paymentDateEnd: "",
+      building: "",
+      block: "",
+      apartment: "",
+      floor: "",
       status: "",
     });
   };
