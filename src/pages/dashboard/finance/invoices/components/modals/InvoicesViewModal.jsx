@@ -1,5 +1,5 @@
 import React from "react";
-import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography, Chip } from "@material-tailwind/react";
+import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography } from "@material-tailwind/react";
 import { useTranslation } from "react-i18next";
 
 export function InvoicesViewModal({ open, onClose, invoice }) {
@@ -86,12 +86,15 @@ export function InvoicesViewModal({ open, onClose, invoice }) {
             <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
               {t("invoices.table.status")}
             </Typography>
-            <Chip
-              size="sm"
-              value={invoice.status === "Ödənilib" ? t("invoices.status.paid") : t("invoices.status.unpaid")}
-              color={invoice.status === "Ödənilib" ? "green" : "red"}
-              className="dark:bg-opacity-80"
-            />
+            <span
+              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                invoice.status === "Ödənilib"
+                  ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                  : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+              }`}
+            >
+              {invoice.status === "Ödənilib" ? t("invoices.status.paid") : t("invoices.status.unpaid")}
+            </span>
           </div>
           <div>
             <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">

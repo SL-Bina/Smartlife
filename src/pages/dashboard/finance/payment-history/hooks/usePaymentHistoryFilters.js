@@ -3,8 +3,15 @@ import { useState } from "react";
 export function usePaymentHistoryFilters() {
   const [filters, setFilters] = useState({
     payer: "",
-    apartment: "",
+    amount: "",
+    startDate: "",
+    endDate: "",
     status: "",
+    transactionType: "",
+    building: "",
+    block: "",
+    apartment: "",
+    paymentType: "",
   });
   const [filterOpen, setFilterOpen] = useState(false);
 
@@ -18,8 +25,15 @@ export function usePaymentHistoryFilters() {
   const clearFilters = () => {
     setFilters({
       payer: "",
-      apartment: "",
+      amount: "",
+      startDate: "",
+      endDate: "",
       status: "",
+      transactionType: "",
+      building: "",
+      block: "",
+      apartment: "",
+      paymentType: "",
     });
   };
 

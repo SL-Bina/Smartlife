@@ -43,7 +43,7 @@ export function InvoicesTable({ invoices, onView, onEdit, onDelete }) {
         </thead>
         <tbody>
           {invoices.map((row, key) => {
-            const className = `py-3 px-6 ${
+            const className = `py-3 px-6 text-center ${
               key === invoices.length - 1 ? "" : "border-b border-blue-gray-50 dark:border-gray-800"
             }`;
             return (
@@ -94,12 +94,15 @@ export function InvoicesTable({ invoices, onView, onEdit, onDelete }) {
                   </Typography>
                 </td>
                 <td className={className}>
-                  <Chip
-                    size="sm"
-                    value={row.status === "Ödənilib" ? t("invoices.status.paid") : t("invoices.status.unpaid")}
-                    color={row.status === "Ödənilib" ? "green" : "red"}
-                    className="dark:bg-opacity-80"
-                  />
+                  <span
+                    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                      row.status === "Ödənilib"
+                        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                        : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                    }`}
+                  >
+                    {row.status === "Ödənilib" ? t("invoices.status.paid") : t("invoices.status.unpaid")}
+                  </span>
                 </td>
                 <td className={className}>
                   <Typography variant="small" color="blue-gray" className="dark:text-gray-300">

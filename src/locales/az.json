@@ -59,8 +59,7 @@
     "services": "Xidmətlər",
     "electronicDocuments": "Elektron sənədlər",
     "buildingManagement": "idarə etmə",
-    "userRights": "Hüquqlar",
-    "userPermissions": "İcazələr",
+    "permissions": "Hüquqlar",
     "profile": "Profil"
   },
   "buttons": {
@@ -320,12 +319,44 @@
       "building": "Bina",
       "block": "Blok",
       "apartment": "Mənzil",
-      "floor": "Mərtəbə"
+      "floor": "Mərtəbə",
+      "loading": "Yüklənir...",
+      "selectBuildingFirst": "Əvvəlcə bina seçin",
+      "selectBlockFirst": "Əvvəlcə blok seçin"
     },
     "create": {
       "title": "Yeni faktura əlavə et",
       "serviceName": "Xidmət adı",
       "enter": "Daxil et"
+    },
+    "form": {
+      "title": "Başlıq",
+      "enterTitle": "Başlıq",
+      "amount": "Məbləğ (AZN)",
+      "enterAmount": "Məbləğ",
+      "dateRange": "Tarix aralığı",
+      "startDate": "Başlama tarixi",
+      "endDate": "Bitmə tarixi",
+      "building": "Bina",
+      "selectBuilding": "Bina seçin...",
+      "block": "Blok",
+      "selectBlock": "Blok seçin",
+      "floor": "Mərtəbə",
+      "enterFloor": "Mərtəbə daxil edin...",
+      "apartment": "Mənzil",
+      "selectApartment": "Mənzil seçin...",
+      "confirm": "Təsdiq et",
+      "saving": "Saxlanılır...",
+      "basicInfo": "Əsas Məlumatlar",
+      "apartmentInfo": "Mənzil Məlumatları",
+      "required": "Bu sahə mütləqdir",
+      "requiredFields": "Mütləq sahələr",
+      "loading": "Yüklənir...",
+      "selectBuildingFirst": "Əvvəlcə bina seçin",
+      "selectBlockFirst": "Əvvəlcə blok seçin",
+      "dateEndError": "Bitmə tarixi başlama tarixindən sonra olmalıdır",
+      "floorError": "Mərtəbə mənfi ola bilməz",
+      "amountError": "Məbləğ mənfi ola bilməz"
     },
     "view": {
       "title": "Faktura məlumatları"
@@ -392,11 +423,26 @@
       "total": "Toplam"
     },
     "filter": {
-      "title": "Ödəniş tarixçəsi filter",
+      "title": "Axtarış",
       "payer": "Ödəniş edən şəxs",
       "apartment": "Mənzil",
       "status": "Status",
-      "enter": "Daxil et"
+      "enter": "Daxil et",
+      "selectResident": "Sakin seçin",
+      "amount": "Məbləğ",
+      "enterAmount": "Məbləğ daxil edin",
+      "startDate": "Başlanğıc tarix",
+      "endDate": "Son tarix",
+      "transactionType": "Əməliyyat növü",
+      "building": "Bina",
+      "block": "Blok",
+      "paymentType": "Ödəniş növü",
+      "selectWithDots": "Seçin...",
+      "all": "Hamısı",
+      "reset": "Sıfırla",
+      "loading": "Yüklənir...",
+      "selectBuildingFirst": "Əvvəlcə bina seçin",
+      "selectBlockFirst": "Əvvəlcə blok seçin"
     },
     "view": {
       "title": "Ödəniş məlumatları"
@@ -1754,49 +1800,46 @@
       "building": "Bina"
     }
   },
-  "userRights": {
-    "pageTitle": "Hüquqlar",
-    "subtitle": "İstifadəçi rollarını idarə edin",
+  "permissions": {
+    "pageTitle": "İstifadəçi Hüquqları",
+    "subtitle": "İstifadəçi rollarını və icazələrini idarə edin",
     "loading": "Yüklənir...",
-    "rights": {
+    "search": "Axtarış...",
+    "savePermissions": "İcazələri yadda saxla",
+    "roles": {
       "title": "Hüquqlar",
       "total": "Cəmi",
       "role": "rol",
-      "create": "Hüquq yarat",
-      "managePermissions": "İcazələri idarə et",
-      "filter": {
-        "name": "Hüquq adı",
+      "create": "+ Hüquq yarat",
+      "noRoles": "Rol tapılmadı",
+      "created": "Rol uğurla yaradıldı",
+      "updated": "Rol uğurla yeniləndi",
+      "createError": "Rol yaradılarkən xəta baş verdi",
+      "updateError": "Rol yenilənərkən xəta baş verdi",
+      "form": {
+        "name": "Rol adı",
         "status": "Status"
-      },
-      "table": {
-        "name": "Ad",
-        "status": "Status",
-        "actions": "Əməliyyatlar"
       },
       "createModal": {
-        "title": "Yeni Hüquq Yarat",
-        "name": "Hüquq adı",
-        "status": "Status"
+        "title": "Yeni rol yarat"
       },
       "editModal": {
-        "title": "Hüququ Düzəliş Et",
-        "name": "Hüquq adı",
-        "status": "Status"
+        "title": "Rolu düzəliş et"
       }
-    }
-  },
-  "userPermissions": {
-    "pageTitle": "İcazələr",
-    "subtitle": "İstifadəçi icazələrini idarə edin",
-    "loading": "Yüklənir...",
-    "search": "Axtarış...",
-    "selectRight": "Hüquq seçin",
-    "backToRights": "Hüquqlara qayıt",
-    "savePermissions": "İcazələri yadda saxla",
+    },
     "permissions": {
       "title": "İcazələr",
       "total": "Cəmi",
-      "permission": "icazə"
+      "permission": "icazə",
+      "noPermissions": "İcazə tapılmadı",
+      "saved": "İcazələr uğurla yadda saxlanıldı",
+      "saveError": "İcazələr yadda saxlanarkən xəta baş verdi",
+      "autoSaved": "İcazələr avtomatik yadda saxlanıldı",
+      "autoSaveError": "İcazələr avtomatik yadda saxlanarkən xəta baş verdi"
+    },
+    "status": {
+      "active": "Aktiv",
+      "inactive": "Deaktiv"
     }
   },
   "profile": {

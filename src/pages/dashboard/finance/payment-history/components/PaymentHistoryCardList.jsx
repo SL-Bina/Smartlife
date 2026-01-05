@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, CardBody, Typography, Chip, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
+import { Card, CardBody, Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
@@ -47,14 +47,35 @@ export function PaymentHistoryCardList({ payments, onView, onEdit, onDelete }) {
               {t("paymentHistory.mobile.paymentDate")}: {row.paymentDate}
             </Typography>
             <div className="flex gap-2 flex-wrap">
-              <Chip size="sm" value={t("paymentHistory.status.successful")} color="green" className="dark:bg-opacity-80" />
-              <Chip size="sm" value={t("paymentHistory.transactionType.income")} color="green" className="dark:bg-opacity-80" />
-              <Chip
-                size="sm"
-                value={row.paymentType === "Nağd" ? t("paymentHistory.paymentType.cash") : t("paymentHistory.paymentType.balance")}
-                color={row.paymentType === "Nağd" ? "amber" : "blue"}
-                className="dark:bg-opacity-80"
-              />
+              <span
+                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                  row.status === "successful" || row.status === "Uğurlu"
+                    ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                    : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                }`}
+              >
+                {t("paymentHistory.status.successful")}
+              </span>
+              <span
+                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                  row.transactionType === "income" || row.transactionType === "Gəlir"
+                    ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                    : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                }`}
+              >
+                {t("paymentHistory.transactionType.income")}
+              </span>
+              <span
+                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                  row.paymentType === "Nağd" || row.paymentType === "cash"
+                    ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
+                    : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+                }`}
+              >
+                {row.paymentType === "Nağd" || row.paymentType === "cash"
+                  ? t("paymentHistory.paymentType.cash")
+                  : t("paymentHistory.paymentType.balance")}
+              </span>
             </div>
           </CardBody>
         </Card>

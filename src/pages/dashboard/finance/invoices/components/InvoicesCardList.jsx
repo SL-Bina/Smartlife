@@ -53,12 +53,15 @@ export function InvoicesCardList({ invoices, onView, onEdit, onDelete }) {
             >
               {t("invoices.mobile.remaining")}: {row.remaining} ₼
             </Typography>
-            <Chip
-              size="sm"
-              value={row.status === "Ödənilib" ? t("invoices.status.paid") : t("invoices.status.unpaid")}
-              color={row.status === "Ödənilib" ? "green" : "red"}
-              className="dark:bg-opacity-80"
-            />
+            <span
+              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                row.status === "Ödənilib"
+                  ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                  : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+              }`}
+            >
+              {row.status === "Ödənilib" ? t("invoices.status.paid") : t("invoices.status.unpaid")}
+            </span>
           </CardBody>
         </Card>
       ))}

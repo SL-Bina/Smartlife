@@ -48,8 +48,7 @@ import ExpensesPage from "./pages/dashboard/finance/expenses";
 import DepositPage from "./pages/dashboard/finance/deposit";
 import TransfersPage from "./pages/dashboard/finance/transfers";
 import DebtPage from "./pages/dashboard/finance/debt";
-import UserRightsPage from "./pages/dashboard/user-rights";
-import UserPermissionsPage from "./pages/dashboard/user-permissions";
+import PermissionsPage from "./pages/dashboard/permissions";
 
 const icon = {
   className: "w-5 h-5 text-inherit dark:text-white",
@@ -324,18 +323,10 @@ export const routes = [
         allowedRoles: ["admin", "manager", "operator", "viewer"],
       },
       {
-        icon: <UserGroupIcon {...icon} />,
-        name: "sidebar.userRights",
-        path: "/user-rights",
-        element: <UserRightsPage />,
-        allowedRoles: ["admin"],
-      },
-      {
         icon: <ShieldCheckIcon {...icon} />,
-        name: "sidebar.userPermissions",
-        path: "/user-permissions",
-        element: <UserPermissionsPage />,
-        hideInSidenav: true,
+        name: "sidebar.permissions",
+        path: "/permissions",
+        element: <PermissionsPage />,
         allowedRoles: ["admin"],
         moduleName: "permission", // API modül ismi
       },

@@ -1,24 +1,45 @@
 import { useState } from "react";
 
 const initialFormState = {
+  title: "",
+  amount: "",
+  dateStart: "",
+  dateEnd: "",
+  building_id: null,
+  building: null,
+  block_id: null,
+  block: null,
+  floor: "",
+  apartment_id: null,
+  apartment: null,
   serviceName: "",
   owner: "",
   apartment: "",
   building: "",
   block: "",
-  floor: "",
   area: "",
-  amount: "",
 };
 
 export function useInvoicesForm() {
   const [formData, setFormData] = useState(initialFormState);
 
   const updateField = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => {
+      if (field.includes(".")) {
+        const [parent, child] = field.split(".");
+        return {
+          ...prev,
+          [parent]: {
+            ...prev[parent],
+            [child]: value,
+          },
+        };
+      }
+      return {
+        ...prev,
+        [field]: value,
+      };
+    });
   };
 
   const resetForm = () => {
@@ -28,14 +49,23 @@ export function useInvoicesForm() {
   const setFormFromInvoice = (invoice) => {
     if (invoice) {
       setFormData({
+        title: invoice.title || invoice.serviceName || "",
+        amount: invoice.amount || "",
+        dateStart: invoice.dateStart || invoice.invoiceDate || "",
+        dateEnd: invoice.dateEnd || "",
+        building_id: invoice.building_id || invoice.building?.id || null,
+        building: invoice.building || null,
+        block_id: invoice.block_id || invoice.block?.id || null,
+        block: invoice.block || null,
+        floor: invoice.floor || "",
+        apartment_id: invoice.apartment_id || invoice.apartment?.id || null,
+        apartment: invoice.apartment || null,
         serviceName: invoice.serviceName || "",
         owner: invoice.owner || "",
         apartment: invoice.apartment || "",
         building: invoice.building || "",
         block: invoice.block || "",
-        floor: invoice.floor || "",
         area: invoice.area || "",
-        amount: invoice.amount || "",
       });
     }
   };

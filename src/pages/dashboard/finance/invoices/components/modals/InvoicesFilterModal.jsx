@@ -1,10 +1,63 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Input, Typography, IconButton } from "@material-tailwind/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
+import { buildingsAPI } from "@/pages/dashboard/management/buildings/api";
 
 export function InvoicesFilterModal({ open, onClose, filters, onFilterChange, onApply, onClear }) {
   const { t } = useTranslation();
+  const [buildings, setBuildings] = useState([]);
+  const [blocks, setBlocks] = useState([]);
+  const [apartments, setApartments] = useState([]);
+  const [loadingBuildings, setLoadingBuildings] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      const fetchBuildings = async () => {
+        try {
+          setLoadingBuildings(true);
+          const response = await buildingsAPI.getAll({ page: 1, per_page: 1000 });
+          if (response.success && response.data) {
+            setBuildings(response.data.data || []);
+          }
+        } catch (error) {
+          console.error("Error fetching buildings:", error);
+        } finally {
+          setLoadingBuildings(false);
+        }
+      };
+      fetchBuildings();
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (open && filters.building) {
+      // TODO: Fetch blocks when building is selected
+      // For now, using mock data
+      setBlocks([
+        { id: 1, name: "Blok A" },
+        { id: 2, name: "Blok B" },
+        { id: 3, name: "Blok C" },
+      ]);
+    } else {
+      setBlocks([]);
+      setApartments([]);
+    }
+  }, [open, filters.building]);
+
+  useEffect(() => {
+    if (open && filters.block) {
+      // TODO: Fetch apartments when block is selected
+      // For now, using mock data
+      setApartments([
+        { id: 1, name: "Mənzil 1" },
+        { id: 2, name: "Mənzil 2" },
+        { id: 3, name: "Mənzil 3" },
+      ]);
+    } else {
+      setApartments([]);
+    }
+  }, [open, filters.block]);
 
   if (!open) return null;
 
@@ -14,11 +67,9 @@ export function InvoicesFilterModal({ open, onClose, filters, onFilterChange, on
         <Typography variant="h5" className="font-bold">
           {t("invoices.filter.title") || "Axtarış"}
         </Typography>
-        {/* <IconButton variant="text" size="sm"  className="dark:text-white "> */}
         <div className="cursor-pointer p-2 rounded-md transition-all hover:bg-gray-200 dark:hover:bg-gray-700" onClick={onClose}>
           <XMarkIcon className="dark:text-white h-5 w-5 cursor-pointer " />
         </div>
-        {/* </IconButton> */}
       </DialogHeader>
 
       <DialogBody divider className="space-y-6 dark:bg-gray-800 dark:border-gray-700 max-h-[70vh] overflow-y-auto">
@@ -31,9 +82,9 @@ export function InvoicesFilterModal({ open, onClose, filters, onFilterChange, on
             <select
               value={filters.serviceName || ""}
               onChange={(e) => onFilterChange("serviceName", e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+              className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-all shadow-sm hover:shadow-md"
             >
-              <option value="" disabled className="">{t("invoices.filter.select") || "Seçin"}</option>
+              <option value="" disabled>{t("invoices.filter.select") || "Seçin"}</option>
             </select>
           </div>
 
@@ -113,10 +164,23 @@ export function InvoicesFilterModal({ open, onClose, filters, onFilterChange, on
               </Typography>
               <select
                 value={filters.building || ""}
-                onChange={(e) => onFilterChange("building", e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                onChange={(e) => {
+                  onFilterChange("building", e.target.value);
+                  // Reset block and apartment when building changes
+                  onFilterChange("block", "");
+                  onFilterChange("apartment", "");
+                }}
+                disabled={loadingBuildings}
+                className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <option value="" disabled className="">{t("invoices.filter.selectWithDots") || "Seçin..."}</option>
+                <option value="" disabled>
+                  {loadingBuildings ? t("invoices.filter.loading") || "Yüklənir..." : t("invoices.filter.selectWithDots") || "Seçin..."}
+                </option>
+                {buildings.map((building) => (
+                  <option key={building.id} value={String(building.id)}>
+                    {building.name}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -127,10 +191,24 @@ export function InvoicesFilterModal({ open, onClose, filters, onFilterChange, on
               </Typography>
               <select
                 value={filters.block || ""}
-                onChange={(e) => onFilterChange("block", e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                onChange={(e) => {
+                  onFilterChange("block", e.target.value);
+                  // Reset apartment when block changes
+                  onFilterChange("apartment", "");
+                }}
+                disabled={!filters.building}
+                className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <option value="" disabled className="">{t("invoices.filter.selectWithDots") || "Seçin..."}</option>
+                <option value="" disabled>
+                  {!filters.building
+                    ? t("invoices.filter.selectBuildingFirst") || "Əvvəlcə bina seçin"
+                    : t("invoices.filter.selectWithDots") || "Seçin..."}
+                </option>
+                {blocks.map((block) => (
+                  <option key={block.id} value={String(block.id)}>
+                    {block.name}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -142,9 +220,19 @@ export function InvoicesFilterModal({ open, onClose, filters, onFilterChange, on
               <select
                 value={filters.apartment || ""}
                 onChange={(e) => onFilterChange("apartment", e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                disabled={!filters.block}
+                className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <option value="" disabled className="">{t("invoices.filter.selectWithDots") || "Seçin..."}</option>
+                <option value="" disabled>
+                  {!filters.block
+                    ? t("invoices.filter.selectBlockFirst") || "Əvvəlcə blok seçin"
+                    : t("invoices.filter.selectWithDots") || "Seçin..."}
+                </option>
+                {apartments.map((apartment) => (
+                  <option key={apartment.id} value={String(apartment.id)}>
+                    {apartment.name}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -182,11 +270,11 @@ export function InvoicesFilterModal({ open, onClose, filters, onFilterChange, on
               <select
                 value={filters.status || ""}
                 onChange={(e) => onFilterChange("status", e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-all shadow-sm hover:shadow-md"
               >
-                <option value="" className="">{t("invoices.filter.all") || "Hamısı"}</option>
-                <option value="Ödənilib" className="">{t("invoices.filter.paid") || "Ödənilib"}</option>
-                <option value="Ödənilməmiş" className="">{t("invoices.filter.unpaid") || "Ödənilməmiş"}</option>
+                <option value="">{t("invoices.filter.all") || "Hamısı"}</option>
+                <option value="Ödənilib">{t("invoices.filter.paid") || "Ödənilib"}</option>
+                <option value="Ödənilməmiş">{t("invoices.filter.unpaid") || "Ödənilməmiş"}</option>
               </select>
             </div>
           </div>

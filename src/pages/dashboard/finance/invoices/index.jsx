@@ -25,6 +25,7 @@ const InvoicesPage = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [page, setPage] = useState(1);
+  const [saving, setSaving] = useState(false);
 
   const { filters, filterOpen, setFilterOpen, updateFilter, clearFilters, applyFilters } = useInvoicesFilters();
   const { invoices, totalPaid, totalConsumption, loading, error, pagination } = useInvoicesData(filters, page, refreshKey);
@@ -70,17 +71,21 @@ const InvoicesPage = () => {
 
   const handleCreateSave = async () => {
     try {
+      setSaving(true);
       await createInvoice(formData);
       setCreateOpen(false);
       resetForm();
       setRefreshKey((prev) => prev + 1);
     } catch (error) {
       console.error("Error creating invoice:", error);
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleEditSave = async () => {
     try {
+      setSaving(true);
       if (selectedItem) {
         await updateInvoice(selectedItem.id, formData);
         setEditOpen(false);
@@ -90,6 +95,8 @@ const InvoicesPage = () => {
       }
     } catch (error) {
       console.error("Error updating invoice:", error);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -187,6 +194,7 @@ const InvoicesPage = () => {
         onFieldChange={updateField}
         onSave={handleCreateSave}
         isEdit={false}
+        saving={saving}
       />
 
       <InvoicesFormModal
@@ -200,6 +208,7 @@ const InvoicesPage = () => {
         onFieldChange={updateField}
         onSave={handleEditSave}
         isEdit={true}
+        saving={saving}
       />
 
       <InvoicesViewModal open={viewOpen} onClose={() => setViewOpen(false)} invoice={selectedItem} />
