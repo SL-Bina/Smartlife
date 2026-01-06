@@ -1,5 +1,5 @@
 import React from "react";
-import { Typography, Chip, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
+import { Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
@@ -7,26 +7,23 @@ export function ExpensesTable({ expenses, onView, onEdit, onDelete }) {
   const { t } = useTranslation();
 
   return (
-    <div className="hidden lg:block">
-      <table className="w-full table-auto min-w-[1200px]">
+    <div className="hidden lg:block overflow-x-auto rounded-lg">
+      <table className="w-full table-auto min-w-[1000px]">
         <thead>
           <tr>
             {[
-              t("expenses.table.id"),
-              t("expenses.table.category"),
-              t("expenses.table.description"),
-              t("expenses.table.amount"),
-              t("expenses.table.paymentMethod"),
-              t("expenses.table.paymentDate"),
-              t("expenses.table.paidBy"),
-              t("expenses.table.invoiceNumber"),
-              t("expenses.table.status"),
-              t("expenses.table.operations"),
+              t("expenses.table.id") || "ID",
+              t("expenses.table.category") || "Xərc növü",
+              t("expenses.table.title") || "Başlıq",
+              t("expenses.table.description") || "Açıqlama",
+              t("expenses.table.amount") || "Məbləğ",
+              t("expenses.table.paymentDate") || "Tarix",
+              t("expenses.table.operations") || "Əməliyyatlar",
             ].map((el, idx) => (
               <th
                 key={el}
                 className={`border-b border-blue-gray-100 dark:border-gray-800 py-3 px-6 text-left ${
-                  idx === 9 ? "text-right" : ""
+                  idx === 6 ? "text-right" : ""
                 }`}
               >
                 <Typography
@@ -41,66 +38,55 @@ export function ExpensesTable({ expenses, onView, onEdit, onDelete }) {
         </thead>
         <tbody>
           {expenses.map((row, key) => {
-            const className = `py-3 px-6 ${
+            const className = `py-2 px-6 ${
               key === expenses.length - 1 ? "" : "border-b border-blue-gray-50 dark:border-gray-800"
             }`;
             return (
-              <tr key={row.id} className="dark:hover:bg-gray-700/50">
+              <tr
+                key={row.id}
+                onClick={() => onView(row)}
+                className={`
+                  ${key % 2 === 0 ? "bg-white dark:bg-gray-800" : "bg-gray-50 dark:bg-gray-800/50"}
+                  hover:bg-blue-50 dark:hover:bg-gray-700/70 
+                  transition-all duration-200 
+                  cursor-pointer
+                  group
+                `}
+              >
                 <td className={className}>
-                  <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                  <Typography variant="small" color="blue-gray" className="font-medium dark:text-gray-300">
                     {row.id}
                   </Typography>
                 </td>
                 <td className={className}>
-                  <Typography variant="small" color="blue-gray" className="font-semibold dark:text-white">
+                  <Typography variant="small" color="blue-gray" className="font-semibold dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                     {row.category}
                   </Typography>
                 </td>
                 <td className={className}>
                   <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                    {row.description}
-                  </Typography>
-                </td>
-                <td className={className}>
-                  <Typography variant="small" color="red" className="font-semibold dark:text-red-300">
-                    {row.amount} ₼
-                  </Typography>
-                </td>
-                <td className={className}>
-                  <Chip
-                    size="sm"
-                    value={row.paymentMethod === "Nağd" ? t("expenses.paymentMethod.cash") : t("expenses.paymentMethod.bank")}
-                    color={row.paymentMethod === "Nağd" ? "amber" : "blue"}
-                    className="dark:bg-opacity-80"
-                  />
-                </td>
-                <td className={className}>
-                  <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                    {row.paymentDate}
+                    {row.title || row.description || "-"}
                   </Typography>
                 </td>
                 <td className={className}>
                   <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                    {row.paidBy}
+                    {row.description || "-"}
+                  </Typography>
+                </td>
+                <td className={className}>
+                  <Typography variant="small" color="red" className="font-semibold dark:text-red-400">
+                    {parseFloat(row.amount || 0).toFixed(2)} ₼
                   </Typography>
                 </td>
                 <td className={className}>
                   <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                    {row.invoiceNumber}
+                    {row.paymentDate || "-"}
                   </Typography>
                 </td>
-                <td className={className}>
-                  <Chip
-                    size="sm"
-                    value={row.status === "Təsdiqlənib" ? t("expenses.status.approved") : t("expenses.status.pending")}
-                    color={row.status === "Təsdiqlənib" ? "green" : "amber"}
-                    className="dark:bg-opacity-80"
-                  />
-                </td>
-                <td className={`${className} text-right`}>
+                <td className={`${className} text-right`} onClick={(e) => e.stopPropagation()}>
                   <Menu placement="left-start">
                     <MenuHandler>
-                      <IconButton size="sm" variant="text" color="blue-gray" className="dark:text-gray-300 dark:hover:bg-gray-700">
+                      <IconButton size="sm" variant="text" color="blue-gray" className="dark:text-gray-300 dark:hover:bg-blue-600/20 hover:bg-blue-100">
                         <EllipsisVerticalIcon strokeWidth={2} className="h-5 w-5" />
                       </IconButton>
                     </MenuHandler>

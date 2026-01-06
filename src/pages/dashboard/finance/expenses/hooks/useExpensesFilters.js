@@ -3,8 +3,11 @@ import { useState } from "react";
 export function useExpensesFilters() {
   const [filters, setFilters] = useState({
     category: "",
-    paymentMethod: "",
-    status: "",
+    title: "",
+    amountMin: "",
+    amountMax: "",
+    startDate: "",
+    endDate: "",
   });
   const [filterOpen, setFilterOpen] = useState(false);
 
@@ -18,8 +21,11 @@ export function useExpensesFilters() {
   const clearFilters = () => {
     setFilters({
       category: "",
-      paymentMethod: "",
-      status: "",
+      title: "",
+      amountMin: "",
+      amountMax: "",
+      startDate: "",
+      endDate: "",
     });
   };
 

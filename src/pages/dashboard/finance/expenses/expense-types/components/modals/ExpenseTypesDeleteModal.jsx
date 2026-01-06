@@ -3,10 +3,10 @@ import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography } fr
 import { XMarkIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
-export function ExpensesDeleteModal({ open, onClose, expense, onConfirm }) {
+export function ExpenseTypesDeleteModal({ open, onClose, expenseType, onConfirm }) {
   const { t } = useTranslation();
 
-  if (!open || !expense) return null;
+  if (!open || !expenseType) return null;
 
   return (
     <Dialog open={open} handler={onClose} size="md" className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl" dismiss={{ enabled: false }}>
@@ -16,7 +16,7 @@ export function ExpensesDeleteModal({ open, onClose, expense, onConfirm }) {
             <TrashIcon className="h-5 w-5 text-white" />
           </div>
           <Typography variant="h5" className="font-bold text-gray-900 dark:text-white">
-            {t("expenses.delete.title")}
+            {t("expenseTypes.delete.title") || "Xərc növü sil"}
           </Typography>
         </div>
         <div className="cursor-pointer p-2 rounded-md transition-all hover:bg-gray-200 dark:hover:bg-gray-700" onClick={onClose}>
@@ -25,20 +25,20 @@ export function ExpensesDeleteModal({ open, onClose, expense, onConfirm }) {
       </DialogHeader>
       <DialogBody divider className="space-y-6 dark:bg-gray-800 py-6">
         <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-          {t("expenses.delete.message")} <strong>{expense.description}</strong> (ID: {expense.id})?
+          {t("expenseTypes.delete.message") || "Bu xərc növünü silmək istədiyinizə əminsiniz?"} <strong>{expenseType.name}</strong> (ID: {expenseType.id})?
         </Typography>
       </DialogBody>
-      <DialogFooter className="flex justify-end gap-2 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pt-3">
+      <DialogFooter className="flex justify-end gap-2 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pt-4">
         <Button
           variant="outlined"
           color="blue-gray"
           onClick={onClose}
           className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
         >
-          {t("buttons.cancel")}
+          {t("buttons.cancel") || "Ləğv et"}
         </Button>
         <Button color="red" onClick={onConfirm} className="dark:bg-red-600 dark:hover:bg-red-700">
-          {t("buttons.delete")}
+          {t("buttons.delete") || "Sil"}
         </Button>
       </DialogFooter>
     </Dialog>

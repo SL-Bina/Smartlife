@@ -1,16 +1,21 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
-const mockExpensesData = Array.from({ length: 50 }, (_, index) => ({
-  id: index + 1,
-  category: ["Təmizlik", "Santexnika", "Elektrik", "Təmir", "Digər"][index % 5],
-  description: `Xərc açıqlaması ${index + 1}`,
-  amount: (50 + (index % 10) * 10).toFixed(2),
-  paymentMethod: index % 2 === 0 ? "Nağd" : "Bank",
-  paymentDate: `2025-11-${String(1 + (index % 20)).padStart(2, "0")}`,
-  paidBy: `Ödəyən ${index + 1}`,
-  invoiceNumber: `INV-${String(1000 + index).padStart(4, "0")}`,
-  status: index % 3 === 0 ? "Təsdiqlənib" : "Gözləyir",
-}));
+const mockExpensesData = Array.from({ length: 50 }, (_, index) => {
+  const categories = ["Bina xərcləri", "Ofis xərcləri"];
+  const titles = ["test", "Isiq pulu", "sdcsdc"];
+  return {
+    id: index + 1,
+    category: categories[index % 2],
+    title: titles[index % 3],
+    description: index % 3 === 0 ? `vfdvdfydfy` : "-",
+    amount: (50 + (index % 10) * 10).toFixed(2),
+    paymentMethod: index % 2 === 0 ? "Nağd" : "Bank",
+    paymentDate: `2025-${String(7 + (index % 5)).padStart(2, "0")}-${String(5 + (index % 20)).padStart(2, "0")}`,
+    paidBy: `Ödəyən ${index + 1}`,
+    invoiceNumber: `INV-${String(1000 + index).padStart(4, "0")}`,
+    status: index % 3 === 0 ? "Təsdiqlənib" : "Gözləyir",
+  };
+});
 
 /**
  * Xərclərin siyahısını API-dən gətirir
@@ -335,6 +340,43 @@ export const fetchExpenseById = async (id) => {
     });
   } catch (error) {
     console.error("Error fetching expense:", error);
+    throw error;
+  }
+};
+
+/**
+ * Excel-ə export edir
+ * @param {Object} filters - Filter parametrləri
+ * @returns {Promise<Blob>} Export edilmiş Excel faylı
+ */
+export const exportToExcel = async (filters = {}) => {
+  try {
+    // Real API çağırışı - hazır olduqda comment-dən çıxarılacaq
+    // if (!API_BASE_URL) {
+    //   throw new Error("API_BASE_URL is not defined in .env file");
+    // }
+    // const queryParams = new URLSearchParams(filters);
+    // const response = await fetch(`${API_BASE_URL}/finance/expenses/export?${queryParams}`, {
+    //   method: "GET",
+    //   headers: {
+    //     Authorization: `Bearer ${localStorage.getItem("token")}`,
+    //   },
+    // });
+    // if (!response.ok) throw new Error("Failed to export to Excel");
+    // const blob = await response.blob();
+    // return blob;
+
+    // Mock data - real API hazır olduqda comment-ə alınacaq
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        // Mock Excel blob yaradırıq
+        const csvContent = "ID,Xərc növü,Başlıq,Açıqlama,Məbləğ,Tarix\n";
+        const blob = new Blob([csvContent], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        resolve(blob);
+      }, 300);
+    });
+  } catch (error) {
+    console.error("Error exporting to Excel:", error);
     throw error;
   }
 };

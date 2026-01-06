@@ -30,7 +30,6 @@ const ReportsPage = () => {
   const handleExport = async () => {
     try {
       const blob = await exportReport(filters, "pdf");
-      // Create download link
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;

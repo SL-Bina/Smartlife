@@ -11,7 +11,9 @@
     "showing": "Göstərilir",
     "of": "üçün",
     "previous": "Əvvəlki",
-    "next": "Növbəti"
+    "next": "Növbəti",
+    "min": "Min",
+    "max": "Max"
   },
   "header": {
     "search": "Axtarış",
@@ -565,41 +567,82 @@
     }
   },
   "debtorApartments": {
-    "pageTitle": "Borclu mənzillər",
+    "pageTitle": "Borcu olan mənzillər",
     "summary": {
       "totalDebt": "Ümumi borc"
     },
     "filter": {
-      "title": "Borclu mənzillər filter",
+      "title": "Axtarış",
+      "debtAmount": "Borc Məbləği",
       "apartment": "Mənzil",
       "owner": "Mənzil sahibi",
       "status": "Status",
-      "enter": "Daxil et"
+      "building": "Bina",
+      "block": "Blok",
+      "floor": "Mərtəbə",
+      "area": "Kvadrat metr",
+      "rooms": "Otaq sayı",
+      "invoiceCount": "Faktura sayı",
+      "enter": "Daxil et",
+      "loading": "Yüklənir...",
+      "selectWithDots": "Seçin...",
+      "selectBuildingFirst": "Əvvəlcə bina seçin",
+      "selectBlockFirst": "Əvvəlcə blok seçin"
     },
     "view": {
       "title": "Borclu mənzil məlumatları"
     },
     "pay": {
-      "title": "Borc ödənişi",
-      "amount": "Ödəniş məbləği"
+      "title": "Faktura Ödənişi",
+      "amount": "Məbləğ",
+      "note": "Açıqlama",
+      "notePlaceholder": "Açıqlama (Optional)",
+      "method": "Ödəniş üsulu",
+      "method.cash": "Nağd",
+      "method.card": "Kart",
+      "method.bank": "Bank",
+      "total": "Toplam",
+      "date": "Tarix",
+      "confirm": "Ödənişi təsdiqlə"
     },
     "invoices": {
       "title": "Fakturalar",
-      "message": "Fakturalar siyahısı"
+      "message": "Fakturalar siyahısı",
+      "noInvoices": "Faktura yoxdur",
+      "table": {
+        "id": "Id",
+        "invoiceNumber": "Faktura nömrəsi",
+        "title": "Başlıq",
+        "date": "Tarix",
+        "status": "Status",
+        "amount": "Məbləğ",
+        "paid": "Ödənilib",
+        "remaining": "Qalıq"
+      },
+      "status": {
+        "paid": "Ödənilib",
+        "unpaid": "Ödənilməyib"
+      }
     },
     "actions": {
       "search": "Axtarış",
+      "export": "Excelə köçür",
       "view": "Bax",
-      "pay": "Ödəniş et",
+      "pay": "Ödə",
       "invoices": "Fakturalar",
       "loading": "Yüklənir..."
     },
     "table": {
-      "id": "ID",
+      "id": "Id",
       "apartment": "Mənzil",
       "apartmentInfo": "Mənzil məlumatları",
       "owner": "Mənzil sahibi",
       "phone": "Telefon",
+      "building": "Bina",
+      "block": "Blok",
+      "floor": "Mərtəbə",
+      "rooms": "Otaq",
+      "area": "Kv.m",
       "totalDebt": "Ümumi borc",
       "invoiceCount": "Faktura sayı",
       "lastPaymentDate": "Son ödəniş tarixi",
@@ -615,14 +658,19 @@
       "lastPayment": "Son ödəniş"
     },
     "labels": {
+      "complex": "Kompleks",
       "building": "Bina",
       "block": "Blok",
       "floor": "Mərtəbə",
-      "area": "Sahə"
+      "rooms": "Otaq",
+      "area": "Kv.m"
     },
     "status": {
       "paid": "Ödənilib",
       "debtor": "Borclu"
+    },
+    "error": {
+      "loading": "Məlumat yüklənərkən xəta baş verdi"
     },
     "pagination": {
       "prev": "Geri",
@@ -632,13 +680,33 @@
   "expenses": {
     "pageTitle": "Xərclər",
     "summary": {
-      "totalExpenses": "Ümumi xərc"
+      "totalExpenses": "Ümumi xərc",
+      "bank": "Bank",
+      "cash": "Nağd",
+      "total": "Ümumi"
     },
     "filter": {
-      "title": "Xərc filter",
-      "category": "Kateqoriya",
+      "title": "Axtarış",
+      "category": "Xərc növü",
+      "titleField": "Başlıq",
+      "amount": "Məbləğ",
+      "dateRange": "Tarix aralığı",
+      "startDate": "Başlanğıc tarixi",
+      "endDate": "Bitmə tarixi",
+      "selectCategory": "Xərc növü seçin",
       "paymentMethod": "Ödəniş üsulu",
       "status": "Status",
+      "enter": "Daxil et"
+    },
+    "form": {
+      "category": "Xərc növü",
+      "title": "Başlıq",
+      "description": "Açıqlama",
+      "amount": "Məbləğ",
+      "paymentMethod": "Ödəniş üsulu",
+      "paymentDate": "Ödəniş tarixi",
+      "paidBy": "Ödəyən",
+      "invoiceNumber": "Faktura nömrəsi",
       "enter": "Daxil et"
     },
     "create": {
@@ -656,7 +724,9 @@
     },
     "actions": {
       "search": "Axtarış",
-      "add": "Əlavə et",
+      "export": "Excelə köçür",
+      "category": "Xərc növü",
+      "add": "Yenisini yardın",
       "view": "Bax",
       "edit": "Düzəliş et",
       "delete": "Sil",
@@ -664,11 +734,12 @@
     },
     "table": {
       "id": "ID",
-      "category": "Kateqoriya",
+      "category": "Xərc növü",
+      "title": "Başlıq",
       "description": "Açıqlama",
       "amount": "Məbləğ",
       "paymentMethod": "Ödəniş üsulu",
-      "paymentDate": "Ödəniş tarixi",
+      "paymentDate": "Tarix",
       "paidBy": "Ödəyən",
       "invoiceNumber": "Faktura nömrəsi",
       "status": "Status",
@@ -704,6 +775,43 @@
     "pagination": {
       "prev": "Geri",
       "next": "İrəli"
+    }
+  },
+  "expenseTypes": {
+    "pageTitle": "Xərc növləri",
+    "create": {
+      "title": "Yeni xərc növü əlavə et"
+    },
+    "edit": {
+      "title": "Xərc növü məlumatlarını dəyiş"
+    },
+    "view": {
+      "title": "Xərc növü məlumatları"
+    },
+    "delete": {
+      "title": "Xərc növü sil",
+      "message": "Bu xərc növünü silmək istədiyinizə əminsiniz?"
+    },
+    "actions": {
+      "add": "Xərc növü əlavə et",
+      "view": "Bax",
+      "edit": "Düzəliş et",
+      "delete": "Sil",
+      "loading": "Yüklənir..."
+    },
+    "table": {
+      "id": "ID",
+      "name": "Ad",
+      "description": "Açıqlama",
+      "createdAt": "Yaradılma",
+      "operations": "Əməliyyatlar"
+    },
+    "form": {
+      "name": "Ad",
+      "description": "Açıqlama"
+    },
+    "error": {
+      "loading": "Məlumat yüklənərkən xəta baş verdi"
     }
   },
   "deposit": {

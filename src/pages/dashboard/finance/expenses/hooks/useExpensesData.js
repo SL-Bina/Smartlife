@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
-import { fetchExpenses, fetchTotalExpenses } from "../api";
+import { fetchExpenses, fetchTotalExpenses, fetchTotalExpensesByMethod } from "../api";
 
 const ITEMS_PER_PAGE = 10;
 
 export function useExpensesData(filters, page, refreshKey = 0) {
   const [expenses, setExpenses] = useState([]);
   const [totalExpenses, setTotalExpenses] = useState(0);
+  const [bankTotal, setBankTotal] = useState(0);
+  const [cashTotal, setCashTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState({
@@ -21,14 +23,18 @@ export function useExpensesData(filters, page, refreshKey = 0) {
         setLoading(true);
         setError(null);
 
-        const [expensesResult, totalExpensesResult] = await Promise.all([
+        const [expensesResult, totalExpensesResult, bankTotalResult, cashTotalResult] = await Promise.all([
           fetchExpenses(filters, page, ITEMS_PER_PAGE),
           fetchTotalExpenses(filters),
+          fetchTotalExpensesByMethod(filters, "Bank"),
+          fetchTotalExpensesByMethod(filters, "Nağd"),
         ]);
 
         setExpenses(expensesResult.data);
         setPagination(expensesResult.pagination);
         setTotalExpenses(totalExpensesResult);
+        setBankTotal(bankTotalResult);
+        setCashTotal(cashTotalResult);
       } catch (err) {
         console.error("Error loading expenses data:", err);
         setError(err.message);
@@ -43,6 +49,8 @@ export function useExpensesData(filters, page, refreshKey = 0) {
   return {
     expenses,
     totalExpenses,
+    bankTotal,
+    cashTotal,
     loading,
     error,
     pagination,

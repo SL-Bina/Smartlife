@@ -644,6 +644,43 @@
     "pagination": {
       "prev": "Previous",
       "next": "Next"
+    },
+    "expenseTypes": {
+      "pageTitle": "Expense Types",
+      "create": {
+        "title": "Add New Expense Type"
+      },
+      "edit": {
+        "title": "Edit Expense Type"
+      },
+      "view": {
+        "title": "Expense Type Details"
+      },
+      "delete": {
+        "title": "Delete Expense Type",
+        "message": "Are you sure you want to delete this expense type?"
+      },
+      "actions": {
+        "add": "Add Expense Type",
+        "view": "View",
+        "edit": "Edit",
+        "delete": "Delete",
+        "loading": "Loading..."
+      },
+      "table": {
+        "id": "ID",
+        "name": "Name",
+        "description": "Description",
+        "createdAt": "Created",
+        "operations": "Operations"
+      },
+      "form": {
+        "name": "Name",
+        "description": "Description"
+      },
+      "error": {
+        "loading": "Error loading data"
+      }
     }
   },
   "deposit": {
