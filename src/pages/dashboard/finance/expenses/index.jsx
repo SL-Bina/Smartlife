@@ -26,9 +26,10 @@ const ExpensesPage = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [page, setPage] = useState(1);
   const [expenseTypesOpen, setExpenseTypesOpen] = useState(false);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const { filters, filterOpen, setFilterOpen, updateFilter, clearFilters, applyFilters } = useExpensesFilters();
-  const { expenses, totalExpenses, bankTotal, cashTotal, loading, error, pagination } = useExpensesData(filters, page, refreshKey);
+  const { expenses, totalExpenses, bankTotal, cashTotal, loading, error, pagination } = useExpensesData(filters, page, refreshKey, sortConfig);
   const { formData, updateField, resetForm, setFormFromExpense } = useExpensesForm();
 
   useEffect(() => {
@@ -44,6 +45,11 @@ const ExpensesPage = () => {
 
   const handleFilterClear = () => {
     clearFilters();
+    setPage(1);
+  };
+
+  const handleSortChange = (newSortConfig) => {
+    setSortConfig(newSortConfig);
     setPage(1);
   };
 
@@ -171,7 +177,14 @@ const ExpensesPage = () => {
             </div>
           ) : (
             <>
-              <ExpensesTable expenses={expenses} onView={openViewModal} onEdit={openEditModal} onDelete={openDeleteModal} />
+              <ExpensesTable 
+                expenses={expenses} 
+                onView={openViewModal} 
+                onEdit={openEditModal} 
+                onDelete={openDeleteModal}
+                sortConfig={sortConfig}
+                onSortChange={handleSortChange}
+              />
               <ExpensesCardList expenses={expenses} onView={openViewModal} onEdit={openEditModal} onDelete={openDeleteModal} />
               <ExpensesPagination
                 page={page}

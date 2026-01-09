@@ -1,39 +1,72 @@
 import React from "react";
 import { Typography, Chip, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
-import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
+import { EllipsisVerticalIcon, ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
-export function DepositTable({ deposits, onView, onEdit, onDelete }) {
+export function DepositTable({ deposits, onView, onEdit, onDelete, sortConfig, onSortChange }) {
   const { t } = useTranslation();
+
+  const columns = [
+    { key: "id", label: t("deposit.table.id"), sortable: true },
+    { key: "apartment", label: t("deposit.table.apartment"), sortable: true },
+    { key: "owner", label: t("deposit.table.owner"), sortable: true },
+    { key: "amount", label: t("deposit.table.amount"), sortable: true },
+    { key: "paymentMethod", label: t("deposit.table.paymentMethod"), sortable: true },
+    { key: "depositDate", label: t("deposit.table.depositDate"), sortable: true },
+    { key: "status", label: t("deposit.table.status"), sortable: true },
+    { key: "notes", label: t("deposit.table.notes"), sortable: true },
+    { key: "operations", label: t("deposit.table.operations"), sortable: false },
+  ];
+
+  const handleSort = (key) => {
+    if (!columns.find((col) => col.key === key)?.sortable) return;
+
+    let direction = "asc";
+    if (sortConfig?.key === key && sortConfig?.direction === "asc") {
+      direction = "desc";
+    }
+    onSortChange({ key, direction });
+  };
 
   return (
     <div className="hidden lg:block">
       <table className="w-full table-auto min-w-[1200px]">
         <thead>
           <tr>
-            {[
-              t("deposit.table.id"),
-              t("deposit.table.apartment"),
-              t("deposit.table.owner"),
-              t("deposit.table.amount"),
-              t("deposit.table.paymentMethod"),
-              t("deposit.table.depositDate"),
-              t("deposit.table.status"),
-              t("deposit.table.notes"),
-              t("deposit.table.operations"),
-            ].map((el, idx) => (
+            {columns.map((col, idx) => (
               <th
-                key={el}
+                key={col.key}
+                onClick={() => col.sortable && handleSort(col.key)}
                 className={`border-b border-blue-gray-100 dark:border-gray-800 py-3 px-6 text-left ${
                   idx === 8 ? "text-right" : ""
-                }`}
+                } ${col.sortable ? "cursor-pointer hover:bg-blue-gray-50 dark:hover:bg-gray-700 transition-colors" : ""}`}
               >
-                <Typography
-                  variant="small"
-                  className="text-[11px] font-medium uppercase text-blue-gray-400 dark:text-gray-400"
-                >
-                  {el}
-                </Typography>
+                <div className="flex items-center gap-2">
+                  <Typography
+                    variant="small"
+                    className="text-[11px] font-medium uppercase text-blue-gray-400 dark:text-gray-400"
+                  >
+                    {col.label}
+                  </Typography>
+                  {col.sortable && (
+                    <div className="flex flex-col">
+                      <ArrowUpIcon
+                        className={`h-3 w-3 ${
+                          sortConfig?.key === col.key && sortConfig?.direction === "asc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                      <ArrowDownIcon
+                        className={`h-3 w-3 -mt-1 ${
+                          sortConfig?.key === col.key && sortConfig?.direction === "desc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                    </div>
+                  )}
+                </div>
               </th>
             ))}
           </tr>

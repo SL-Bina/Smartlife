@@ -25,9 +25,10 @@ const TransfersPage = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [page, setPage] = useState(1);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const { filters, filterOpen, setFilterOpen, updateFilter, clearFilters, applyFilters } = useTransfersFilters();
-  const { transfers, totalTransfers, loading, error, pagination } = useTransfersData(filters, page, refreshKey);
+  const { transfers, totalTransfers, loading, error, pagination } = useTransfersData(filters, page, refreshKey, sortConfig);
   const { formData, updateField, resetForm, setFormFromTransfer } = useTransfersForm();
 
   // Reset page when filters change
@@ -44,6 +45,11 @@ const TransfersPage = () => {
 
   const handleFilterClear = () => {
     clearFilters();
+    setPage(1);
+  };
+
+  const handleSortChange = (newSortConfig) => {
+    setSortConfig(newSortConfig);
     setPage(1);
   };
 
@@ -155,7 +161,14 @@ const TransfersPage = () => {
             </div>
           ) : (
             <>
-              <TransfersTable transfers={transfers} onView={openViewModal} onEdit={openEditModal} onDelete={openDeleteModal} />
+              <TransfersTable 
+                transfers={transfers} 
+                onView={openViewModal} 
+                onEdit={openEditModal} 
+                onDelete={openDeleteModal}
+                sortConfig={sortConfig}
+                onSortChange={handleSortChange}
+              />
               <TransfersCardList transfers={transfers} onView={openViewModal} onEdit={openEditModal} onDelete={openDeleteModal} />
               <TransfersPagination
                 page={page}

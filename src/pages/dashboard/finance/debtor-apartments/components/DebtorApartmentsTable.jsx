@@ -1,41 +1,74 @@
 import React from "react";
 import { Typography, IconButton } from "@material-tailwind/react";
-import { EyeIcon } from "@heroicons/react/24/outline";
+import { EyeIcon, ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
-export function DebtorApartmentsTable({ apartments, onView }) {
+export function DebtorApartmentsTable({ apartments, onView, sortConfig, onSortChange }) {
   const { t } = useTranslation();
+
+  const columns = [
+    { key: "id", label: t("debtorApartments.table.id") || "Id", sortable: true },
+    { key: "apartment", label: t("debtorApartments.table.apartment") || "Mənzil", sortable: true },
+    { key: "owner", label: t("debtorApartments.table.owner") || "Mənzil sahibi", sortable: true },
+    { key: "building", label: t("debtorApartments.table.building") || "Bina", sortable: true },
+    { key: "block", label: t("debtorApartments.table.block") || "Blok", sortable: true },
+    { key: "floor", label: t("debtorApartments.table.floor") || "Mərtəbə", sortable: true },
+    { key: "rooms", label: t("debtorApartments.table.rooms") || "Otaq", sortable: true },
+    { key: "area", label: t("debtorApartments.table.area") || "Kv.m", sortable: true },
+    { key: "invoiceCount", label: t("debtorApartments.table.invoiceCount") || "Faktura sayı", sortable: true },
+    { key: "totalDebt", label: t("debtorApartments.table.totalDebt") || "Ümumi borc", sortable: true },
+    { key: "operations", label: t("debtorApartments.table.operations") || "Əməliyyatlar", sortable: false },
+  ];
+
+  const handleSort = (key) => {
+    if (!columns.find((col) => col.key === key)?.sortable) return;
+
+    let direction = "asc";
+    if (sortConfig?.key === key && sortConfig?.direction === "asc") {
+      direction = "desc";
+    }
+    onSortChange({ key, direction });
+  };
 
   return (
     <div className="hidden lg:block overflow-x-auto rounded-lg">
       <table className="w-full table-auto min-w-[1200px]">
         <thead>
-          <tr >
-            {[
-              t("debtorApartments.table.id") || "Id",
-              t("debtorApartments.table.apartment") || "Mənzil",
-              t("debtorApartments.table.owner") || "Mənzil sahibi",
-              t("debtorApartments.table.building") || "Bina",
-              t("debtorApartments.table.block") || "Blok",
-              t("debtorApartments.table.floor") || "Mərtəbə",
-              t("debtorApartments.table.rooms") || "Otaq",
-              t("debtorApartments.table.area") || "Kv.m",
-              t("debtorApartments.table.invoiceCount") || "Faktura sayı",
-              t("debtorApartments.table.totalDebt") || "Ümumi borc",
-              t("debtorApartments.table.operations") || "Əməliyyatlar",
-            ].map((el, idx) => (
+          <tr>
+            {columns.map((col, idx) => (
               <th
-                key={el}
+                key={col.key}
+                onClick={() => col.sortable && handleSort(col.key)}
                 className={`border-b border-blue-gray-200 dark:border-gray-700 py-4 px-6 text-left ${
                   idx === 10 ? "text-right" : ""
-                }`}
+                } ${col.sortable ? "cursor-pointer hover:bg-blue-gray-50 dark:hover:bg-gray-700 transition-colors" : ""}`}
               >
-                <Typography
-                  variant="small"
-                  className="text-[11px] font-bold uppercase text-blue-gray-700 dark:text-gray-300"
-                >
-                  {el}
-                </Typography>
+                <div className="flex items-center gap-2">
+                  <Typography
+                    variant="small"
+                    className="text-[11px] font-bold uppercase text-blue-gray-700 dark:text-gray-300"
+                  >
+                    {col.label}
+                  </Typography>
+                  {col.sortable && (
+                    <div className="flex flex-col">
+                      <ArrowUpIcon
+                        className={`h-3 w-3 ${
+                          sortConfig?.key === col.key && sortConfig?.direction === "asc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                      <ArrowDownIcon
+                        className={`h-3 w-3 -mt-1 ${
+                          sortConfig?.key === col.key && sortConfig?.direction === "desc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                    </div>
+                  )}
+                </div>
               </th>
             ))}
           </tr>

@@ -24,7 +24,8 @@ const DebtorApartmentsPage = () => {
   const [page, setPage] = useState(1);
 
   const { filters, filterOpen, setFilterOpen, updateFilter, clearFilters, applyFilters } = useDebtorApartmentsFilters();
-  const { apartments, totalDebt, loading, error, pagination } = useDebtorApartmentsData(filters, page, refreshKey);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+  const { apartments, totalDebt, loading, error, pagination } = useDebtorApartmentsData(filters, page, refreshKey, sortConfig);
   const {
     amount,
     note,
@@ -49,6 +50,11 @@ const DebtorApartmentsPage = () => {
 
   const handleFilterClear = () => {
     clearFilters();
+    setPage(1);
+  };
+
+  const handleSortChange = (newSortConfig) => {
+    setSortConfig(newSortConfig);
     setPage(1);
   };
 
@@ -149,6 +155,8 @@ const DebtorApartmentsPage = () => {
               <DebtorApartmentsTable
                 apartments={apartments}
                 onView={openViewModal}
+                sortConfig={sortConfig}
+                onSortChange={handleSortChange}
               />
               <DebtorApartmentsCardList
                 apartments={apartments}

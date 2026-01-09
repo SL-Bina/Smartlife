@@ -27,7 +27,8 @@ const DebtPage = () => {
 
   const { filters, filterOpen, setFilterOpen, updateFilter, clearFilters, applyFilters } = useDebtFilters();
   const [page, setPage] = useState(1);
-  const { debts, totalDebt, loading, error, pagination } = useDebtData(filters, page, refreshKey);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+  const { debts, totalDebt, loading, error, pagination } = useDebtData(filters, page, refreshKey, sortConfig);
   const { formData, updateField, resetForm, setFormFromDebt } = useDebtForm();
 
   // Pagination functions
@@ -69,6 +70,11 @@ const DebtPage = () => {
   const handleFilterClear = () => {
     clearFilters();
     resetPage();
+  };
+
+  const handleSortChange = (newSortConfig) => {
+    setSortConfig(newSortConfig);
+    setPage(1);
   };
 
   const openCreateModal = () => {
@@ -160,7 +166,14 @@ const DebtPage = () => {
             </div>
           ) : (
             <>
-              <DebtTable debts={debts} onView={openViewModal} onEdit={openEditModal} onDelete={openDeleteModal} />
+              <DebtTable 
+                debts={debts} 
+                onView={openViewModal} 
+                onEdit={openEditModal} 
+                onDelete={openDeleteModal}
+                sortConfig={sortConfig}
+                onSortChange={handleSortChange}
+              />
               <DebtCardList debts={debts} onView={openViewModal} onEdit={openEditModal} onDelete={openDeleteModal} />
               <DebtPagination
                 page={page}

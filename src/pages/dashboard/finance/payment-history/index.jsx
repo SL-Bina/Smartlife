@@ -24,9 +24,10 @@ const PaymentHistoryPage = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [page, setPage] = useState(1);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const { filters, filterOpen, setFilterOpen, updateFilter, clearFilters, applyFilters } = usePaymentHistoryFilters();
-  const { payments, totalAmount, loading, error, pagination } = usePaymentHistoryData(filters, page, refreshKey);
+  const { payments, totalAmount, loading, error, pagination } = usePaymentHistoryData(filters, page, refreshKey, sortConfig);
   const { formData, updateField, resetForm, setFormFromPayment } = usePaymentHistoryForm();
 
   // Reset page when filters change
@@ -43,6 +44,11 @@ const PaymentHistoryPage = () => {
 
   const handleFilterClear = () => {
     clearFilters();
+    setPage(1);
+  };
+
+  const handleSortChange = (newSortConfig) => {
+    setSortConfig(newSortConfig);
     setPage(1);
   };
 
@@ -138,7 +144,14 @@ const PaymentHistoryPage = () => {
             </div>
           ) : (
             <>
-              <PaymentHistoryTable payments={payments} onView={openViewModal} onEdit={openEditModal} onDelete={openDeleteModal} />
+              <PaymentHistoryTable 
+                payments={payments} 
+                onView={openViewModal} 
+                onEdit={openEditModal} 
+                onDelete={openDeleteModal}
+                sortConfig={sortConfig}
+                onSortChange={handleSortChange}
+              />
               <PaymentHistoryCardList payments={payments} onView={openViewModal} onEdit={openEditModal} onDelete={openDeleteModal} />
               <PaymentHistoryPagination
                 page={page}

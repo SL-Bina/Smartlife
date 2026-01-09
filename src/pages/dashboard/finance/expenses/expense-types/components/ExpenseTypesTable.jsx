@@ -1,10 +1,28 @@
 import React from "react";
 import { Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
-import { EllipsisVerticalIcon, EyeIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { EllipsisVerticalIcon, EyeIcon, PencilIcon, TrashIcon, ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
-export function ExpenseTypesTable({ expenseTypes, onView, onEdit, onDelete }) {
+export function ExpenseTypesTable({ expenseTypes, onView, onEdit, onDelete, sortConfig, onSortChange }) {
   const { t } = useTranslation();
+
+  const columns = [
+    { key: "id", label: t("expenseTypes.table.id") || "ID", sortable: true },
+    { key: "name", label: t("expenseTypes.table.name") || "Ad", sortable: true },
+    { key: "description", label: t("expenseTypes.table.description") || "Açıqlama", sortable: true },
+    { key: "createdAt", label: t("expenseTypes.table.createdAt") || "Yaradılma", sortable: true },
+    { key: "operations", label: t("expenseTypes.table.operations") || "Əməliyyatlar", sortable: false },
+  ];
+
+  const handleSort = (key) => {
+    if (!columns.find((col) => col.key === key)?.sortable) return;
+
+    let direction = "asc";
+    if (sortConfig?.key === key && sortConfig?.direction === "asc") {
+      direction = "desc";
+    }
+    onSortChange({ key, direction });
+  };
 
   const formatDate = (dateString) => {
     if (!dateString || dateString === "-") return "-";
@@ -20,25 +38,40 @@ export function ExpenseTypesTable({ expenseTypes, onView, onEdit, onDelete }) {
       <table className="w-full table-auto min-w-[800px]">
         <thead>
           <tr className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700">
-            {[
-              t("expenseTypes.table.id") || "ID",
-              t("expenseTypes.table.name") || "Ad",
-              t("expenseTypes.table.description") || "Açıqlama",
-              t("expenseTypes.table.createdAt") || "Yaradılma",
-              t("expenseTypes.table.operations") || "Əməliyyatlar",
-            ].map((el, idx) => (
+            {columns.map((col, idx) => (
               <th
-                key={el}
+                key={col.key}
+                onClick={() => col.sortable && handleSort(col.key)}
                 className={`py-4 px-6 text-left ${
                   idx === 4 ? "text-right" : ""
-                }`}
+                } ${col.sortable ? "cursor-pointer hover:bg-blue-100 dark:hover:bg-gray-700 transition-colors" : ""}`}
               >
-                <Typography
-                  variant="small"
-                  className="text-[11px] font-medium uppercase text-blue-gray-700 dark:text-gray-300"
-                >
-                  {el}
-                </Typography>
+                <div className="flex items-center gap-2">
+                  <Typography
+                    variant="small"
+                    className="text-[11px] font-medium uppercase text-blue-gray-700 dark:text-gray-300"
+                  >
+                    {col.label}
+                  </Typography>
+                  {col.sortable && (
+                    <div className="flex flex-col">
+                      <ArrowUpIcon
+                        className={`h-3 w-3 ${
+                          sortConfig?.key === col.key && sortConfig?.direction === "asc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                      <ArrowDownIcon
+                        className={`h-3 w-3 -mt-1 ${
+                          sortConfig?.key === col.key && sortConfig?.direction === "desc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                    </div>
+                  )}
+                </div>
               </th>
             ))}
           </tr>

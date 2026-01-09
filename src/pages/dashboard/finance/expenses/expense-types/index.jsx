@@ -19,8 +19,9 @@ const ExpenseTypesPage = ({ onClose }) => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [page, setPage] = useState(1);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
-  const { expenseTypes, loading, error, pagination } = useExpenseTypesData(page, refreshKey);
+  const { expenseTypes, loading, error, pagination } = useExpenseTypesData(page, refreshKey, sortConfig);
   const { formData, updateField, resetForm, setFormFromExpenseType } = useExpenseTypesForm();
 
   useEffect(() => {
@@ -28,6 +29,11 @@ const ExpenseTypesPage = ({ onClose }) => {
       setPage(1);
     }
   }, [pagination.totalPages, page]);
+
+  const handleSortChange = (newSortConfig) => {
+    setSortConfig(newSortConfig);
+    setPage(1);
+  };
 
   const openCreateModal = () => {
     resetForm();
@@ -113,6 +119,8 @@ const ExpenseTypesPage = ({ onClose }) => {
               onView={openViewModal}
               onEdit={openEditModal}
               onDelete={openDeleteModal}
+              sortConfig={sortConfig}
+              onSortChange={handleSortChange}
             />
           )}
         </CardBody>
