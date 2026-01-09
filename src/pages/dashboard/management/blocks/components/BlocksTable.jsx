@@ -1,36 +1,69 @@
 import React from "react";
 import { Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
-import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
+import { EllipsisVerticalIcon, ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
-export function BlocksTable({ blocks, onView, onEdit, onDelete }) {
+export function BlocksTable({ blocks, onView, onEdit, onDelete, sortConfig, onSortChange }) {
   const { t } = useTranslation();
+
+  const columns = [
+    { key: "id", label: t("blocks.table.id"), sortable: true },
+    { key: "name", label: t("blocks.table.block"), sortable: true },
+    { key: "building", label: t("blocks.table.building"), sortable: true },
+    { key: "floors", label: t("blocks.table.floorsCount"), sortable: true },
+    { key: "apartments", label: t("blocks.table.apartmentsCount"), sortable: true },
+    { key: "actions", label: t("blocks.table.actions"), sortable: false },
+  ];
+
+  const handleSort = (key) => {
+    if (!columns.find((col) => col.key === key)?.sortable) return;
+
+    let direction = "asc";
+    if (sortConfig?.key === key && sortConfig?.direction === "asc") {
+      direction = "desc";
+    }
+    onSortChange({ key, direction });
+  };
 
   return (
     <div className="hidden lg:block">
       <table className="w-full table-auto">
         <thead>
           <tr>
-            {[
-              t("blocks.table.id"),
-              t("blocks.table.block"),
-              t("blocks.table.building"),
-              t("blocks.table.floorsCount"),
-              t("blocks.table.apartmentsCount"),
-              t("blocks.table.actions"),
-            ].map((el, idx) => (
+            {columns.map((col, idx) => (
               <th
-                key={el}
+                key={col.key}
+                onClick={() => col.sortable && handleSort(col.key)}
                 className={`border-b border-blue-gray-100 dark:border-gray-800 py-3 px-6 text-left ${
                   idx === 5 ? "text-right" : ""
-                }`}
+                } ${col.sortable ? "cursor-pointer hover:bg-blue-gray-50 dark:hover:bg-gray-700 transition-colors" : ""}`}
               >
-                <Typography
-                  variant="small"
-                  className="text-[11px] font-medium uppercase text-blue-gray-400 dark:text-gray-400"
-                >
-                  {el}
-                </Typography>
+                <div className="flex items-center gap-2">
+                  <Typography
+                    variant="small"
+                    className="text-[11px] font-medium uppercase text-blue-gray-400 dark:text-gray-400"
+                  >
+                    {col.label}
+                  </Typography>
+                  {col.sortable && (
+                    <div className="flex flex-col">
+                      <ArrowUpIcon
+                        className={`h-3 w-3 ${
+                          sortConfig?.key === col.key && sortConfig?.direction === "asc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                      <ArrowDownIcon
+                        className={`h-3 w-3 -mt-1 ${
+                          sortConfig?.key === col.key && sortConfig?.direction === "desc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                    </div>
+                  )}
+                </div>
               </th>
             ))}
           </tr>

@@ -30,9 +30,10 @@ const MTK = () => {
   const [success, setSuccess] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const { filters, filterOpen, setFilterOpen, updateFilter, clearFilters, applyFilters } = useMtkFilters();
-  const { mtk, loading, error: dataError, pagination } = useMtkData(filters, page, refreshKey);
+  const { mtk, loading, error: dataError, pagination } = useMtkData(filters, page, refreshKey, sortConfig);
   const { formData, updateField, resetForm, setFormFromMtk } = useMtkForm();
 
   // Reset page when filters change
@@ -49,6 +50,11 @@ const MTK = () => {
 
   const handleFilterClear = () => {
     clearFilters();
+    setPage(1);
+  };
+
+  const handleSortChange = (newSortConfig) => {
+    setSortConfig(newSortConfig);
     setPage(1);
   };
 
@@ -213,7 +219,14 @@ const MTK = () => {
             </div>
           ) : (
             <>
-              <MtkTable mtk={mtk} onView={openViewModal} onEdit={openEditModal} onDelete={handleDelete} />
+              <MtkTable 
+                mtk={mtk} 
+                onView={openViewModal} 
+                onEdit={openEditModal} 
+                onDelete={handleDelete}
+                sortConfig={sortConfig}
+                onSortChange={handleSortChange}
+              />
               <MtkCardList mtk={mtk} onView={openViewModal} onEdit={openEditModal} onDelete={handleDelete} />
               <MtkPagination
                 page={page}

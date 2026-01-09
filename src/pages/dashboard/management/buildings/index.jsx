@@ -29,9 +29,10 @@ const BuildingsPage = () => {
   const [success, setSuccess] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const { filters, filterOpen, setFilterOpen, updateFilter, clearFilters, applyFilters } = useBuildingsFilters();
-  const { buildings, loading, error: dataError, pagination } = useBuildingsData(filters, page, refreshKey);
+  const { buildings, loading, error: dataError, pagination } = useBuildingsData(filters, page, refreshKey, sortConfig);
   const { formData, updateField, resetForm, setFormFromBuilding } = useBuildingsForm();
 
   useEffect(() => {
@@ -47,6 +48,11 @@ const BuildingsPage = () => {
 
   const handleFilterClear = () => {
     clearFilters();
+    setPage(1);
+  };
+
+  const handleSortChange = (newSortConfig) => {
+    setSortConfig(newSortConfig);
     setPage(1);
   };
 
@@ -209,6 +215,8 @@ const BuildingsPage = () => {
                 onView={openViewModal}
                 onEdit={openEditModal}
                 onDelete={handleDelete}
+                sortConfig={sortConfig}
+                onSortChange={handleSortChange}
               />
               <BuildingsCardList
                 buildings={buildings}

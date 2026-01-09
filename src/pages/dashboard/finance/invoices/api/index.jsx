@@ -1,7 +1,6 @@
-// API Base URL - yalnız .env-dən gəlir (Vite üçün import.meta.env istifadə olunur)
+
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
-// Mock data - real API hazır olduqda comment-ə alınacaq
 const mockInvoicesData = Array.from({ length: 50 }, (_, index) => ({
   id: 139653 - index,
   serviceName: `Xidmət ${index + 1}`,

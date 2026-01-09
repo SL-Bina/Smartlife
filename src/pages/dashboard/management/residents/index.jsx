@@ -22,9 +22,10 @@ const ResidentsPage = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [page, setPage] = useState(1);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const { filters, filterOpen, setFilterOpen, updateFilter, clearFilters, applyFilters } = useResidentsFilters();
-  const { residents, loading, error, pagination } = useResidentsData(filters, page, refreshKey);
+  const { residents, loading, error, pagination } = useResidentsData(filters, page, refreshKey, sortConfig);
   const { formData, updateField, resetForm, setFormFromResident } = useResidentsForm();
 
   useEffect(() => {
@@ -40,6 +41,11 @@ const ResidentsPage = () => {
 
   const handleFilterClear = () => {
     clearFilters();
+    setPage(1);
+  };
+
+  const handleSortChange = (newSortConfig) => {
+    setSortConfig(newSortConfig);
     setPage(1);
   };
 
@@ -148,6 +154,8 @@ const ResidentsPage = () => {
                 onView={openDetailModal}
                 onEdit={openEditModal}
                 onDelete={handleDelete}
+                sortConfig={sortConfig}
+                onSortChange={handleSortChange}
               />
               <ResidentsCardList
                 residents={residents}

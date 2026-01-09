@@ -19,9 +19,10 @@ const BlocksPage = () => {
   const [viewOpen, setViewOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [page, setPage] = useState(1);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const { filters, filterOpen, setFilterOpen, updateFilter, clearFilters, applyFilters } = useBlocksFilters();
-  const { blocks, loading, pagination } = useBlocksData(filters, page);
+  const { blocks, loading, pagination } = useBlocksData(filters, page, sortConfig);
   const { formData, updateField, resetForm, setFormFromBlock } = useBlocksForm();
 
   useEffect(() => {
@@ -37,6 +38,11 @@ const BlocksPage = () => {
 
   const handleFilterClear = () => {
     clearFilters();
+    setPage(1);
+  };
+
+  const handleSortChange = (newSortConfig) => {
+    setSortConfig(newSortConfig);
     setPage(1);
   };
 
@@ -123,6 +129,8 @@ const BlocksPage = () => {
                 onView={openViewModal}
                 onEdit={openEditModal}
                 onDelete={handleDelete}
+                sortConfig={sortConfig}
+                onSortChange={handleSortChange}
               />
               <BlocksCardList
                 blocks={blocks}

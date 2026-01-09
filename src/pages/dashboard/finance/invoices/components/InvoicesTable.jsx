@@ -1,42 +1,88 @@
 import React from "react";
 import { Typography, Chip, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
-import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
+import { EllipsisVerticalIcon, ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
-export function InvoicesTable({ invoices, onView, onEdit, onDelete }) {
+export function InvoicesTable({ invoices, onView, onEdit, onDelete, sortConfig, onSortChange }) {
   const { t } = useTranslation();
+
+  const sortableColumns = [
+    "id",
+    "serviceName",
+    "owner",
+    "amount",
+    "paidAmount",
+    "remaining",
+    "status",
+    "invoiceDate",
+    "paymentDate",
+    "paymentMethod",
+  ];
+
+  const handleSort = (key) => {
+    if (!sortableColumns.includes(key)) return;
+
+    let direction = "asc";
+    if (sortConfig?.key === key && sortConfig?.direction === "asc") {
+      direction = "desc";
+    }
+    onSortChange({ key, direction });
+  };
+
+  const columns = [
+    { key: "id", label: t("invoices.table.id"), sortable: true },
+    { key: "serviceName", label: t("invoices.table.serviceName"), sortable: true },
+    { key: "owner", label: t("invoices.table.owner"), sortable: true },
+    { key: "apartmentInfo", label: t("invoices.table.apartmentInfo"), sortable: false },
+    { key: "amount", label: t("invoices.table.amount"), sortable: true },
+    { key: "paidAmount", label: t("invoices.table.paidAmount"), sortable: true },
+    { key: "remaining", label: t("invoices.table.remaining"), sortable: true },
+    { key: "status", label: t("invoices.table.status"), sortable: true },
+    { key: "invoiceDate", label: t("invoices.table.invoiceDate"), sortable: true },
+    { key: "paymentDate", label: t("invoices.table.paymentDate"), sortable: true },
+    { key: "paymentMethod", label: t("invoices.table.paymentMethod"), sortable: true },
+    { key: "operations", label: t("invoices.table.operations"), sortable: false },
+  ];
 
   return (
     <div className="hidden lg:block">
       <table className="w-full table-auto min-w-[1200px]">
         <thead>
           <tr>
-            {[
-              t("invoices.table.id"),
-              t("invoices.table.serviceName"),
-              t("invoices.table.owner"),
-              t("invoices.table.apartmentInfo"),
-              t("invoices.table.amount"),
-              t("invoices.table.paidAmount"),
-              t("invoices.table.remaining"),
-              t("invoices.table.status"),
-              t("invoices.table.invoiceDate"),
-              t("invoices.table.paymentDate"),
-              t("invoices.table.paymentMethod"),
-              t("invoices.table.operations"),
-            ].map((el, idx) => (
+            {columns.map((col, idx) => (
               <th
-                key={el}
+                key={col.key}
+                onClick={() => col.sortable && handleSort(col.key)}
                 className={`border-b border-blue-gray-100 dark:border-gray-800 py-3 px-6 text-left ${
                   idx === 11 ? "text-right" : ""
-                }`}
+                } ${col.sortable ? "cursor-pointer hover:bg-blue-gray-50 dark:hover:bg-gray-700 transition-colors" : ""}`}
               >
-                <Typography
-                  variant="small"
-                  className="text-[11px] font-medium uppercase text-blue-gray-400 dark:text-gray-400"
-                >
-                  {el}
-                </Typography>
+                <div className="flex items-center gap-2">
+                  <Typography
+                    variant="small"
+                    className="text-[11px] font-medium uppercase text-blue-gray-400 dark:text-gray-400"
+                  >
+                    {col.label}
+                  </Typography>
+                  {col.sortable && (
+                    <div className="flex flex-col">
+                      <ArrowUpIcon
+                        className={`h-3 w-3 ${
+                          sortConfig?.key === col.key && sortConfig?.direction === "asc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                      <ArrowDownIcon
+                        className={`h-3 w-3 -mt-1 ${
+                          sortConfig?.key === col.key && sortConfig?.direction === "desc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                    </div>
+                  )}
+                </div>
               </th>
             ))}
           </tr>
