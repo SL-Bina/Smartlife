@@ -1048,6 +1048,22 @@
       "markAsRead": "Oxunmuş kimi qeyd et",
       "remove": "Siyahıdan sil"
     },
+    "table": {
+      "description": "Təsvir",
+      "date": "Tarix",
+      "view": "Bax"
+    },
+    "loadMore": "Daha çox",
+    "view": {
+      "title": "Bildiriş Açıqlama",
+      "titleField": "Başlıq",
+      "message": "Mesaj",
+      "priority": "Prioritet",
+      "date": "Tarix",
+      "image": "Şəkil",
+      "close": "Bağla",
+      "important": "Vacib"
+    },
     "send": {
       "pageTitle": "Bildiriş göndərmək",
       "pageSubtitle": "Yeni bildiriş yaradın və hədəf auditoriyaya göndərin",

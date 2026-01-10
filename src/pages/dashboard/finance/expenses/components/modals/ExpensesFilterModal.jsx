@@ -1,6 +1,6 @@
 import React from "react";
-import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Input, Typography, Select, Option } from "@material-tailwind/react";
-import { XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Input, Typography } from "@material-tailwind/react";
+import { XMarkIcon, MagnifyingGlassIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
 export function ExpensesFilterModal({ open, onClose, filters, onFilterChange, onApply, onClear }) {
@@ -8,7 +8,6 @@ export function ExpensesFilterModal({ open, onClose, filters, onFilterChange, on
 
   if (!open) return null;
 
-  // Mock expense categories - real API hazır olduqda dəyişdiriləcək
   const expenseCategories = [
     "Bina xərcləri",
     "Ofis xərcləri",
@@ -33,29 +32,29 @@ export function ExpensesFilterModal({ open, onClose, filters, onFilterChange, on
         </div>
       </DialogHeader>
       <DialogBody divider className="space-y-6 dark:bg-gray-800 py-6 max-h-[70vh] overflow-y-auto">
-        {/* Xərc növü */}
         <div>
           <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
             {t("expenses.filter.category") || "Xərc növü"}
           </Typography>
-          <Select
-            value={filters.category || ""}
-            onChange={(val) => onFilterChange("category", val)}
-            className="dark:text-white"
-            labelProps={{ className: "dark:text-gray-400" }}
-          >
-            <Option value="" disabled>
-              {t("expenses.filter.selectCategory") || "Xərc növü seçin"}
-            </Option>
-            {expenseCategories.map((category) => (
-              <Option key={category} value={category}>
-                {category}
-              </Option>
-            ))}
-          </Select>
+          <div className="relative">
+            <select
+              value={filters.category || ""}
+              onChange={(e) => onFilterChange("category", e.target.value)}
+              className="w-full px-4 py-3 pr-10 text-sm border border-gray-300 rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white appearance-none cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            >
+              <option value="" disabled className="text-gray-400 dark:text-gray-500">
+                {t("expenses.filter.selectCategory") || "Xərc növü seçin"}
+              </option>
+              {expenseCategories.map((category) => (
+                <option key={category} value={category} className="text-gray-900 dark:text-white">
+                  {category}
+                </option>
+              ))}
+            </select>
+            <ChevronDownIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-400 pointer-events-none" />
+          </div>
         </div>
 
-        {/* Başlıq */}
         <div>
           <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
             {t("expenses.filter.titleField") || "Başlıq"}
@@ -70,7 +69,6 @@ export function ExpensesFilterModal({ open, onClose, filters, onFilterChange, on
           />
         </div>
 
-        {/* Məbləğ */}
         <div>
           <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
             {t("expenses.filter.amount") || "Məbləğ"}
@@ -129,7 +127,6 @@ export function ExpensesFilterModal({ open, onClose, filters, onFilterChange, on
           </div>
         </div>
 
-        {/* Tarix aralığı */}
         <div>
           <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
             {t("expenses.filter.dateRange") || "Tarix aralığı"}

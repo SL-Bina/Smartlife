@@ -35,7 +35,6 @@ const Profile = () => {
   const [successMessage, setSuccessMessage] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
 
-  // Tab değiştiğinde mesajları temizle
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setSuccessMessage(null);
@@ -51,8 +50,6 @@ const Profile = () => {
     gender: user?.gender || "",
   });
 
-  // Sadece ilk yüklemede formData'yı güncelle
-  // Kullanıcı yazarken formData'yı sıfırlama
   const [isInitialized, setIsInitialized] = useState(false);
   
   useEffect(() => {
@@ -90,14 +87,35 @@ const Profile = () => {
     setErrorMessage(null);
 
     try {
-      // API'ye gönderilecek veriyi hazırla
+      let birthdayValue = null;
+      if (formData.birthDate) {
+        birthdayValue = formData.birthDate;
+      } else if (user?.birthday) {
+        const dateStr = user.birthday.includes('T') ? user.birthday.split('T')[0] : user.birthday;
+        birthdayValue = dateStr;
+      }
+
       const updateData = {
-        name: `${formData.firstName} ${formData.lastName}`.trim() || formData.firstName || formData.lastName,
-        username: formData.username,
-        birthday: formData.birthDate || null,
-        address: formData.address || null,
-        phone: formData.phone || null,
+        name: `${formData.firstName} ${formData.lastName}`.trim() || formData.firstName || formData.lastName || user?.name || "",
+        username: formData.username || user?.username || "",
+        email: user?.email || "",
+        phone: formData.phone || user?.phone || "",
+        is_user: Number(user?.is_user ?? 1),
+        role_id: Number(user?.role_id || user?.role?.id || 1),
+        modules: ["*"],
+        grant_permissions: ["*"],
+        birthday: birthdayValue, // Nullable, amma həmişə göndərilməlidir
+        password: "", // Sometimes - şifrə dəyişikliyi olmadıqda boş string, server mövcud password-u saxlayacaq
+        password_confirmation: "", // Sometimes - şifrə dəyişikliyi olmadıqda boş string
       };
+
+      // personal_code "sometimes" - yalnız varsa göndər
+      if (user?.personal_code) {
+        updateData.personal_code = user.personal_code;
+      }
+
+      // Debug: göndərilən data formatını yoxla
+      console.log("Profile update data:", JSON.stringify(updateData, null, 2));
 
       const response = await authAPI.updateProfile(updateData);
       
@@ -121,8 +139,13 @@ const Profile = () => {
         setErrorMessage(response.message || t("profile.updateError") || "Xəta baş verdi");
       }
     } catch (error) {
+      console.error("Profile update error:", error);
+      console.error("Error response:", error?.response?.data);
+      
       let errorMsg = t("profile.updateError") || "Xəta baş verdi";
-      if (error?.message) {
+      if (error?.response?.data?.message) {
+        errorMsg = error.response.data.message;
+      } else if (error?.message) {
         errorMsg = error.message;
       } else if (typeof error === "string") {
         errorMsg = error;

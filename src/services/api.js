@@ -109,7 +109,7 @@ export const authAPI = {
   // Update profile - kullanıcı bilgilerini güncelle
   updateProfile: async (data) => {
     try {
-      const response = await api.put("/user/profile", data);
+      const response = await api.patch("/user/me", data);
       return response.data;
     } catch (error) {
       // 422 validation hatası için detaylı hata mesajı
