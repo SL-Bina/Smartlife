@@ -2,7 +2,6 @@ import {
   HomeIcon,
   UserCircleIcon,
   TableCellsIcon,
-  InformationCircleIcon,
   ServerStackIcon,
   RectangleStackIcon,
   BuildingOfficeIcon,
@@ -20,13 +19,12 @@ import {
   ArrowDownCircleIcon,
   ArrowsRightLeftIcon,
   ShieldCheckIcon,
-  UserGroupIcon,
   InboxIcon,
   CogIcon,
   BookOpenIcon,
   CpuChipIcon,
 } from "@heroicons/react/24/solid";
-import { Home, Tables, Notifications, KPI, ApplicationsListPage, ApplicationsEvaluationPage, ResidentDashboard, ComplexDashboardPage, SendNotificationPage, NotificationArchivePage, SentSMSPage, CreateQueryPage, QueriesListPage, ReceptionPage, ServicesPage, ElectronicDocumentsPage } from "@/pages/dashboard";
+import { Home, Notifications, KPI, ApplicationsListPage, ApplicationsEvaluationPage, ResidentDashboard, ComplexDashboardPage, SendNotificationPage, NotificationArchivePage, SentSMSPage, CreateQueryPage, QueriesListPage, ReceptionPage, ServicesPage, ElectronicDocumentsPage } from "@/pages/dashboard";
 import Profile from "./pages/dashboard/profile";
 import Settings from "./pages/dashboard/settings";
 import { SignIn } from "@/pages/auth";

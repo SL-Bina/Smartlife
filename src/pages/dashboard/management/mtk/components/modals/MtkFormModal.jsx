@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Dialog,
   DialogHeader,
@@ -8,7 +8,7 @@ import {
   Input,
   Typography,
 } from "@material-tailwind/react";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon, PhotoIcon, TrashIcon, MapPinIcon as MapPinIconSolid } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 import {
   InformationCircleIcon,
@@ -17,10 +17,202 @@ import {
   PhoneIcon,
   GlobeAltIcon,
   SwatchIcon,
+  CameraIcon,
 } from "@heroicons/react/24/outline";
 
-export function MtkFormModal({ open, onClose, title, formData, onFieldChange, onSave, isEdit = false, saving = false }) {
+export function MtkFormModal({ open, onClose, title, formData, onFieldChange, onSave, isEdit = false, saving = false, removePhoto }) {
   const { t } = useTranslation();
+  const [mapCenter, setMapCenter] = useState({ lat: 40.4093, lng: 49.8671 }); // Baku default
+  const [mapZoom, setMapZoom] = useState(12);
+  const [showMap, setShowMap] = useState(false);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const logoInputRef = useRef(null);
+  const photosInputRef = useRef(null);
+  const mapContainerRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const markerRef = useRef(null);
+
+  useEffect(() => {
+    if (formData.meta?.lat && formData.meta?.lng) {
+      const lat = parseFloat(formData.meta.lat);
+      const lng = parseFloat(formData.meta.lng);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        setMapCenter({ lat, lng });
+        if (mapInstanceRef.current && markerRef.current) {
+          const newPosition = { lat, lng };
+          mapInstanceRef.current.setCenter(newPosition);
+          markerRef.current.setPosition(newPosition);
+        }
+      }
+    }
+  }, [formData.meta?.lat, formData.meta?.lng]);
+
+  // Check if Google Maps is loaded
+  useEffect(() => {
+    if (showMap) {
+      const checkGoogleMaps = setInterval(() => {
+        if (window.google && window.google.maps) {
+          setMapLoaded(true);
+          clearInterval(checkGoogleMaps);
+        }
+      }, 100);
+
+      // Timeout after 10 seconds
+      const timeout = setTimeout(() => {
+        clearInterval(checkGoogleMaps);
+        if (!window.google) {
+          console.error("Google Maps API failed to load");
+        }
+      }, 10000);
+
+      return () => {
+        clearInterval(checkGoogleMaps);
+        clearTimeout(timeout);
+      };
+    }
+  }, [showMap]);
+
+  // Initialize map when Google Maps is loaded
+  useEffect(() => {
+    if (showMap && mapContainerRef.current && window.google && window.google.maps && !mapInstanceRef.current && mapLoaded) {
+      const currentCenter = formData.meta?.lat && formData.meta?.lng
+        ? { lat: parseFloat(formData.meta.lat), lng: parseFloat(formData.meta.lng) }
+        : mapCenter;
+
+      const map = new window.google.maps.Map(mapContainerRef.current, {
+        center: currentCenter,
+        zoom: mapZoom,
+        mapTypeControl: true,
+        streetViewControl: false,
+        zoomControl: true,
+        fullscreenControl: true,
+        gestureHandling: 'auto',
+        draggable: true,
+        scrollwheel: true,
+        disableDoubleClickZoom: false,
+      });
+
+      const marker = new window.google.maps.Marker({
+        position: currentCenter,
+        map: map,
+        draggable: true,
+        title: t("mtk.form.pickLocation"),
+      });
+
+      map.addListener("click", (e) => {
+        const lat = e.latLng.lat();
+        const lng = e.latLng.lng();
+        marker.setPosition({ lat, lng });
+        onFieldChange("meta.lat", lat.toString());
+        onFieldChange("meta.lng", lng.toString());
+        setMapCenter({ lat, lng });
+      });
+
+      marker.addListener("dragend", (e) => {
+        const lat = e.latLng.lat();
+        const lng = e.latLng.lng();
+        onFieldChange("meta.lat", lat.toString());
+        onFieldChange("meta.lng", lng.toString());
+        setMapCenter({ lat, lng });
+      });
+
+      mapInstanceRef.current = map;
+      markerRef.current = marker;
+    }
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current = null;
+        markerRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showMap, mapLoaded]);
+
+  const handleGetCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          onFieldChange("meta.lat", lat.toString());
+          onFieldChange("meta.lng", lng.toString());
+          setMapCenter({ lat, lng });
+          if (mapInstanceRef.current && markerRef.current) {
+            const newPosition = { lat, lng };
+            mapInstanceRef.current.setCenter(newPosition);
+            mapInstanceRef.current.setZoom(15);
+            markerRef.current.setPosition(newPosition);
+          }
+        },
+        (error) => {
+          alert(t("mtk.form.geolocationError") || "Yerinizi təyin edə bilmədim. Xahiş edirik manuel seçin.");
+          console.error("Geolocation error:", error);
+        }
+      );
+    } else {
+      alert(t("mtk.form.geolocationNotSupported") || "Brauzeriniz geolocation dəstəkləmir.");
+    }
+  };
+
+  const handleLogoUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert(t("mtk.form.logoSizeError") || "Logo faylının ölçüsü 5MB-dan böyük ola bilməz");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        onFieldChange("logo", reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handlePhotosUpload = (e) => {
+    const files = Array.from(e.target.files || []);
+    const currentPhotos = formData.photos || [];
+    
+    if (files.length + currentPhotos.length > 10) {
+      alert(t("mtk.form.maxPhotos"));
+      e.target.value = "";
+      return;
+    }
+    
+    const validFiles = files.filter((file) => {
+      if (file.size > 10 * 1024 * 1024) {
+        alert(t("mtk.form.photoSizeError") || `${file.name} faylının ölçüsü 10MB-dan böyük ola bilməz`);
+        return false;
+      }
+      return true;
+    });
+
+    const newPhotos = [];
+    let loadedCount = 0;
+
+    validFiles.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        newPhotos.push(reader.result);
+        loadedCount++;
+        if (loadedCount === validFiles.length) {
+          onFieldChange("photos", [...currentPhotos, ...newPhotos]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+
+    e.target.value = "";
+  };
+
+
+  const handleRemoveLogo = () => {
+    onFieldChange("logo", null);
+    if (logoInputRef.current) {
+      logoInputRef.current.value = "";
+    }
+  };
 
   if (!open) return null;
 
@@ -85,6 +277,52 @@ export function MtkFormModal({ open, onClose, title, formData, onFieldChange, on
                 </select>
               </div>
             </div>
+
+            {/* Logo Upload */}
+            <div>
+              <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
+                {t("mtk.form.logo")}
+              </Typography>
+              <div className="flex items-center gap-4">
+                {formData.logo ? (
+                  <div className="relative">
+                    <img
+                      src={formData.logo}
+                      alt="Logo preview"
+                      className="w-24 h-24 object-cover rounded-lg border border-gray-300 dark:border-gray-600"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveLogo}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                    >
+                      <XMarkIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-24 h-24 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center">
+                    <CameraIcon className="h-8 w-8 text-gray-400" />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    className="hidden"
+                    id="logo-upload"
+                  />
+                  <label
+                    htmlFor="logo-upload"
+                    className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                  >
+                    <PhotoIcon className="h-5 w-5" />
+                    {formData.logo ? t("mtk.form.changeLogo") : t("mtk.form.uploadLogo")}
+                  </label>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Location Information Section */}
@@ -96,67 +334,95 @@ export function MtkFormModal({ open, onClose, title, formData, onFieldChange, on
               </Typography>
             </div>
 
+            {/* Google Maps Picker */}
+            <div className="md:col-span-2">
+              <div className="flex items-center justify-between mb-2">
+                <Typography variant="small" color="blue-gray" className="font-semibold dark:text-gray-300">
+                  {t("mtk.form.mapPicker")}
+                </Typography>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outlined"
+                    color="green"
+                    onClick={handleGetCurrentLocation}
+                    className="dark:text-green-400 dark:border-green-600"
+                  >
+                    {t("mtk.form.useCurrentLocation") || "Cari yer"}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outlined"
+                    color="blue"
+                    onClick={() => setShowMap(!showMap)}
+                    className="dark:text-blue-400 dark:border-blue-600"
+                  >
+                    {showMap ? t("mtk.form.hideMap") || "Xəritəni gizlət" : t("mtk.form.pickLocation")}
+                  </Button>
+                </div>
+              </div>
+              {showMap && (
+                <div className="mb-4">
+                  <div className="relative w-full h-96 rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800" style={{ touchAction: 'none' }}>
+                    {window.google && window.google.maps && mapLoaded ? (
+                      <div ref={mapContainerRef} className="w-full h-full" style={{ pointerEvents: 'auto' }} />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+                          <Typography variant="small" className="text-gray-500 dark:text-gray-400">
+                            {t("mtk.form.loadingMap") || "Xəritə yüklənir..."}
+                          </Typography>
+                        </div>
+                      </div>
+                    )}
+                    {window.google && window.google.maps && mapLoaded && (
+                      <div className="absolute top-2 right-2 bg-white dark:bg-gray-800 p-2 rounded-lg shadow-lg z-10 max-w-xs">
+                        <Typography variant="small" className="text-gray-600 dark:text-gray-300">
+                          {t("mtk.form.pickLocationDescription")}
+                        </Typography>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
                   {t("mtk.form.latitude")}
                 </Typography>
                 <Input
-                  label={t("mtk.form.enterLatitude")}
+                  placeholder={t("mtk.form.enterLatitude")}
                   value={formData.meta?.lat || ""}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    // Validation: -90 ilə 90 arasında olmalıdır
-                    if (value === "" || (!isNaN(parseFloat(value)) && parseFloat(value) >= -90 && parseFloat(value) <= 90)) {
-                      onFieldChange("meta.lat", value);
-                    }
-                  }}
-                  className="dark:text-white"
+                  readOnly
+                  className="dark:text-white dark:bg-gray-700"
                   labelProps={{ className: "dark:text-gray-400" }}
+                  containerProps={{ className: "!min-w-0" }}
                   type="number"
                   step="any"
-                  min="-90"
-                  max="90"
-                  placeholder="-90 ilə 90 arası"
                 />
-                {formData.meta?.lat && !isNaN(parseFloat(formData.meta.lat)) && (parseFloat(formData.meta.lat) < -90 || parseFloat(formData.meta.lat) > 90) && (
-                  <Typography variant="small" className="text-red-500 mt-1">
-                    {t("mtk.form.latValidation")}
-                  </Typography>
-                )}
               </div>
 
               <div>
-                <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
                   {t("mtk.form.longitude")}
                 </Typography>
                 <Input
-                  label={t("mtk.form.enterLongitude")}
+                  placeholder={t("mtk.form.enterLongitude")}
                   value={formData.meta?.lng || ""}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    // Validation: -180 ilə 180 arasında olmalıdır
-                    if (value === "" || (!isNaN(parseFloat(value)) && parseFloat(value) >= -180 && parseFloat(value) <= 180)) {
-                      onFieldChange("meta.lng", value);
-                    }
-                  }}
-                  className="dark:text-white"
+                  readOnly
+                  className="dark:text-white dark:bg-gray-700"
                   labelProps={{ className: "dark:text-gray-400" }}
+                  containerProps={{ className: "!min-w-0" }}
                   type="number"
                   step="any"
-                  min="-180"
-                  max="180"
-                  placeholder="-180 ilə 180 arası"
                 />
-                {formData.meta?.lng && !isNaN(parseFloat(formData.meta.lng)) && (parseFloat(formData.meta.lng) < -180 || parseFloat(formData.meta.lng) > 180) && (
-                  <Typography variant="small" className="text-red-500 mt-1">
-                    {t("mtk.form.lngValidation")}
-                  </Typography>
-                )}
               </div>
 
               <div className="md:col-span-2">
-                <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
                   {t("mtk.form.description")}
                 </Typography>
                 <textarea
@@ -169,17 +435,78 @@ export function MtkFormModal({ open, onClose, title, formData, onFieldChange, on
               </div>
 
               <div className="md:col-span-2">
-                <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
                   {t("mtk.form.address")}
                 </Typography>
                 <Input
-                  label={t("mtk.form.enterAddress")}
+                  placeholder={t("mtk.form.enterAddress")}
                   value={formData.meta?.address || ""}
                   onChange={(e) => onFieldChange("meta.address", e.target.value)}
                   className="dark:text-white"
                   labelProps={{ className: "dark:text-gray-400" }}
+                  containerProps={{ className: "!min-w-0" }}
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Photos Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+              <PhotoIcon className="h-5 w-5 text-purple-500 dark:text-purple-400" />
+              <Typography variant="h6" className="font-semibold dark:text-white">
+                {t("mtk.form.photos")}
+              </Typography>
+            </div>
+
+            <div>
+              <input
+                ref={photosInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handlePhotosUpload}
+                className="hidden"
+                id="photos-upload"
+              />
+              <label
+                htmlFor="photos-upload"
+                className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors mb-4"
+              >
+                <PhotoIcon className="h-5 w-5" />
+                {t("mtk.form.uploadPhotos")}
+              </label>
+              <Typography variant="small" className="text-gray-500 dark:text-gray-400 ml-2">
+                {t("mtk.form.maxPhotos")}
+              </Typography>
+
+              {formData.photos && formData.photos.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                  {formData.photos.map((photo, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={typeof photo === "string" ? photo : URL.createObjectURL(photo)}
+                        alt={`Photo ${index + 1}`}
+                        className="w-full h-32 object-cover rounded-lg border border-gray-300 dark:border-gray-600"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removePhoto && removePhoto(index)}
+                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-4 p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center">
+                  <PhotoIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                  <Typography variant="small" className="text-gray-500 dark:text-gray-400">
+                    {t("mtk.form.noPhotos")}
+                  </Typography>
+                </div>
+              )}
             </div>
           </div>
 

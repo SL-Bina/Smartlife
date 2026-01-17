@@ -34,7 +34,7 @@ const MTK = () => {
 
   const { filters, filterOpen, setFilterOpen, updateFilter, clearFilters, applyFilters } = useMtkFilters();
   const { mtk, loading, error: dataError, pagination } = useMtkData(filters, page, refreshKey, sortConfig);
-  const { formData, updateField, resetForm, setFormFromMtk } = useMtkForm();
+  const { formData, updateField, resetForm, setFormFromMtk, removePhoto } = useMtkForm();
 
   // Reset page when filters change
   useEffect(() => {
@@ -263,6 +263,7 @@ const MTK = () => {
         onSave={handleCreateSave}
         isEdit={false}
         saving={saving}
+        removePhoto={removePhoto}
       />
 
       <MtkFormModal
@@ -279,6 +280,7 @@ const MTK = () => {
         onSave={handleEditSave}
         isEdit={true}
         saving={saving}
+        removePhoto={removePhoto}
       />
 
       <MtkDeleteModal
