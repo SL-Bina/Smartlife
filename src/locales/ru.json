@@ -1873,7 +1873,9 @@
       "details": "Подробности",
       "searchModal": {
         "title": "Поиск",
+        "search": "Поиск",
         "searchText": "Текст поиска",
+        "searchByApplicationName": "Поиск по названию заявки",
         "enterSearchText": "Введите",
         "apartment": "Квартира",
         "enterApartment": "Введите",
@@ -1881,14 +1883,23 @@
         "enterDepartment": "Введите",
         "status": "Статус",
         "selectStatus": "Выберите",
+        "dateRange": "Диапазон дат",
+        "plannedDateRange": "Запланированный диапазон дат",
         "dateFrom": "Дата с",
         "enterDateFrom": "Введите",
         "dateTo": "Дата по",
         "enterDateTo": "Введите",
+        "start": "Начало",
+        "end": "Конец",
+        "employeePriority": "Приоритет сотрудника",
+        "residentPriority": "Приоритет жителя",
+        "allDepartments": "Все отделы",
+        "allPriorities": "Все приоритеты",
+        "allStatuses": "Все статусы",
         "all": "Все"
       },
       "categoryModal": {
-        "title": "Категория",
+        "title": "Категории",
         "category": "Категория",
         "selectCategory": "Выберите",
         "all": "Все",
@@ -1896,16 +1907,74 @@
         "plumbing": "Сантехника",
         "electricity": "Электричество",
         "repair": "Ремонт",
-        "other": "Другое"
+        "other": "Другое",
+        "add": "Добавить",
+        "addNewCategory": "Добавить новую категорию",
+        "categoryName": "Название категории",
+        "description": "Описание",
+        "enterDescription": "Введите описание категории",
+        "create": "Создать",
+        "addSubcategory": "Добавить подкатегорию",
+        "parentCategory": "Родительская категория",
+        "subcategories": "Подкатегории:",
+        "enterCategoryName": "Введите название категории",
+        "enterSubcategoryName": "Введите название подкатегории",
+        "confirmDeleteCategory": "Вы уверены, что хотите удалить эту категорию?",
+        "confirmDeleteSubcategory": "Вы уверены, что хотите удалить эту подкатегорию?"
+      },
+      "prioritiesModal": {
+        "title": "Приоритеты",
+        "add": "Добавить",
+        "addNewTitle": "Создать новый приоритет",
+        "editTitle": "Редактирование приоритета",
+        "priorityName": "Название приоритета",
+        "enterPriorityName": "Введите название приоритета",
+        "level": "Уровень",
+        "description": "Описание",
+        "enterDescription": "Введите описание приоритета",
+        "durationSettings": "Настройки продолжительности",
+        "minDuration": "Минимальная продолжительность",
+        "maxDuration": "Максимальная продолжительность",
+        "appearanceSettings": "Настройки внешнего вида",
+        "color": "Цвет",
+        "status": "Статус",
+        "active": "Активен",
+        "inactive": "Неактивен",
+        "preview": "Предпросмотр",
+        "employeePriority": "Приоритет сотрудника",
+        "minute": "минута",
+        "hour": "час",
+        "day": "день",
+        "create": "Создать",
+        "update": "Обновить",
+        "confirmDelete": "Вы уверены, что хотите удалить этот приоритет?"
       },
       "newApplicationModal": {
-        "title": "Новая заявка",
+        "title": "Создать новую заявку",
+        "selectPriority": "Выберите приоритет",
+        "startAndEndTimes": "Время начала и окончания",
+        "startTime": "Время начала",
+        "taskStartDateTime": "Дата и время начала задачи",
+        "selectStartTime": "Выберите время начала",
+        "endTime": "Время окончания",
+        "taskEndDateTime": "Дата и время окончания задачи",
+        "selectEndTime": "Выберите время окончания",
+        "selectDepartment": "Выберите отдел",
+        "selectCategory": "Выберите категорию",
+        "selectEmployees": "Выберите сотрудников",
+        "firstSelectDepartment": "Сначала выберите отдел",
+        "selectEmployeesFromDepartment": "Выберите сотрудников",
+        "applicationText": "Текст заявки",
+        "enterApplicationText": "Текст заявки...",
+        "file": "Файл",
+        "selectFile": "Выберите файл",
+        "fileNotSelected": "Файл не выбран",
+        "confirm": "Подтвердить",
         "apartmentEmployee": "Квартира/Сотрудник",
         "enterApartmentEmployee": "Введите",
         "text": "Текст",
         "enterText": "Введите",
         "department": "Отдел",
-        "selectDepartment": "Выберите",
         "residentPriority": "Приоритет жителя",
         "selectResidentPriority": "Выберите",
         "operationPriority": "Приоритет операции",
@@ -1933,6 +2002,7 @@
         "newApplication": "Новая заявка"
       },
       "table": {
+        "id": "ID",
         "apartmentEmployee": "Квартира/Сотрудник",
         "text": "Текст",
         "department": "Отдел",
@@ -1941,7 +2011,39 @@
         "image": "Изображение",
         "status": "Статус",
         "date": "Дата",
-        "action": "Действие"
+        "operations": "Действия"
+      },
+      "actions": {
+        "loading": "Загрузка...",
+        "view": "Просмотр",
+        "edit": "Редактировать",
+        "delete": "Удалить"
+      },
+      "error": {
+        "loading": "Ошибка"
+      },
+      "edit": {
+        "title": "Редактировать заявку"
+      },
+      "delete": {
+        "title": "Удалить заявку",
+        "message": "Вы уверены, что хотите удалить эту заявку?"
+      },
+      "pagination": {
+        "prev": "Предыдущая",
+        "next": "Следующая"
+      },
+      "mobile": {
+        "id": "ID",
+        "text": "Текст",
+        "department": "Отдел",
+        "residentPriority": "Приоритет жителя",
+        "operationPriority": "Приоритет операции",
+        "status": "Статус",
+        "date": "Дата"
+      },
+      "summary": {
+        "totalApplications": "Всего заявок"
       }
     },
     "evaluation": {

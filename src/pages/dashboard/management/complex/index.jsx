@@ -17,8 +17,6 @@ import {
   DialogFooter,
   Input,
   Alert,
-  Select,
-  Option,
 } from "@material-tailwind/react";
 import {
   EllipsisVerticalIcon,
@@ -28,6 +26,10 @@ import {
   PhoneIcon,
   GlobeAltIcon,
   SwatchIcon,
+  XMarkIcon,
+  MagnifyingGlassIcon,
+  EyeIcon,
+  ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 import { useManagement } from "@/context";
@@ -212,98 +214,115 @@ const ComplexPage = () => {
       )}
 
       {/* Filter modal */}
-      <Dialog open={filterOpen} handler={setFilterOpen} size="lg" className="dark:bg-gray-900">
-        <DialogHeader className="dark:bg-gray-800 dark:text-white">{t("complexes.filter.title")}</DialogHeader>
-        <DialogBody divider className="space-y-4 dark:bg-gray-800 dark:border-gray-700 max-h-[70vh] overflow-y-auto">
+      <Dialog open={filterOpen} handler={setFilterOpen} size="lg" className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl" dismiss={{ enabled: false }}>
+        <DialogHeader className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700 border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between rounded-t-lg">
+          <div className="flex items-center gap-3">
+            <MagnifyingGlassIcon className="h-5 w-5 text-blue-500" />
+            <Typography variant="h5" className="font-bold text-gray-900 dark:text-white">
+              {t("complexes.filter.title")}
+            </Typography>
+          </div>
+          <div className="cursor-pointer p-2 rounded-md transition-all hover:bg-gray-200 dark:hover:bg-gray-700" onClick={() => setFilterOpen(false)}>
+            <XMarkIcon className="dark:text-white h-5 w-5 cursor-pointer" />
+          </div>
+        </DialogHeader>
+        <DialogBody divider className="space-y-6 dark:bg-gray-800 py-6 max-h-[70vh] overflow-y-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+              <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
                 {t("complexes.filter.name")}
               </Typography>
               <Input
-                label={t("complexes.filter.enterName")}
-                value={filters.name}
+                placeholder={t("complexes.filter.enterName")}
+                value={filters.name || ""}
                 onChange={(e) => updateFilter("name", e.target.value)}
                 className="dark:text-white"
                 labelProps={{ className: "dark:text-gray-400" }}
+                containerProps={{ className: "!min-w-0" }}
               />
             </div>
             <div>
-              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+              <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
                 {t("complexes.filter.address") || "Ünvan"}
               </Typography>
               <Input
-                label={t("complexes.filter.enterAddress") || "Ünvan daxil edin"}
-                value={filters.address}
+                placeholder={t("complexes.filter.enterAddress") || "Ünvan daxil edin"}
+                value={filters.address || ""}
                 onChange={(e) => updateFilter("address", e.target.value)}
                 className="dark:text-white"
                 labelProps={{ className: "dark:text-gray-400" }}
+                containerProps={{ className: "!min-w-0" }}
               />
             </div>
             <div>
-              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+              <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
                 {t("complexes.filter.status") || "Status"}
               </Typography>
-              <Select
-                value={filters.status}
-                onChange={(value) => updateFilter("status", value)}
-                className="dark:text-white"
-                labelProps={{ className: "dark:text-gray-400" }}
+              <select
+                value={filters.status || ""}
+                onChange={(e) => updateFilter("status", e.target.value)}
+                className="w-full px-3 py-2.5 border border-blue-gray-200 rounded-lg focus:border-blue-500 focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-white"
               >
-                <Option value="">{t("complexes.filter.all") || "Hamısı"}</Option>
-                <Option value="active">{t("complexes.filter.active") || "Aktiv"}</Option>
-                <Option value="inactive">{t("complexes.filter.inactive") || "Passiv"}</Option>
-              </Select>
+                <option value="" className="dark:bg-gray-800 dark:text-gray-300">
+                  {t("complexes.filter.all") || "Hamısı"}
+                </option>
+                <option value="active" className="dark:bg-gray-800 dark:text-gray-300">
+                  {t("complexes.filter.active") || "Aktiv"}
+                </option>
+                <option value="inactive" className="dark:bg-gray-800 dark:text-gray-300">
+                  {t("complexes.filter.inactive") || "Passiv"}
+                </option>
+              </select>
             </div>
             <div>
-              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+              <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
                 {t("complexes.filter.email") || "Email"}
               </Typography>
               <Input
-                label={t("complexes.filter.enterEmail") || "Email daxil edin"}
-                value={filters.email}
+                placeholder={t("complexes.filter.enterEmail") || "Email daxil edin"}
+                value={filters.email || ""}
                 onChange={(e) => updateFilter("email", e.target.value)}
                 className="dark:text-white"
                 labelProps={{ className: "dark:text-gray-400" }}
+                containerProps={{ className: "!min-w-0" }}
                 type="email"
               />
             </div>
             <div>
-              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+              <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
                 {t("complexes.filter.phone") || "Telefon"}
               </Typography>
               <Input
-                label={t("complexes.filter.enterPhone") || "Telefon daxil edin"}
-                value={filters.phone}
+                placeholder={t("complexes.filter.enterPhone") || "Telefon daxil edin"}
+                value={filters.phone || ""}
                 onChange={(e) => updateFilter("phone", e.target.value)}
                 className="dark:text-white"
                 labelProps={{ className: "dark:text-gray-400" }}
+                containerProps={{ className: "!min-w-0" }}
                 type="tel"
               />
             </div>
           </div>
         </DialogBody>
-        <DialogFooter className="flex justify-between gap-2 dark:bg-gray-800 dark:border-gray-700">
-          <Button variant="text" color="blue-gray" onClick={handleFilterClear} className="dark:text-gray-300 dark:hover:bg-gray-700">
-            {t("complexes.filter.clear")}
+        <DialogFooter className="flex justify-between gap-2 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pt-4">
+          <Button variant="outlined" color="blue-gray" onClick={handleFilterClear} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+            {t("buttons.clear") || "Təmizlə"}
           </Button>
-          <div className="flex gap-2">
-            <Button variant="outlined" color="blue-gray" onClick={() => setFilterOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
-              {t("complexes.filter.close")}
-            </Button>
-            <Button color="blue" onClick={handleFilterApply} className="dark:bg-blue-600 dark:hover:bg-blue-700">
-              {t("complexes.filter.apply")}
-            </Button>
-          </div>
+          <Button color="blue" onClick={handleFilterApply} className="dark:bg-blue-600 dark:hover:bg-blue-700">
+            {t("buttons.search") || "Axtar"}
+          </Button>
         </DialogFooter>
       </Dialog>
 
       {/* Create complex modal */}
-      <Dialog open={createOpen} handler={setCreateOpen} size="xl" className="dark:bg-gray-900 border border-red-600 dark:border-gray-700" dismiss={{ enabled: false }}>
-        <DialogHeader className="dark:bg-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-4">
-          <Typography variant="h5" className="font-bold">
+      <Dialog open={createOpen} handler={setCreateOpen} size="xl" className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl" dismiss={{ enabled: false }}>
+        <DialogHeader className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700 border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between rounded-t-lg">
+          <Typography variant="h5" className="font-bold text-gray-900 dark:text-white">
             {t("complexes.create.title")}
           </Typography>
+          <div className="cursor-pointer p-2 rounded-md transition-all hover:bg-gray-200 dark:hover:bg-gray-700" onClick={() => { setCreateOpen(false); resetForm(); setError(null); }}>
+            <XMarkIcon className="dark:text-white h-5 w-5 cursor-pointer" />
+          </div>
         </DialogHeader>
         <DialogBody divider className="dark:bg-gray-800 dark:border-gray-700 max-h-[75vh] overflow-y-auto">
           <div className="space-y-6 py-2">
@@ -318,32 +337,36 @@ const ComplexPage = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                  <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
                     {t("complexes.form.name")} <span className="text-red-500">*</span>
                   </Typography>
                   <Input
-                    label={t("complexes.form.enterName")}
+                    placeholder={t("complexes.form.enterName")}
                     value={formData.name || ""}
                     onChange={(e) => updateField("name", e.target.value)}
                     className="dark:text-white"
                     labelProps={{ className: "dark:text-gray-400" }}
+                    containerProps={{ className: "!min-w-0" }}
                     required
                   />
                 </div>
 
                 <div>
-                  <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                  <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
                     {t("complexes.form.status")} <span className="text-red-500">*</span>
                   </Typography>
-                  <Select
+                  <select
                     value={formData.status || "active"}
-                    onChange={(value) => updateField("status", value)}
-                    className="dark:text-white"
-                    labelProps={{ className: "dark:text-gray-400" }}
+                    onChange={(e) => updateField("status", e.target.value)}
+                    className="w-full px-3 py-2.5 border border-blue-gray-200 rounded-lg focus:border-blue-500 focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                   >
-                    <Option value="active">{t("complexes.form.active") || "Aktiv"}</Option>
-                    <Option value="inactive">{t("complexes.form.inactive") || "Passiv"}</Option>
-                  </Select>
+                    <option value="active" className="dark:bg-gray-800 dark:text-gray-300">
+                      {t("complexes.form.active") || "Aktiv"}
+                    </option>
+                    <option value="inactive" className="dark:bg-gray-800 dark:text-gray-300">
+                      {t("complexes.form.inactive") || "Passiv"}
+                    </option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -359,11 +382,11 @@ const ComplexPage = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                  <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
                     {t("complexes.form.latitude") || "Enlik"}
                   </Typography>
                   <Input
-                    label={t("complexes.form.enterLatitude") || "Enlik daxil edin"}
+                    placeholder={t("complexes.form.enterLatitude") || "Enlik daxil edin"}
                     value={formData.meta?.lat || ""}
                     onChange={(e) => {
                       const value = e.target.value;
@@ -373,6 +396,7 @@ const ComplexPage = () => {
                     }}
                     className="dark:text-white"
                     labelProps={{ className: "dark:text-gray-400" }}
+                    containerProps={{ className: "!min-w-0" }}
                     type="number"
                     step="any"
                     min="-90"
@@ -538,7 +562,7 @@ const ComplexPage = () => {
             </div>
           </div>
         </DialogBody>
-        <DialogFooter className="flex justify-end gap-3 dark:bg-gray-800 dark:border-gray-700 pt-4">
+        <DialogFooter className="flex justify-end gap-3 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pt-4">
           <Button
             variant="outlined"
             color="blue-gray"
@@ -586,11 +610,14 @@ const ComplexPage = () => {
       </Dialog>
 
       {/* Edit complex modal - same as create but with edit title */}
-      <Dialog open={editOpen} handler={setEditOpen} size="xl" className="dark:bg-gray-900 border border-red-600 dark:border-gray-700" dismiss={{ enabled: false }}>
-        <DialogHeader className="dark:bg-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-4">
-          <Typography variant="h5" className="font-bold">
+      <Dialog open={editOpen} handler={setEditOpen} size="xl" className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl" dismiss={{ enabled: false }}>
+        <DialogHeader className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700 border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between rounded-t-lg">
+          <Typography variant="h5" className="font-bold text-gray-900 dark:text-white">
             {t("complexes.edit.title")}
           </Typography>
+          <div className="cursor-pointer p-2 rounded-md transition-all hover:bg-gray-200 dark:hover:bg-gray-700" onClick={() => { setEditOpen(false); setSelectedItem(null); resetForm(); setError(null); }}>
+            <XMarkIcon className="dark:text-white h-5 w-5 cursor-pointer" />
+          </div>
         </DialogHeader>
         <DialogBody divider className="dark:bg-gray-800 dark:border-gray-700 max-h-[75vh] overflow-y-auto">
           <div className="space-y-6 py-2">
@@ -605,32 +632,36 @@ const ComplexPage = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                  <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
                     {t("complexes.form.name")} <span className="text-red-500">*</span>
                   </Typography>
                   <Input
-                    label={t("complexes.form.enterName")}
+                    placeholder={t("complexes.form.enterName")}
                     value={formData.name || ""}
                     onChange={(e) => updateField("name", e.target.value)}
                     className="dark:text-white"
                     labelProps={{ className: "dark:text-gray-400" }}
+                    containerProps={{ className: "!min-w-0" }}
                     required
                   />
                 </div>
 
                 <div>
-                  <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                  <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
                     {t("complexes.form.status")} <span className="text-red-500">*</span>
                   </Typography>
-                  <Select
+                  <select
                     value={formData.status || "active"}
-                    onChange={(value) => updateField("status", value)}
-                    className="dark:text-white"
-                    labelProps={{ className: "dark:text-gray-400" }}
+                    onChange={(e) => updateField("status", e.target.value)}
+                    className="w-full px-3 py-2.5 border border-blue-gray-200 rounded-lg focus:border-blue-500 focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                   >
-                    <Option value="active">{t("complexes.form.active") || "Aktiv"}</Option>
-                    <Option value="inactive">{t("complexes.form.inactive") || "Passiv"}</Option>
-                  </Select>
+                    <option value="active" className="dark:bg-gray-800 dark:text-gray-300">
+                      {t("complexes.form.active") || "Aktiv"}
+                    </option>
+                    <option value="inactive" className="dark:bg-gray-800 dark:text-gray-300">
+                      {t("complexes.form.inactive") || "Passiv"}
+                    </option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -646,11 +677,11 @@ const ComplexPage = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                  <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
                     {t("complexes.form.latitude") || "Enlik"}
                   </Typography>
                   <Input
-                    label={t("complexes.form.enterLatitude") || "Enlik daxil edin"}
+                    placeholder={t("complexes.form.enterLatitude") || "Enlik daxil edin"}
                     value={formData.meta?.lat || ""}
                     onChange={(e) => {
                       const value = e.target.value;
@@ -660,6 +691,7 @@ const ComplexPage = () => {
                     }}
                     className="dark:text-white"
                     labelProps={{ className: "dark:text-gray-400" }}
+                    containerProps={{ className: "!min-w-0" }}
                     type="number"
                     step="any"
                     min="-90"
@@ -825,7 +857,7 @@ const ComplexPage = () => {
             </div>
           </div>
         </DialogBody>
-        <DialogFooter className="flex justify-end gap-3 dark:bg-gray-800 dark:border-gray-700 pt-4">
+        <DialogFooter className="flex justify-end gap-3 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pt-4">
           <Button
             variant="outlined"
             color="blue-gray"
@@ -873,14 +905,24 @@ const ComplexPage = () => {
       </Dialog>
 
       {/* Delete complex modal */}
-      <Dialog open={deleteOpen} handler={setDeleteOpen} size="sm" className="dark:bg-gray-900">
-        <DialogHeader className="dark:bg-gray-800 dark:text-white">{t("complexes.delete.title") || "Kompleksi sil"}</DialogHeader>
-        <DialogBody divider className="dark:bg-gray-800 dark:border-gray-700">
+      <Dialog open={deleteOpen} handler={setDeleteOpen} size="md" className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl" dismiss={{ enabled: false }}>
+        <DialogHeader className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700 border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between rounded-t-lg">
+          <div className="flex items-center gap-3">
+            <ExclamationTriangleIcon className="h-5 w-5 text-red-500" />
+            <Typography variant="h5" className="font-bold text-gray-900 dark:text-white">
+              {t("complexes.delete.title") || "Kompleksi sil"}
+            </Typography>
+          </div>
+          <div className="cursor-pointer p-2 rounded-md transition-all hover:bg-gray-200 dark:hover:bg-gray-700" onClick={() => { setDeleteOpen(false); setItemToDelete(null); }}>
+            <XMarkIcon className="dark:text-white h-5 w-5 cursor-pointer" />
+          </div>
+        </DialogHeader>
+        <DialogBody divider className="dark:bg-gray-800 dark:border-gray-700 py-6">
           <Typography className="dark:text-gray-300">
             {t("complexes.delete.message") || "Bu kompleksi silmək istədiyinizə əminsiniz?"} {itemToDelete?.name}
           </Typography>
         </DialogBody>
-        <DialogFooter className="flex justify-end gap-2 dark:bg-gray-800 dark:border-gray-700">
+        <DialogFooter className="flex justify-end gap-2 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pt-4">
           <Button variant="outlined" color="blue-gray" onClick={() => { setDeleteOpen(false); setItemToDelete(null); }} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
             {t("complexes.delete.cancel") || "Ləğv et"}
           </Button>

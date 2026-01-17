@@ -8,6 +8,7 @@ import {
   Typography,
   Chip,
 } from "@material-tailwind/react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 import {
   InformationCircleIcon,
@@ -29,15 +30,18 @@ export function MtkViewModal({ open, onClose, mtk, onEdit }) {
       open={open}
       handler={onClose}
       size="xl"
-      className="dark:bg-gray-900 border border-red-600 dark:border-gray-700"
+      className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl"
       dismiss={{ enabled: false }}
     >
-      <DialogHeader className="dark:bg-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-4">
-        <div className="flex items-center gap-2">
-          <EyeIcon className="h-5 w-5 text-blue-500 dark:text-blue-400" />
-          <Typography variant="h5" className="font-bold">
+      <DialogHeader className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700 border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between rounded-t-lg">
+        <div className="flex items-center gap-3">
+          <EyeIcon className="h-5 w-5 text-blue-500" />
+          <Typography variant="h5" className="font-bold text-gray-900 dark:text-white">
             {t("mtk.view.title") || "MTK Məlumatları"}
           </Typography>
+        </div>
+        <div className="cursor-pointer p-2 rounded-md transition-all hover:bg-gray-200 dark:hover:bg-gray-700" onClick={onClose}>
+          <XMarkIcon className="h-5 w-5 dark:text-white cursor-pointer" />
         </div>
       </DialogHeader>
       <DialogBody divider className="dark:bg-gray-800 dark:border-gray-700 max-h-[75vh] overflow-y-auto">
@@ -222,7 +226,7 @@ export function MtkViewModal({ open, onClose, mtk, onEdit }) {
           )}
         </div>
       </DialogBody>
-      <DialogFooter className="flex justify-end gap-3 dark:bg-gray-800 dark:border-gray-700 pt-4">
+      <DialogFooter className="flex justify-end gap-3 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pt-4">
         <Button
           variant="outlined"
           color="blue-gray"

@@ -1868,7 +1868,9 @@
       "details": "Details",
       "searchModal": {
         "title": "Search",
+        "search": "Search",
         "searchText": "Search text",
+        "searchByApplicationName": "Search by application name",
         "enterSearchText": "Enter",
         "apartment": "Apartment",
         "enterApartment": "Enter",
@@ -1876,14 +1878,23 @@
         "enterDepartment": "Enter",
         "status": "Status",
         "selectStatus": "Select",
+        "dateRange": "Date range",
+        "plannedDateRange": "Planned date range",
         "dateFrom": "Date from",
         "enterDateFrom": "Enter",
         "dateTo": "Date to",
         "enterDateTo": "Enter",
+        "start": "Start",
+        "end": "End",
+        "employeePriority": "Employee priority",
+        "residentPriority": "Resident priority",
+        "allDepartments": "All departments",
+        "allPriorities": "All priorities",
+        "allStatuses": "All statuses",
         "all": "All"
       },
       "categoryModal": {
-        "title": "Category",
+        "title": "Categories",
         "category": "Category",
         "selectCategory": "Select",
         "all": "All",
@@ -1891,16 +1902,74 @@
         "plumbing": "Plumbing",
         "electricity": "Electricity",
         "repair": "Repair",
-        "other": "Other"
+        "other": "Other",
+        "add": "Add",
+        "addNewCategory": "Add new category",
+        "categoryName": "Category name",
+        "description": "Description",
+        "enterDescription": "Enter category description",
+        "create": "Create",
+        "addSubcategory": "Add subcategory",
+        "parentCategory": "Parent category",
+        "subcategories": "Subcategories:",
+        "enterCategoryName": "Enter category name",
+        "enterSubcategoryName": "Enter subcategory name",
+        "confirmDeleteCategory": "Are you sure you want to delete this category?",
+        "confirmDeleteSubcategory": "Are you sure you want to delete this subcategory?"
+      },
+      "prioritiesModal": {
+        "title": "Priorities",
+        "add": "Add",
+        "addNewTitle": "Create New Priority",
+        "editTitle": "Priority Editing",
+        "priorityName": "Priority Name",
+        "enterPriorityName": "Enter priority name",
+        "level": "Level",
+        "description": "Description",
+        "enterDescription": "Enter priority description",
+        "durationSettings": "Duration Settings",
+        "minDuration": "Minimum Duration",
+        "maxDuration": "Maximum Duration",
+        "appearanceSettings": "Appearance Settings",
+        "color": "Color",
+        "status": "Status",
+        "active": "Active",
+        "inactive": "Inactive",
+        "preview": "Preview",
+        "employeePriority": "Employee priority",
+        "minute": "minute",
+        "hour": "hour",
+        "day": "day",
+        "create": "Create",
+        "update": "Update",
+        "confirmDelete": "Are you sure you want to delete this priority?"
       },
       "newApplicationModal": {
-        "title": "New Application",
+        "title": "Create New Application",
+        "selectPriority": "Select priority",
+        "startAndEndTimes": "Start and end times",
+        "startTime": "Start time",
+        "taskStartDateTime": "Task start date and time",
+        "selectStartTime": "Select start time",
+        "endTime": "End time",
+        "taskEndDateTime": "Task end date and time",
+        "selectEndTime": "Select end time",
+        "selectDepartment": "Select department",
+        "selectCategory": "Select category",
+        "selectEmployees": "Select employees",
+        "firstSelectDepartment": "First select department",
+        "selectEmployeesFromDepartment": "Select employees",
+        "applicationText": "Application text",
+        "enterApplicationText": "Application text...",
+        "file": "File",
+        "selectFile": "Select file",
+        "fileNotSelected": "File not selected",
+        "confirm": "Confirm",
         "apartmentEmployee": "Apartment/Employee",
         "enterApartmentEmployee": "Enter",
         "text": "Text",
         "enterText": "Enter",
         "department": "Department",
-        "selectDepartment": "Select",
         "residentPriority": "Resident Priority",
         "selectResidentPriority": "Select",
         "operationPriority": "Operation Priority",
@@ -1928,6 +1997,7 @@
         "newApplication": "New application"
       },
       "table": {
+        "id": "ID",
         "apartmentEmployee": "Apartment/Employee",
         "text": "Text",
         "department": "Department",
@@ -1936,7 +2006,39 @@
         "image": "Image",
         "status": "Status",
         "date": "Date",
-        "action": "Action"
+        "operations": "Operations"
+      },
+      "actions": {
+        "loading": "Loading...",
+        "view": "View",
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "error": {
+        "loading": "Error"
+      },
+      "edit": {
+        "title": "Edit Application"
+      },
+      "delete": {
+        "title": "Delete Application",
+        "message": "Are you sure you want to delete this application?"
+      },
+      "pagination": {
+        "prev": "Previous",
+        "next": "Next"
+      },
+      "mobile": {
+        "id": "ID",
+        "text": "Text",
+        "department": "Department",
+        "residentPriority": "Resident Priority",
+        "operationPriority": "Operation Priority",
+        "status": "Status",
+        "date": "Date"
+      },
+      "summary": {
+        "totalApplications": "Total Applications"
       }
     },
     "evaluation": {

@@ -1,5 +1,6 @@
 import React from "react";
 import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography } from "@material-tailwind/react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
 export function ResidentsDetailModal({ open, onClose, resident, onEdit }) {
@@ -8,9 +9,14 @@ export function ResidentsDetailModal({ open, onClose, resident, onEdit }) {
   if (!open || !resident) return null;
 
   return (
-    <Dialog open={open} handler={onClose} size="xl" className="dark:bg-gray-900" dismiss={{ enabled: false }}>
-      <DialogHeader className="dark:bg-gray-800 dark:text-white text-xl font-bold">
-        {t("residents.detail.title")}
+    <Dialog open={open} handler={onClose} size="xl" className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl" dismiss={{ enabled: false }}>
+      <DialogHeader className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700 border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between rounded-t-lg">
+        <Typography variant="h5" className="font-bold text-gray-900 dark:text-white">
+          {t("residents.detail.title")}
+        </Typography>
+        <div className="cursor-pointer p-2 rounded-md transition-all hover:bg-gray-200 dark:hover:bg-gray-700" onClick={onClose}>
+          <XMarkIcon className="h-5 w-5 dark:text-white cursor-pointer" />
+        </div>
       </DialogHeader>
       <DialogBody divider className="dark:bg-gray-800 dark:border-gray-700 max-h-[70vh] overflow-y-auto">
         <div className="space-y-6">
@@ -251,7 +257,7 @@ export function ResidentsDetailModal({ open, onClose, resident, onEdit }) {
           </div>
         </div>
       </DialogBody>
-      <DialogFooter className="flex justify-end gap-2 dark:bg-gray-800 dark:border-gray-700">
+      <DialogFooter className="flex justify-end gap-2 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pt-4">
         <Button
           variant="outlined"
           color="blue-gray"

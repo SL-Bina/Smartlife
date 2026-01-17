@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Input, Typography, Select, Option } from "@material-tailwind/react";
+import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Input, Typography } from "@material-tailwind/react";
 import { XMarkIcon, XCircleIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 import { complexAPI } from "../../../complex/api";
@@ -31,52 +31,55 @@ export function BuildingsFormModal({ open, onClose, title, formData, onFieldChan
   if (!open) return null;
 
   return (
-    <Dialog open={open} handler={onClose} size="md" className="dark:bg-gray-900" dismiss={{ enabled: false }}>
-      <DialogHeader className="dark:bg-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 flex items-center justify-between">
-        <Typography variant="h5" className="font-bold">
+    <Dialog open={open} handler={onClose} size="md" className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl" dismiss={{ enabled: false }}>
+      <DialogHeader className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700 border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between rounded-t-lg">
+        <Typography variant="h5" className="font-bold text-gray-900 dark:text-white">
           {title}
         </Typography>
         <div className="cursor-pointer p-2 rounded-md transition-all hover:bg-gray-200 dark:hover:bg-gray-700" onClick={onClose}>
-          <XMarkIcon className="h-5 w-5 text-gray-700 dark:text-white" />
+          <XMarkIcon className="dark:text-white h-5 w-5 cursor-pointer" />
         </div>
       </DialogHeader>
-      <DialogBody divider className="space-y-4 dark:bg-gray-800 dark:border-gray-700">
+      <DialogBody divider className="space-y-4 dark:bg-gray-800 py-6 max-h-[70vh] overflow-y-auto">
         <div>
-          <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+          <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
             {isEdit ? t("buildings.edit.name") : t("buildings.create.name")}
           </Typography>
           <Input
-            label={isEdit ? t("buildings.edit.enterName") : t("buildings.create.enterName")}
+            placeholder={isEdit ? t("buildings.edit.enterName") : t("buildings.create.enterName")}
             value={formData.name || ""}
             onChange={(e) => onFieldChange("name", e.target.value)}
             className="dark:text-white"
             labelProps={{ className: "dark:text-gray-400" }}
+            containerProps={{ className: "!min-w-0" }}
           />
         </div>
         <div>
-          <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+          <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
             {isEdit ? t("buildings.edit.complex") : t("buildings.create.complex")}
           </Typography>
           <div className="flex items-center gap-2">
             <div className="flex-1">
-              <Select
+              <select
                 value={formData.complex_id ? String(formData.complex_id) : ""}
-                onChange={(value) => {
+                onChange={(e) => {
+                  const value = e.target.value;
                   const selectedComplex = complexes.find(c => String(c.id) === value);
                   onFieldChange("complex", selectedComplex || null);
                   onFieldChange("complex_id", selectedComplex?.id || null);
                 }}
-                className="dark:text-white"
-                labelProps={{ className: "dark:text-gray-400" }}
                 disabled={loadingComplexes}
+                className="w-full px-3 py-2.5 border border-blue-gray-200 rounded-lg focus:border-blue-500 focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Option value="">{t("buildings.form.selectComplex") || "Kompleks seçin"}</Option>
+                <option value="" className="dark:bg-gray-800 dark:text-gray-300">
+                  {t("buildings.form.selectComplex") || "Kompleks seçin"}
+                </option>
                 {complexes.map((complex) => (
-                  <Option key={complex.id} value={String(complex.id)}>
+                  <option key={complex.id} value={String(complex.id)} className="dark:bg-gray-800 dark:text-gray-300">
                     {complex.name}
-                  </Option>
+                  </option>
                 ))}
-              </Select>
+              </select>
             </div>
             {formData.complex_id && (
               <button
@@ -94,21 +97,24 @@ export function BuildingsFormModal({ open, onClose, title, formData, onFieldChan
           </div>
         </div>
         <div>
-          <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+          <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
             {isEdit ? t("buildings.edit.status") : t("buildings.create.status")}
           </Typography>
-          <Select
+          <select
             value={formData.status || "active"}
-            onChange={(value) => onFieldChange("status", value)}
-            className="dark:text-white"
-            labelProps={{ className: "dark:text-gray-400" }}
+            onChange={(e) => onFieldChange("status", e.target.value)}
+            className="w-full px-3 py-2.5 border border-blue-gray-200 rounded-lg focus:border-blue-500 focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-white"
           >
-            <Option value="active">{t("buildings.form.active") || "Aktiv"}</Option>
-            <Option value="inactive">{t("buildings.form.inactive") || "Passiv"}</Option>
-          </Select>
+            <option value="active" className="dark:bg-gray-800 dark:text-gray-300">
+              {t("buildings.form.active") || "Aktiv"}
+            </option>
+            <option value="inactive" className="dark:bg-gray-800 dark:text-gray-300">
+              {t("buildings.form.inactive") || "Passiv"}
+            </option>
+          </select>
         </div>
         <div>
-          <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
+          <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
             {isEdit ? t("buildings.edit.description") : t("buildings.create.description")}
           </Typography>
           <textarea
@@ -120,7 +126,7 @@ export function BuildingsFormModal({ open, onClose, title, formData, onFieldChan
           />
         </div>
       </DialogBody>
-      <DialogFooter className="flex justify-end gap-2 dark:bg-gray-800 dark:border-gray-700">
+      <DialogFooter className="flex justify-end gap-2 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pt-4">
         <Button
           variant="outlined"
           color="blue-gray"

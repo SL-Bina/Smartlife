@@ -7,9 +7,8 @@ import {
   Button,
   Input,
   Typography,
-  Select,
-  Option,
 } from "@material-tailwind/react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 import {
   InformationCircleIcon,
@@ -30,16 +29,19 @@ export function MtkFormModal({ open, onClose, title, formData, onFieldChange, on
       open={open}
       handler={onClose}
       size="xl"
-      className="dark:bg-gray-900 border border-red-600 dark:border-gray-700"
+      className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl"
       dismiss={{ enabled: false }}
     >
-      <DialogHeader className="dark:bg-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-4">
-        <Typography variant="h5" className="font-bold">
+      <DialogHeader className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700 border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between rounded-t-lg">
+        <Typography variant="h5" className="font-bold text-gray-900 dark:text-white">
           {title}
         </Typography>
+        <div className="cursor-pointer p-2 rounded-md transition-all hover:bg-gray-200 dark:hover:bg-gray-700" onClick={onClose}>
+          <XMarkIcon className="dark:text-white h-5 w-5 cursor-pointer" />
+        </div>
       </DialogHeader>
-      <DialogBody divider className="dark:bg-gray-800 dark:border-gray-700 max-h-[75vh] overflow-y-auto">
-        <div className="space-y-6 py-2">
+      <DialogBody divider className="dark:bg-gray-800 dark:border-gray-700 max-h-[75vh] overflow-y-auto py-6">
+        <div className="space-y-6">
           {/* Basic Information Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
@@ -51,32 +53,36 @@ export function MtkFormModal({ open, onClose, title, formData, onFieldChange, on
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
                   {t("mtk.form.name")} <span className="text-red-500">*</span>
                 </Typography>
                 <Input
-                  label={t("mtk.form.enterName")}
+                  placeholder={t("mtk.form.enterName")}
                   value={formData.name || ""}
                   onChange={(e) => onFieldChange("name", e.target.value)}
                   className="dark:text-white"
                   labelProps={{ className: "dark:text-gray-400" }}
+                  containerProps={{ className: "!min-w-0" }}
                   required
                 />
               </div>
 
               <div>
-                <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
+                <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
                   {t("mtk.form.status")} <span className="text-red-500">*</span>
                 </Typography>
-                <Select
+                <select
                   value={formData.status || "active"}
-                  onChange={(value) => onFieldChange("status", value)}
-                  className="dark:text-white"
-                  labelProps={{ className: "dark:text-gray-400" }}
+                  onChange={(e) => onFieldChange("status", e.target.value)}
+                  className="w-full px-3 py-2.5 border border-blue-gray-200 rounded-lg focus:border-blue-500 focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                 >
-                  <Option value="active">{t("mtk.form.active")}</Option>
-                  <Option value="inactive">{t("mtk.form.inactive")}</Option>
-                </Select>
+                  <option value="active" className="dark:bg-gray-800 dark:text-gray-300">
+                    {t("mtk.form.active")}
+                  </option>
+                  <option value="inactive" className="dark:bg-gray-800 dark:text-gray-300">
+                    {t("mtk.form.inactive")}
+                  </option>
+                </select>
               </div>
             </div>
           </div>
@@ -283,7 +289,7 @@ export function MtkFormModal({ open, onClose, title, formData, onFieldChange, on
           </div>
         </div>
       </DialogBody>
-      <DialogFooter className="flex justify-end gap-3 dark:bg-gray-800 dark:border-gray-700 pt-4">
+      <DialogFooter className="flex justify-end gap-3 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pt-4">
         <Button
           variant="outlined"
           color="blue-gray"

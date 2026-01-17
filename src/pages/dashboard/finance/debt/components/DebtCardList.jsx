@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, CardBody, Typography, Chip, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
+import { Card, CardBody, Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
@@ -49,12 +49,20 @@ export function DebtCardList({ debts, onView, onEdit, onDelete }) {
             <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
               {t("debt.mobile.dueDate")}: {row.dueDate}
             </Typography>
-            <Chip
-              size="sm"
-              value={row.status === "Ödənilib" ? t("debt.status.paid") : t("debt.status.active")}
-              color={row.status === "Ödənilib" ? "green" : "red"}
-              className="dark:bg-opacity-80"
-            />
+            <div className="flex items-center gap-2">
+              <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                {t("debt.mobile.status")}:
+              </Typography>
+              <span
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  row.status === "Ödənilib"
+                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                    : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                }`}
+              >
+                {row.status === "Ödənilib" ? t("debt.status.paid") : t("debt.status.active")}
+              </span>
+            </div>
           </CardBody>
         </Card>
       ))}

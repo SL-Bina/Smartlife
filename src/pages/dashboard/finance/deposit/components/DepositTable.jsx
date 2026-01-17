@@ -1,5 +1,5 @@
 import React from "react";
-import { Typography, Chip, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
+import { Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
 import { EllipsisVerticalIcon, ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
@@ -99,12 +99,15 @@ export function DepositTable({ deposits, onView, onEdit, onDelete, sortConfig, o
                   </Typography>
                 </td>
                 <td className={className}>
-                  <Chip
-                    size="sm"
-                    value={row.paymentMethod === "Nağd" ? t("deposit.paymentMethod.cash") : t("deposit.paymentMethod.bank")}
-                    color={row.paymentMethod === "Nağd" ? "amber" : "blue"}
-                    className="dark:bg-opacity-80"
-                  />
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      row.paymentMethod === "Nağd"
+                        ? "bg-yellow-100 text-orange-600 dark:bg-yellow-900/30 dark:text-orange-400"
+                        : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                    }`}
+                  >
+                    {row.paymentMethod === "Nağd" ? t("deposit.paymentMethod.cash") : t("deposit.paymentMethod.bank")}
+                  </span>
                 </td>
                 <td className={className}>
                   <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
@@ -112,12 +115,15 @@ export function DepositTable({ deposits, onView, onEdit, onDelete, sortConfig, o
                   </Typography>
                 </td>
                 <td className={className}>
-                  <Chip
-                    size="sm"
-                    value={row.status === "Aktiv" ? t("deposit.status.active") : t("deposit.status.returned")}
-                    color={row.status === "Aktiv" ? "green" : "gray"}
-                    className="dark:bg-opacity-80"
-                  />
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      row.status === "Aktiv"
+                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                        : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                    }`}
+                  >
+                    {row.status === "Aktiv" ? t("deposit.status.active") : t("deposit.status.returned")}
+                  </span>
                 </td>
                 <td className={className}>
                   <Typography variant="small" color="blue-gray" className="dark:text-gray-300">

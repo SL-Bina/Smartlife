@@ -2063,7 +2063,9 @@
       "details": "Ətraflı",
       "searchModal": {
         "title": "Axtarış",
+        "search": "Axtarış",
         "searchText": "Axtarış mətni",
+        "searchByApplicationName": "Müraciət adına görə axtar",
         "enterSearchText": "Daxil et",
         "apartment": "Mənzil",
         "enterApartment": "Daxil et",
@@ -2071,14 +2073,23 @@
         "enterDepartment": "Daxil et",
         "status": "Status",
         "selectStatus": "Seçin",
+        "dateRange": "Tarix aralığı",
+        "plannedDateRange": "Planlanmış tarix aralığı",
         "dateFrom": "Başlanğıc tarixi",
         "enterDateFrom": "Daxil et",
         "dateTo": "Son tarix",
         "enterDateTo": "Daxil et",
+        "start": "Başlanğıc",
+        "end": "Son",
+        "employeePriority": "Əməkdaş prioriteti",
+        "residentPriority": "Sakin prioriteti",
+        "allDepartments": "Bütün şöbələr",
+        "allPriorities": "Bütün prioritetlər",
+        "allStatuses": "Bütün statuslar",
         "all": "Hamısı"
       },
       "categoryModal": {
-        "title": "Kateqoriya",
+        "title": "Kateqoriyalar",
         "category": "Kateqoriya",
         "selectCategory": "Seçin",
         "all": "Hamısı",
@@ -2086,16 +2097,74 @@
         "plumbing": "Santexnika",
         "electricity": "Elektrik",
         "repair": "Təmir",
-        "other": "Digər"
+        "other": "Digər",
+        "add": "Əlavə et",
+        "addNewCategory": "Yeni kateqoriya əlavə et",
+        "categoryName": "Kateqoriya adı",
+        "description": "Təsvir",
+        "enterDescription": "Kateqoriya təsvirini daxil edin",
+        "create": "Yarat",
+        "addSubcategory": "Alt kateqoriya əlavə et",
+        "parentCategory": "Ana kateqoriya",
+        "subcategories": "Alt kateqoriyalar:",
+        "enterCategoryName": "Kateqoriya adını daxil edin",
+        "enterSubcategoryName": "Alt kateqoriya adını daxil edin",
+        "confirmDeleteCategory": "Bu kateqoriyanı silmək istədiyinizə əminsiniz?",
+        "confirmDeleteSubcategory": "Bu alt kateqoriyanı silmək istədiyinizə əminsiniz?"
+      },
+      "prioritiesModal": {
+        "title": "Prioritetlər",
+        "add": "Əlavə et",
+        "addNewTitle": "Yeni Prioritet Yarat",
+        "editTitle": "Prioritet Redaktəsi",
+        "priorityName": "Prioritet Adı",
+        "enterPriorityName": "Prioritet adını daxil edin",
+        "level": "Səviyyə",
+        "description": "Təsvir",
+        "enterDescription": "Prioritet təsvirini daxil edin",
+        "durationSettings": "Müddət Tənzimləməsi",
+        "minDuration": "Minimum Müddət",
+        "maxDuration": "Maksimum Müddət",
+        "appearanceSettings": "Görünüş Tənzimləməsi",
+        "color": "Rəng",
+        "status": "Status",
+        "active": "Aktiv",
+        "inactive": "Deaktiv",
+        "preview": "Önizləmə",
+        "employeePriority": "Əməkdaş prioriteti",
+        "minute": "dəqiqə",
+        "hour": "saat",
+        "day": "gün",
+        "create": "Yarat",
+        "update": "Yenilə",
+        "confirmDelete": "Bu prioriteti silmək istədiyinizə əminsiniz?"
       },
       "newApplicationModal": {
-        "title": "Yeni müraciət",
+        "title": "Yeni müraciət yarat",
+        "selectPriority": "Prioritet seçin",
+        "startAndEndTimes": "Başlama və bitmə vaxtları",
+        "startTime": "Başlama vaxtı",
+        "taskStartDateTime": "Task-in başlama tarixi və saatı",
+        "selectStartTime": "Başlama vaxtını seçin",
+        "endTime": "Bitmə vaxtı",
+        "taskEndDateTime": "Task-in bitmə tarixi və saatı",
+        "selectEndTime": "Bitmə vaxtını seçin",
+        "selectDepartment": "Şöbə seçin",
+        "selectCategory": "Kateqoriya seçin",
+        "selectEmployees": "Əməkdaşlar seçin",
+        "firstSelectDepartment": "Əvvəlcə şöbə seçin",
+        "selectEmployeesFromDepartment": "Əməkdaşları seçin",
+        "applicationText": "Müraciət mətni",
+        "enterApplicationText": "Müraciət mətni...",
+        "file": "Fayl",
+        "selectFile": "Fayl seç",
+        "fileNotSelected": "Fayl seçilməyib",
+        "confirm": "Təsdiq et",
         "apartmentEmployee": "Mənzil/Əməkdaş",
         "enterApartmentEmployee": "Daxil et",
         "text": "Mətn",
         "enterText": "Daxil et",
         "department": "Şöbə",
-        "selectDepartment": "Seçin",
         "residentPriority": "Sakin prioriteti",
         "selectResidentPriority": "Seçin",
         "operationPriority": "Əməliyyat prioriteti",
@@ -2129,6 +2198,7 @@
         "newApplication": "Yeni müraciət"
       },
       "table": {
+        "id": "ID",
         "apartmentEmployee": "Mənzil/Əməkdaş",
         "text": "Mətn",
         "department": "Şöbə",
@@ -2137,7 +2207,39 @@
         "image": "Şəkil",
         "status": "Status",
         "date": "Tarix",
-        "action": "Əməliyyat"
+        "operations": "Əməliyyatlar"
+      },
+      "actions": {
+        "loading": "Yüklənir...",
+        "view": "Bax",
+        "edit": "Redaktə et",
+        "delete": "Sil"
+      },
+      "error": {
+        "loading": "Xəta"
+      },
+      "edit": {
+        "title": "Müraciəti redaktə et"
+      },
+      "delete": {
+        "title": "Müraciəti sil",
+        "message": "Bu müraciəti silmək istədiyinizə əminsiniz?"
+      },
+      "pagination": {
+        "prev": "Əvvəlki",
+        "next": "Növbəti"
+      },
+      "mobile": {
+        "id": "ID",
+        "text": "Mətn",
+        "department": "Şöbə",
+        "residentPriority": "Sakin prioriteti",
+        "operationPriority": "Əməliyyat prioriteti",
+        "status": "Status",
+        "date": "Tarix"
+      },
+      "summary": {
+        "totalApplications": "Ümumi müraciətlər"
       }
     },
     "evaluation": {

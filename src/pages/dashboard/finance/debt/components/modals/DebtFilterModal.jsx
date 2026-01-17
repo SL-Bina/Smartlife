@@ -1,5 +1,6 @@
 import React from "react";
 import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Input, Typography } from "@material-tailwind/react";
+import { XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
 export function DebtFilterModal({ open, onClose, filters, onFilterChange, onApply, onClear }) {
@@ -8,9 +9,19 @@ export function DebtFilterModal({ open, onClose, filters, onFilterChange, onAppl
   if (!open) return null;
 
   return (
-    <Dialog open={open} handler={onClose} size="sm" className="dark:bg-gray-800 border border-red-600 dark:border-gray-700" dismiss={{ enabled: false }}>
-      <DialogHeader className="dark:text-white">{t("debt.filter.title")}</DialogHeader>
-      <DialogBody divider className="space-y-4 dark:bg-gray-800">
+    <Dialog open={open} handler={onClose} size="md" className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl" dismiss={{ enabled: false }}>
+      <DialogHeader className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700 border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between rounded-t-lg">
+        <div className="flex items-center gap-3">
+          <MagnifyingGlassIcon className="h-5 w-5 text-blue-500" />
+          <Typography variant="h5" className="font-bold text-gray-900 dark:text-white">
+            {t("debt.filter.title") || "Axtarış"}
+          </Typography>
+        </div>
+        <div className="cursor-pointer p-2 rounded-md transition-all hover:bg-gray-200 dark:hover:bg-gray-700" onClick={onClose}>
+          <XMarkIcon className="dark:text-white h-5 w-5 cursor-pointer" />
+        </div>
+      </DialogHeader>
+      <DialogBody divider className="space-y-6 dark:bg-gray-800 py-6 max-h-[70vh] overflow-y-auto">
         <div>
           <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
             {t("debt.filter.creditor")}
@@ -48,23 +59,13 @@ export function DebtFilterModal({ open, onClose, filters, onFilterChange, onAppl
           />
         </div>
       </DialogBody>
-      <DialogFooter className="flex justify-between gap-2 dark:bg-gray-800">
-        <Button variant="text" color="blue-gray" onClick={onClear} className="dark:text-gray-300 dark:hover:bg-gray-700">
-          {t("buttons.clear")}
+      <DialogFooter className="flex justify-between gap-2 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pt-4">
+        <Button variant="outlined" color="blue-gray" onClick={onClear} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
+          {t("buttons.clear") || "Təmizlə"}
         </Button>
-        <div className="flex gap-2">
-          <Button
-            variant="outlined"
-            color="blue-gray"
-            onClick={onClose}
-            className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
-          >
-            {t("buttons.cancel")}
-          </Button>
-          <Button color="blue" onClick={onApply} className="dark:bg-blue-600 dark:hover:bg-blue-700">
-            {t("buttons.apply")}
-          </Button>
-        </div>
+        <Button color="blue" onClick={onApply} className="dark:bg-blue-600 dark:hover:bg-blue-700">
+          {t("buttons.search") || "Axtar"}
+        </Button>
       </DialogFooter>
     </Dialog>
   );

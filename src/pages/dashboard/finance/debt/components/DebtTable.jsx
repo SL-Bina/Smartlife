@@ -1,5 +1,5 @@
 import React from "react";
-import { Typography, Chip, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
+import { Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
 import { EllipsisVerticalIcon, ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
@@ -120,12 +120,15 @@ export function DebtTable({ debts, onView, onEdit, onDelete, sortConfig, onSortC
                   </Typography>
                 </td>
                 <td className={className}>
-                  <Chip
-                    size="sm"
-                    value={row.status === "Ödənilib" ? t("debt.status.paid") : t("debt.status.active")}
-                    color={row.status === "Ödənilib" ? "green" : "red"}
-                    className="dark:bg-opacity-80"
-                  />
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      row.status === "Ödənilib"
+                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                        : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                    }`}
+                  >
+                    {row.status === "Ödənilib" ? t("debt.status.paid") : t("debt.status.active")}
+                  </span>
                 </td>
                 <td className={`${className} text-right`}>
                   <Menu placement="left-start">

@@ -1,7 +1,7 @@
 import React from "react";
 import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography } from "@material-tailwind/react";
 import { useTranslation } from "react-i18next";
-import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import { ExclamationTriangleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 export function MtkDeleteModal({ open, onClose, mtk, onConfirm, deleting = false }) {
   const { t } = useTranslation();
@@ -12,16 +12,19 @@ export function MtkDeleteModal({ open, onClose, mtk, onConfirm, deleting = false
     <Dialog
       open={open}
       handler={onClose}
-      size="sm"
-      className="dark:bg-gray-900 border border-red-600 dark:border-gray-700"
+      size="md"
+      className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl"
       dismiss={{ enabled: false }}
     >
-      <DialogHeader className="dark:bg-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-4">
-        <div className="flex items-center gap-2">
-          <ExclamationTriangleIcon className="h-5 w-5 text-red-500 dark:text-red-400" />
-          <Typography variant="h5" className="font-bold">
+      <DialogHeader className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700 border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between rounded-t-lg">
+        <div className="flex items-center gap-3">
+          <ExclamationTriangleIcon className="h-5 w-5 text-red-500" />
+          <Typography variant="h5" className="font-bold text-gray-900 dark:text-white">
             {t("mtk.delete.title") || "MTK Sil"}
           </Typography>
+        </div>
+        <div className="cursor-pointer p-2 rounded-md transition-all hover:bg-gray-200 dark:hover:bg-gray-700" onClick={onClose}>
+          <XMarkIcon className="h-5 w-5 dark:text-white cursor-pointer" />
         </div>
       </DialogHeader>
       <DialogBody divider className="space-y-4 dark:bg-gray-800 dark:border-gray-700 py-4">
@@ -36,7 +39,7 @@ export function MtkDeleteModal({ open, onClose, mtk, onConfirm, deleting = false
           </Typography>
         </div>
       </DialogBody>
-      <DialogFooter className="flex justify-end gap-2 dark:bg-gray-800 dark:border-gray-700 pt-4">
+      <DialogFooter className="flex justify-end gap-2 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pt-4">
         <Button
           variant="outlined"
           color="blue-gray"
