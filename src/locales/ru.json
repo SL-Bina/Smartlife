@@ -1398,6 +1398,36 @@
       "close": "Закрыть",
       "apply": "Применить"
     },
+    "form": {
+      "basicInfo": "Основная информация",
+      "name": "Название комплекса",
+      "enterName": "Введите название комплекса",
+      "status": "Статус",
+      "active": "Активный",
+      "inactive": "Неактивный",
+
+      "metaInfo": "Информация о расположении",
+      "latitude": "Широта",
+      "enterLatitude": "Введите широту",
+      "longitude": "Долгота",
+      "enterLongitude": "Введите долготу",
+      "description": "Описание",
+      "enterDescription": "Введите описание",
+      "address": "Адрес",
+      "enterAddress": "Введите адрес",
+
+      "contactInfo": "Контактная информация",
+      "email": "Email",
+      "enterEmail": "Введите email",
+      "phone": "Телефон",
+      "enterPhone": "Введите номер телефона",
+      "website": "Сайт",
+      "enterWebsite": "Введите сайт",
+
+      "colorCode": "Код цвета",
+      "enterColorCode": "Введите код цвета",
+      "colorPicker": "Выберите цвет"
+    },
     "create": {
       "title": "Добавить новый комплекс",
       "name": "Название",

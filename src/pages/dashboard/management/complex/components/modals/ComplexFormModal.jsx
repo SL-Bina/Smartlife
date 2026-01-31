@@ -54,7 +54,6 @@ export function ComplexFormModal({
       </DialogHeader>
       <DialogBody divider className="dark:bg-gray-800 dark:border-gray-700 max-h-[75vh] overflow-y-auto">
         <div className="space-y-6 py-2">
-          {/* Basic Information Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
               <InformationCircleIcon className="h-5 w-5 text-blue-500 dark:text-blue-400" />
@@ -75,7 +74,6 @@ export function ComplexFormModal({
                   className="dark:text-white"
                   labelProps={{ className: "dark:text-gray-400" }}
                   containerProps={{ className: "!min-w-0" }}
-                  required
                 />
               </div>
 
@@ -99,7 +97,6 @@ export function ComplexFormModal({
             </div>
           </div>
 
-          {/* Location Information Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
               <MapPinIcon className="h-5 w-5 text-green-500 dark:text-green-400" />
@@ -157,7 +154,6 @@ export function ComplexFormModal({
                   step="any"
                   min="-180"
                   max="180"
-                  placeholder="-180 ilə 180 arası"
                 />
               </div>
 
@@ -189,7 +185,6 @@ export function ComplexFormModal({
             </div>
           </div>
 
-          {/* Contact Information Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
               <EnvelopeIcon className="h-5 w-5 text-purple-500 dark:text-purple-400" />
@@ -241,13 +236,12 @@ export function ComplexFormModal({
                   className="dark:text-white"
                   labelProps={{ className: "dark:text-gray-400" }}
                   type="url"
-                  placeholder="https://example.com"
+                  // placeholder="https://example.com"
                 />
               </div>
             </div>
           </div>
 
-          {/* Color Code Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
               <SwatchIcon className="h-5 w-5 text-pink-500 dark:text-pink-400" />
@@ -274,7 +268,7 @@ export function ComplexFormModal({
                 </div>
                 <div className="flex-1">
                   <Input
-                    label={t("complexes.form.enterColorCode") || "Rəng kodu"}
+                    // label={t("complexes.form.enterColorCode") || "Rəng kodu"}
                     value={formData.meta?.color_code || ""}
                     onChange={(e) => onFieldChange("meta.color_code", e.target.value)}
                     className="dark:text-white"

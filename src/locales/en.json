@@ -1384,6 +1384,36 @@
       "residentsCount": "Residents count",
       "actions": "Actions"
     },
+    "form": {
+      "basicInfo": "Basic Information",
+      "name": "Complex name",
+      "enterName": "Enter complex name",
+      "status": "Status",
+      "active": "Active",
+      "inactive": "Inactive",
+
+      "metaInfo": "Location Information",
+      "latitude": "Latitude",
+      "enterLatitude": "Enter latitude",
+      "longitude": "Longitude",
+      "enterLongitude": "Enter longitude",
+      "description": "Description",
+      "enterDescription": "Enter description",
+      "address": "Address",
+      "enterAddress": "Enter address",
+
+      "contactInfo": "Contact Information",
+      "email": "Email",
+      "enterEmail": "Enter email",
+      "phone": "Phone",
+      "enterPhone": "Enter phone number",
+      "website": "Website",
+      "enterWebsite": "Enter website",
+
+      "colorCode": "Color Code",
+      "enterColorCode": "Enter color code",
+      "colorPicker": "Pick a color"
+    },
     "actions": {
       "search": "Search",
       "add": "Add",

@@ -1531,6 +1531,36 @@
       "residentsCount": "Sakin sayı",
       "actions": "Əməliyyatlar"
     },
+    "form": {
+      "basicInfo": "Əsas Məlumatlar",
+      "name": "Kompleks adı",
+      "enterName": "Kompleks adını daxil edin",
+      "status": "Status",
+      "active": "Aktiv",
+      "inactive": "Passiv",
+
+      "metaInfo": "Yerləşmə Məlumatları",
+      "latitude": "Enlik",
+      "enterLatitude": "Enlik daxil edin",
+      "longitude": "Uzunluq",
+      "enterLongitude": "Uzunluq daxil edin",
+      "description": "Təsvir",
+      "enterDescription": "Təsvir daxil edin",
+      "address": "Ünvan",
+      "enterAddress": "Ünvan daxil edin",
+
+      "contactInfo": "Əlaqə Məlumatları",
+      "email": "Email",
+      "enterEmail": "Email daxil edin",
+      "phone": "Telefon",
+      "enterPhone": "Telefon daxil edin",
+      "website": "Veb sayt",
+      "enterWebsite": "Veb sayt daxil edin",
+
+      "colorCode": "Rəng Kodu",
+      "enterColorCode": "Rəng kodu daxil edin",
+      "colorPicker": "Rəng seçin"
+    },  
     "actions": {
       "search": "Axtarış",
       "add": "Əlavə et",
