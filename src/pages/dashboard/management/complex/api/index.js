@@ -1,46 +1,38 @@
 import api from "@/services/api";
 
-// Complex API
 export const complexAPI = {
-  // Tüm kompleksləri getir (pagination ilə)
   getAll: async (params = {}) => {
     try {
-      const response = await api.get("/complexes/list", { params });
+      const response = await api.get("/module/complexes/list", { params });
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }
   },
 
-  // Tek kompleks getir
   getById: async (id) => {
     try {
-      const response = await api.get(`/complexes/${id}`);
+      const response = await api.get(`/module/complexes/${id}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }
   },
 
-  // Yeni kompleks oluştur
   create: async (data) => {
     try {
-      // Lat/Lng validation - yalnız düzgün dəyərləri göndər
       const lat = data.meta?.lat ? parseFloat(data.meta.lat) : null;
       const lng = data.meta?.lng ? parseFloat(data.meta.lng) : null;
       
-      // Lat -90 ilə 90 arasında, Lng -180 ilə 180 arasında olmalıdır
       const isValidLat = lat !== null && !isNaN(lat) && lat >= -90 && lat <= 90;
       const isValidLng = lng !== null && !isNaN(lng) && lng >= -180 && lng <= 180;
 
-      // Məlumatları backend-in gözlədiyi formatda hazırla
-      // Backend name, status, meta, mtk_id, modules, avaliable_modules gözləyir
       const cleanedData = {
         name: data.name || "",
         status: data.status || "active",
-        mtk_id: data.bind_mtk?.id || data.mtk_id || 1, // Default 1 göndərək
-        modules: Array.isArray(data.modules) && data.modules.length > 0 ? data.modules : [1], // Default [1] göndərək
-        avaliable_modules: Array.isArray(data.avaliable_modules) && data.avaliable_modules.length > 0 ? data.avaliable_modules : [1], // Default [1] göndərək
+        mtk_id: data.bind_mtk?.id || data.mtk_id || 1,
+        modules: Array.isArray(data.modules) && data.modules.length > 0 ? data.modules : [1],
+        avaliable_modules: Array.isArray(data.avaliable_modules) && data.avaliable_modules.length > 0 ? data.avaliable_modules : [1],
         meta: {
           lat: isValidLat ? String(lat) : (data.meta?.lat || ""),
           lng: isValidLng ? String(lng) : (data.meta?.lng || ""),
@@ -55,17 +47,15 @@ export const complexAPI = {
 
       console.log("Complex Create Request:", cleanedData);
       console.log("Complex Create Request (JSON):", JSON.stringify(cleanedData, null, 2));
-      const response = await api.put("/complexes/add", cleanedData);
+      const response = await api.put("/module/complexes/add", cleanedData);
       return response.data;
     } catch (error) {
-      // 400 və 422 validation hatası için detaylı hata mesajı
       if (error.response?.status === 400 || error.response?.status === 422) {
         const errorData = error.response.data;
         console.error("Complex Create Error Response:", errorData);
         console.error("Complex Create Error Details:", JSON.stringify(errorData, null, 2));
         
         if (errorData.errors) {
-          // Bütün xəta mesajlarını topla
           const allErrors = [];
           Object.keys(errorData.errors).forEach((key) => {
             const fieldErrors = errorData.errors[key];
@@ -91,25 +81,20 @@ export const complexAPI = {
     }
   },
 
-  // Kompleks güncelle
   update: async (id, data) => {
     try {
-      // Lat/Lng validation - yalnız düzgün dəyərləri göndər
       const lat = data.meta?.lat ? parseFloat(data.meta.lat) : null;
       const lng = data.meta?.lng ? parseFloat(data.meta.lng) : null;
       
-      // Lat -90 ilə 90 arasında, Lng -180 ilə 180 arasında olmalıdır
       const isValidLat = lat !== null && !isNaN(lat) && lat >= -90 && lat <= 90;
       const isValidLng = lng !== null && !isNaN(lng) && lng >= -180 && lng <= 180;
 
-      // Məlumatları backend-in gözlədiyi formatda hazırla
-      // Backend name, status, meta, mtk_id, modules, avaliable_modules gözləyir
       const cleanedData = {
         name: data.name || "",
         status: data.status || "active",
-        mtk_id: data.bind_mtk?.id || data.mtk_id || 1, // Default 1 göndərək
-        modules: Array.isArray(data.modules) && data.modules.length > 0 ? data.modules : [1], // Default [1] göndərək
-        avaliable_modules: Array.isArray(data.avaliable_modules) && data.avaliable_modules.length > 0 ? data.avaliable_modules : [1], // Default [1] göndərək
+        mtk_id: data.bind_mtk?.id || data.mtk_id || 1,
+        modules: Array.isArray(data.modules) && data.modules.length > 0 ? data.modules : [1],
+        avaliable_modules: Array.isArray(data.avaliable_modules) && data.avaliable_modules.length > 0 ? data.avaliable_modules : [1],
         meta: {
           lat: isValidLat ? String(lat) : (data.meta?.lat || ""),
           lng: isValidLng ? String(lng) : (data.meta?.lng || ""),
@@ -123,10 +108,9 @@ export const complexAPI = {
       };
 
       console.log("Complex Update Request:", cleanedData);
-      const response = await api.patch(`/complexes/${id}`, cleanedData);
+      const response = await api.patch(`/module/complexes/${id}`, cleanedData);
       return response.data;
     } catch (error) {
-      // 400 və 422 validation hatası için detaylı hata mesajı
       if (error.response?.status === 400 || error.response?.status === 422) {
         const errorData = error.response.data;
         if (errorData.errors) {
@@ -143,10 +127,9 @@ export const complexAPI = {
     }
   },
 
-  // Kompleks sil
   delete: async (id) => {
     try {
-      const response = await api.delete(`/complexes/${id}`);
+      const response = await api.delete(`/module/complexes/${id}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;

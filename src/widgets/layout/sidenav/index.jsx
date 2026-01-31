@@ -128,7 +128,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
 }
 
 Sidenav.defaultProps = {
-  brandImg: "/img/logo-ct.png",
+  brandImg: "/Site_Logo/color_big.png",
   brandName: "SmartLife",
 };
 

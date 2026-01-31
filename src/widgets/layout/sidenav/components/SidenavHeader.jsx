@@ -57,18 +57,18 @@ export function SidenavHeader({ brandName, collapsed = false }) {
           whileTap={{ scale: 0.95 }}
           className="relative"
         >
-          <div className={`rounded-xl bg-white dark:bg-gray-800 flex items-center justify-center shadow-lg shadow-gray-200/50 dark:shadow-gray-900/50 group-hover:shadow-xl group-hover:shadow-gray-300/50 dark:group-hover:shadow-gray-800/50 transition-all duration-300 relative overflow-hidden border border-gray-200/50 dark:border-gray-700/50 ${
+          <div className={`rounded-xl bg-white flex items-center justify-center shadow-lg shadow-gray-200/50 dark:shadow-gray-900/50 group-hover:shadow-xl group-hover:shadow-gray-300/50 dark:group-hover:shadow-gray-800/50 transition-all duration-300 relative overflow-hidden border border-gray-200/50 dark:border-gray-700/50 ${
             collapsed 
               ? getLogoSize("w-10 h-10 xl:w-10 xl:h-10", "w-10 h-10 xl:w-12 xl:h-12", "w-12 h-12 xl:w-14 xl:h-14")
               : getLogoSize("w-10 h-10 xl:w-16 xl:h-16", "w-12 h-12 xl:w-20 xl:h-20 xl:rounded-2xl", "w-14 h-14 xl:w-24 xl:h-24 xl:rounded-2xl")
           }`}>
             <img 
-              src="/img/logo-jira.svg" 
+              src="/Vector_Logo/color_logo.svg" 
               alt="Logo" 
               className={`object-contain ${
                 collapsed 
-                  ? getIconSize("w-5 h-5 xl:w-6 xl:h-6", "w-6 h-6 xl:w-7 xl:h-7", "w-7 h-7 xl:w-8 xl:h-8")
-                  : getIconSize("w-6 h-6 xl:w-10 xl:h-10", "w-8 h-8 xl:w-14 xl:h-14", "w-10 h-10 xl:w-18 xl:h-18")
+                  ? getIconSize("w-7 h-7 xl:w-6 xl:h-6", "w-6 h-6 xl:w-7 xl:h-7", "w-7 h-7 xl:w-8 xl:h-8")
+                  : getIconSize("w-8 h-8 xl:w-10 xl:h-10", "w-8 h-8 xl:w-14 xl:h-14", "w-10 h-10 xl:w-18 xl:h-18")
               }`}
             />
             <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent dark:from-gray-700/30 dark:to-transparent"></div>

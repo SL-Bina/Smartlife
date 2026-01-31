@@ -255,7 +255,7 @@ export function MtkFormModal({ open, onClose, title, formData, onFieldChange, on
                   className="dark:text-white"
                   labelProps={{ className: "dark:text-gray-400" }}
                   containerProps={{ className: "!min-w-0" }}
-                  required
+                  // required
                 />
               </div>
 
@@ -595,7 +595,7 @@ export function MtkFormModal({ open, onClose, title, formData, onFieldChange, on
                 </div>
                 <div className="flex-1">
                   <Input
-                    label={t("mtk.form.enterColorCode")}
+                    // label={t("mtk.form.enterColorCode")}
                     value={formData.meta?.color_code || ""}
                     onChange={(e) => onFieldChange("meta.color_code", e.target.value)}
                     className="dark:text-white"

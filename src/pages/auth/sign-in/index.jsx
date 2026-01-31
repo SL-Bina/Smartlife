@@ -109,7 +109,7 @@ export function SignIn() {
       <div className="absolute left-1/2 -translate-x-1/2 top-6 sm:top-8 lg:hidden z-20">
         <Link to="/">
           <img
-            src="/img/logo-jira.svg"
+            src="/Vector_Logo/color_logo.svg"
             alt="SmartLife Logo"
             className="w-24 h-24 sm:w-28 sm:h-28 object-contain"
           />
@@ -148,7 +148,7 @@ export function SignIn() {
           <div className="lg:flex mb-6 hidden justify-center items-center" style={{margin: "0 auto"}}>
             <Link to="/" className="flex items-center" style={{margin: "0 auto"}}>
               <img
-                src="/img/logo-jira.svg"
+                src="/Vector_Logo/color_logo.svg"
                 alt="SmartLife Logo"
                 className="w-28 h-28 object-contain"
               />

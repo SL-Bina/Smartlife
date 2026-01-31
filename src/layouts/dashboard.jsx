@@ -197,7 +197,7 @@ export function Dashboard() {
         <Sidenav
           routes={filteredRoutes}
           brandImg={
-            sidenavType === "dark" ? "/img/logo-ct.png" : "/img/logo-ct-dark.png"
+            sidenavType === "dark" ? "/Site_Logo/white_big.png" : "/Site_Logo/color_big.png"
           }
         />
         <motion.div
