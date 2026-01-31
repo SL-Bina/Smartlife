@@ -1,38 +1,25 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
+import { blocksAPI } from "../api";
 
-const ITEMS_PER_PAGE = 10;
-
-const generateData = () => {
-  return Array.from({ length: 50 }, (_, index) => ({
-    id: index + 1,
-    name: `Blok ${String.fromCharCode(65 + (index % 5))}-${Math.floor(index / 5) + 1}`,
-    building: `Bina ${Math.floor(index / 5) + 1}`,
-    floors: (index % 16) + 5,
-    apartments: Math.floor(Math.random() * 40) + 10,
-  }));
-};
-
-export function useBlocksData(filters, page, sortConfig = { key: null, direction: "asc" }) {
+export function useBlocksData(filters, page, refreshKey = 0, sortConfig = { key: null, direction: "asc" }) {
+  const [blocks, setBlocks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState([]);
+  const [error, setError] = useState(null);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    itemsPerPage: 20,
+    total: 0,
+    totalPages: 0,
+  });
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const generatedData = generateData();
-      setData(generatedData);
-      setLoading(false);
-    }, 400);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Natural sort function
+  // Natural sort (MTK/Buildings ilə eyni)
   const naturalSort = (a, b) => {
     const aStr = String(a).toLowerCase();
     const bStr = String(b).toLowerCase();
     const aParts = aStr.match(/(\d+|\D+)/g) || [];
     const bParts = bStr.match(/(\d+|\D+)/g) || [];
     const maxLength = Math.max(aParts.length, bParts.length);
-    
+
     for (let i = 0; i < maxLength; i++) {
       const aPart = aParts[i] || "";
       const bPart = bParts[i] || "";
@@ -47,65 +34,103 @@ export function useBlocksData(filters, page, sortConfig = { key: null, direction
     return 0;
   };
 
-  // Filter and sort data
-  const filteredAndSortedData = useMemo(() => {
-    let result = [...data];
+  useEffect(() => {
+    const fetchBlocks = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-    // Apply filters
-    if (filters.name || filters.building) {
-      result = result.filter((block) => {
-        const matchesName = !filters.name || 
-          block.name.toLowerCase().includes(filters.name.toLowerCase());
-        const matchesBuilding = !filters.building || 
-          block.building.toLowerCase().includes(filters.building.toLowerCase());
-        return matchesName && matchesBuilding;
-      });
-    }
+        // Hamısını çəkirik (MTK/Buildings kimi), sonra sort/paginate client-side
+        const params = {
+          page: 1,
+          per_page: 10000,
+        };
 
-    // Apply sorting
-    if (sortConfig.key) {
-      result = result.sort((a, b) => {
-        let aValue = a[sortConfig.key];
-        let bValue = b[sortConfig.key];
+        // Əgər backend filter dəstəkləyirsə ötürə bilərsən:
+        if (filters?.name) params.name = filters.name;
 
-        // Handle numeric values
-        if (sortConfig.key === "id" || sortConfig.key === "floors" || sortConfig.key === "apartments") {
-          aValue = parseFloat(aValue) || 0;
-          bValue = parseFloat(bValue) || 0;
+        const response = await blocksAPI.getAll(params);
+
+        if (response?.success && response?.data) {
+          const list = Array.isArray(response.data.data) ? response.data.data : [];
+
+          // UI üçün map edirik
+          let mapped = list.map((item) => ({
+            id: item.id,
+            name: item.name,
+            complex: item.complex?.name || "",
+            building: item.building?.name || "",
+            complex_id: item.complex?.id ?? null,
+            building_id: item.building?.id ?? null,
+            floors: item.meta?.total_floor ?? "",
+            apartments: item.meta?.total_apartment ?? "",
+            meta: item.meta || {},
+            raw: item,
+          }));
+
+          // Client filter (mövcud filter modal “building text” istifadə edir deyə)
+          if (filters?.building) {
+            const q = String(filters.building).toLowerCase();
+            mapped = mapped.filter((x) => String(x.building).toLowerCase().includes(q));
+          }
+          if (filters?.name) {
+            const q = String(filters.name).toLowerCase();
+            mapped = mapped.filter((x) => String(x.name).toLowerCase().includes(q));
+          }
+
+          // Sorting
+          if (sortConfig?.key) {
+            mapped = [...mapped].sort((a, b) => {
+              let aValue = a[sortConfig.key];
+              let bValue = b[sortConfig.key];
+
+              // numeric keys
+              if (["id", "floors", "apartments"].includes(sortConfig.key)) {
+                aValue = parseFloat(aValue) || 0;
+                bValue = parseFloat(bValue) || 0;
+              } else if (typeof aValue === "string" && typeof bValue === "string") {
+                const comparison = naturalSort(aValue, bValue);
+                return sortConfig.direction === "asc" ? comparison : -comparison;
+              }
+
+              if (typeof aValue === "number" && typeof bValue === "number") {
+                if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+                if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
+                return 0;
+              }
+              return 0;
+            });
+          }
+
+          // Pagination
+          const total = mapped.length;
+          const itemsPerPage = 20;
+          const startIndex = (page - 1) * itemsPerPage;
+          const paginatedData = mapped.slice(startIndex, startIndex + itemsPerPage);
+
+          setBlocks(paginatedData);
+          setPagination({
+            page,
+            itemsPerPage,
+            total,
+            totalPages: Math.ceil(total / itemsPerPage),
+          });
+        } else {
+          setBlocks([]);
+          setPagination({ page: 1, itemsPerPage: 20, total: 0, totalPages: 0 });
         }
-        // Handle string values with natural sort
-        else if (typeof aValue === "string" && typeof bValue === "string") {
-          const comparison = naturalSort(aValue, bValue);
-          return sortConfig.direction === "asc" ? comparison : -comparison;
-        }
+      } catch (err) {
+        console.error("Error fetching Blocks data:", err);
+        setError(err?.message || "Failed to fetch Blocks data");
+        setBlocks([]);
+        setPagination({ page: 1, itemsPerPage: 20, total: 0, totalPages: 0 });
+      } finally {
+        setLoading(false);
+      }
+    };
 
-        // Compare numeric values
-        if (typeof aValue === "number" && typeof bValue === "number") {
-          if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
-          if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
-          return 0;
-        }
+    fetchBlocks();
+  }, [filters, page, refreshKey, sortConfig]);
 
-        return 0;
-      });
-    }
-
-    return result;
-  }, [data, filters, sortConfig]);
-
-  // Pagination
-  const totalPages = Math.ceil(filteredAndSortedData.length / ITEMS_PER_PAGE);
-  const startIndex = (page - 1) * ITEMS_PER_PAGE;
-  const pageData = filteredAndSortedData.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-
-  return {
-    blocks: pageData,
-    loading,
-    pagination: {
-      totalPages,
-      currentPage: page,
-      totalItems: filteredAndSortedData.length,
-    },
-  };
+  return { blocks, loading, error, pagination };
 }
-

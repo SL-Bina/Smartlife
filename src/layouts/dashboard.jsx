@@ -45,7 +45,6 @@ function ProtectedRoute({ element, allowedRoles, moduleName }) {
     return <Navigate to="/dashboard/home" replace />;
   }
   
-  // Role kontrolü - eğer allowedRoles varsa ve userRole içinde değilse yönlendir
   if (allowedRoles && userRole && !allowedRoles.includes(userRole)) {
     if (userRole === "resident") {
       return <Navigate to="/dashboard/resident/home" replace />;
@@ -57,28 +56,21 @@ function ProtectedRoute({ element, allowedRoles, moduleName }) {
 }
 
 const filterRoutesByRole = (routes, user, hasModuleAccess) => {
-  // Role kontrolü - user.role bir obje olabilir { id, name }
   let userRole = user?.role?.name?.toLowerCase() || (typeof user?.role === 'string' ? user.role.toLowerCase() : null);
   
-  // Root rolü için özel işlem - Root tüm yetkilere sahip olmalı
   const originalRole = user?.role?.name?.toLowerCase();
   const isRoot = originalRole === "root";
   const isResident = originalRole === "resident";
   
   return routes
     .filter((route) => {
-      // Layout kontrolü
       if (route.layout !== "dashboard") return false;
       
-      // Resident layout'undaki sayfalar sadece resident rolü için göster
-      // Normal dashboard sayfaları resident için gösterilmemeli
       if (route.pages && route.pages.length > 0) {
         const firstPage = route.pages[0];
-        // Eğer sayfa resident path'ine sahipse, sadece resident rolü için göster
         if (firstPage.path && firstPage.path.includes("/resident/")) {
           return isResident;
         }
-        // Normal dashboard sayfaları resident için gösterilmemeli
         if (isResident && firstPage.path && !firstPage.path.includes("/resident/")) {
           return false;
         }
@@ -89,7 +81,6 @@ const filterRoutesByRole = (routes, user, hasModuleAccess) => {
     .map((route) => {
       const filteredPages = route.pages
         .map((page) => {
-          // Modül yetkisi kontrolü - eğer moduleName varsa ve yetki yoksa gizle
           if (page.moduleName) {
             const hasAccess = hasModuleAccess(page.moduleName);
             if (!hasAccess) {
@@ -98,7 +89,6 @@ const filterRoutesByRole = (routes, user, hasModuleAccess) => {
             }
           }
           
-          // Role kontrolü - Root rolü için tüm sayfalara erişim ver
           if (page.allowedRoles && userRole && !isRoot) {
             if (!page.allowedRoles.includes(userRole)) {
               return null;
@@ -107,12 +97,10 @@ const filterRoutesByRole = (routes, user, hasModuleAccess) => {
 
           if (page.children && page.children.length > 0) {
             const filteredChildren = page.children.filter((child) => {
-              // Child için modül yetkisi kontrolü
               if (child.moduleName && !hasModuleAccess(child.moduleName)) {
                 return false;
               }
               
-              // Role kontrolü - Root rolü için tüm sayfalara erişim ver
               if (child.allowedRoles && userRole && !isRoot) {
                 if (!child.allowedRoles.includes(userRole)) {
                   return false;
@@ -159,22 +147,16 @@ export function Dashboard() {
     return () => window.removeEventListener("resize", checkDesktop);
   }, []);
 
-  // Belirli aralıklarla permission'ları backend'den yenile
-  // Backend'de yeni permission eklendiğinde veya değiştiğinde otomatik olarak güncellenir
-  // AuthContext zaten sayfa yüklendiğinde /user/me çağırıyor, burada tekrar çağırmaya gerek yok
   useEffect(() => {
     if (user) {
-      // Her 5 dakikada bir permission'ları otomatik olarak yenile
       const interval = setInterval(() => {
         refreshUser();
-      }, 5 * 60 * 1000); // 5 dakika
+      }, 5 * 60 * 1000);
       
       return () => clearInterval(interval);
     }
-  }, [user?.id, refreshUser]); // Sadece user id değiştiğinde çalışsın (login/logout)
+  }, [user?.id, refreshUser]);
 
-  // User bilgileri yüklenene kadar loading göster
-  // Token varsa ama user yoksa, hala yükleniyor demektir
   const hasToken = typeof document !== 'undefined' && document.cookie.includes('smartlife_token=');
   if (!isInitialized || (hasToken && !user)) {
     return (
@@ -247,7 +229,6 @@ export function Dashboard() {
                 }
               })
           )}
-          {/* Eğer hiçbir route eşleşmezse (kullanıcının erişimi olmayan bir sayfaya gitmeye çalışırsa) dashboard'a yönlendir */}
           <Route
             path="*"
             element={

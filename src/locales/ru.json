@@ -1516,6 +1516,18 @@
       "close": "Закрыть",
       "apply": "Применить"
     },
+    "form": {
+      "name": "Название блока",
+      "enterName": "например: Block-a1",
+      "complexId": "ID комплекса",
+      "enterComplexId": "например: 5",
+      "buildingId": "ID здания",
+      "enterBuildingId": "например: 2",
+      "totalFloor": "Количество этажей",
+      "enterTotalFloor": "например: 16",
+      "totalApartment": "Количество квартир",
+      "enterTotalApartment": "например: 280"
+    },
     "create": {
       "title": "Добавить новый блок",
       "block": "Блок",

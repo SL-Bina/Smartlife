@@ -1530,6 +1530,18 @@
       "cancel": "Cancel",
       "save": "Save"
     },
+    "form": {
+      "name": "Block name",
+      "enterName": "e.g., Block-a1",
+      "complexId": "Complex ID",
+      "enterComplexId": "e.g., 5",
+      "buildingId": "Building ID",
+      "enterBuildingId": "e.g., 2",
+      "totalFloor": "Total floors",
+      "enterTotalFloor": "e.g., 16",
+      "totalApartment": "Total apartments",
+      "enterTotalApartment": "e.g., 280"
+    },
     "edit": {
       "title": "Edit block information",
       "block": "Block",

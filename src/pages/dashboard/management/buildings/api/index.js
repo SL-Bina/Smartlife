@@ -1,28 +1,24 @@
 import api from "@/services/api";
 
-// Buildings API
 export const buildingsAPI = {
-  // Tüm binaları getir (pagination ilə)
   getAll: async (params = {}) => {
     try {
-      const response = await api.get("/buildings/list", { params });
+      const response = await api.get("/module/buildings/list", { params });
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }
   },
 
-  // Tek bina getir
   getById: async (id) => {
     try {
-      const response = await api.get(`/buildings/${id}`);
+      const response = await api.get(`/module/buildings/${id}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }
   },
 
-  // Yeni bina oluştur
   create: async (data) => {
     try {
       const cleanedData = {
@@ -36,7 +32,7 @@ export const buildingsAPI = {
 
       console.log("Building Create Request:", cleanedData);
       console.log("Building Create Request (JSON):", JSON.stringify(cleanedData, null, 2));
-      const response = await api.put("/buildings/add", cleanedData);
+      const response = await api.put("/module/buildings/add", cleanedData);
       return response.data;
     } catch (error) {
       if (error.response?.status === 400 || error.response?.status === 422) {
@@ -66,7 +62,6 @@ export const buildingsAPI = {
     }
   },
 
-  // Bina güncelle
   update: async (id, data) => {
     try {
       const cleanedData = {
@@ -79,7 +74,7 @@ export const buildingsAPI = {
       };
 
       console.log("Building Update Request:", cleanedData);
-      const response = await api.patch(`/buildings/${id}`, cleanedData);
+      const response = await api.patch(`/module/buildings/${id}`, cleanedData);
       return response.data;
     } catch (error) {
       if (error.response?.status === 400 || error.response?.status === 422) {
@@ -98,10 +93,9 @@ export const buildingsAPI = {
     }
   },
 
-  // Bina sil
   delete: async (id) => {
     try {
-      const response = await api.delete(`/buildings/${id}`);
+      const response = await api.delete(`/module/buildings/${id}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;

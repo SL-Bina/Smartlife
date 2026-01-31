@@ -1,35 +1,30 @@
 import api from "@/services/api";
 
-// Roles API
 export const rolesAPI = {
-  // Bütün rolları gətir
   getAll: async (params = {}) => {
     try {
-      const response = await api.get("/roles/list", { params });
+      const response = await api.get("/module/roles/list", { params });
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }
   },
 
-  // Konkret rol detalları
   getById: async (id) => {
     try {
-      const response = await api.get(`/roles/${id}`);
+      const response = await api.get(`/module/roles/${id}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }
   },
 
-  // Yeni rol əlavə et
   create: async (data) => {
     try { 
-      // API role_name gözləyir
       const requestData = {
         role_name: data.name || data.role_name,
       };
-      const response = await api.put("/roles/add", requestData);
+      const response = await api.put("/module/roles/add", requestData);
       return response.data;
     } catch (error) {
       if (error.response?.status === 400 || error.response?.status === 422) {
@@ -56,14 +51,12 @@ export const rolesAPI = {
     }
   },
 
-  // Rol yenilə
   update: async (id, data) => {
     try {
-      // API role_name gözləyir
       const requestData = {
         role_name: data.name || data.role_name,
       };
-      const response = await api.patch(`/roles/${id}`, requestData);
+      const response = await api.patch(`/module/roles/${id}`, requestData);
       return response.data;
     } catch (error) {
       if (error.response?.status === 400 || error.response?.status === 422) {
@@ -82,26 +75,23 @@ export const rolesAPI = {
     }
   },
 
-  // Rol sil
   delete: async (id) => {
     try {
-      const response = await api.delete(`/roles/${id}`);
+      const response = await api.delete(`/module/roles/${id}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }
   },
 
-  // Rol üçün permission-ları təyin et
   bindPermissions: async (roleId, permissionIds) => {
     try {
-      // Permission-ları array kimi göndər, boş olsa belə
       const requestData = {
         role_id: roleId,
         permissions: Array.isArray(permissionIds) ? permissionIds.filter(id => id != null && id !== undefined && id !== '') : []
       };
       
-      const response = await api.patch("/roles/assign-permissions", requestData);
+      const response = await api.patch("/module/roles/assign-permissions", requestData);
       return response.data;
     } catch (error) {
       if (error.response?.status === 400 || error.response?.status === 422) {
@@ -129,32 +119,28 @@ export const rolesAPI = {
   },
 };
 
-// Permissions API
 export const permissionsAPI = {
-  // Bütün modullar və permission-ları gətir
   getAll: async (params = {}) => {
     try {
-      const response = await api.get("/permissions/list", { params });
+      const response = await api.get("/module/permissions/list", { params });
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }
   },
 
-  // Konkret permission detalları
   getById: async (id) => {
     try {
-      const response = await api.get(`/permissions/${id}`);
+      const response = await api.get(`/module/permissions/${id}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }
   },
 
-  // Yeni permission əlavə et
   create: async (data) => {
     try {
-      const response = await api.put("/permissions/add", data);
+      const response = await api.put("/module/permissions/add", data);
       return response.data;
     } catch (error) {
       if (error.response?.status === 400 || error.response?.status === 422) {
@@ -181,10 +167,9 @@ export const permissionsAPI = {
     }
   },
 
-  // Permission yenilə
   update: async (id, data) => {
     try {
-      const response = await api.patch(`/permissions/${id}`, data);
+      const response = await api.patch(`/module/permissions/${id}`, data);
       return response.data;
     } catch (error) {
       if (error.response?.status === 400 || error.response?.status === 422) {
@@ -203,10 +188,9 @@ export const permissionsAPI = {
     }
   },
 
-  // Permission sil
   delete: async (id) => {
     try {
-      const response = await api.delete(`/permissions/${id}`);
+      const response = await api.delete(`/module/permissions/${id}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;

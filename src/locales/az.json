@@ -1712,15 +1712,35 @@
     "create": {
       "title": "Yeni blok əlavə et",
       "block": "Blok",
-      "enterBlock": "Daxil et",
       "building": "Bina",
-      "enterBuilding": "Daxil et",
       "floorsCount": "Mərtəbə sayı",
-      "enterFloors": "Daxil et",
       "apartmentsCount": "Mənzil sayı",
+      "enterBlock": "Daxil et",
+      "enterFloors": "Daxil et",
       "enterApartments": "Daxil et",
+      "save": "Yadda saxla",
+      "cancel": "Ləğv et"
+    },
+    "form": {
+      "name": "Blok adı",
+      "enterName": "Məs: Block-a1",
+      "complexId": "Kompleks ID",
+      "enterComplexId": "Məs: 5",
+      "buildingId": "Bina ID",
+      "enterBuildingId": "Məs: 2",
+      "totalFloor": "Mərtəbə sayı",
+      "enterTotalFloor": "Məs: 16",
+      "totalApartment": "Mənzil sayı",
+      "enterTotalApartment": "Məs: 280"
+    },
+    "buttons": {
       "cancel": "Ləğv et",
-      "save": "Yadda saxla"
+      "save": "Yadda saxla",
+      "add": "Əlavə et"
+    },
+    "messages": {
+      "success": "Blok əlavə edildi",
+      "error": "Blok əlavə edilərkən xəta baş verdi"
     },
     "edit": {
       "title": "Blok məlumatlarını dəyiş",
