@@ -1842,6 +1842,70 @@
       "permission": "разрешение"
     }
   },
+  "permissions": {
+    "loading": "Загрузка...",
+    "search": "Поиск...",
+    "status": {
+      "active": "Активный",
+      "inactive": "Неактивный"
+    },
+
+    "roles": {
+      "title": "Роли",
+      "total": "Всего",
+      "role": "роль",
+      "create": "+ Создать роль",
+      "noRoles": "Роли не найдены"
+    },
+
+    "permissions": {
+      "title": "Разрешения",
+      "total": "Всего",
+      "permission": "разрешение",
+      "noPermissions": "Разрешения не найдены"
+    },
+
+    "modules": {
+      "dashboard": "Панель",
+      "manage": "Управление",
+      "mtk": "МТК",
+      "complex": "Жилой комплекс",
+      "building": "Здание",
+      "block": "Блок",
+      "property": "Квартира",
+      "resident": "Жилец",
+      "resident-group": "Группа жильцов",
+      "finance": "Финансы",
+      "invoice": "Счёт",
+      "service": "Услуги",
+      "permission": "Разрешения",
+      "role": "Роли",
+      "property_service": "Услуги квартиры",
+      "user": "Пользователь"
+    },
+
+    "actions": {
+      "view": "Просмотр",
+      "add": "Добавить",
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "assign-permissions": "Назначить разрешения",
+      "edit-or-create": "Создать / редактировать",
+      "bind": "Привязать"
+    },
+
+    "rolesDict": {
+      "Root": "Root",
+      "Moderator": "Модератор",
+      "Admin": "Администратор",
+      "Office manager": "Офис-менеджер",
+      "Complex manager": "Менеджер комплекса",
+      "Accountant": "Бухгалтер",
+      "Complex accountant": "Бухгалтер комплекса",
+      "Resident": "Жилец",
+      "Mtk manager": "Менеджер МТК"
+    }
+  },
   "profile": {
     "pageTitle": "Профиль",
     "personalInfo": "Личная информация",

@@ -2035,9 +2035,48 @@
       "autoSaved": "İcazələr avtomatik yadda saxlanıldı",
       "autoSaveError": "İcazələr avtomatik yadda saxlanarkən xəta baş verdi"
     },
+    "modules": {
+      "dashboard": "Panel",
+      "manage": "İdarəetmə",
+      "mtk": "MTK",
+      "complex": "Kompleks",
+      "building": "Bina",
+      "block": "Blok",
+      "property": "Mənzil",
+      "resident": "Sakin",
+      "resident-group": "Sakin qrupu",
+      "finance": "Maliyyə",
+      "invoice": "Faktura",
+      "service": "Xidmət",
+      "permission": "İcazələr",
+      "role": "Rollar",
+      "property_service": "Mənzil xidməti",
+      "user": "İstifadəçi"
+    },
     "status": {
       "active": "Aktiv",
       "inactive": "Deaktiv"
+    },
+    "actions": {
+      "view": "Bax",
+      "add": "Əlavə et",
+      "edit": "Düzəliş et",
+      "delete": "Sil",
+      "assign-permissions": "İcazə təyin et",
+      "edit-or-create": "Yarat / düzəliş et",
+      "bind": "Bağla"
+    },
+
+    "rolesDict": {
+      "Root": "Root",
+      "Moderator": "Moderator",
+      "Admin": "Admin",
+      "Office manager": "Ofis meneceri",
+      "Complex manager": "Kompleks meneceri",
+      "Accountant": "Mühasib",
+      "Complex accountant": "Kompleks mühasibi",
+      "Resident": "Sakin",
+      "Mtk manager": "MTK meneceri"
     }
   },
   "profile": {
@@ -2577,4 +2616,5 @@
       }
     }
   }
+  
 }

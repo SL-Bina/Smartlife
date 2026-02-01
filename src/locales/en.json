@@ -1391,7 +1391,6 @@
       "status": "Status",
       "active": "Active",
       "inactive": "Inactive",
-
       "metaInfo": "Location Information",
       "latitude": "Latitude",
       "enterLatitude": "Enter latitude",
@@ -1401,7 +1400,6 @@
       "enterDescription": "Enter description",
       "address": "Address",
       "enterAddress": "Enter address",
-
       "contactInfo": "Contact Information",
       "email": "Email",
       "enterEmail": "Enter email",
@@ -1409,7 +1407,6 @@
       "enterPhone": "Enter phone number",
       "website": "Website",
       "enterWebsite": "Enter website",
-
       "colorCode": "Color Code",
       "enterColorCode": "Enter color code",
       "colorPicker": "Pick a color"
@@ -1820,7 +1817,64 @@
     "permissions": {
       "title": "Permissions",
       "total": "Total",
-      "permission": "permission"
+      "permission": "permission",
+      "loading": "Loading...",
+      "search": "Search...",
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "roles": {
+        "title": "Roles",
+        "total": "Total",
+        "role": "role",
+        "create": "+ Create role",
+        "noRoles": "No roles found"
+      },
+      "permissions": {
+        "title": "Permissions",
+        "total": "Total",
+        "permission": "permission",
+        "noPermissions": "No permissions found"
+      },
+      "modules": {
+        "dashboard": "Dashboard",
+        "manage": "Management",
+        "mtk": "MTK",
+        "complex": "Complex",
+        "building": "Building",
+        "block": "Block",
+        "property": "Property",
+        "resident": "Resident",
+        "resident-group": "Resident group",
+        "finance": "Finance",
+        "invoice": "Invoice",
+        "service": "Service",
+        "permission": "Permissions",
+        "role": "Roles",
+        "property_service": "Property service",
+        "user": "User"
+      },
+      "actions": {
+        "view": "View",
+        "add": "Add",
+        "edit": "Edit",
+        "delete": "Delete",
+        "assign-permissions": "Assign permissions",
+        "edit-or-create": "Create / edit",
+        "bind": "Bind"
+      },
+      "rolesDict": {
+        "Root": "Root",
+        "Moderator": "Moderator",
+        "Admin": "Admin",
+        "Office manager": "Office manager",
+        "Complex manager": "Complex manager",
+        "Accountant": "Accountant",
+        "Complex accountant": "Complex accountant",
+        "Resident": "Resident",
+        "Mtk manager": "MTK manager"
+      }
     }
   },
   "userPermissions": {
