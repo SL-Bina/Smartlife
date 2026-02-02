@@ -1532,6 +1532,17 @@
       "actions": "Əməliyyatlar"
     },
     "form": {
+      "logo": "Logo",
+      "uploadLogo": "Logo yüklə",
+      "changeLogo": "Logo dəyiş",
+      "logoSizeError": "Logo faylının ölçüsü 5MB-dan böyük ola bilməz",
+
+      "photos": "Şəkillər",
+      "uploadPhotos": "Şəkil yüklə",
+      "maxPhotos": "Maksimum 10 şəkil",
+      "photoSizeError": "Şəkilin ölçüsü 10MB-dan böyük ola bilməz",
+      "noPhotos": "Şəkil əlavə edilməyib",
+      "removePhoto": "Şəkli sil",
       "basicInfo": "Əsas Məlumatlar",
       "name": "Kompleks adı",
       "enterName": "Kompleks adını daxil edin",
