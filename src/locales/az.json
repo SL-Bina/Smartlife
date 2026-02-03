@@ -13,7 +13,19 @@
     "previous": "Əvvəlki",
     "next": "Növbəti",
     "min": "Min",
-    "max": "Max"
+    "max": "Max",
+    "select": "Seçin...",
+    "loading": "Yüklənir...",
+    "active": "Aktiv",
+    "inactive": "Passiv",
+    "yes": "Bəli",
+    "no": "Xeyr",
+    "search": "Axtarış",
+    "clear": "Təmizlə",
+    "all": "Hamısı",
+    "success": "Uğurlu",
+    "error": "Xəta",
+    "somethingWentWrong": "Xəta baş verdi"
   },
   "header": {
     "search": "Axtarış",
@@ -73,7 +85,9 @@
     "apply": "Tətbiq et",
     "search": "Axtar",
     "close": "Bağla",
-    "delete": "Sil"
+    "delete": "Sil",
+    "confirm": "Təsdiqlə",
+    "saving": "Yadda saxlanılır..."
   },
   "dashboard": {
     "homeTitle1": "Ümumi göstəricilər",
@@ -1536,7 +1550,6 @@
       "uploadLogo": "Logo yüklə",
       "changeLogo": "Logo dəyiş",
       "logoSizeError": "Logo faylının ölçüsü 5MB-dan böyük ola bilməz",
-
       "photos": "Şəkillər",
       "uploadPhotos": "Şəkil yüklə",
       "maxPhotos": "Maksimum 10 şəkil",
@@ -1549,7 +1562,6 @@
       "status": "Status",
       "active": "Aktiv",
       "inactive": "Passiv",
-
       "metaInfo": "Yerləşmə Məlumatları",
       "latitude": "Enlik",
       "enterLatitude": "Enlik daxil edin",
@@ -1559,7 +1571,6 @@
       "enterDescription": "Təsvir daxil edin",
       "address": "Ünvan",
       "enterAddress": "Ünvan daxil edin",
-
       "contactInfo": "Əlaqə Məlumatları",
       "email": "Email",
       "enterEmail": "Email daxil edin",
@@ -1567,11 +1578,10 @@
       "enterPhone": "Telefon daxil edin",
       "website": "Veb sayt",
       "enterWebsite": "Veb sayt daxil edin",
-
       "colorCode": "Rəng Kodu",
       "enterColorCode": "Rəng kodu daxil edin",
       "colorPicker": "Rəng seçin"
-    },  
+    },
     "actions": {
       "search": "Axtarış",
       "add": "Əlavə et",
@@ -1804,6 +1814,32 @@
   "properties": {
     "pageTitle": "Mənzillər",
     "loading": "Yüklənir...",
+     "view": {
+      "title": "Mənzil məlumatı",
+      "subtitle": "Detallara baxış",
+      "sections": {
+        "apartment": "Mənzil məlumatları",
+        "hierarchy": "Struktur məlumatları"
+      }
+    },
+    "viewSections": {},
+    
+    "fields": {
+      "name": "Ad",
+      "apartmentNumber": "Mənzil nömrəsi",
+      "floor": "Mərtəbə",
+      "area": "Sahə",
+      "block": "Blok",
+      "mtk": "MTK",
+      "complex": "Kompleks",
+      "building": "Bina",
+      "subBlock": "Blok (sub)"
+    },
+    "toast": {
+      "created": "Mənzil uğurla yaradıldı",
+      "updated": "Mənzil uğurla yeniləndi",
+      "deleted": "Mənzil silindi"
+    },
     "table": {
       "id": "ID",
       "apartment": "Mənzil",
@@ -1811,14 +1847,21 @@
       "floor": "Mərtəbə",
       "area": "Sahə (m²)",
       "resident": "Sakin",
-      "actions": "Əməliyyatlar"
+      "actions": "Əməliyyatlar",
+      "status": "Status"
     },
     "actions": {
       "search": "Axtarış",
       "add": "Əlavə et",
+      "view": "Bax",
       "serviceFee": "Servis haqqı",
       "edit": "Düzəliş et",
-      "delete": "Sil"
+      "delete": "Sil",
+      "filter": "Filtr",
+      "sort": "Sırala",
+      "create": "Mənzil yarat",
+      "sortAsc": "Mərtəbəyə görə artan",
+      "sortDesc": "Mərtəbəyə görə azalan"
     },
     "sort": {
       "ascending": "Aşağıdan yuxarı",
@@ -1868,6 +1911,38 @@
     "pagination": {
       "prev": "Geri",
       "next": "İrəli"
+    },
+     "delete": {
+      "title": "Mənzili sil",
+      "confirm": "Bu mənzili silmək istədiyinizə əminsiniz?"
+    },
+    "form": {
+      "fields": {
+        "name": "Ad",
+        "mtk": "MTK",
+        "complex": "Kompleks",
+        "building": "Bina",
+        "block": "Blok",
+        "apartmentNumber": "Mənzil nömrəsi",
+        "floor": "Mərtəbə",
+        "area": "Sahə (m²)",
+        "propertyType": "Əmlak tipi",
+        "status": "Status"
+      },
+      "errors": {
+        "name": "Ad vacibdir",
+        "mtk": "MTK seçilməlidir",
+        "complex": "Kompleks seçilməlidir",
+        "building": "Bina seçilməlidir",
+        "block": "Blok seçilməlidir",
+        "apartmentNumber": "Mənzil nömrəsi vacibdir",
+        "floor": "Mərtəbə vacibdir",
+        "area": "Sahə vacibdir"
+      },
+      "types": {
+        "1": "Mənzil",
+        "2": "Obyekt"
+      }
     }
   },
   "residents": {
@@ -2077,7 +2152,6 @@
       "edit-or-create": "Yarat / düzəliş et",
       "bind": "Bağla"
     },
-
     "rolesDict": {
       "Root": "Root",
       "Moderator": "Moderator",
@@ -2627,5 +2701,4 @@
       }
     }
   }
-  
 }

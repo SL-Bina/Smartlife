@@ -45,7 +45,7 @@ export function InvoicesTable({ invoices, onView, onEdit, onDelete, sortConfig, 
   ];
 
   return (
-    <div className="hidden lg:block">
+    <div className="hidden lg:block overflow-y-auto">
       <table className="w-full table-auto min-w-[1200px]">
         <thead>
           <tr>

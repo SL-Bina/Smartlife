@@ -1,40 +1,54 @@
 import React from "react";
-import { Button, Typography, Switch } from "@material-tailwind/react";
+import { Button, IconButton } from "@material-tailwind/react";
+import { FunnelIcon, PlusIcon, ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
 export function PropertiesActions({ onFilterClick, onCreateClick, sortAscending, onSortChange }) {
   const { t } = useTranslation();
 
   return (
-    <>
-      <div className="flex items-center gap-3">
+    <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full">
+      <div className="flex gap-2">
         <Button
           variant="outlined"
-          color="blue"
+          color="blue-gray"
           onClick={onFilterClick}
-          className="dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-900/20"
+          className="flex items-center gap-2 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
         >
-          {t("properties.actions.search")}
+          <FunnelIcon className="h-4 w-4" />
+          {t("properties.actions.filter") || "Filter"}
         </Button>
-        <Button color="green" onClick={onCreateClick} className="dark:bg-green-600 dark:hover:bg-green-700">
-          {t("properties.actions.add")}
-        </Button>
+
+        <IconButton
+          variant="outlined"
+          color="blue-gray"
+          onClick={() => onSortChange(!sortAscending)}
+          className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
+          title={
+            sortAscending
+              ? t("properties.actions.sortAsc") || "Mərtəbə ↑"
+              : t("properties.actions.sortDesc") || "Mərtəbə ↓"
+          }
+        >
+          {sortAscending ? (
+            <ArrowUpIcon className="h-4 w-4" />
+          ) : (
+            <ArrowDownIcon className="h-4 w-4" />
+          )}
+        </IconButton>
+
       </div>
-      <div className="flex items-center gap-3">
-        <Typography variant="small" className="text-blue-gray-700 dark:text-gray-300 text-sm">
-          {sortAscending ? t("properties.sort.ascending") : t("properties.sort.descending")}
-        </Typography>
-        <Switch
-          checked={sortAscending}
-          onChange={(e) => onSortChange(e.target.checked)}
-          color="blue"
-          className="dark:bg-gray-700"
-          labelProps={{
-            className: "hidden",
-          }}
-        />
-      </div>
-    </>
+
+      <div className="flex-1" />
+
+      <Button
+        color="red"
+        onClick={onCreateClick}
+        className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white"
+      >
+        <PlusIcon className="h-4 w-4" />
+        {t("properties.actions.create") || "Mənzil yarat"}
+      </Button>
+    </div>
   );
 }
-

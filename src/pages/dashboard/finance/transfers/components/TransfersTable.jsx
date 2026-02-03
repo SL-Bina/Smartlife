@@ -29,7 +29,7 @@ export function TransfersTable({ transfers, onView, onEdit, onDelete, sortConfig
   };
 
   return (
-    <div className="hidden lg:block">
+    <div className="hidden lg:block overflow-x-auto">
       <table className="w-full table-auto min-w-[1200px]">
         <thead>
           <tr>

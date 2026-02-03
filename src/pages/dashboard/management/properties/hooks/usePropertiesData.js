@@ -1,106 +1,113 @@
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import propertiesAPI from "../api";
 
-// Hər mərtəbədə 5 mənzil olacaq şəkildə data yaradırıq
-// 50 mənzil = 10 mərtəbə (hər mərtəbədə 5 mənzil)
-const TOTAL_APARTMENTS = 50;
-const APARTMENTS_PER_FLOOR = 5;
-const TOTAL_FLOORS = Math.ceil(TOTAL_APARTMENTS / APARTMENTS_PER_FLOOR);
-
-const generateData = () => {
-  return Array.from({ length: TOTAL_APARTMENTS }, (_, index) => {
-    const floor = Math.floor(index / APARTMENTS_PER_FLOOR) + 1; // 1-ci mərtəbə: 0-4, 2-ci mərtəbə: 5-9, ...
-    const apartmentInFloor = (index % APARTMENTS_PER_FLOOR) + 1; // Mərtəbə daxilində mənzil nömrəsi (1-5)
-    const blockIndex = Math.floor(index / (APARTMENTS_PER_FLOOR * TOTAL_FLOORS / 5)) % 5; // 5 blok
-    
-    return {
-      id: index + 1,
-      number: `Mənzil ${floor}${String(apartmentInFloor).padStart(2, '0')}`, // Məs: Mənzil 101, Mənzil 102, ...
-      block: `Blok ${String.fromCharCode(65 + blockIndex)}`, // Blok A, B, C, D, E
-      floor: floor,
-      area: 60 + (index % 10) * 5, // 60-105 m² arası
-      resident: `Sakin ${index + 1}`,
-      serviceFee: 20 + (index % 6) * 2, // 20-30 arası
-    };
-  });
-};
-
-// Mənzilləri mərtəbələrə görə qruplaşdırırıq
-const groupByFloor = (properties) => {
-  const grouped = {};
-  properties.forEach((prop) => {
-    if (!grouped[prop.floor]) {
-      grouped[prop.floor] = [];
-    }
-    grouped[prop.floor].push(prop);
-  });
-  return grouped;
-};
-
-// Hər mərtəbədə 5 mənzil olacaq şəkildə qruplaşdırırıq
-const organizeByFloors = (properties, ascending = true) => {
-  const grouped = groupByFloor(properties);
-  const floors = Object.keys(grouped)
-    .map(Number)
-    .sort((a, b) => ascending ? a - b : b - a); // Sıralama istiqaməti
-  
-  const organized = [];
-  floors.forEach((floor) => {
-    const floorProperties = grouped[floor];
-    // Hər mərtəbədə tam 5 mənzil olacaq şəkildə bölürük
-    for (let i = 0; i < floorProperties.length; i += 5) {
-      const apartments = floorProperties.slice(i, i + 5);
-      // Əgər 5-dən az mənzil qalıbsa, boş yerləri null ilə doldururuq
-      while (apartments.length < 5) {
-        apartments.push(null);
-      }
-      organized.push({
-        floor,
-        apartments: apartments.slice(0, 5), // Həmişə 5 mənzil
-      });
-    }
-  });
-  
-  return organized;
-};
-
-export function usePropertiesData(filters, sortAscending) {
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState([]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const generatedData = generateData();
-      setData(generatedData);
-      setLoading(false);
-    }, 400);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Filter data
-  const filteredData = useMemo(() => {
-    if (!filters.number && !filters.block) {
-      return data;
-    }
-
-    return data.filter((property) => {
-      const matchesNumber = !filters.number || 
-        property.number.toLowerCase().includes(filters.number.toLowerCase());
-      const matchesBlock = !filters.block || 
-        property.block.toLowerCase().includes(filters.block.toLowerCase());
-      
-      return matchesNumber && matchesBlock;
-    });
-  }, [data, filters]);
-
-  // Organize by floors
-  const organizedData = useMemo(() => {
-    return organizeByFloors(filteredData, sortAscending);
-  }, [filteredData, sortAscending]);
+// list response -> UI model mapping
+const mapProperty = (p) => {
+  const floor = p?.meta?.floor ?? null;
+  const aptNumber = p?.meta?.apartment_number ?? null;
+  const area = p?.meta?.area ?? null;
 
   return {
-    properties: filteredData,
+    id: p?.id,
+    name: p?.name || "",
+    status: p?.status || "active",
+    meta: p?.meta || {},
+
+    // UI fields
+    floor: floor, // mərtəbə (group üçün)
+    number: aptNumber !== null && aptNumber !== undefined ? String(aptNumber) : "—", // UI-də göstərilən
+    area: area ?? "—",
+    block: p?.sub_data?.block?.name || "—",
+    resident: p?.resident || "—", // backend-də yoxdursa — qalacaq
+    sub_data: p?.sub_data || {},
+  };
+};
+
+const groupByFloor = (items = []) => {
+  const map = new Map();
+
+  items.forEach((item) => {
+    const floorKey = Number(item?.meta?.floor ?? item?.floor ?? 0); // floor string olsa da Number edirik
+    if (!map.has(floorKey)) {
+      map.set(floorKey, []);
+    }
+    map.get(floorKey).push(item);
+  });
+
+  // Map -> Array
+  return Array.from(map.entries()).map(([floor, apartments]) => ({
+    floor,
+    apartments,
+  }));
+};
+
+export function usePropertiesData(appliedFilters, sortAscending = true) {
+  const [raw, setRaw] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchList = async () => {
+    setLoading(true);
+    try {
+      const res = await propertiesAPI.getAll();
+      const list = res?.data?.data || [];
+      setRaw(list.map(mapProperty));
+    } catch (e) {
+      console.error("Properties list error:", e);
+      setRaw([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ✅ 1) Filter (raw -> filtered)
+  const filtered = useMemo(() => {
+    let list = [...raw];
+
+    const number = (appliedFilters?.number || "").trim().toLowerCase();
+    const block = (appliedFilters?.block || "").trim().toLowerCase();
+
+    if (number) {
+      list = list.filter((x) => String(x.number).toLowerCase().includes(number));
+    }
+    if (block) {
+      list = list.filter((x) => String(x.block).toLowerCase().includes(block));
+    }
+
+    return list;
+  }, [raw, appliedFilters]);
+
+  // ✅ 2) Group by floor + floor sort + inside sort
+  const organizedData = useMemo(() => {
+    const grouped = groupByFloor(filtered);
+
+    // eyni mərtəbənin içində də apartment_number-a görə sort (istəsən saxla)
+    grouped.forEach((g) => {
+      g.apartments.sort((a, b) => {
+        const an = Number(a?.meta?.apartment_number ?? 0);
+        const bn = Number(b?.meta?.apartment_number ?? 0);
+        return an - bn;
+      });
+    });
+
+    // mərtəbələri sort et (↑/↓)
+    grouped.sort((a, b) => {
+      const fa = Number(a?.floor ?? 0);
+      const fb = Number(b?.floor ?? 0);
+      return sortAscending ? fa - fb : fb - fa;
+    });
+
+    return grouped;
+  }, [filtered, sortAscending]);
+
+  return {
     organizedData,
     loading,
+    refresh: fetchList,
+    items: raw,
   };
 }
-

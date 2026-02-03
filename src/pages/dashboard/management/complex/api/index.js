@@ -37,14 +37,12 @@ export const complexAPI = {
       const isValidLat = lat !== null && !isNaN(lat) && lat >= -90 && lat <= 90;
       const isValidLng = lng !== null && !isNaN(lng) && lng >= -180 && lng <= 180;
 
-      // logo
       const logo = data.logo ? normalizeBase64Image(data.logo) : null;
 
-      // photos
       const rawPhotos = Array.isArray(data.photos) ? data.photos : [];
       const photos = rawPhotos
         .filter(Boolean)
-        .slice(0, 10) // max 10
+        .slice(0, 10) 
         .map((p) => normalizeBase64Image(p));
 
       const cleanedData = {
@@ -57,9 +55,8 @@ export const complexAPI = {
             ? data.avaliable_modules
             : [1],
 
-        // ✅ payload-a əlavə et
-        logo: logo,      // string | null
-        photos: photos,  // string[]
+        logo: logo,      
+        photos: photos, 
 
         meta: {
           lat: isValidLat ? String(lat) : (data.meta?.lat || ""),
@@ -136,7 +133,6 @@ export const complexAPI = {
             ? data.avaliable_modules
             : [1],
 
-        // ✅ payload-a əlavə et
         logo: logo,
         photos: photos,
 

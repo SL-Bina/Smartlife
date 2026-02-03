@@ -1597,14 +1597,19 @@
       "floor": "Floor",
       "area": "Area (m²)",
       "resident": "Resident",
-      "actions": "Actions"
+      "actions": "Actions",
+      "status": "Status"
     },
     "actions": {
       "search": "Search",
       "add": "Add",
+      "view": "View",
       "serviceFee": "Service fee",
       "edit": "Edit",
-      "delete": "Delete"
+      "delete": "Delete",
+      "filter": "Filter",
+      "sort": "Sort",
+      "create": "Create apartment"
     },
     "sort": {
       "ascending": "Bottom to top",
@@ -1654,8 +1659,38 @@
     "pagination": {
       "prev": "Previous",
       "next": "Next"
+    },
+
+     "form": {
+      "fields": {
+        "name": "Name",
+        "mtk": "MTK",
+        "complex": "Complex",
+        "building": "Building",
+        "block": "Block",
+        "apartmentNumber": "Apartment number",
+        "floor": "Floor",
+        "area": "Area (m²)",
+        "propertyType": "Property type",
+        "status": "Status"
+      },
+      "errors": {
+        "name": "Name is required",
+        "mtk": "MTK is required",
+        "complex": "Complex is required",
+        "building": "Building is required",
+        "block": "Block is required",
+        "apartmentNumber": "Apartment number is required",
+        "floor": "Floor is required",
+        "area": "Area is required"
+      },
+      "types": {
+        "1": "Apartment",
+        "2": "Commercial"
+      }
     }
   },
+  
   "residents": {
     "pageTitle": "Residents",
     "loading": "Loading...",

@@ -29,9 +29,9 @@ export function DesktopNavbar({ pathParts, pageTitle, fixedNavbar }) {
         </IconButton>
         <div className="min-w-0 flex-1">
           <NavbarBreadcrumbs pathParts={pathParts} fixedNavbar={fixedNavbar} />
-          <Typography variant="h6" className="text-gray-900 dark:text-white text-sm lg:text-base xl:text-lg font-bold truncate">
+          {/* <Typography variant="h6" className="text-gray-900 dark:text-white text-sm lg:text-base xl:text-lg font-bold truncate">
             {pageTitle}
-          </Typography>
+          </Typography> */}
         </div>
       </div>
 
