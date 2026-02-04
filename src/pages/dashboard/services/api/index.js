@@ -25,6 +25,7 @@ export const servicesAPI = {
         name: data.name || "",
         description: data.description || "",
         price: data.price ? parseFloat(data.price) : 0,
+        complex_id: data.complex_id ? Number(data.complex_id) : null,
       };
 
       console.log("Service Create Request:", cleanedData);
@@ -55,6 +56,7 @@ export const servicesAPI = {
         name: data.name || "",
         description: data.description || "",
         price: data.price ? parseFloat(data.price) : 0,
+        complex_id: data.complex_id ? Number(data.complex_id) : null,
       };
 
       console.log("Service Update Request:", cleanedData);

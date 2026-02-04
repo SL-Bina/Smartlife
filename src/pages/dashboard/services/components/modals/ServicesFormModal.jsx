@@ -10,9 +10,14 @@ import {
 } from "@material-tailwind/react";
 import { useTranslation } from "react-i18next";
 import { InformationCircleIcon, CurrencyDollarIcon } from "@heroicons/react/24/outline";
+import { useServicesLookups } from "../../hooks/useServiceLooksup";
+
 
 export function ServicesFormModal({ open, onClose, title, formData, onFieldChange, onSave, isEdit = false, saving = false }) {
   const { t } = useTranslation();
+  const { mtks, complexes, loading, error, setMtk, setComplex } =
+    useServicesLookups(open, formData, onFieldChange);
+
 
   if (!open) return null;
 
@@ -31,7 +36,6 @@ export function ServicesFormModal({ open, onClose, title, formData, onFieldChang
       </DialogHeader>
       <DialogBody divider className="dark:bg-gray-800 dark:border-gray-700 max-h-[75vh] overflow-y-auto">
         <div className="space-y-6 py-2">
-          {/* Basic Information Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
               <InformationCircleIcon className="h-5 w-5 text-blue-500 dark:text-blue-400" />
@@ -39,6 +43,8 @@ export function ServicesFormModal({ open, onClose, title, formData, onFieldChang
                 {t("services.form.basicInfo")}
               </Typography>
             </div>
+
+
 
             <div className="grid grid-cols-1 gap-4">
               <div>
@@ -53,6 +59,25 @@ export function ServicesFormModal({ open, onClose, title, formData, onFieldChang
                   labelProps={{ className: "dark:text-gray-400" }}
                   required
                 />
+              </div>
+
+              <div>
+                <Typography variant="small" className="mb-2 font-semibold dark:text-gray-300">
+                  {t("properties.form.fields.complex")} *
+                </Typography>
+                <select
+                  value={formData.complex_id || ""}
+                  onChange={(e) => setComplex(e.target.value)}
+                  // disabled={!formData.mtk_id}
+                  className="w-full px-3 py-2.5 border border-blue-gray-200 rounded-lg focus:border-blue-500 focus:outline-none disabled:opacity-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                >
+                  <option value="">{t("common.select") || "Seçin..."}</option>
+                  {(complexes || []).map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
