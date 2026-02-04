@@ -1,9 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { authAPI } from "./services/api";
+import { authAPI } from "../services/api";
 
 const TOKEN_COOKIE_NAME = "smartlife_token";
 
-// Cookie helper fonksiyonları
 const getCookie = (name) => {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
@@ -29,9 +28,7 @@ export function AuthProvider({ children }) {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
 
-  // Sayfa yüklendiğinde token varsa user bilgilerini backend'den al
   useEffect(() => {
-    // Eğer zaten initialize edilmişse veya initialize ediliyorsa tekrar çalıştırma
     if (isInitialized || isInitializing) return;
     
     const initializeUser = async () => {
@@ -42,7 +39,7 @@ export function AuthProvider({ children }) {
           const meResponse = await authAPI.me();
           if (meResponse.success && meResponse.data) {
             const data = meResponse.data;
-            const userDataObj = data.user_data || {}; // user_data içinden bilgileri al
+            const userDataObj = data.user_data || {}; 
             const userData = {
               id: userDataObj.id,
               name: userDataObj.name,
@@ -71,42 +68,35 @@ export function AuthProvider({ children }) {
             setUser(userData);
             setIsInitialized(true);
           } else {
-            // Token geçersiz, temizle
             removeCookie(TOKEN_COOKIE_NAME);
             setIsInitialized(true);
           }
         } catch (error) {
           console.error("Failed to initialize user:", error);
-          // Token geçersiz, temizle
           removeCookie(TOKEN_COOKIE_NAME);
           setIsInitialized(true);
         } finally {
           setIsInitializing(false);
         }
       } else {
-        // Token yok, initialized olarak işaretle
         setIsInitialized(true);
         setIsInitializing(false);
       }
     };
 
     initializeUser();
-  }, []); // Sadece component mount olduğunda çalışsın
+  }, []); 
 
   const login = async (email, password) => {
     setLoading(true);
     try {
-      // Login API'sini çağır - token ve user döner
       const loginResponse = await authAPI.login(email, password);
       
-      // Response formatı: { token, token_type, user }
       if (loginResponse.token && loginResponse.user) {
         const { token, token_type, user } = loginResponse;
         
-        // Token'ı cookie'ye sakla
         setCookie(TOKEN_COOKIE_NAME, token, 7); // 7 gün
         
-        // Şimdi /user/me endpoint'ini çağırarak role, modules gibi detaylı bilgileri al
         let role = null;
         let modules = [];
         let devices = null;
@@ -121,8 +111,6 @@ export function AuthProvider({ children }) {
             const data = meResponse.data;
             userDataObj = data.user_data || null;
             role = data.role;
-            // /user/me'den gelen modules array'i direkt kullanılabilir
-            // Format: [{ id, name, can: ["view", "create", ...] }]
             modules = data.modules || [];
             devices = data.devices;
             other_devices = data.other_devices;
@@ -130,11 +118,8 @@ export function AuthProvider({ children }) {
           }
         } catch (meError) {
           console.error("Failed to fetch user details from /user/me:", meError);
-          // Hata durumunda bile devam et, en azından login response'undaki user bilgilerini kullan
         }
         
-        // Detaylı user bilgilerini formatla ve sakla
-        // /user/me'den gelen user_data varsa onu kullan, yoksa login response'undaki user'ı kullan
         const finalUser = userDataObj && userDataObj.id ? userDataObj : user;
         const userData = {
           id: finalUser.id,
@@ -153,11 +138,10 @@ export function AuthProvider({ children }) {
             id: role.id,
             name: role.name,
           } : null,
-          modules: modules, // /user/me'den gelen modules array'i
+          modules: modules, 
           devices: devices,
           other_devices: other_devices,
           active_device: active_device,
-          // Eski format uyumluluğu için
           fullName: finalUser.name,
           firstName: finalUser.name?.split(" ")[0] || finalUser.name,
           lastName: finalUser.name?.split(" ").slice(1).join(" ") || "",
@@ -172,7 +156,6 @@ export function AuthProvider({ children }) {
       }
     } catch (error) {
       console.error("Login error:", error);
-      // API'den gelen hata mesajını parse et
       let errorMessage = "Login failed. Please try again.";
       
       if (typeof error === "string") {
@@ -186,7 +169,6 @@ export function AuthProvider({ children }) {
       } else if (error?.response?.data?.error) {
         errorMessage = error.response.data.error;
       } else if (error?.errors) {
-        // Laravel validation errors
         const firstError = Object.values(error.errors)[0];
         errorMessage = Array.isArray(firstError) ? firstError[0] : firstError;
       }
@@ -199,24 +181,19 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      // API'ye logout isteği gönder
       await authAPI.logout();
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
-      // Her durumda temizle
       setUser(null);
       removeCookie(TOKEN_COOKIE_NAME);
       setIsInitialized(false);
-      // Login sayfasına yönlendir
       if (window.location.pathname !== "/auth/sign-in") {
         window.location.href = "/auth/sign-in";
       }
     }
   };
 
-  // Kullanıcı bilgilerini ve permission'ları backend'den yenile
-  // Backend'de yeni permission eklendiğinde veya değiştiğinde otomatik olarak güncellenir
   const refreshUser = async () => {
     const token = getCookie(TOKEN_COOKIE_NAME);
     if (!token) return;
@@ -226,7 +203,7 @@ export function AuthProvider({ children }) {
       
       if (meResponse.success && meResponse.data) {
         const data = meResponse.data;
-        const userDataObj = data.user_data || {}; // user_data içinden bilgileri al
+        const userDataObj = data.user_data || {}; 
         const userData = {
           id: userDataObj.id,
           name: userDataObj.name,
@@ -255,13 +232,11 @@ export function AuthProvider({ children }) {
         
         setUser(userData);
       } else {
-        // Token geçersiz, temizle
         setUser(null);
         removeCookie(TOKEN_COOKIE_NAME);
       }
     } catch (error) {
       console.error("Failed to refresh user data:", error);
-      // Token geçersiz, temizle
       if (error.response?.status === 401) {
         setUser(null);
         removeCookie(TOKEN_COOKIE_NAME);
@@ -269,30 +244,24 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // Kullanıcının belirli bir modüle erişim yetkisi var mı kontrol et
-  // /user/me'den gelen modules array'ini kullan
   const hasModuleAccess = (moduleName) => {
     if (!user) return false;
     
-    // Root kullanıcısı için tüm modüllere erişim ver
     const userRole = user.role?.name?.toLowerCase();
     if (userRole === "root") {
       return true;
     }
     
-    // Eğer modules yoksa veya boşsa, erişim verme
     if (!user.modules || !Array.isArray(user.modules) || user.modules.length === 0) {
       return false;
     }
     
     const module = user.modules.find((m) => m.name === moduleName);
     
-    // Modül bulunamazsa erişim verme
     if (!module) {
       return false;
     }
     
-    // Modül var ama can array'i boşsa, erişim verme
     if (!module.can || !Array.isArray(module.can) || module.can.length === 0) {
       return false;
     }
@@ -300,8 +269,6 @@ export function AuthProvider({ children }) {
     return true;
   };
 
-  // Kullanıcının belirli bir modülde belirli bir yetkisi var mı kontrol et
-  // /user/me'den gelen modules array'ini kullan
   const hasPermission = (moduleName, permission) => {
     if (!user || !user.modules || !Array.isArray(user.modules)) return false;
     
@@ -317,8 +284,8 @@ export function AuthProvider({ children }) {
     hasModuleAccess,
     hasPermission,
     isAuthenticated: !!user,
-    isInitialized, // User bilgileri yüklenene kadar beklemek için
-    refreshUser, // Permission'ları backend'den yenilemek için
+    isInitialized, 
+    refreshUser, 
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

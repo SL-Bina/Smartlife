@@ -8,7 +8,7 @@ import {
   Chip,
 } from "@material-tailwind/react";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "@/auth-context";
+import { useAuth } from "@/context/AuthContext";
 import {
   DocumentTextIcon,
   QuestionMarkCircleIcon,

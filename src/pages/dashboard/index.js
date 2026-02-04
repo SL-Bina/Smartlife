@@ -1,6 +1,5 @@
 export * from "@/pages/dashboard/home";
 export * from "@/pages/dashboard/profile";
-export * from "@/pages/dashboard/tables";
 export * from "@/pages/dashboard/notifications";
 export { default as KPI } from "@/pages/dashboard/kpi";
 export { default as ApplicationsListPage } from "@/pages/dashboard/applications/list";
@@ -20,4 +19,4 @@ export { default as CreateQueryPage } from "@/pages/dashboard/queries/create";
 export { default as QueriesListPage } from "@/pages/dashboard/queries/list";
 export { default as ReceptionPage } from "@/pages/dashboard/reception";
 export { default as ServicesPage } from "@/pages/dashboard/services";
-export { default as ElectronicDocumentsPage } from "@/pages/dashboard/electronic-documents";
+export { default as ElectronicDocumentsPage } from "@/pages/dashboard/e-documents";

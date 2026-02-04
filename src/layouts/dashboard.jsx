@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { Cog6ToothIcon } from "@heroicons/react/24/solid";
-import { IconButton } from "@material-tailwind/react";
+import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -10,8 +9,9 @@ import {
 } from "@/widgets/layout";
 import routes from "@/routes";
 import { useMaterialTailwindController, ManagementProvider } from "@/context";
-import { useAuth } from "@/auth-context";
+import { useAuth } from "@/context/AuthContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import AiChat from "@/widgets/layout/ai-chat";
 
 function ProtectedRoute({ element, allowedRoles, moduleName }) {
   const { user, isInitialized, hasModuleAccess } = useAuth();
@@ -33,7 +33,7 @@ function ProtectedRoute({ element, allowedRoles, moduleName }) {
 
   const userRole = user.role?.name?.toLowerCase() || (typeof user.role === 'string' ? user.role.toLowerCase() : null);
   const originalRole = user.role?.name?.toLowerCase();
-  
+
   if (originalRole === "root") {
     return element;
   }
@@ -44,7 +44,7 @@ function ProtectedRoute({ element, allowedRoles, moduleName }) {
     }
     return <Navigate to="/dashboard/home" replace />;
   }
-  
+
   if (allowedRoles && userRole && !allowedRoles.includes(userRole)) {
     if (userRole === "resident") {
       return <Navigate to="/dashboard/resident/home" replace />;
@@ -57,15 +57,15 @@ function ProtectedRoute({ element, allowedRoles, moduleName }) {
 
 const filterRoutesByRole = (routes, user, hasModuleAccess) => {
   let userRole = user?.role?.name?.toLowerCase() || (typeof user?.role === 'string' ? user.role.toLowerCase() : null);
-  
+
   const originalRole = user?.role?.name?.toLowerCase();
   const isRoot = originalRole === "root";
   const isResident = originalRole === "resident";
-  
+
   return routes
     .filter((route) => {
       if (route.layout !== "dashboard") return false;
-      
+
       if (route.pages && route.pages.length > 0) {
         const firstPage = route.pages[0];
         if (firstPage.path && firstPage.path.includes("/resident/")) {
@@ -75,7 +75,7 @@ const filterRoutesByRole = (routes, user, hasModuleAccess) => {
           return false;
         }
       }
-      
+
       return true;
     })
     .map((route) => {
@@ -88,7 +88,7 @@ const filterRoutesByRole = (routes, user, hasModuleAccess) => {
               return null;
             }
           }
-          
+
           if (page.allowedRoles && userRole && !isRoot) {
             if (!page.allowedRoles.includes(userRole)) {
               return null;
@@ -100,7 +100,7 @@ const filterRoutesByRole = (routes, user, hasModuleAccess) => {
               if (child.moduleName && !hasModuleAccess(child.moduleName)) {
                 return false;
               }
-              
+
               if (child.allowedRoles && userRole && !isRoot) {
                 if (!child.allowedRoles.includes(userRole)) {
                   return false;
@@ -135,7 +135,7 @@ export function Dashboard() {
   const { sidenavType, sidenavCollapsed, sidenavSize, sidenavPosition } = controller;
   const { user, hasModuleAccess, refreshUser, isInitialized } = useAuth();
   const [isDesktop, setIsDesktop] = useState(false);
-  
+
   useDocumentTitle();
 
   useEffect(() => {
@@ -152,7 +152,7 @@ export function Dashboard() {
       const interval = setInterval(() => {
         refreshUser();
       }, 5 * 60 * 1000);
-      
+
       return () => clearInterval(interval);
     }
   }, [user?.id, refreshUser]);
@@ -200,48 +200,49 @@ export function Dashboard() {
           className="p-4"
         >
           <DashboardNavbar />
-          <div>
+          <div className="mb-16">
             <Routes>
-          {filteredRoutes.map(
-            ({ layout, pages }) =>
-              layout === "dashboard" &&
-              pages.map((page) => {
-                if (page.children && page.children.length > 0) {
-                  return page.children.map(({ path, element, allowedRoles, moduleName }) => {
-                    const routePath = path.startsWith("/") ? path.substring(1) : path;
-                    return (
-                      <Route
-                        key={path}
-                        path={routePath}
-                        element={<ProtectedRoute element={element} allowedRoles={allowedRoles} moduleName={moduleName} />}
-                      />
-                    );
-                  });
-                } else {
-                  const routePath = page.path.startsWith("/") ? page.path.substring(1) : page.path;
-                  return (
-                    <Route
-                      key={page.path}
-                      path={routePath}
-                      element={<ProtectedRoute element={page.element} allowedRoles={page.allowedRoles} moduleName={page.moduleName} />}
-                    />
-                  );
+              {filteredRoutes.map(
+                ({ layout, pages }) =>
+                  layout === "dashboard" &&
+                  pages.map((page) => {
+                    if (page.children && page.children.length > 0) {
+                      return page.children.map(({ path, element, allowedRoles, moduleName }) => {
+                        const routePath = path.startsWith("/") ? path.substring(1) : path;
+                        return (
+                          <Route
+                            key={path}
+                            path={routePath}
+                            element={<ProtectedRoute element={element} allowedRoles={allowedRoles} moduleName={moduleName} />}
+                          />
+                        );
+                      });
+                    } else {
+                      const routePath = page.path.startsWith("/") ? page.path.substring(1) : page.path;
+                      return (
+                        <Route
+                          key={page.path}
+                          path={routePath}
+                          element={<ProtectedRoute element={page.element} allowedRoles={page.allowedRoles} moduleName={page.moduleName} />}
+                        />
+                      );
+                    }
+                  })
+              )}
+              <Route
+                path="*"
+                element={
+                  <Navigate
+                    to={user?.role?.name?.toLowerCase() === "resident" ? "/dashboard/resident/home" : "/dashboard/home"}
+                    replace
+                  />
                 }
-              })
-          )}
-          <Route
-            path="*"
-            element={
-              <Navigate 
-                to={user?.role?.name?.toLowerCase() === "resident" ? "/dashboard/resident/home" : "/dashboard/home"} 
-                replace 
               />
-            }
-          />
             </Routes>
           </div>
         </motion.div>
         <Configurator />
+        <AiChat />
       </div>
     </ManagementProvider>
   );

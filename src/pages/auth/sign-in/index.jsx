@@ -12,7 +12,7 @@ import {
 } from "@material-tailwind/react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { useAuth } from "@/auth-context";
+import { useAuth } from "@/context/AuthContext";
 import { useTranslation } from "react-i18next";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 

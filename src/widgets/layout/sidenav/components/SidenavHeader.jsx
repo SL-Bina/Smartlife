@@ -5,7 +5,7 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 import { useMaterialTailwindController, setOpenSidenav } from "@/context";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "@/auth-context";
+import { useAuth } from "@/context/AuthContext";
 
 export function SidenavHeader({ brandName, collapsed = false }) {
   const [controller, dispatch] = useMaterialTailwindController();
