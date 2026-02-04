@@ -274,13 +274,13 @@ export const routes = [
             moduleName: "resident",
           },
 
-          {
-            icon: <HomeModernIcon {...icon} />,
-            name: "sidebar.apartmentGroups",
-            path: "/management/apartment-groups",
-            element: <ApartmentGroupsPage />,
-            allowedRoles: ["admin", "manager", "operator"],
-          },
+          // {
+          //   icon: <HomeModernIcon {...icon} />,
+          //   name: "sidebar.apartmentGroups",
+          //   path: "/management/apartment-groups",
+          //   element: <ApartmentGroupsPage />,
+          //   allowedRoles: ["admin", "manager", "operator"],
+          // },
           {
             icon: <BuildingOfficeIcon {...icon} />,
             name: "sidebar.buildingServiceFee",
