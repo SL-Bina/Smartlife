@@ -25,9 +25,9 @@ import {
   CpuChipIcon,
 } from "@heroicons/react/24/solid";
 import { Home, Notifications, KPI, ApplicationsListPage, ApplicationsEvaluationPage, ResidentDashboard, ComplexDashboardPage, SendNotificationPage, NotificationArchivePage, SentSMSPage, CreateQueryPage, QueriesListPage, ReceptionPage, ServicesPage, ElectronicDocumentsPage } from "@/pages/dashboard";
+import { SignIn } from "@/pages/auth";
 import Profile from "./pages/dashboard/profile";
 import Settings from "./pages/dashboard/settings";
-import { SignIn } from "@/pages/auth";
 import MTK from "./pages/dashboard/management/mtk";
 import ComplexPage from "./pages/dashboard/management/complex";
 import ResidentsPage from "./pages/dashboard/management/residents";

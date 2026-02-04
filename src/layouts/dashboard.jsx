@@ -12,6 +12,7 @@ import { useMaterialTailwindController, ManagementProvider } from "@/context";
 import { useAuth } from "@/context/AuthContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import AiChat from "@/widgets/layout/ai-chat";
+import Footer from "@/widgets/layout/footer";
 
 function ProtectedRoute({ element, allowedRoles, moduleName }) {
   const { user, isInitialized, hasModuleAccess } = useAuth();
@@ -200,7 +201,7 @@ export function Dashboard() {
           className="p-4"
         >
           <DashboardNavbar />
-          <div className="mb-16">
+          <div className="mb-8">
             <Routes>
               {filteredRoutes.map(
                 ({ layout, pages }) =>
@@ -244,6 +245,7 @@ export function Dashboard() {
         <Configurator />
         <AiChat />
       </div>
+      <Footer />
     </ManagementProvider>
   );
 }
