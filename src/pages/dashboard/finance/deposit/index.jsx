@@ -25,9 +25,10 @@ const DepositPage = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [page, setPage] = useState(1);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const { filters, filterOpen, setFilterOpen, updateFilter, clearFilters, applyFilters } = useDepositFilters();
-  const { deposits, totalDeposit, loading, error, pagination } = useDepositData(filters, page, refreshKey);
+  const { deposits, totalDeposit, loading, error, pagination } = useDepositData(filters, page, refreshKey, sortConfig);
   const { formData, updateField, resetForm, setFormFromDeposit } = useDepositForm();
 
   // Reset page when filters change
@@ -44,6 +45,11 @@ const DepositPage = () => {
 
   const handleFilterClear = () => {
     clearFilters();
+    setPage(1);
+  };
+
+  const handleSortChange = (newSortConfig) => {
+    setSortConfig(newSortConfig);
     setPage(1);
   };
 
@@ -155,7 +161,14 @@ const DepositPage = () => {
             </div>
           ) : (
             <>
-              <DepositTable deposits={deposits} onView={openViewModal} onEdit={openEditModal} onDelete={openDeleteModal} />
+              <DepositTable 
+                deposits={deposits} 
+                onView={openViewModal} 
+                onEdit={openEditModal} 
+                onDelete={openDeleteModal}
+                sortConfig={sortConfig}
+                onSortChange={handleSortChange}
+              />
               <DepositCardList deposits={deposits} onView={openViewModal} onEdit={openEditModal} onDelete={openDeleteModal} />
               <DepositPagination
                 page={page}

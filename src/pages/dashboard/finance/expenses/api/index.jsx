@@ -134,6 +134,64 @@ export const fetchTotalExpenses = async (filters = {}) => {
 };
 
 /**
+ * Ödəniş üsuluna görə ümumi xərc məbləğini API-dən gətirir
+ * @param {Object} filters - Filter parametrləri
+ * @param {string} paymentMethod - Ödəniş üsulu (Bank və ya Nağd)
+ * @returns {Promise<number>} Ümumi xərc məbləği
+ */
+export const fetchTotalExpensesByMethod = async (filters = {}, paymentMethod = "") => {
+  try {
+    // Real API çağırışı - hazır olduqda comment-dən çıxarılacaq
+    // if (!API_BASE_URL) {
+    //   throw new Error("API_BASE_URL is not defined in .env file");
+    // }
+    // const queryParams = new URLSearchParams({ ...filters, paymentMethod });
+    // const response = await fetch(`${API_BASE_URL}/finance/expenses/total-by-method?${queryParams}`, {
+    //   method: "GET",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //     Authorization: `Bearer ${localStorage.getItem("token")}`,
+    //   },
+    // });
+    // if (!response.ok) throw new Error("Failed to fetch total expenses by method");
+    // const data = await response.json();
+    // return data.total;
+
+    // Mock data - real API hazır olduqda comment-ə alınacaq
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        let filtered = [...mockExpensesData];
+        if (filters.category) {
+          filtered = filtered.filter((item) =>
+            item.category.toLowerCase().includes(filters.category.toLowerCase())
+          );
+        }
+        if (filters.paymentMethod) {
+          filtered = filtered.filter((item) => item.paymentMethod === filters.paymentMethod);
+        }
+        if (filters.status) {
+          filtered = filtered.filter((item) => item.status === filters.status);
+        }
+
+        // Payment method filter
+        if (paymentMethod) {
+          filtered = filtered.filter((item) => item.paymentMethod === paymentMethod);
+        }
+
+        const total = filtered
+          .reduce((sum, item) => sum + parseFloat(item.amount), 0)
+          .toFixed(2);
+
+        resolve(parseFloat(total));
+      }, 100);
+    });
+  } catch (error) {
+    console.error("Error fetching total expenses by method:", error);
+    throw error;
+  }
+};
+
+/**
  * Yeni xərc yaradır
  * @param {Object} expenseData - Xərc məlumatları
  * @returns {Promise<Object>} Yaradılmış xərc

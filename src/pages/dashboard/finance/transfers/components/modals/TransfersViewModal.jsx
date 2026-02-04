@@ -1,5 +1,6 @@
 import React from "react";
-import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography, Chip } from "@material-tailwind/react";
+import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography } from "@material-tailwind/react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
 export function TransfersViewModal({ open, onClose, transfer }) {
@@ -9,10 +10,13 @@ export function TransfersViewModal({ open, onClose, transfer }) {
 
   return (
     <Dialog open={open} handler={onClose} size="lg" className="dark:bg-gray-800 border border-red-600 dark:border-gray-700" dismiss={{ enabled: false }}>
-      <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3">
+      <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 flex items-center justify-between">
         <Typography variant="h5" className="font-bold">
           {t("transfers.view.title")}
         </Typography>
+        <div className="cursor-pointer p-2 rounded-md transition-all hover:bg-gray-200 dark:hover:bg-gray-700" onClick={onClose}>
+          <XMarkIcon className="dark:text-white h-5 w-5 cursor-pointer" />
+        </div>
       </DialogHeader>
       <DialogBody divider className="space-y-4 dark:bg-gray-800 py-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -28,23 +32,29 @@ export function TransfersViewModal({ open, onClose, transfer }) {
             <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
               {t("transfers.table.fromAccount")}
             </Typography>
-            <Chip
-              size="sm"
-              value={transfer.fromAccount === "Nağd" ? t("transfers.account.cash") : t("transfers.account.bank")}
-              color={transfer.fromAccount === "Nağd" ? "amber" : "blue"}
-              className="dark:bg-opacity-80"
-            />
+            <span
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                transfer.fromAccount === "Nağd"
+                  ? "bg-yellow-100 text-orange-600 dark:bg-yellow-900/30 dark:text-orange-400"
+                  : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+              }`}
+            >
+              {transfer.fromAccount === "Nağd" ? t("transfers.account.cash") : t("transfers.account.bank")}
+            </span>
           </div>
           <div>
             <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
               {t("transfers.table.toAccount")}
             </Typography>
-            <Chip
-              size="sm"
-              value={transfer.toAccount === "Nağd" ? t("transfers.account.cash") : t("transfers.account.bank")}
-              color={transfer.toAccount === "Nağd" ? "amber" : "blue"}
-              className="dark:bg-opacity-80"
-            />
+            <span
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                transfer.toAccount === "Nağd"
+                  ? "bg-yellow-100 text-orange-600 dark:bg-yellow-900/30 dark:text-orange-400"
+                  : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+              }`}
+            >
+              {transfer.toAccount === "Nağd" ? t("transfers.account.cash") : t("transfers.account.bank")}
+            </span>
           </div>
           <div>
             <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
@@ -82,12 +92,15 @@ export function TransfersViewModal({ open, onClose, transfer }) {
             <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-400">
               {t("transfers.table.status")}
             </Typography>
-            <Chip
-              size="sm"
-              value={transfer.status === "Tamamlanıb" ? t("transfers.status.completed") : t("transfers.status.pending")}
-              color={transfer.status === "Tamamlanıb" ? "green" : "amber"}
-              className="dark:bg-opacity-80"
-            />
+            <span
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                transfer.status === "Tamamlanıb"
+                  ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                  : "bg-yellow-100 text-orange-600 dark:bg-yellow-900/30 dark:text-orange-400"
+              }`}
+            >
+              {transfer.status === "Tamamlanıb" ? t("transfers.status.completed") : t("transfers.status.pending")}
+            </span>
           </div>
         </div>
       </DialogBody>

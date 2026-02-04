@@ -3,6 +3,8 @@ import { useState } from "react";
 const initialFormState = {
   name: "",
   status: "active",
+  logo: null,
+  photos: [],
   meta: {
     lat: "",
     lng: "",
@@ -28,12 +30,25 @@ export function useMtkForm() {
           [metaField]: value,
         },
       }));
+    } else if (field === "photos") {
+      // Photos is an array
+      setFormData((prev) => ({
+        ...prev,
+        photos: Array.isArray(value) ? value : [...(prev.photos || []), value].filter(Boolean),
+      }));
     } else {
       setFormData((prev) => ({
         ...prev,
         [field]: value,
       }));
     }
+  };
+
+  const removePhoto = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      photos: prev.photos.filter((_, i) => i !== index),
+    }));
   };
 
   const resetForm = () => {
@@ -45,6 +60,8 @@ export function useMtkForm() {
       setFormData({
         name: mtk.name || "",
         status: mtk.status || "active",
+        logo: mtk.logo || null,
+        photos: mtk.photos || [],
         meta: {
           lat: mtk.meta?.lat || "",
           lng: mtk.meta?.lng || "",
@@ -64,6 +81,7 @@ export function useMtkForm() {
     updateField,
     resetForm,
     setFormFromMtk,
+    removePhoto,
   };
 }
 

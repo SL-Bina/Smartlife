@@ -4,12 +4,14 @@ const API_BASE_URL = import.meta.env.VITE_API_URL;
 // Mock data - real API hazır olduqda comment-ə alınacaq
 const mockDebtorApartmentsData = Array.from({ length: 50 }, (_, index) => ({
   id: index + 1,
-  apartment: `Mənzil ${index + 1}`,
+  apartment: index === 0 ? "menzil_telefon_1" : `Mənzil ${index + 1}`,
+  complex: "Port Baku Residence",
   building: `Bina ${String.fromCharCode(65 + (index % 5))}`,
   block: `Blok ${String.fromCharCode(65 + (index % 3))}`,
   floor: (index % 16) + 1,
+  rooms: (index % 5) + 1,
   area: (60 + (index % 10) * 5).toFixed(2),
-  owner: `Sahib ${index + 1}`,
+  owner: index % 2 === 0 ? `Sahib ${index + 1} ${String.fromCharCode(65 + (index % 3))}ov` : "-",
   phone: `050-${String(index + 1).padStart(7, "0")}`,
   totalDebt: (100 + (index % 20) * 10).toFixed(2),
   invoiceCount: index % 5 + 1,
@@ -49,8 +51,13 @@ export const fetchDebtorApartments = async (filters = {}, page = 1, itemsPerPage
     // Mock data - real API hazır olduqda comment-ə alınacaq
     return new Promise((resolve) => {
       setTimeout(() => {
-        // Filter logic
-        let filtered = [...mockDebtorApartmentsData];
+        // Filter logic - yalnız borcu olanları göstər
+        let filtered = [...mockDebtorApartmentsData].filter((item) => {
+          // Yalnız borcu olanları göstər
+          const debt = parseFloat(item.totalDebt) || 0;
+          return debt > 0;
+        });
+        
         if (filters.apartment) {
           filtered = filtered.filter((item) =>
             item.apartment.toLowerCase().includes(filters.apartment.toLowerCase())
@@ -114,7 +121,12 @@ export const fetchTotalDebt = async (filters = {}) => {
     // Mock data - real API hazır olduqda comment-ə alınacaq
     return new Promise((resolve) => {
       setTimeout(() => {
-        let filtered = [...mockDebtorApartmentsData];
+        // Yalnız borcu olanları göstər
+        let filtered = [...mockDebtorApartmentsData].filter((item) => {
+          const debt = parseFloat(item.totalDebt) || 0;
+          return debt > 0;
+        });
+        
         if (filters.apartment) {
           filtered = filtered.filter((item) =>
             item.apartment.toLowerCase().includes(filters.apartment.toLowerCase())
@@ -130,8 +142,7 @@ export const fetchTotalDebt = async (filters = {}) => {
         }
 
         const total = filtered
-          .filter((item) => item.status === "Borclu")
-          .reduce((sum, item) => sum + parseFloat(item.totalDebt), 0)
+          .reduce((sum, item) => sum + parseFloat(item.totalDebt || 0), 0)
           .toFixed(2);
 
         resolve(parseFloat(total));
@@ -242,11 +253,71 @@ export const fetchInvoices = async (id) => {
     // Mock data - real API hazır olduqda comment-ə alınacaq
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve([]);
+        // Mock invoices data
+        const mockInvoices = [
+          {
+            id: 141786,
+            invoiceNumber: `PBR...-854002635`,
+            title: "test",
+            date: "2025-12-31",
+            status: "Ödənilməyib",
+            amount: 150,
+            paid: 0,
+            remaining: 150,
+          },
+          {
+            id: 141787,
+            invoiceNumber: `PBR...-552659581`,
+            title: "test",
+            date: "2025-12-23",
+            status: "Ödənilməyib",
+            amount: 100,
+            paid: 0,
+            remaining: 100,
+          },
+        ];
+        resolve(mockInvoices);
       }, 100);
     });
   } catch (error) {
     console.error("Error fetching invoices:", error);
+    throw error;
+  }
+};
+
+/**
+ * Excel-ə export edir
+ * @param {Object} filters - Filter parametrləri
+ * @returns {Promise<Blob>} Export edilmiş Excel faylı
+ */
+export const exportToExcel = async (filters = {}) => {
+  try {
+    // Real API çağırışı - hazır olduqda comment-dən çıxarılacaq
+    // if (!API_BASE_URL) {
+    //   throw new Error("API_BASE_URL is not defined in .env file");
+    // }
+    // const queryParams = new URLSearchParams(filters);
+    // const response = await fetch(`${API_BASE_URL}/finance/debtor-apartments/export?${queryParams}`, {
+    //   method: "GET",
+    //   headers: {
+    //     Authorization: `Bearer ${localStorage.getItem("token")}`,
+    //   },
+    // });
+    // if (!response.ok) throw new Error("Failed to export to Excel");
+    // const blob = await response.blob();
+    // return blob;
+
+    // Mock data - real API hazır olduqda comment-ə alınacaq
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        // Mock Excel blob yaradırıq
+        const csvContent = "Id,Mənzil,Mənzil sahibi,Bina,Blok,Mərtəbə,Otaq,Kv.m,Faktura sayı,Ümumi borc\n";
+        const blob = new Blob([csvContent], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        resolve(blob);
+      }, 300);
+    });
+  } catch (error) {
+    console.error("Error exporting to Excel:", error);
     throw error;
   }
 };

@@ -26,6 +26,7 @@ import {
   ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
+import { permissionsAPI } from "./api";
 
 // Mock data - hüquqlar
 const rightsData = [
@@ -192,41 +193,72 @@ const UserPermissionsPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [openCategories, setOpenCategories] = useState({});
-  const [openSubCategories, setOpenSubCategories] = useState({});
+  const [apiModules, setApiModules] = useState([]);
+  const [error, setError] = useState(null);
   const rightId = searchParams.get("rightId") ? parseInt(searchParams.get("rightId")) : null;
   const selectedRight = rightId ? rightsData.find((r) => r.id === rightId) : null;
-  const [permissions, setPermissions] = useState(() => 
-    rightId ? getRightPermissions(rightId) : allPermissionsData
-  );
+  const [permissions, setPermissions] = useState({});
 
+  // API-dən permissions məlumatlarını gətir
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 400);
-    return () => clearTimeout(timer);
+    const fetchPermissions = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await permissionsAPI.getAll({ page: 1, per_page: 1000 });
+        
+        if (response.success && response.data && response.data.data) {
+          const modules = response.data.data;
+          setApiModules(modules);
+          
+          // API-dən gələn strukturla permissions state-ini yarat
+          const formattedPermissions = {};
+          
+          modules.forEach((item) => {
+            const module = item.module;
+            if (!module || !module.name) return;
+            
+            const moduleName = module.name;
+            const modulePermissions = module.permissions || [];
+            
+            // Hər modul üçün permissions array-i yarat
+            if (!formattedPermissions[moduleName]) {
+              formattedPermissions[moduleName] = [];
+            }
+            
+            // Hər permission üçün formatla
+            modulePermissions.forEach((perm) => {
+              formattedPermissions[moduleName].push({
+                id: perm.id,
+                permission: perm.permission, // view, add, edit, delete
+                details: perm.details || perm.permission,
+                checked: false, // Default olaraq false
+              });
+            });
+          });
+          
+          setPermissions(formattedPermissions);
+        }
+      } catch (err) {
+        console.error("Error fetching permissions:", err);
+        setError(err.message || "Permissions yüklənərkən xəta baş verdi");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPermissions();
   }, []);
 
   useEffect(() => {
-    if (rightId) {
-      setPermissions(getRightPermissions(rightId));
-    } else {
-      setPermissions(allPermissionsData);
-    }
     // Reset open states when right changes
     setOpenCategories({});
-    setOpenSubCategories({});
   }, [rightId]);
 
-  const toggleCategory = (category) => {
+  const toggleCategory = (moduleName) => {
     setOpenCategories((prev) => ({
       ...prev,
-      [category]: !prev[category],
-    }));
-  };
-
-  const toggleSubCategory = (category, subCategory) => {
-    const key = `${category}-${subCategory}`;
-    setOpenSubCategories((prev) => ({
-      ...prev,
-      [key]: !prev[key],
+      [moduleName]: !prev[moduleName],
     }));
   };
 
@@ -241,67 +273,44 @@ const UserPermissionsPage = () => {
     navigate("/dashboard/user-rights");
   };
 
-  const handlePermissionToggle = (category, subCategory, permissionId) => {
+  const handlePermissionToggle = (moduleName, permissionId) => {
     setPermissions((prev) => ({
       ...prev,
-      [category]: {
-        ...prev[category],
-        [subCategory]: prev[category][subCategory].map((perm) =>
-          perm.id === permissionId ? { ...perm, checked: !perm.checked } : perm
-        ),
-      },
+      [moduleName]: prev[moduleName].map((perm) =>
+        perm.id === permissionId ? { ...perm, checked: !perm.checked } : perm
+      ),
     }));
   };
 
-  const handleSubCategoryToggle = (category, subCategory) => {
-    const allChecked = permissions[category][subCategory].every((perm) => perm.checked);
+  const handleModuleToggle = (moduleName) => {
+    const allChecked = permissions[moduleName]?.every((perm) => perm.checked) || false;
     setPermissions((prev) => ({
       ...prev,
-      [category]: {
-        ...prev[category],
-        [subCategory]: prev[category][subCategory].map((perm) => ({ ...perm, checked: !allChecked })),
-      },
-    }));
-  };
-
-  const handleCategoryToggle = (category) => {
-    const allSubCategories = Object.values(permissions[category]);
-    const allChecked = allSubCategories.every((subCategory) =>
-      subCategory.every((perm) => perm.checked)
-    );
-    setPermissions((prev) => ({
-      ...prev,
-      [category]: Object.keys(prev[category]).reduce((acc, subCategory) => {
-        acc[subCategory] = prev[category][subCategory].map((perm) => ({ ...perm, checked: !allChecked }));
-        return acc;
-      }, {}),
+      [moduleName]: prev[moduleName].map((perm) => ({ ...perm, checked: !allChecked })),
     }));
   };
 
   const totalPermissions = Object.values(permissions).reduce(
-    (sum, category) => {
-      if (typeof category === 'object' && category !== null) {
-        return sum + Object.values(category).reduce((subSum, subCategory) => subSum + subCategory.length, 0);
+    (sum, modulePerms) => {
+      if (Array.isArray(modulePerms)) {
+        return sum + modulePerms.length;
       }
       return sum;
     },
     0
   );
 
-  const filteredPermissions = Object.entries(permissions).reduce((acc, [category, subCategories]) => {
-    const filteredCategory = {};
-    Object.entries(subCategories).forEach(([subCategory, perms]) => {
-      const filtered = perms.filter((perm) =>
-        perm.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        subCategory.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      if (filtered.length > 0) {
-        filteredCategory[subCategory] = filtered;
-      }
-    });
-    if (Object.keys(filteredCategory).length > 0) {
-      acc[category] = filteredCategory;
+  const filteredPermissions = Object.entries(permissions).reduce((acc, [moduleName, perms]) => {
+    if (!Array.isArray(perms)) return acc;
+    
+    const filtered = perms.filter((perm) =>
+      perm.details?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      perm.permission?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      moduleName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    if (filtered.length > 0) {
+      acc[moduleName] = filtered;
     }
     return acc;
   }, {});
@@ -418,150 +427,115 @@ const UserPermissionsPage = () => {
             </div>
           </CardHeader>
           <CardBody className="p-4 sm:p-6 dark:bg-gray-800 flex-1 min-h-0">
-            <div className="space-y-5 sm:space-y-6">
-              {Object.entries(searchTerm ? filteredPermissions : permissions).map(([category, subCategories]) => {
-                const allSubCategories = Object.values(subCategories);
-                const allCategoryChecked = allSubCategories.every((subCategory) =>
-                  subCategory.every((perm) => perm.checked)
-                );
-                const someCategoryChecked = allSubCategories.some((subCategory) =>
-                  subCategory.some((perm) => perm.checked)
-                );
-                const categoryTotal = allSubCategories.reduce((sum, subCategory) => sum + subCategory.length, 0);
-
-                return (
-                  <div key={category} className="space-y-4">
-                    {/* Category Header */}
-                    <div className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/40 dark:to-purple-800/40 p-4 sm:p-5 rounded-lg border border-purple-200 dark:border-purple-700/50 shadow-sm">
-                      <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-                        <Checkbox
-                          checked={allCategoryChecked}
-                          indeterminate={someCategoryChecked && !allCategoryChecked ? true : undefined}
-                          onChange={() => handleCategoryToggle(category)}
-                          className="dark:border-gray-400 dark:checked:bg-purple-600"
-                          ripple={false}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                        <div className="bg-white dark:bg-purple-900/60 p-2.5 rounded-lg shadow-sm flex-shrink-0">
-                          <ShieldCheckIcon className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-300" />
-                        </div>
-                        <Typography variant="h5" className="font-bold dark:text-white text-base sm:text-lg flex-1">
-                          {category}
-                        </Typography>
-                        <div className="bg-white dark:bg-gray-800 px-4 py-1.5 rounded-full shadow-sm">
-                          <Typography variant="small" className="text-gray-700 dark:text-gray-300 text-xs sm:text-sm font-semibold">
-                            {categoryTotal} {t("userPermissions.permissions.permission")}
-                          </Typography>
-                        </div>
-                        <IconButton
-                          variant="text"
-                          size="sm"
-                          onClick={() => toggleCategory(category)}
-                          className="dark:text-white dark:hover:bg-purple-800/50"
-                        >
-                          <ChevronDownIcon
-                            strokeWidth={2}
-                            className={`h-5 w-5 transition-transform duration-300 ${
-                              openCategories[category] ? "rotate-180" : ""
-                            }`}
-                          />
-                        </IconButton>
-                      </div>
-                    </div>
-
-                    {/* Sub Categories */}
-                    <div
-                      className={`overflow-hidden transition-all duration-300 ${
-                        openCategories[category] ? "max-h-[5000px] opacity-100" : "max-h-0 opacity-0"
-                      }`}
-                    >
-                      <div className="space-y-3 pl-2 sm:pl-4 pt-2">
-                      {Object.entries(subCategories).map(([subCategory, perms]) => {
-                        const allChecked = perms.every((perm) => perm.checked);
-                        const someChecked = perms.some((perm) => perm.checked);
-
-                        return (
-                          <div key={subCategory} className="space-y-2">
-                            {/* Sub Category Header */}
-                            <div className="bg-blue-50 dark:bg-blue-900/30 p-3 sm:p-3.5 rounded-lg border border-blue-200 dark:border-blue-700/50 shadow-sm">
-                              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                                <Checkbox
-                                  checked={allChecked}
-                                  indeterminate={someChecked && !allChecked ? true : undefined}
-                                  onChange={() => handleSubCategoryToggle(category, subCategory)}
-                                  className="dark:border-gray-400 dark:checked:bg-blue-600"
-                                  ripple={false}
-                                  onClick={(e) => e.stopPropagation()}
-                                />
-                                <div className="bg-white dark:bg-blue-900/50 p-1.5 rounded flex-shrink-0">
-                                  <ShieldCheckIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600 dark:text-blue-300" />
-                                </div>
-                                <Typography variant="h6" className="font-semibold dark:text-white text-sm sm:text-base flex-1">
-                                  {subCategory}
-                                </Typography>
-                                <div className="bg-white dark:bg-gray-800 px-2.5 py-1 rounded-full">
-                                  <Typography variant="small" className="text-gray-600 dark:text-gray-300 text-xs font-medium">
-                                    {perms.length} {t("userPermissions.permissions.permission")}
-                                  </Typography>
-                                </div>
-                                <IconButton
-                                  variant="text"
-                                  size="sm"
-                                  onClick={() => toggleSubCategory(category, subCategory)}
-                                  className="dark:text-white dark:hover:bg-blue-800/50"
-                                >
-                                  <ChevronDownIcon
-                                    strokeWidth={2}
-                                    className={`h-4 w-4 transition-transform duration-300 ${
-                                      openSubCategories[`${category}-${subCategory}`] ? "rotate-180" : ""
-                                    }`}
-                                  />
-                                </IconButton>
-                              </div>
-                            </div>
-
-                            {/* Permissions */}
-                            <div
-                              className={`overflow-hidden transition-all duration-300 ${
-                                openSubCategories[`${category}-${subCategory}`]
-                                  ? "max-h-[2000px] opacity-100"
-                                  : "max-h-0 opacity-0"
-                              }`}
-                            >
-                              <div className="space-y-2 pl-2 sm:pl-3 pt-2">
-                              {perms.map((permission) => (
-                                <div
-                                  key={permission.id}
-                                  className="flex items-center gap-3 p-2.5 sm:p-3 bg-white dark:bg-gray-900/50 hover:bg-gray-50 dark:hover:bg-gray-800/70 rounded-lg border border-gray-200 dark:border-gray-700/50 transition-all duration-200 cursor-pointer group"
-                                  onClick={() => handlePermissionToggle(category, subCategory, permission.id)}
-                                >
-                                  <Checkbox
-                                    checked={permission.checked}
-                                    onChange={() => handlePermissionToggle(category, subCategory, permission.id)}
-                                    className="dark:border-gray-400 dark:checked:bg-green-600 flex-shrink-0"
-                                    ripple={false}
-                                  />
-                                  <Typography variant="small" className="dark:text-gray-200 text-sm sm:text-base flex-1 font-medium group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                                    {permission.name}
-                                  </Typography>
-                                  {permission.checked && (
-                                    <div className="flex-shrink-0">
-                                      <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full"></div>
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                      </div>
-                    </div>
+            {error ? (
+              <div className="flex flex-col items-center justify-center py-10">
+                <Typography variant="h6" color="red" className="dark:text-red-400 mb-2">
+                  {t("userPermissions.error") || "Xəta"}
+                </Typography>
+                <Typography variant="small" className="text-gray-600 dark:text-gray-400">
+                  {error}
+                </Typography>
+              </div>
+            ) : (
+              <div className="space-y-5 sm:space-y-6">
+                {Object.keys(searchTerm ? filteredPermissions : permissions).length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-10">
+                    <Typography variant="h6" color="blue-gray" className="dark:text-gray-400 mb-2">
+                      {t("userPermissions.noPermissions") || "İcazə tapılmadı"}
+                    </Typography>
+                    <Typography variant="small" className="text-gray-600 dark:text-gray-400">
+                      {t("userPermissions.noPermissionsDesc") || "Hələ heç bir icazə yoxdur"}
+                    </Typography>
                   </div>
-                );
-              })}
-            </div>
+                ) : (
+                  Object.entries(searchTerm ? filteredPermissions : permissions).map(([moduleName, perms]) => {
+                    if (!Array.isArray(perms) || perms.length === 0) return null;
+                    
+                    const allChecked = perms.every((perm) => perm.checked);
+                    const someChecked = perms.some((perm) => perm.checked);
+
+                    return (
+                      <div key={moduleName} className="space-y-4">
+                        {/* Module Header */}
+                        <div className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/40 dark:to-purple-800/40 p-4 sm:p-5 rounded-lg border border-purple-200 dark:border-purple-700/50 shadow-sm">
+                          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+                            <Checkbox
+                              checked={allChecked}
+                              indeterminate={someChecked && !allChecked ? true : undefined}
+                              onChange={() => handleModuleToggle(moduleName)}
+                              className="dark:border-gray-400 dark:checked:bg-purple-600"
+                              ripple={false}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                            <div className="bg-white dark:bg-purple-900/60 p-2.5 rounded-lg shadow-sm flex-shrink-0">
+                              <ShieldCheckIcon className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-300" />
+                            </div>
+                            <Typography variant="h5" className="font-bold dark:text-white text-base sm:text-lg flex-1 capitalize">
+                              {moduleName}
+                            </Typography>
+                            <div className="bg-white dark:bg-gray-800 px-4 py-1.5 rounded-full shadow-sm">
+                              <Typography variant="small" className="text-gray-700 dark:text-gray-300 text-xs sm:text-sm font-semibold">
+                                {perms.length} {t("userPermissions.permissions.permission")}
+                              </Typography>
+                            </div>
+                            <IconButton
+                              variant="text"
+                              size="sm"
+                              onClick={() => toggleCategory(moduleName)}
+                              className="dark:text-white dark:hover:bg-purple-800/50"
+                            >
+                              <ChevronDownIcon
+                                strokeWidth={2}
+                                className={`h-5 w-5 transition-transform duration-300 ${
+                                  openCategories[moduleName] ? "rotate-180" : ""
+                                }`}
+                              />
+                            </IconButton>
+                          </div>
+                        </div>
+
+                        {/* Permissions List */}
+                        <div
+                          className={`overflow-hidden transition-all duration-300 ${
+                            openCategories[moduleName] ? "max-h-[5000px] opacity-100" : "max-h-0 opacity-0"
+                          }`}
+                        >
+                          <div className="space-y-2 pl-2 sm:pl-4 pt-2">
+                            {perms.map((permission) => (
+                              <div
+                                key={permission.id}
+                                className="flex items-center gap-3 p-2.5 sm:p-3 bg-white dark:bg-gray-900/50 hover:bg-gray-50 dark:hover:bg-gray-800/70 rounded-lg border border-gray-200 dark:border-gray-700/50 transition-all duration-200 cursor-pointer group"
+                                onClick={() => handlePermissionToggle(moduleName, permission.id)}
+                              >
+                                <Checkbox
+                                  checked={permission.checked}
+                                  onChange={() => handlePermissionToggle(moduleName, permission.id)}
+                                  className="dark:border-gray-400 dark:checked:bg-green-600 flex-shrink-0"
+                                  ripple={false}
+                                />
+                                <div className="flex-1">
+                                  <Typography variant="small" className="dark:text-gray-200 text-sm sm:text-base font-medium group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                                    {permission.details || permission.permission}
+                                  </Typography>
+                                  <Typography variant="small" className="text-gray-500 dark:text-gray-400 text-xs mt-0.5">
+                                    {permission.permission}
+                                  </Typography>
+                                </div>
+                                {permission.checked && (
+                                  <div className="flex-shrink-0">
+                                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full"></div>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
           </CardBody>
         </Card>
       )}

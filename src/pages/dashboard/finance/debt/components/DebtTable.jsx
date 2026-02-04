@@ -1,40 +1,73 @@
 import React from "react";
-import { Typography, Chip, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
-import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
+import { Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
+import { EllipsisVerticalIcon, ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
-export function DebtTable({ debts, onView, onEdit, onDelete }) {
+export function DebtTable({ debts, onView, onEdit, onDelete, sortConfig, onSortChange }) {
   const { t } = useTranslation();
 
+  const columns = [
+    { key: "id", label: t("debt.table.id"), sortable: true },
+    { key: "creditor", label: t("debt.table.creditor"), sortable: true },
+    { key: "debtor", label: t("debt.table.debtor"), sortable: true },
+    { key: "amount", label: t("debt.table.amount"), sortable: true },
+    { key: "category", label: t("debt.table.category"), sortable: true },
+    { key: "debtDate", label: t("debt.table.debtDate"), sortable: true },
+    { key: "dueDate", label: t("debt.table.dueDate"), sortable: true },
+    { key: "description", label: t("debt.table.description"), sortable: true },
+    { key: "status", label: t("debt.table.status"), sortable: true },
+    { key: "operations", label: t("debt.table.operations"), sortable: false },
+  ];
+
+  const handleSort = (key) => {
+    if (!columns.find((col) => col.key === key)?.sortable) return;
+
+    let direction = "asc";
+    if (sortConfig?.key === key && sortConfig?.direction === "asc") {
+      direction = "desc";
+    }
+    onSortChange({ key, direction });
+  };
+
   return (
-    <div className="hidden lg:block">
+    <div className="hidden lg:block overflow-y-auto">
       <table className="w-full table-auto min-w-[1200px]">
         <thead>
           <tr>
-            {[
-              t("debt.table.id"),
-              t("debt.table.creditor"),
-              t("debt.table.debtor"),
-              t("debt.table.amount"),
-              t("debt.table.category"),
-              t("debt.table.debtDate"),
-              t("debt.table.dueDate"),
-              t("debt.table.description"),
-              t("debt.table.status"),
-              t("debt.table.operations"),
-            ].map((el, idx) => (
+            {columns.map((col, idx) => (
               <th
-                key={el}
+                key={col.key}
+                onClick={() => col.sortable && handleSort(col.key)}
                 className={`border-b border-blue-gray-100 dark:border-gray-800 py-3 px-6 text-left ${
                   idx === 9 ? "text-right" : ""
-                }`}
+                } ${col.sortable ? "cursor-pointer hover:bg-blue-gray-50 dark:hover:bg-gray-700 transition-colors" : ""}`}
               >
-                <Typography
-                  variant="small"
-                  className="text-[11px] font-medium uppercase text-blue-gray-400 dark:text-gray-400"
-                >
-                  {el}
-                </Typography>
+                <div className="flex items-center gap-2">
+                  <Typography
+                    variant="small"
+                    className="text-[11px] font-medium uppercase text-blue-gray-400 dark:text-gray-400"
+                  >
+                    {col.label}
+                  </Typography>
+                  {col.sortable && (
+                    <div className="flex flex-col">
+                      <ArrowUpIcon
+                        className={`h-3 w-3 ${
+                          sortConfig?.key === col.key && sortConfig?.direction === "asc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                      <ArrowDownIcon
+                        className={`h-3 w-3 -mt-1 ${
+                          sortConfig?.key === col.key && sortConfig?.direction === "desc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                    </div>
+                  )}
+                </div>
               </th>
             ))}
           </tr>
@@ -87,12 +120,15 @@ export function DebtTable({ debts, onView, onEdit, onDelete }) {
                   </Typography>
                 </td>
                 <td className={className}>
-                  <Chip
-                    size="sm"
-                    value={row.status === "Ödənilib" ? t("debt.status.paid") : t("debt.status.active")}
-                    color={row.status === "Ödənilib" ? "green" : "red"}
-                    className="dark:bg-opacity-80"
-                  />
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      row.status === "Ödənilib"
+                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                        : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                    }`}
+                  >
+                    {row.status === "Ödənilib" ? t("debt.status.paid") : t("debt.status.active")}
+                  </span>
                 </td>
                 <td className={`${className} text-right`}>
                   <Menu placement="left-start">

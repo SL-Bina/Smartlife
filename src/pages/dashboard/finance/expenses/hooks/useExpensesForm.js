@@ -2,6 +2,7 @@ import { useState } from "react";
 
 const initialFormState = {
   category: "",
+  title: "",
   description: "",
   amount: "",
   paymentMethod: "",
@@ -28,6 +29,7 @@ export function useExpensesForm() {
     if (expense) {
       setFormData({
         category: expense.category || "",
+        title: expense.title || "",
         description: expense.description || "",
         amount: expense.amount || "",
         paymentMethod: expense.paymentMethod || "",

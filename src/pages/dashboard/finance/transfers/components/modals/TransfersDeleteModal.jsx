@@ -1,5 +1,6 @@
 import React from "react";
 import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography } from "@material-tailwind/react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
 export function TransfersDeleteModal({ open, onClose, transfer, onConfirm }) {
@@ -9,10 +10,13 @@ export function TransfersDeleteModal({ open, onClose, transfer, onConfirm }) {
 
   return (
     <Dialog open={open} handler={onClose} size="sm" className="dark:bg-gray-800 border border-red-600 dark:border-gray-700" dismiss={{ enabled: false }}>
-      <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3">
+      <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 flex items-center justify-between">
         <Typography variant="h5" className="font-bold">
           {t("transfers.delete.title")}
         </Typography>
+        <div className="cursor-pointer p-2 rounded-md transition-all hover:bg-gray-200 dark:hover:bg-gray-700" onClick={onClose}>
+          <XMarkIcon className="dark:text-white h-5 w-5 cursor-pointer" />
+        </div>
       </DialogHeader>
       <DialogBody divider className="space-y-4 dark:bg-gray-800 py-4">
         <Typography variant="small" color="blue-gray" className="dark:text-gray-300">

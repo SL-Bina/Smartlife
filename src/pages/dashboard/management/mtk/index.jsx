@@ -30,10 +30,11 @@ const MTK = () => {
   const [success, setSuccess] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const { filters, filterOpen, setFilterOpen, updateFilter, clearFilters, applyFilters } = useMtkFilters();
-  const { mtk, loading, error: dataError, pagination } = useMtkData(filters, page, refreshKey);
-  const { formData, updateField, resetForm, setFormFromMtk } = useMtkForm();
+  const { mtk, loading, error: dataError, pagination } = useMtkData(filters, page, refreshKey, sortConfig);
+  const { formData, updateField, resetForm, setFormFromMtk, removePhoto } = useMtkForm();
 
   // Reset page when filters change
   useEffect(() => {
@@ -49,6 +50,11 @@ const MTK = () => {
 
   const handleFilterClear = () => {
     clearFilters();
+    setPage(1);
+  };
+
+  const handleSortChange = (newSortConfig) => {
+    setSortConfig(newSortConfig);
     setPage(1);
   };
 
@@ -213,7 +219,14 @@ const MTK = () => {
             </div>
           ) : (
             <>
-              <MtkTable mtk={mtk} onView={openViewModal} onEdit={openEditModal} onDelete={handleDelete} />
+              <MtkTable 
+                mtk={mtk} 
+                onView={openViewModal} 
+                onEdit={openEditModal} 
+                onDelete={handleDelete}
+                sortConfig={sortConfig}
+                onSortChange={handleSortChange}
+              />
               <MtkCardList mtk={mtk} onView={openViewModal} onEdit={openEditModal} onDelete={handleDelete} />
               <MtkPagination
                 page={page}
@@ -250,6 +263,7 @@ const MTK = () => {
         onSave={handleCreateSave}
         isEdit={false}
         saving={saving}
+        removePhoto={removePhoto}
       />
 
       <MtkFormModal
@@ -266,6 +280,7 @@ const MTK = () => {
         onSave={handleEditSave}
         isEdit={true}
         saving={saving}
+        removePhoto={removePhoto}
       />
 
       <MtkDeleteModal

@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, CardBody, Typography, Chip, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
+import { Card, CardBody, Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
@@ -37,21 +37,53 @@ export function TransfersCardList({ transfers, onView, onEdit, onDelete }) {
             <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
               {t("transfers.mobile.id")}: {row.id}
             </Typography>
-            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-              {t("transfers.mobile.fromAccount")}: {row.fromAccount === "Nağd" ? t("transfers.account.cash") : t("transfers.account.bank")} → {t("transfers.mobile.toAccount")}: {row.toAccount === "Nağd" ? t("transfers.account.cash") : t("transfers.account.bank")}
-            </Typography>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                {t("transfers.mobile.fromAccount")}:
+              </Typography>
+              <span
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  row.fromAccount === "Nağd"
+                    ? "bg-yellow-100 text-orange-600 dark:bg-yellow-900/30 dark:text-orange-400"
+                    : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                }`}
+              >
+                {row.fromAccount === "Nağd" ? t("transfers.account.cash") : t("transfers.account.bank")}
+              </span>
+              <span className="text-blue-gray-400 dark:text-gray-500">→</span>
+              <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                {t("transfers.mobile.toAccount")}:
+              </Typography>
+              <span
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  row.toAccount === "Nağd"
+                    ? "bg-yellow-100 text-orange-600 dark:bg-yellow-900/30 dark:text-orange-400"
+                    : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                }`}
+              >
+                {row.toAccount === "Nağd" ? t("transfers.account.cash") : t("transfers.account.bank")}
+              </span>
+            </div>
             <Typography variant="small" color="blue" className="font-semibold dark:text-blue-300">
               {t("transfers.mobile.amount")}: {row.amount} ₼
             </Typography>
             <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
               {t("transfers.mobile.transferDate")}: {row.transferDate}
             </Typography>
-            <Chip
-              size="sm"
-              value={row.status === "Tamamlanıb" ? t("transfers.status.completed") : t("transfers.status.pending")}
-              color={row.status === "Tamamlanıb" ? "green" : "amber"}
-              className="dark:bg-opacity-80"
-            />
+            <div className="flex items-center gap-2">
+              <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
+                {t("transfers.mobile.status")}:
+              </Typography>
+              <span
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  row.status === "Tamamlanıb"
+                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                    : "bg-yellow-100 text-orange-600 dark:bg-yellow-900/30 dark:text-orange-400"
+                }`}
+              >
+                {row.status === "Tamamlanıb" ? t("transfers.status.completed") : t("transfers.status.pending")}
+              </span>
+            </div>
           </CardBody>
         </Card>
       ))}

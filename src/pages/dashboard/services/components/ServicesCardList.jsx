@@ -9,7 +9,7 @@ export function ServicesCardList({ services, onView, onEdit, onDelete }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:hidden px-4 pt-4">
       {services.map((row) => (
-        <Card key={row.id} className="border border-red-600 dark:border-gray-700 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+        <Card key={row.id} className="border border-red-600 dark:border-gray-700 shadow-sm dark:bg-gray-800">
           <CardBody className="space-y-2 dark:bg-gray-800">
             <div className="flex items-center justify-between">
               <Typography variant="small" color="blue-gray" className="font-semibold dark:text-white">

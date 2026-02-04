@@ -1,17 +1,16 @@
 import React, { createContext, useContext, useState, useMemo } from "react";
 import { mtkAPI } from "@/pages/dashboard/management/mtk/api";
+import { complexAPI } from "@/pages/dashboard/management/complex/api";
+import { buildingsAPI } from "@/pages/dashboard/management/buildings/api";
 
 const ManagementContext = createContext(null);
 
-// Mock data - bütün management məlumatları
 const generateMockData = () => {
-  // MTK data
   const mtkData = Array.from({ length: 10 }, (_, index) => ({
     id: index + 1,
     name: `MTK ${index + 1}`,
   }));
 
-  // Complex data
   const complexData = Array.from({ length: 20 }, (_, index) => ({
     id: index + 1,
     name: `Kompleks ${index + 1}`,
@@ -21,7 +20,6 @@ const generateMockData = () => {
     residents: Math.floor(Math.random() * 200) + 20,
   }));
 
-  // Buildings data
   const buildingsData = Array.from({ length: 50 }, (_, index) => ({
     id: index + 1,
     name: `Bina ${index + 1}`,
@@ -31,7 +29,6 @@ const generateMockData = () => {
     apartments: Math.floor(Math.random() * 80) + 20,
   }));
 
-  // Blocks data
   const blocksData = Array.from({ length: 50 }, (_, index) => ({
     id: index + 1,
     name: `Blok ${String.fromCharCode(65 + (index % 5))}-${Math.floor(index / 5) + 1}`,
@@ -41,7 +38,6 @@ const generateMockData = () => {
     apartments: Math.floor(Math.random() * 40) + 10,
   }));
 
-  // Properties data
   const TOTAL_APARTMENTS = 200;
   const APARTMENTS_PER_FLOOR = 5;
   const propertiesData = Array.from({ length: TOTAL_APARTMENTS }, (_, index) => {
@@ -63,7 +59,6 @@ const generateMockData = () => {
     };
   });
 
-  // Residents data
   const residentsData = Array.from({ length: 150 }, (_, index) => {
     const isLegalEntity = index % 3 === 0;
     const type = isLegalEntity ? "legal" : "physical";
@@ -94,7 +89,6 @@ const generateMockData = () => {
     };
   });
 
-  // Apartment Groups data
   const apartmentGroupsData = [
     {
       id: 1,
@@ -131,7 +125,6 @@ const generateMockData = () => {
     },
   ];
 
-  // Building Service Fee data
   const buildingServiceFeeData = [
     {
       id: 1,
@@ -171,7 +164,6 @@ export function ManagementProvider({ children }) {
   const [data, setData] = useState(() => generateMockData());
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Data update funksiyaları
   const updateMtk = async (id, updates) => {
     try {
       const response = await mtkAPI.update(id, updates);
@@ -214,52 +206,88 @@ export function ManagementProvider({ children }) {
     }
   };
 
-  const updateComplex = (id, updates) => {
-    setData((prev) => ({
-      ...prev,
-      complexes: prev.complexes.map((item) => (item.id === id ? { ...item, ...updates } : item)),
-    }));
-    setRefreshKey((prev) => prev + 1);
+  const updateComplex = async (id, updates) => {
+    try {
+      const response = await complexAPI.update(id, updates);
+      if (response.success) {
+        setRefreshKey((prev) => prev + 1);
+        return response;
+      }
+      throw new Error(response.message || "Failed to update Complex");
+    } catch (error) {
+      console.error("Error updating Complex:", error);
+      throw error;
+    }
   };
 
-  const addComplex = (newComplex) => {
-    setData((prev) => ({
-      ...prev,
-      complexes: [...prev.complexes, { ...newComplex, id: prev.complexes.length + 1 }],
-    }));
-    setRefreshKey((prev) => prev + 1);
+  const addComplex = async (newComplex) => {
+    try {
+      const response = await complexAPI.create(newComplex);
+      if (response.success) {
+        setRefreshKey((prev) => prev + 1);
+        return response;
+      }
+      throw new Error(response.message || "Failed to create Complex");
+    } catch (error) {
+      console.error("Error creating Complex:", error);
+      throw error;
+    }
   };
 
-  const deleteComplex = (id) => {
-    setData((prev) => ({
-      ...prev,
-      complexes: prev.complexes.filter((item) => item.id !== id),
-    }));
-    setRefreshKey((prev) => prev + 1);
+  const deleteComplex = async (id) => {
+    try {
+      const response = await complexAPI.delete(id);
+      if (response.success) {
+        setRefreshKey((prev) => prev + 1);
+        return response;
+      }
+      throw new Error(response.message || "Failed to delete Complex");
+    } catch (error) {
+      console.error("Error deleting Complex:", error);
+      throw error;
+    }
   };
 
-  const updateBuilding = (id, updates) => {
-    setData((prev) => ({
-      ...prev,
-      buildings: prev.buildings.map((item) => (item.id === id ? { ...item, ...updates } : item)),
-    }));
-    setRefreshKey((prev) => prev + 1);
+  const updateBuilding = async (id, updates) => {
+    try {
+      const response = await buildingsAPI.update(id, updates);
+      if (response.success) {
+        setRefreshKey((prev) => prev + 1);
+        return response;
+      }
+      throw new Error(response.message || "Failed to update Building");
+    } catch (error) {
+      console.error("Error updating Building:", error);
+      throw error;
+    }
   };
 
-  const addBuilding = (newBuilding) => {
-    setData((prev) => ({
-      ...prev,
-      buildings: [...prev.buildings, { ...newBuilding, id: prev.buildings.length + 1 }],
-    }));
-    setRefreshKey((prev) => prev + 1);
+  const addBuilding = async (newBuilding) => {
+    try {
+      const response = await buildingsAPI.create(newBuilding);
+      if (response.success) {
+        setRefreshKey((prev) => prev + 1);
+        return response;
+      }
+      throw new Error(response.message || "Failed to create Building");
+    } catch (error) {
+      console.error("Error creating Building:", error);
+      throw error;
+    }
   };
 
-  const deleteBuilding = (id) => {
-    setData((prev) => ({
-      ...prev,
-      buildings: prev.buildings.filter((item) => item.id !== id),
-    }));
-    setRefreshKey((prev) => prev + 1);
+  const deleteBuilding = async (id) => {
+    try {
+      const response = await buildingsAPI.delete(id);
+      if (response.success) {
+        setRefreshKey((prev) => prev + 1);
+        return response;
+      }
+      throw new Error(response.message || "Failed to delete Building");
+    } catch (error) {
+      console.error("Error deleting Building:", error);
+      throw error;
+    }
   };
 
   const updateBlock = (id, updates) => {

@@ -16,258 +16,274 @@ import {
   DialogBody,
   DialogFooter,
   Input,
+  Alert,
 } from "@material-tailwind/react";
-import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
+import {
+  EllipsisVerticalIcon,
+  InformationCircleIcon,
+  MapPinIcon,
+  EnvelopeIcon,
+  PhoneIcon,
+  GlobeAltIcon,
+  SwatchIcon,
+  XMarkIcon,
+  MagnifyingGlassIcon,
+  EyeIcon,
+  ExclamationTriangleIcon,
+} from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
-
-const data = Array.from({ length: 50 }, (_, index) => ({
-  id: index + 1,
-  name: `Kompleks ${index + 1}`,
-  address: `Ünvan ${index + 1}`,
-  buildings: Math.floor(Math.random() * 10) + 1,
-  residents: Math.floor(Math.random() * 200) + 20,
-}));
-
-const ITEMS_PER_PAGE = 10;
+import { useManagement } from "@/context";
+import { useComplexData } from "./hooks/useComplexData";
+import { useComplexFilters } from "./hooks/useComplexFilters";
+import { useComplexForm } from "./hooks/useComplexForm";
+import { ComplexHeader } from "./components/ComplexHeader";
+import { ComplexActions } from "./components/ComplexActions";
+import { ComplexTable } from "./components/ComplexTable";
+import { ComplexCardList } from "./components/ComplexCardList";
+import { ComplexPagination } from "./components/ComplexPagination";
+import { ComplexFilterModal } from "./components/modals/ComplexFilterModal";
+import { ComplexFormModal } from "./components/modals/ComplexFormModal";
+import { ComplexDeleteModal } from "./components/modals/ComplexDeleteModal";
+import { ComplexViewModal } from "./components/modals/ComplexViewModal";
 
 const ComplexPage = () => {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [filterOpen, setFilterOpen] = useState(false);
+  const { addComplex, updateComplex, deleteComplex, refreshKey } = useManagement();
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [viewOpen, setViewOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [itemToDelete, setItemToDelete] = useState(null);
+  const [itemToView, setItemToView] = useState(null);
+  const [page, setPage] = useState(1);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-  const [filterName, setFilterName] = useState("");
+  const { filters, filterOpen, setFilterOpen, updateFilter, clearFilters, applyFilters } = useComplexFilters();
+  const { complexes, loading, error: dataError, pagination } = useComplexData(filters, page, refreshKey);
+  const { formData, updateField, resetForm, setFormFromComplex } = useComplexForm();
 
-  const [formName, setFormName] = useState("");
-  const [formAddress, setFormAddress] = useState("");
-  const [formBuildings, setFormBuildings] = useState("");
-  const [formResidents, setFormResidents] = useState("");
-
+  // Reset page when filters change
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 400);
-    return () => clearTimeout(timer);
-  }, []);
+    if (page > (pagination.totalPages || 1) && pagination.totalPages > 0) {
+      setPage(1);
+    }
+  }, [pagination.totalPages, page]);
 
-  const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE);
-  const startIndex = (page - 1) * ITEMS_PER_PAGE;
-  const pageData = data.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const handleFilterApply = () => {
+    setPage(1);
+    applyFilters();
+  };
 
-  const handlePrev = () => setPage((prev) => Math.max(1, prev - 1));
-  const handleNext = () => setPage((prev) => Math.min(totalPages, prev + 1));
+  const handleFilterClear = () => {
+    clearFilters();
+    setPage(1);
+  };
 
   const openCreateModal = () => {
+    resetForm();
     setSelectedItem(null);
-    setFormName("");
-    setFormAddress("");
-    setFormBuildings("");
-    setFormResidents("");
     setCreateOpen(true);
+  };
+
+  const openViewModal = (item) => {
+    setItemToView(item);
+    setViewOpen(true);
   };
 
   const openEditModal = (item) => {
     setSelectedItem(item);
-    setFormName(item.name);
-    setFormAddress(item.address);
-    setFormBuildings(String(item.buildings));
-    setFormResidents(String(item.residents));
+    setFormFromComplex(item);
     setEditOpen(true);
   };
 
-  const handleFilterApply = () => {
-    // Filter apply logic backend və ya state ilə inteqrasiya edilə bilər
-    setFilterOpen(false);
+  const handleCreateSave = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+      setSuccess(null);
+      await addComplex(formData);
+      setSuccess(t("complexes.create.success") || "Kompleks uğurla yaradıldı");
+      setCreateOpen(false);
+      resetForm();
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error("Create Complex Error:", err);
+      
+      // Xəta mesajını formatla
+      let errorMessage = t("complexes.create.error") || "Kompleks yaradılarkən xəta baş verdi";
+      
+      if (err.allErrors && Array.isArray(err.allErrors)) {
+        // Bütün xəta mesajlarını göstər
+        errorMessage = err.allErrors.join(", ");
+      } else if (err.errors) {
+        // Xəta obyektindən mesajları çıxar
+        const errorMessages = Object.values(err.errors).flat();
+        errorMessage = errorMessages.join(", ");
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleFilterClear = () => {
-    setFilterName("");
-    setFilterOpen(false);
+  const handleEditSave = async () => {
+    if (selectedItem) {
+      try {
+        setSaving(true);
+        setError(null);
+        setSuccess(null);
+        await updateComplex(selectedItem.id, formData);
+        setSuccess(t("complexes.edit.success") || "Kompleks uğurla yeniləndi");
+        setEditOpen(false);
+        setSelectedItem(null);
+        resetForm();
+        setTimeout(() => setSuccess(null), 3000);
+      } catch (err) {
+        const errorMessage = err.message || err.errors || (t("complexes.edit.error") || "Kompleks yenilənərkən xəta baş verdi");
+        setError(errorMessage);
+      } finally {
+        setSaving(false);
+      }
+    }
   };
 
-  const handleCreateSave = () => {
-    // Yeni kompleks yaratmaq üçün API çağırışı burada ola bilər
-    setCreateOpen(false);
+  const handleDelete = (item) => {
+    setItemToDelete(item);
+    setDeleteOpen(true);
   };
 
-  const handleEditSave = () => {
-    // Seçilmiş kompleks üçün dəyişiklikləri saxlamaq üçün API çağırışı burada ola bilər
-    setEditOpen(false);
+  const handleDeleteConfirm = async () => {
+    if (!itemToDelete) return;
+
+    try {
+      setDeleting(true);
+      setError(null);
+      setSuccess(null);
+      await deleteComplex(itemToDelete.id);
+      setSuccess(t("complexes.delete.success") || "Kompleks uğurla silindi");
+      setDeleteOpen(false);
+      setItemToDelete(null);
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      const errorMessage = err.message || (t("complexes.delete.error") || "Kompleks silinərkən xəta baş verdi");
+      setError(errorMessage);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // Pagination functions
+  const goToPage = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= (pagination.totalPages || 1)) {
+      setPage(pageNumber);
+    }
+  };
+
+  const goToPrev = () => {
+    if (page > 1) {
+      setPage((prev) => prev - 1);
+    }
+  };
+
+  const goToNext = () => {
+    if (page < (pagination.totalPages || 1)) {
+      setPage((prev) => prev + 1);
+    }
   };
 
   return (
     <div className="">
-      {/* Section title bar to match Home design */}
-      <div className="w-full bg-black dark:bg-gray-800 my-4 p-4 rounded-lg shadow-lg mb-6 border border-red-600 dark:border-gray-700">
-        <h3 className="text-white font-bold">{t("complexes.pageTitle")}</h3>
-      </div>
+      <ComplexHeader />
+
+      {/* Error and Success Messages */}
+      {error && (
+        <Alert color="red" className="mb-4" onClose={() => setError(null)}>
+          {typeof error === "string" ? error : JSON.stringify(error)}
+        </Alert>
+      )}
+      {success && (
+        <Alert color="green" className="mb-4" onClose={() => setSuccess(null)}>
+          {success}
+        </Alert>
+      )}
+      {dataError && (
+        <Alert color="red" className="mb-4">
+          {dataError}
+        </Alert>
+      )}
 
       {/* Filter modal */}
-      <Dialog open={filterOpen} handler={setFilterOpen} size="sm" className="dark:bg-gray-900">
-        <DialogHeader className="dark:bg-gray-800 dark:text-white">{t("complexes.filter.title")}</DialogHeader>
-        <DialogBody divider className="space-y-4 dark:bg-gray-800 dark:border-gray-700">
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("complexes.filter.name")}
-            </Typography>
-            <Input
-              label={t("complexes.filter.enterName")}
-              value={filterName}
-              onChange={(e) => setFilterName(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-        </DialogBody>
-        <DialogFooter className="flex justify-between gap-2 dark:bg-gray-800 dark:border-gray-700">
-          <Button variant="text" color="blue-gray" onClick={handleFilterClear} className="dark:text-gray-300 dark:hover:bg-gray-700">
-            {t("complexes.filter.clear")}
-          </Button>
-          <div className="flex gap-2">
-            <Button variant="outlined" color="blue-gray" onClick={() => setFilterOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
-              {t("complexes.filter.close")}
-            </Button>
-            <Button color="blue" onClick={handleFilterApply} className="dark:bg-blue-600 dark:hover:bg-blue-700">
-              {t("complexes.filter.apply")}
-            </Button>
-          </div>
-        </DialogFooter>
-      </Dialog>
+      <ComplexFilterModal
+        open={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        filters={filters}
+        onFilterChange={updateFilter}
+        onApply={handleFilterApply}
+        onClear={handleFilterClear}
+      />
 
       {/* Create complex modal */}
-      <Dialog open={createOpen} handler={setCreateOpen} size="sm" className="dark:bg-gray-900">
-        <DialogHeader className="dark:bg-gray-800 dark:text-white">{t("complexes.create.title")}</DialogHeader>
-        <DialogBody divider className="space-y-4 dark:bg-gray-800 dark:border-gray-700">
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("complexes.create.name")}
-            </Typography>
-            <Input
-              label={t("complexes.create.enterName")}
-              value={formName}
-              onChange={(e) => setFormName(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("complexes.create.address")}
-            </Typography>
-            <Input
-              label={t("complexes.create.enterAddress")}
-              value={formAddress}
-              onChange={(e) => setFormAddress(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-                {t("complexes.create.buildingsCount")}
-              </Typography>
-              <Input
-                type="number"
-                label={t("complexes.create.enterBuildings")}
-                value={formBuildings}
-                onChange={(e) => setFormBuildings(e.target.value)}
-                className="dark:text-white"
-                labelProps={{ className: "dark:text-gray-400" }}
-              />
-            </div>
-            <div>
-              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-                {t("complexes.create.residentsCount")}
-              </Typography>
-              <Input
-                type="number"
-                label={t("complexes.create.enterResidents")}
-                value={formResidents}
-                onChange={(e) => setFormResidents(e.target.value)}
-                className="dark:text-white"
-                labelProps={{ className: "dark:text-gray-400" }}
-              />
-            </div>
-          </div>
-        </DialogBody>
-        <DialogFooter className="flex justify-end gap-2 dark:bg-gray-800 dark:border-gray-700">
-          <Button variant="outlined" color="blue-gray" onClick={() => setCreateOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
-            {t("complexes.create.cancel")}
-          </Button>
-          <Button color="green" onClick={handleCreateSave} className="dark:bg-green-600 dark:hover:bg-green-700">
-            {t("complexes.create.save")}
-          </Button>
-        </DialogFooter>
-      </Dialog>
+      <ComplexFormModal
+        open={createOpen}
+        onClose={() => {
+          setCreateOpen(false);
+          resetForm();
+          setError(null);
+        }}
+        title={t("complexes.create.title")}
+        formData={formData}
+        onFieldChange={updateField}
+        onSave={handleCreateSave}
+        isEdit={false}
+        saving={saving}
+      />
 
       {/* Edit complex modal */}
-      <Dialog open={editOpen} handler={setEditOpen} size="sm" className="dark:bg-gray-900">
-        <DialogHeader className="dark:bg-gray-800 dark:text-white">{t("complexes.edit.title")}</DialogHeader>
-        <DialogBody divider className="space-y-4 dark:bg-gray-800 dark:border-gray-700">
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("complexes.edit.name")}
-            </Typography>
-            <Input
-              label={t("complexes.edit.enterName")}
-              value={formName}
-              onChange={(e) => setFormName(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-              {t("complexes.edit.address")}
-            </Typography>
-            <Input
-              label={t("complexes.edit.enterAddress")}
-              value={formAddress}
-              onChange={(e) => setFormAddress(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-                {t("complexes.edit.buildingsCount")}
-              </Typography>
-              <Input
-                type="number"
-                label={t("complexes.edit.enterBuildings")}
-                value={formBuildings}
-                onChange={(e) => setFormBuildings(e.target.value)}
-                className="dark:text-white"
-                labelProps={{ className: "dark:text-gray-400" }}
-              />
-            </div>
-            <div>
-              <Typography variant="small" color="blue-gray" className="mb-1 dark:text-gray-300">
-                {t("complexes.edit.residentsCount")}
-              </Typography>
-              <Input
-                type="number"
-                label={t("complexes.edit.enterResidents")}
-                value={formResidents}
-                onChange={(e) => setFormResidents(e.target.value)}
-                className="dark:text-white"
-                labelProps={{ className: "dark:text-gray-400" }}
-              />
-            </div>
-          </div>
-        </DialogBody>
-        <DialogFooter className="flex justify-end gap-2 dark:bg-gray-800 dark:border-gray-700">
-          <Button variant="outlined" color="blue-gray" onClick={() => setEditOpen(false)} className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
-            {t("complexes.edit.cancel")}
-          </Button>
-          <Button color="blue" onClick={handleEditSave} className="dark:bg-blue-600 dark:hover:bg-blue-700">
-            {t("complexes.edit.save")}
-          </Button>
-        </DialogFooter>
-      </Dialog>
+      <ComplexFormModal
+        open={editOpen}
+        onClose={() => {
+          setEditOpen(false);
+          setSelectedItem(null);
+          resetForm();
+          setError(null);
+        }}
+        title={t("complexes.edit.title")}
+        formData={formData}
+        onFieldChange={updateField}
+        onSave={handleEditSave}
+        isEdit={true}
+        saving={saving}
+      />
+
+      {/* Delete complex modal */}
+      <ComplexDeleteModal
+        open={deleteOpen}
+        onClose={() => {
+          setDeleteOpen(false);
+          setItemToDelete(null);
+        }}
+        complex={itemToDelete}
+        onConfirm={handleDeleteConfirm}
+        deleting={deleting}
+      />
+
+      {/* View complex modal */}
+      <ComplexViewModal
+        open={viewOpen}
+        onClose={() => {
+          setViewOpen(false);
+          setItemToView(null);
+        }}
+        complex={itemToView}
+        onEdit={openEditModal}
+      />
 
       <Card className="border border-red-600 dark:border-gray-700 shadow-sm dark:bg-gray-800">
         <CardHeader
@@ -276,14 +292,7 @@ const ComplexPage = () => {
           color="transparent"
           className="m-0 flex items-center justify-between p-6 dark:bg-gray-800"
         >
-          <div className="flex items-center gap-3">
-            <Button variant="outlined" color="blue" onClick={() => setFilterOpen(true)} className="dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-900/20">
-              {t("complexes.actions.search")}
-            </Button>
-            <Button color="green" onClick={openCreateModal} className="dark:bg-green-600 dark:hover:bg-green-700">
-              {t("complexes.actions.add")}
-            </Button>
-          </div>
+          <ComplexActions onFilterClick={() => setFilterOpen(true)} onCreateClick={openCreateModal} />
         </CardHeader>
         <CardBody className="px-0 pt-0 pb-2 dark:bg-gray-800">
           {loading ? (
@@ -293,181 +302,33 @@ const ComplexPage = () => {
                 {t("complexes.loading")}
               </Typography>
             </div>
+          ) : complexes.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-10">
+              <Typography variant="h6" className="text-blue-gray-400 dark:text-gray-400">
+                {t("complexes.noData") || "Məlumat tapılmadı"}
+              </Typography>
+            </div>
           ) : (
             <>
-              {/* Desktop table */}
-              <div className="hidden lg:block">
-                <table className="w-full table-auto">
-                  <thead>
-                    <tr>
-                      {[t("complexes.table.id"), t("complexes.table.name"), t("complexes.table.address"), t("complexes.table.buildingsCount"), t("complexes.table.residentsCount"), t("complexes.table.actions")].map(
-                        (el, idx) => (
-                          <th
-                            key={el}
-                            className={`border-b border-blue-gray-100 dark:border-gray-800 py-3 px-6 text-left ${
-                              idx === 5 ? "text-right" : ""
-                            }`}
-                          >
-                            <Typography
-                              variant="small"
-                              className="text-[11px] font-medium uppercase text-blue-gray-400 dark:text-gray-400"
-                            >
-                              {el}
-                            </Typography>
-                          </th>
-                        )
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pageData.map((row, key) => {
-                      const className = `py-3 px-6 ${
-                        key === pageData.length - 1 ? "" : "border-b border-blue-gray-50 dark:border-gray-800"
-                      }`;
-                      return (
-                        <tr key={row.id} className="dark:hover:bg-gray-700/50">
-                          <td className={className}>
-                            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                              {row.id}
-                            </Typography>
-                          </td>
-                          <td className={className}>
-                            <Typography
-                              variant="small"
-                              color="blue-gray"
-                              className="font-semibold dark:text-white"
-                            >
-                              {row.name}
-                            </Typography>
-                          </td>
-                          <td className={className}>
-                            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                              {row.address}
-                            </Typography>
-                          </td>
-                          <td className={className}>
-                            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                              {row.buildings}
-                            </Typography>
-                          </td>
-                          <td className={className}>
-                            <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                              {row.residents}
-                            </Typography>
-                          </td>
-                          <td className={`${className} text-right`}>
-                            <Menu placement="left-start">
-                              <MenuHandler>
-                                <IconButton size="sm" variant="text" color="blue-gray" className="dark:text-gray-300 dark:hover:bg-gray-700">
-                                  <EllipsisVerticalIcon
-                                    strokeWidth={2}
-                                    className="h-5 w-5"
-                                  />
-                                </IconButton>
-                              </MenuHandler>
-                              <MenuList className="dark:bg-gray-800 dark:border-gray-700">
-                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("complexes.actions.view")}</MenuItem>
-                                <MenuItem onClick={() => openEditModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">{t("complexes.actions.edit")}</MenuItem>
-                                <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("complexes.actions.delete")}</MenuItem>
-                              </MenuList>
-                            </Menu>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Tablet & mobile cards */}
-              <div className="grid gap-4 sm:grid-cols-2 lg:hidden px-4 pt-4">
-                {pageData.map((row) => (
-                  <Card
-                    key={row.id}
-                    className="border border-red-600 dark:border-gray-700 shadow-sm dark:bg-gray-800 dark:border-gray-700"
-                    >
-                    <CardBody className="space-y-2 dark:bg-gray-800">
-                      <div className="flex items-center justify-between">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-semibold dark:text-white"
-                        >
-                          {row.name}
-                        </Typography>
-                        <Menu placement="left-start">
-                          <MenuHandler>
-                            <IconButton size="sm" variant="text" color="blue-gray" className="dark:text-gray-300 dark:hover:bg-gray-700">
-                              <EllipsisVerticalIcon
-                                strokeWidth={2}
-                                className="h-5 w-5"
-                              />
-                            </IconButton>
-                          </MenuHandler>
-                          <MenuList className="dark:bg-gray-800 dark:border-gray-700">
-                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("complexes.actions.view")}</MenuItem>
-                            <MenuItem onClick={() => openEditModal(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">{t("complexes.actions.edit")}</MenuItem>
-                            <MenuItem className="dark:text-gray-300 dark:hover:bg-gray-700">{t("complexes.actions.delete")}</MenuItem>
-                          </MenuList>
-                        </Menu>
-                      </div>
-                      <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                        {t("complexes.table.id")}: {row.id}
-                      </Typography>
-                      <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                        {t("complexes.table.address")}: {row.address}
-                      </Typography>
-                      <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                        {t("complexes.table.buildingsCount")}: {row.buildings}
-                      </Typography>
-                      <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                        {t("complexes.table.residentsCount")}: {row.residents}
-                      </Typography>
-                    </CardBody>
-                  </Card>
-                ))}
-              </div>
-
-              <div className="flex items-center justify-end gap-2 px-6 pt-4">
-                <Button
-                  variant="text"
-                  size="sm"
-                  color="blue-gray"
-                  onClick={handlePrev}
-                  disabled={page === 1}
-                  className="dark:text-gray-300 dark:hover:bg-gray-700 dark:disabled:text-gray-600"
-                >
-                  {t("complexes.pagination.prev")}
-                </Button>
-                {Array.from({ length: totalPages }, (_, index) => index + 1).map(
-                  (pageNumber) => (
-                    <Button
-                      key={pageNumber}
-                      variant={pageNumber === page ? "filled" : "text"}
-                      size="sm"
-                      color={pageNumber === page ? "blue" : "blue-gray"}
-                      onClick={() => setPage(pageNumber)}
-                      className={`min-w-[32px] px-2 ${
-                        pageNumber === page 
-                          ? "dark:bg-blue-600 dark:hover:bg-blue-700" 
-                          : "dark:text-gray-300 dark:hover:bg-gray-700"
-                      }`}
-                    >
-                      {pageNumber}
-                    </Button>
-                  )
-                )}
-                <Button
-                  variant="text"
-                  size="sm"
-                  color="blue-gray"
-                  onClick={handleNext}
-                  disabled={page === totalPages}
-                  className="dark:text-gray-300 dark:hover:bg-gray-700 dark:disabled:text-gray-600"
-                >
-                  {t("complexes.pagination.next")}
-                </Button>
-              </div>
+              <ComplexTable
+                complexes={complexes}
+                onView={openViewModal}
+                onEdit={openEditModal}
+                onDelete={handleDelete}
+              />
+              <ComplexCardList
+                complexes={complexes}
+                onView={openViewModal}
+                onEdit={openEditModal}
+                onDelete={handleDelete}
+              />
+              <ComplexPagination
+                page={page}
+                totalPages={pagination.totalPages}
+                onPageChange={goToPage}
+                onPrev={goToPrev}
+                onNext={goToNext}
+              />
             </>
           )}
         </CardBody>

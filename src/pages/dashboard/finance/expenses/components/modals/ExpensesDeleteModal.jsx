@@ -1,5 +1,6 @@
 import React from "react";
 import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography } from "@material-tailwind/react";
+import { XMarkIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
 export function ExpensesDeleteModal({ open, onClose, expense, onConfirm }) {
@@ -8,13 +9,21 @@ export function ExpensesDeleteModal({ open, onClose, expense, onConfirm }) {
   if (!open || !expense) return null;
 
   return (
-    <Dialog open={open} handler={onClose} size="sm" className="dark:bg-gray-800 border border-red-600 dark:border-gray-700" dismiss={{ enabled: false }}>
-      <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3">
-        <Typography variant="h5" className="font-bold">
-          {t("expenses.delete.title")}
-        </Typography>
+    <Dialog open={open} handler={onClose} size="md" className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl" dismiss={{ enabled: false }}>
+      <DialogHeader className="bg-gradient-to-r from-red-50 to-red-100 dark:from-gray-800 dark:to-gray-700 border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between rounded-t-lg">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-red-500 rounded-lg">
+            <TrashIcon className="h-5 w-5 text-white" />
+          </div>
+          <Typography variant="h5" className="font-bold text-gray-900 dark:text-white">
+            {t("expenses.delete.title")}
+          </Typography>
+        </div>
+        <div className="cursor-pointer p-2 rounded-md transition-all hover:bg-gray-200 dark:hover:bg-gray-700" onClick={onClose}>
+          <XMarkIcon className="dark:text-white h-5 w-5 cursor-pointer" />
+        </div>
       </DialogHeader>
-      <DialogBody divider className="space-y-4 dark:bg-gray-800 py-4">
+      <DialogBody divider className="space-y-6 dark:bg-gray-800 py-6">
         <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
           {t("expenses.delete.message")} <strong>{expense.description}</strong> (ID: {expense.id})?
         </Typography>

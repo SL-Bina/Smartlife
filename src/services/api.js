@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://api.smartlife.az/api";
+const API_BASE_URL = "http://api.smartlife.az/api/v1";
 const TOKEN_COOKIE_NAME = "smartlife_token";
 
 // Cookie helper fonksiyonları
@@ -109,7 +109,7 @@ export const authAPI = {
   // Update profile - kullanıcı bilgilerini güncelle
   updateProfile: async (data) => {
     try {
-      const response = await api.put("/user/profile", data);
+      const response = await api.patch("/user/me", data);
       return response.data;
     } catch (error) {
       // 422 validation hatası için detaylı hata mesajı
