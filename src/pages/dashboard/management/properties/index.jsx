@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Card, CardHeader, CardBody, Spinner, Typography } from "@material-tailwind/react";
 import { useTranslation } from "react-i18next";
 
@@ -9,6 +9,7 @@ import { usePropertiesForm } from "./hooks/usePropertiesForm";
 import { PropertiesHeader } from "./components/PropertiesHeader";
 import { PropertiesActions } from "./components/PropertiesActions";
 import { PropertiesFloorView } from "./components/PropertiesFloorView";
+import { PropertiesTable } from "./components/PropertiesTable";
 
 import { PropertiesFilterModal } from "./components/modals/PropertiesFilterModal";
 import { PropertiesFormModal } from "./components/modals/PropertiesFormModal";
@@ -17,7 +18,6 @@ import { PropertiesViewModal } from "./components/modals/PropertiesViewModal";
 
 import DynamicToast from "@/components/DynamicToast";
 import { useDynamicToast } from "@/hooks/useDynamicToast";
-
 
 import propertiesAPI from "./api";
 
@@ -33,6 +33,9 @@ function PropertiesPage() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [sortAscending, setSortAscending] = useState(true);
 
+  // ✅ view mode state
+  const [viewMode, setViewMode] = useState("floor"); // "floor" | "table"
+
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -42,6 +45,12 @@ function PropertiesPage() {
   const { organizedData, loading, refresh } = usePropertiesData(appliedFilters, sortAscending);
 
   const { formData, updateField, resetForm, setFormFromProperty } = usePropertiesForm();
+
+  // ✅ table üçün flat data
+  const flatProperties = useMemo(
+    () => organizedData.flatMap((floorGroup) => floorGroup.apartments || []),
+    [organizedData]
+  );
 
   const openCreateModal = () => {
     resetForm();
@@ -66,7 +75,6 @@ function PropertiesPage() {
   };
 
   const handleFilterApply = () => applyFilters();
-
   const handleFilterClear = () => clearFilters();
 
   const handleCreateSave = async () => {
@@ -84,7 +92,6 @@ function PropertiesPage() {
         duration: 2500,
       });
     } catch (e) {
-      console.error("Create error:", e);
       showToast({
         type: "error",
         title: t("common.error") || "Xəta",
@@ -95,7 +102,6 @@ function PropertiesPage() {
       setSaving(false);
     }
   };
-
 
   const handleEditSave = async () => {
     if (!selectedItem?.id) return;
@@ -113,7 +119,6 @@ function PropertiesPage() {
         message: t("properties.toast.updated") || "Mənzil uğurla yeniləndi",
       });
     } catch (e) {
-      console.error("Update error:", e);
       showToast({
         type: "error",
         title: t("common.error") || "Xəta",
@@ -124,7 +129,6 @@ function PropertiesPage() {
       setSaving(false);
     }
   };
-
 
   const handleDeleteConfirm = async () => {
     if (!selectedItem?.id) return;
@@ -141,7 +145,6 @@ function PropertiesPage() {
         message: t("properties.toast.deleted") || "Mənzil silindi",
       });
     } catch (e) {
-      console.error("Delete error:", e);
       showToast({
         type: "error",
         title: t("common.error") || "Xəta",
@@ -153,37 +156,47 @@ function PropertiesPage() {
     }
   };
 
-
   return (
     <div>
       <PropertiesHeader />
 
       <Card className="border border-red-600 dark:border-gray-700 shadow-sm dark:bg-gray-800">
-        <CardHeader floated={false} shadow={false} color="transparent" className="m-0 flex items-center justify-between p-6 dark:bg-gray-800">
+        <CardHeader
+          floated={false}
+          shadow={false}
+          color="transparent"
+          className="m-0 flex items-center justify-between p-6 dark:bg-gray-800"
+        >
           <PropertiesActions
             onFilterClick={() => setFilterOpen(true)}
             onCreateClick={openCreateModal}
             sortAscending={sortAscending}
             onSortChange={setSortAscending}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            filters={filters}
+            onFilterChange={updateFilter}
           />
+
         </CardHeader>
 
         <CardBody className="px-4 pt-4 pb-6 dark:bg-gray-800">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-10">
-              <Spinner className="h-6 w-6" />
-              <Typography variant="small" className="mt-2 text-blue-gray-400 dark:text-gray-400">
-                {t("properties.loading") || "Yüklənir..."}
-              </Typography>
-            </div>
-          ) : (
+          {!loading && viewMode === "floor" ? (
             <PropertiesFloorView
               organizedData={organizedData}
               onEdit={openEditModal}
               onView={openViewModal}
               onDelete={openDeleteModal}
             />
-          )}
+          ) : !loading ? (
+            <PropertiesTable
+              properties={flatProperties}
+              onView={openViewModal}
+              onEdit={openEditModal}
+              onDelete={openDeleteModal}
+            />
+          ) : null}
+
         </CardBody>
       </Card>
 
@@ -244,6 +257,7 @@ function PropertiesPage() {
         onConfirm={handleDeleteConfirm}
         deleting={deleting}
       />
+
       <DynamicToast
         open={toast.open}
         type={toast.type}
@@ -252,7 +266,6 @@ function PropertiesPage() {
         duration={toast.duration}
         onClose={closeToast}
       />
-
     </div>
   );
 }

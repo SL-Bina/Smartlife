@@ -768,16 +768,6 @@
       "paidBy": "Ödəyən",
       "invoice": "Faktura"
     },
-    "form": {
-      "category": "Kateqoriya",
-      "description": "Açıqlama",
-      "amount": "Məbləğ",
-      "paymentMethod": "Ödəniş üsulu",
-      "paymentDate": "Ödəniş tarixi",
-      "paidBy": "Ödəyən",
-      "invoiceNumber": "Faktura nömrəsi",
-      "enter": "Daxil et"
-    },
     "paymentMethod": {
       "cash": "Nağd",
       "bank": "Bank"
@@ -1301,8 +1291,6 @@
     "deleting": "Silinir...",
     "noData": "Məlumat tapılmadı",
     "add": "Əlavə et",
-    "edit": "Düzəliş et",
-    "delete": "Sil",
     "cancel": "Ləğv et",
     "save": "Yadda saxla",
     "table": {
@@ -1861,7 +1849,10 @@
       "sort": "Sırala",
       "create": "Mənzil yarat",
       "sortAsc": "Mərtəbəyə görə artan",
-      "sortDesc": "Mərtəbəyə görə azalan"
+      "sortDesc": "Mərtəbəyə görə azalan",
+      "viewMode": "Baxış rejimi",
+      "floorView": "Mərtəbə görünüşü",
+      "tableView": "Cədvəl görünüşü"
     },
     "sort": {
       "ascending": "Aşağıdan yuxarı",
@@ -2094,7 +2085,7 @@
       "title": "Hüquqlar",
       "total": "Cəmi",
       "role": "rol",
-      "create": "+ Hüquq yarat",
+      "create": "Hüquq yarat",
       "noRoles": "Rol tapılmadı",
       "created": "Rol uğurla yaradıldı",
       "updated": "Rol uğurla yeniləndi",

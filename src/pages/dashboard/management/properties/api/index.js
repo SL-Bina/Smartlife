@@ -36,7 +36,6 @@ export const propertiesAPI = {
         status: data.status || "active",
       };
 
-      // backend required-ləri yoxla
       console.log("Properties Create Request:", cleanedData);
       const response = await api.put("/module/properties/add", cleanedData);
       return response.data;

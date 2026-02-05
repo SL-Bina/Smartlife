@@ -6,13 +6,17 @@ import {
   Typography,
   Spinner,
   IconButton,
+  Button,
+  Input,
 } from "@material-tailwind/react";
 import {
   ShieldCheckIcon,
   ChevronDownIcon,
   MagnifyingGlassIcon,
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
-import { Input } from "@material-tailwind/react";
 import { useTranslation } from "react-i18next";
 
 export function PermissionsPanel({
@@ -21,13 +25,16 @@ export function PermissionsPanel({
   selectedPermissions,
   onPermissionToggle,
   onModuleToggle,
+  onCreateClick,
+  onEditPermission,
+  onDeletePermission,
 }) {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [openModules, setOpenModules] = useState({});
   const checkboxRefs = useRef({});
 
-  // API normalizasiya: modules[] -> { [moduleName]: permissions[] }
+  // permissionsByModule: { [moduleName]: permissions[] }
   const permissionsByModule = (modules || []).reduce((acc, item) => {
     const module = item?.module;
     if (!module?.name) return acc;
@@ -36,6 +43,13 @@ export function PermissionsPanel({
     const perms = Array.isArray(module.permissions) ? module.permissions : [];
 
     if (perms.length) acc[moduleName] = perms;
+    return acc;
+  }, {});
+
+  // moduleName -> moduleId map (edit/delete üçün mütləq lazımdır)
+  const moduleIdByName = (modules || []).reduce((acc, item) => {
+    const m = item?.module;
+    if (m?.name && m?.id != null) acc[m.name] = m.id;
     return acc;
   }, {});
 
@@ -82,7 +96,7 @@ export function PermissionsPanel({
     });
   }, [permissionsByModule, selectedPermissions, isModuleAllSelected, isModuleSomeSelected]);
 
-  // Filter: həm details/detail/permission, həm də module translate üzərindən
+  // Filter
   const filteredPermissions = Object.entries(permissionsByModule).reduce((acc, [moduleName, perms]) => {
     const q = searchTerm.trim().toLowerCase();
     if (!q) return acc;
@@ -119,7 +133,8 @@ export function PermissionsPanel({
   );
 
   return (
-    <Card className="border border-red-600 dark:border-gray-700 shadow-lg dark:bg-gray-800 h-full flex flex-col">
+    <Card className="border border-red-600 dark:border-gray-700 shadow-lg dark:bg-gray-800 max-h-[700px] h-full flex flex-col max-w-full">
+
       <CardHeader
         floated={false}
         shadow={false}
@@ -130,13 +145,15 @@ export function PermissionsPanel({
           <Typography variant="h6" color="blue-gray" className="font-bold dark:text-white">
             {t("permissions.permissions.title") || "İcazələr"}
           </Typography>
+
           <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
             {t("permissions.permissions.total") || "Cəmi"}: {totalPermissions}{" "}
             {t("permissions.permissions.permission") || "icazə"}
           </Typography>
         </div>
 
-        <div className="relative">
+        {/* SEARCH */}
+        <div className="relative mb-3">
           <Input
             type="text"
             placeholder={t("permissions.search") || "Axtarış..."}
@@ -149,6 +166,17 @@ export function PermissionsPanel({
             <MagnifyingGlassIcon className="h-4 w-4 text-gray-400 dark:text-gray-400" />
           </div>
         </div>
+
+        {/* ADD */}
+        <Button
+          color="purple"
+          size="sm"
+          className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white border-0 w-full"
+          onClick={onCreateClick}
+        >
+          <PlusIcon className="h-4 w-4" />
+          {t("permissions.permissions.create") || "İcazə yarat"}
+        </Button>
       </CardHeader>
 
       <CardBody className="p-4 dark:bg-gray-800 flex-1 min-h-0 overflow-y-auto">
@@ -213,9 +241,8 @@ export function PermissionsPanel({
                       >
                         <ChevronDownIcon
                           strokeWidth={2}
-                          className={`h-4 w-4 transition-transform duration-300 ${
-                            openModules[moduleName] ? "rotate-180" : ""
-                          }`}
+                          className={`h-4 w-4 transition-transform duration-300 ${openModules[moduleName] ? "rotate-180" : ""
+                            }`}
                         />
                       </IconButton>
                     </div>
@@ -223,20 +250,19 @@ export function PermissionsPanel({
 
                   {/* Permissions List */}
                   <div
-                    className={`overflow-hidden transition-all duration-300 ${
-                      openModules[moduleName] ? "max-h-[5000px] opacity-100" : "max-h-0 opacity-0"
-                    }`}
+                    className={`overflow-hidden transition-all duration-300 ${openModules[moduleName] ? "max-h-[5000px] opacity-100" : "max-h-0 opacity-0"
+                      }`}
                   >
                     <div className="space-y-2 pl-2 pt-2">
                       {perms.map((permission) => {
                         const isSelected = isPermissionSelected(moduleName, permission.id);
 
                         const title =
-                          permission.details ||
-                          permission.detail ||
-                          trAction(permission.permission);
+                          permission.details || permission.detail || trAction(permission.permission);
 
                         const codeLabel = trAction(permission.permission);
+
+                        const moduleId = moduleIdByName[moduleName]; // ✅ dəqiq module id
 
                         return (
                           <div
@@ -258,24 +284,53 @@ export function PermissionsPanel({
                               className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700 dark:checked:bg-green-600 cursor-pointer flex-shrink-0"
                             />
 
-                            <div className="flex-1">
+                            <div className="flex-1 min-w-0">
                               <Typography
                                 variant="small"
-                                className="dark:text-gray-200 text-sm font-medium group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors"
+                                className="dark:text-gray-200 text-sm font-medium group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors truncate"
                               >
                                 {title}
                               </Typography>
 
-                              <Typography variant="small" className="text-gray-500 dark:text-gray-400 text-xs mt-0.5">
+                              <Typography variant="small" className="text-gray-500 dark:text-gray-400 text-xs mt-0.5 truncate">
                                 {codeLabel}
                               </Typography>
                             </div>
 
+                            {/* Selected dot */}
                             {isSelected && (
                               <div className="flex-shrink-0">
                                 <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full"></div>
                               </div>
                             )}
+
+                            {/* ✅ ACTIONS: EDIT / DELETE */}
+                            <div className="flex items-center gap-1 flex-shrink-0">
+                              <IconButton
+                                size="sm"
+                                variant="text"
+                                className="dark:text-gray-300 dark:hover:bg-gray-700"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onEditPermission?.({ moduleId, moduleName, permission });
+                                }}
+                              >
+                                <PencilIcon className="h-4 w-4" />
+                              </IconButton>
+
+                              <IconButton
+                                size="sm"
+                                variant="text"
+                                color="red"
+                                className="dark:hover:bg-red-900/30"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onDeletePermission?.({ moduleId, moduleName, permission });
+                                }}
+                              >
+                                <TrashIcon className="h-4 w-4" />
+                              </IconButton>
+                            </div>
                           </div>
                         );
                       })}

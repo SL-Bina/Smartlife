@@ -22,7 +22,6 @@ export function usePropertiesForm() {
   const resetForm = () => setFormData(initialForm);
 
   const updateField = (path, value) => {
-    // path: "meta.floor" və ya "name"
     if (!path.includes(".")) {
       setFormData((prev) => ({ ...prev, [path]: value }));
       return;
