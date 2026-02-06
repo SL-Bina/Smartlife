@@ -1,8 +1,9 @@
 import { useState } from "react";
 
-const initialFormState = {
-  complex_id: "",
-  building_id: "",
+const emptyForm = {
+  mtk_id: null,
+  complex_id: null,
+  building_id: null,
   name: "",
   meta: {
     total_floor: "",
@@ -10,44 +11,30 @@ const initialFormState = {
   },
 };
 
-
 export function useBlocksForm() {
-  const [formData, setFormData] = useState(initialFormState);
+  const [formData, setFormData] = useState(emptyForm);
 
-  const updateField = (field, value) => {
-    if (field.startsWith("meta.")) {
-      const metaKey = field.split(".")[1];
-      setFormData((prev) => ({
-        ...prev,
-        meta: {
-          ...prev.meta,
-          [metaKey]: value,
-        },
-      }));
-      return;
-    }
+  const resetForm = () => setFormData(emptyForm);
 
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
+  const updateField = (key, value) => setFormData((p) => ({ ...p, [key]: value }));
+  const updateMeta = (key, value) => setFormData((p) => ({ ...p, meta: { ...p.meta, [key]: value } }));
 
-  const resetForm = () => setFormData(initialFormState);
-
-  const setFormFromBlock = (block) => {
-    if (!block) return;
+  const setFormFromBlock = (item) => {
+    const building = item?.building || item?.raw?.building || null;
+    const complex = item?.complex || item?.raw?.complex || building?.complex || null;
+    const mtkId = complex?.bind_mtk?.id ?? complex?.mtk_id ?? item?.mtk_id ?? null;
 
     setFormData({
-      name: block.name || "",
-      complex_id: block.complex_id ?? block.complex?.id ?? block.raw?.complex?.id ?? "",
-      building_id: block.building_id ?? block.building?.id ?? block.raw?.building?.id ?? "",
+      mtk_id: mtkId,
+      complex_id: complex?.id ?? item?.complex_id ?? null,
+      building_id: building?.id ?? item?.building_id ?? null,
+      name: item?.name || "",
       meta: {
-        total_floor: String(block.floors ?? block.meta?.total_floor ?? ""),
-        total_apartment: String(block.apartments ?? block.meta?.total_apartment ?? ""),
+        total_floor: String(item?.meta?.total_floor || item?.floors || ""),
+        total_apartment: String(item?.meta?.total_apartment || item?.apartments || ""),
       },
     });
   };
 
-  return { formData, updateField, resetForm, setFormFromBlock };
+  return { formData, resetForm, updateField, updateMeta, setFormFromBlock };
 }

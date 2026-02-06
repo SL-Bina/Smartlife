@@ -6,6 +6,7 @@ import { ThemeProvider } from "@material-tailwind/react";
 import { MaterialTailwindControllerProvider } from "@/context";
 import { AuthProvider } from "@/context/AuthContext";
 import "@/styles/tailwind.css";
+import "leaflet/dist/leaflet.css";
 import "./i18n/i18n";
 
 ReactDOM.createRoot(document.getElementById("root")).render(

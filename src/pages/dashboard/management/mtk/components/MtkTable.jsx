@@ -1,150 +1,208 @@
 import React from "react";
-import { Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
-import { EllipsisVerticalIcon, ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/24/outline";
-import { useTranslation } from "react-i18next";
+import { Card, CardBody, Typography, Chip, Button } from "@material-tailwind/react";
+import { useManagement } from "@/context/ManagementContext";
 
-export function MtkTable({ mtk, onView, onEdit, onDelete, sortConfig, onSortChange }) {
-  const { t } = useTranslation();
+export function MtkTable({ items = [], loading, onEdit, onDelete, onView, onGoComplex }) {
+  const { state, actions } = useManagement();
 
-  const columns = [
-    { key: "id", label: t("mtk.table.id"), sortable: true },
-    { key: "name", label: t("mtk.table.name"), sortable: true },
-    { key: "status", label: t("mtk.table.status") || "Status", sortable: true },
-    { key: "email", label: t("mtk.table.email") || "Email", sortable: true },
-    { key: "phone", label: t("mtk.table.phone") || "Telefon", sortable: true },
-    { key: "address", label: t("mtk.table.address") || "Ünvan", sortable: true },
-    { key: "actions", label: t("mtk.table.actions"), sortable: false },
-  ];
-
-  const handleSort = (key) => {
-    if (!columns.find((col) => col.key === key)?.sortable) return;
-
-    let direction = "asc";
-    if (sortConfig?.key === key && sortConfig?.direction === "asc") {
-      direction = "desc";
-    }
-    onSortChange({ key, direction });
+  const complexCountOf = (x) => {
+    const v = x?.complex_count;
+    if (v === 0) return 0;
+    return v || "—";
   };
 
   return (
-    <div className="hidden lg:block">
-      <table className="w-full table-auto">
-        <thead>
-          <tr>
-            {columns.map((col, idx) => (
-              <th
-                key={col.key}
-                onClick={() => col.sortable && handleSort(col.key)}
-                className={`border-b border-blue-gray-100 dark:border-gray-800 py-3 px-6 text-left ${
-                  idx === 6 ? "text-right" : ""
-                } ${col.sortable ? "cursor-pointer hover:bg-blue-gray-50 dark:hover:bg-gray-700 transition-colors" : ""}`}
-              >
-                <div className="flex items-center gap-2">
-                  <Typography
-                    variant="small"
-                    className="text-[11px] font-medium uppercase text-blue-gray-400 dark:text-gray-400"
-                  >
-                    {col.label}
+    <Card className="shadow-sm dark:bg-gray-800">
+      <CardBody className="p-0">
+        <div className="w-full overflow-x-auto">
+          <table className="w-full min-w-[1400px] table-auto">
+            <thead>
+              <tr className="bg-blue-gray-50 dark:bg-gray-900/40">
+                <th className="p-4 text-left">
+                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    Ad
                   </Typography>
-                  {col.sortable && (
-                    <div className="flex flex-col">
-                      <ArrowUpIcon
-                        className={`h-3 w-3 ${
-                          sortConfig?.key === col.key && sortConfig?.direction === "asc"
-                            ? "text-blue-600 dark:text-blue-400"
-                            : "text-blue-gray-300 dark:text-gray-600"
-                        }`}
-                      />
-                      <ArrowDownIcon
-                        className={`h-3 w-3 -mt-1 ${
-                          sortConfig?.key === col.key && sortConfig?.direction === "desc"
-                            ? "text-blue-600 dark:text-blue-400"
-                            : "text-blue-gray-300 dark:text-gray-600"
-                        }`}
-                      />
-                    </div>
-                  )}
-                </div>
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {mtk.map((row, key) => {
-            const className = `py-3 px-6 ${
-              key === mtk.length - 1 ? "" : "border-b border-blue-gray-50 dark:border-gray-800"
-            }`;
-            return (
-              <tr key={row.id} className="dark:hover:bg-gray-700/50">
-                <td className={className}>
-                  <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                    {row.id}
+                </th>
+
+                <th className="p-4 text-left">
+                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    Ünvan
                   </Typography>
-                </td>
-                <td className={className}>
-                  <Typography variant="small" color="blue-gray" className="font-semibold dark:text-white">
-                    {row.name}
+                </th>
+
+                <th className="p-4 text-left">
+                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    Status
                   </Typography>
-                </td>
-                <td className={className}>
-                  <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      row.status === "active"
-                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                        : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
-                    }`}
-                  >
-                    {row.status === "active" ? (t("mtk.form.active") || "Aktiv") : (t("mtk.form.inactive") || "Passiv")}
-                  </span>
-                </td>
-                <td className={className}>
-                  <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                    {row.meta?.email || "-"}
+                </th>
+
+                <th className="p-4 text-left">
+                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    Email
                   </Typography>
-                </td>
-                <td className={className}>
-                  <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                    {row.meta?.phone || "-"}
+                </th>
+
+                <th className="p-4 text-left">
+                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    Telefon
                   </Typography>
-                </td>
-                <td className={className}>
-                  <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                    {row.meta?.address || "-"}
+                </th>
+
+                <th className="p-4 text-left">
+                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    Kompleks sayı
                   </Typography>
-                </td>
-                <td className={`${className} text-right`}>
-                  <Menu placement="left-start">
-                    <MenuHandler>
-                      <IconButton
-                        size="sm"
-                        variant="text"
-                        color="blue-gray"
-                        className="dark:text-gray-300 dark:hover:bg-gray-700"
-                      >
-                        <EllipsisVerticalIcon strokeWidth={2} className="h-5 w-5" />
-                      </IconButton>
-                    </MenuHandler>
-                    <MenuList className="dark:bg-gray-800 dark:border-gray-700">
-                      {onView && (
-                        <MenuItem onClick={() => onView(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
-                          {t("mtk.actions.view")}
-                        </MenuItem>
-                      )}
-                      <MenuItem onClick={() => onEdit(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
-                        {t("mtk.actions.edit")}
-                      </MenuItem>
-                      <MenuItem onClick={() => onDelete(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
-                        {t("mtk.actions.delete")}
-                      </MenuItem>
-                    </MenuList>
-                  </Menu>
-                </td>
+                </th>
+
+                <th className="p-4 text-left">
+                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    Rəng
+                  </Typography>
+                </th>
+
+                <th className="p-4 text-left">
+                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    Web sayt
+                  </Typography>
+                </th>
+
+                <th className="p-4 text-right">
+                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    Əməliyyat
+                  </Typography>
+                </th>
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+            </thead>
+
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td className="p-6" colSpan={9}>
+                    <Typography className="text-sm text-blue-gray-500 dark:text-gray-300">Yüklənir...</Typography>
+                  </td>
+                </tr>
+              ) : items.length === 0 ? (
+                <tr>
+                  <td className="p-6" colSpan={9}>
+                    <Typography className="text-sm text-blue-gray-500 dark:text-gray-300">Heç nə tapılmadı</Typography>
+                  </td>
+                </tr>
+              ) : (
+                items.map((x) => {
+                  const isSelected = String(state.mtkId || "") === String(x.id);
+
+                  return (
+                    <tr
+                      key={x.id}
+                      className={`border-b border-blue-gray-50 dark:border-gray-700 cursor-pointer ${
+                        isSelected ? "bg-blue-50/60 dark:bg-gray-700/40" : ""
+                      }`}
+                      onClick={() => actions.setMtk(x.id, x)}
+                      title="MTK seç (scope)"
+                    >
+                      <td className="p-4">
+                        <Typography className="text-sm font-medium text-blue-gray-800 dark:text-white">
+                          {x.name}
+                        </Typography>
+                        <Typography className="text-xs text-blue-gray-500 dark:text-gray-400">ID: {x.id}</Typography>
+                      </td>
+
+                    <td className="p-4">
+                      <Typography className="text-sm text-blue-gray-700 dark:text-gray-200">
+                        {x?.meta?.address || "—"}
+                      </Typography>
+                    </td>
+
+                    <td className="p-4">
+                      <Chip
+                        value={x.status || "—"}
+                        size="sm"
+                        color={x.status === "active" ? "green" : "blue-gray"}
+                        className="w-fit"
+                      />
+                    </td>
+
+                    <td className="p-4">
+                      <Typography className="text-sm text-blue-gray-700 dark:text-gray-200">
+                        {x?.meta?.email || "—"}
+                      </Typography>
+                    </td>
+
+                    <td className="p-4">
+                      <Typography className="text-sm text-blue-gray-700 dark:text-gray-200">
+                        {x?.meta?.phone || "—"}
+                      </Typography>
+                    </td>
+
+                    <td className="p-4">
+                      <Typography className="text-sm text-blue-gray-700 dark:text-gray-200">
+                        {complexCountOf(x)}
+                      </Typography>
+                    </td>
+
+                    <td className="p-4">
+                      {x?.meta?.color_code ? (
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="h-4 w-4 rounded-full border border-blue-gray-100 dark:border-gray-700"
+                            style={{ backgroundColor: x.meta.color_code }}
+                            title={x.meta.color_code}
+                          />
+                          <Typography className="text-sm text-blue-gray-700 dark:text-gray-200">
+                            {x.meta.color_code}
+                          </Typography>
+                        </div>
+                      ) : (
+                        <Typography className="text-sm text-blue-gray-700 dark:text-gray-200">—</Typography>
+                      )}
+                    </td>
+
+                    <td className="p-4">
+                      {x?.meta?.website ? (
+                        <a
+                          href={x.meta.website}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-sm text-blue-600 dark:text-blue-400 underline"
+                        >
+                          {x.meta.website}
+                        </a>
+                      ) : (
+                        <Typography className="text-sm text-blue-gray-700 dark:text-gray-200">—</Typography>
+                      )}
+                    </td>
+
+                    <td className="p-4">
+                      <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                        <Button size="sm" variant="outlined" onClick={() => onView?.(x)}>
+                          Bax
+                        </Button>
+                        <Button size="sm" variant="outlined" onClick={() => onEdit?.(x)}>
+                          Edit
+                        </Button>
+                        <Button size="sm" color="red" onClick={() => onDelete?.(x)}>
+                          Sil
+                        </Button>
+                        <Button
+                          size="sm"
+                          color="blue"
+                          onClick={() => {
+                            actions.setMtk(x.id, x);
+                            onGoComplex?.();
+                          }}
+                        >
+                          Complex-ə keç
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </CardBody>
+    </Card>
   );
 }
-

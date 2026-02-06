@@ -1,162 +1,143 @@
 import React from "react";
-import { Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
-import { EllipsisVerticalIcon, ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/24/outline";
-import { useTranslation } from "react-i18next";
+import { Card, CardBody, Typography, Chip, Button } from "@material-tailwind/react";
+import { useManagement } from "@/context/ManagementContext";
+import { useNavigate } from "react-router-dom";
 
-export function BuildingsTable({ buildings, onView, onEdit, onDelete, sortConfig, onSortChange }) {
-  const { t } = useTranslation();
+export function BuildingsTable({ items = [], loading, onEdit, onDelete, onView }) {
+  const navigate = useNavigate();
+  const { state, actions } = useManagement();
 
-  const columns = [
-    { key: "id", label: t("buildings.table.id") || "ID", sortable: true },
-    { key: "name", label: t("buildings.table.name") || "Ad", sortable: true },
-    { key: "complex", label: t("buildings.table.complex") || "Kompleks", sortable: true },
-    { key: "description", label: t("buildings.table.description") || "Təsvir", sortable: false },
-    { key: "status", label: t("buildings.table.status") || "Status", sortable: true },
-    { key: "actions", label: t("buildings.table.actions") || "Əməliyyatlar", sortable: false },
-  ];
+  const goBlocks = (building) => {
+    const mtkId = state.mtkId || building?.complex?.bind_mtk?.id || building?.complex?.mtk_id || null;
+    const complexId = state.complexId || building?.complex?.id || null;
 
-  const handleSort = (key) => {
-    if (!columns.find((col) => col.key === key)?.sortable) return;
+    actions.setMtk(mtkId, null);
+    actions.setComplex(complexId, building?.complex || null);
+    actions.setBuilding(building.id, building); // ⚠️ context-də olmalıdır
 
-    let direction = "asc";
-    if (sortConfig?.key === key && sortConfig?.direction === "asc") {
-      direction = "desc";
-    }
-    onSortChange({ key, direction });
+    navigate("/dashboard/management/blocks", {
+      state: { mtkId, complexId, buildingId: building.id },
+    });
   };
 
   return (
-    <div className="hidden lg:block overflow-x-auto">
-      <table className="w-full table-auto min-w-[800px]">
-        <thead>
-          <tr>
-            {columns.map((col, idx) => (
-              <th
-                key={col.key}
-                onClick={() => col.sortable && handleSort(col.key)}
-                className={`border-b border-blue-gray-100 dark:border-gray-800 py-4 px-6 text-left ${
-                  idx === 5 ? "text-right" : ""
-                } ${col.sortable ? "cursor-pointer hover:bg-blue-gray-50 dark:hover:bg-gray-700 transition-colors" : ""}`}
-              >
-                <div className="flex items-center gap-2">
-                  <Typography
-                    variant="small"
-                    className="text-[11px] font-bold uppercase text-blue-gray-400 dark:text-gray-400"
-                  >
-                    {col.label}
+    <Card className="shadow-sm dark:bg-gray-800">
+      <CardBody className="p-0">
+        <div className="w-full overflow-x-auto">
+          <table className="w-full min-w-[1200px] table-auto">
+            <thead>
+              <tr className="bg-blue-gray-50 dark:bg-gray-900/40">
+                <th className="p-4 text-left">
+                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    Ad
                   </Typography>
-                  {col.sortable && (
-                    <div className="flex flex-col">
-                      <ArrowUpIcon
-                        className={`h-3 w-3 ${
-                          sortConfig?.key === col.key && sortConfig?.direction === "asc"
-                            ? "text-blue-600 dark:text-blue-400"
-                            : "text-blue-gray-300 dark:text-gray-600"
-                        }`}
-                      />
-                      <ArrowDownIcon
-                        className={`h-3 w-3 -mt-1 ${
-                          sortConfig?.key === col.key && sortConfig?.direction === "desc"
-                            ? "text-blue-600 dark:text-blue-400"
-                            : "text-blue-gray-300 dark:text-gray-600"
-                        }`}
-                      />
-                    </div>
-                  )}
-                </div>
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {buildings.length === 0 ? (
-            <tr>
-              <td colSpan={6} className="py-8 text-center">
-                <Typography variant="small" color="blue-gray" className="dark:text-gray-400">
-                  {t("buildings.table.noData") || "Məlumat yoxdur"}
-                </Typography>
-              </td>
-            </tr>
-          ) : (
-            buildings.map((row, key) => {
-              const className = `py-4 px-6 ${
-                key === buildings.length - 1 ? "" : "border-b border-blue-gray-50 dark:border-gray-800"
-              }`;
-              return (
-                <tr key={row.id} className="dark:hover:bg-gray-700/50 transition-colors">
-                  <td className={className}>
-                    <Typography variant="small" color="blue-gray" className="font-medium dark:text-gray-300">
-                      #{row.id}
-                    </Typography>
-                  </td>
-                  <td className={className}>
-                    <Typography variant="small" color="blue-gray" className="font-semibold dark:text-white">
-                      {row.name || "-"}
-                    </Typography>
-                  </td>
-                  <td className={className}>
-                    <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                      {row.complex?.name || "-"}
-                    </Typography>
-                  </td>
-                  <td className={className}>
-                    <Typography 
-                      variant="small" 
-                      color="blue-gray" 
-                      className="dark:text-gray-300 max-w-xs truncate"
-                      title={row.meta?.desc || ""}
-                    >
-                      {row.meta?.desc || "-"}
-                    </Typography>
-                  </td>
-                  <td className={className}>
-                    <span
-                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                        row.status === "active"
-                          ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                          : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400"
-                      }`}
-                    >
-                      {row.status === "active" ? (t("buildings.status.active") || "Aktiv") : (t("buildings.status.inactive") || "Passiv")}
-                    </span>
-                  </td>
-                  <td className={`${className} text-right`}>
-                    <Menu placement="left-start">
-                      <MenuHandler>
-                        <IconButton
-                          size="sm"
-                          variant="text"
-                          color="blue-gray"
-                          className="dark:text-gray-300 dark:hover:bg-gray-700"
-                        >
-                          <EllipsisVerticalIcon strokeWidth={2} className="h-5 w-5" />
-                        </IconButton>
-                      </MenuHandler>
-                      <MenuList className="dark:bg-gray-800 dark:border-gray-700 min-w-[120px]">
-                        {onView && (
-                          <MenuItem onClick={() => onView(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
-                            {t("buildings.actions.view") || "Bax"}
-                          </MenuItem>
-                        )}
-                        <MenuItem onClick={() => onEdit(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
-                          {t("buildings.actions.edit") || "Düzəliş et"}
-                        </MenuItem>
-                        <MenuItem 
-                          onClick={() => onDelete(row)} 
-                          className="dark:text-red-400 dark:hover:bg-red-900/20 text-red-500"
-                        >
-                          {t("buildings.actions.delete") || "Sil"}
-                        </MenuItem>
-                      </MenuList>
-                    </Menu>
+                </th>
+
+                <th className="p-4 text-left">
+                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    Kompleks
+                  </Typography>
+                </th>
+
+                <th className="p-4 text-left">
+                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    Status
+                  </Typography>
+                </th>
+
+                <th className="p-4 text-left">
+                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    Desc
+                  </Typography>
+                </th>
+
+                <th className="p-4 text-right">
+                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    Əməliyyat
+                  </Typography>
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td className="p-6" colSpan={5}>
+                    <Typography className="text-sm text-blue-gray-500 dark:text-gray-300">Yüklənir...</Typography>
                   </td>
                 </tr>
-              );
-            })
-          )}
-        </tbody>
-      </table>
-    </div>
+              ) : items.length === 0 ? (
+                <tr>
+                  <td className="p-6" colSpan={5}>
+                    <Typography className="text-sm text-blue-gray-500 dark:text-gray-300">Heç nə tapılmadı</Typography>
+                  </td>
+                </tr>
+              ) : (
+                items.map((x) => {
+                  const isSelected = String(state.buildingId || "") === String(x.id);
+
+                  return (
+                    <tr
+                      key={x.id}
+                      className={`border-b border-blue-gray-50 dark:border-gray-700 cursor-pointer ${
+                        isSelected ? "bg-blue-50/60 dark:bg-gray-700/40" : ""
+                      }`}
+                      onClick={() => actions.setBuilding(x.id, x)}
+                      title="Bina seç (scope)"
+                    >
+                      <td className="p-4">
+                        <Typography className="text-sm font-medium text-blue-gray-800 dark:text-white">
+                          {x.name}
+                        </Typography>
+                        <Typography className="text-xs text-blue-gray-500 dark:text-gray-400">ID: {x.id}</Typography>
+                      </td>
+
+                    <td className="p-4">
+                      <Typography className="text-sm text-blue-gray-700 dark:text-gray-200">
+                        {x?.complex?.name || "—"}
+                      </Typography>
+                    </td>
+
+                    <td className="p-4">
+                      <Chip
+                        value={x.status || "—"}
+                        size="sm"
+                        color={x.status === "active" ? "green" : "blue-gray"}
+                        className="w-fit"
+                      />
+                    </td>
+
+                    <td className="p-4">
+                      <Typography className="text-sm text-blue-gray-700 dark:text-gray-200">
+                        {x?.meta?.desc || "—"}
+                      </Typography>
+                    </td>
+
+                      <td className="p-4">
+                        <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                          <Button size="sm" variant="outlined" onClick={() => onView?.(x)}>
+                            Bax
+                          </Button>
+                          <Button size="sm" variant="outlined" onClick={() => onEdit?.(x)}>
+                            Edit
+                          </Button>
+                          <Button size="sm" color="red" onClick={() => onDelete?.(x)}>
+                            Sil
+                          </Button>
+
+                          <Button size="sm" color="blue" onClick={() => goBlocks(x)}>
+                            Bloklara keç
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </CardBody>
+    </Card>
   );
 }
-

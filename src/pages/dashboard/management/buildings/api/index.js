@@ -1,6 +1,6 @@
 import api from "@/services/api";
 
-export const buildingsAPI = {
+export const buildingAPI = {
   getAll: async (params = {}) => {
     try {
       const response = await api.get("/module/buildings/list", { params });
@@ -22,42 +22,29 @@ export const buildingsAPI = {
   create: async (data) => {
     try {
       const cleanedData = {
-        complex_id: data.complex_id || data.complex?.id || null,
-        name: data.name || "",
-        status: data.status || "active",
+        complex_id: data?.complex_id ?? null,
+        name: data?.name || "",
         meta: {
-          desc: data.meta?.desc || "",
+          desc: data?.meta?.desc || "",
         },
+        status: data?.status || "active",
       };
 
-      console.log("Building Create Request:", cleanedData);
-      console.log("Building Create Request (JSON):", JSON.stringify(cleanedData, null, 2));
       const response = await api.put("/module/buildings/add", cleanedData);
       return response.data;
     } catch (error) {
       if (error.response?.status === 400 || error.response?.status === 422) {
         const errorData = error.response.data;
-        console.error("Building Create Error Response:", errorData);
-        console.error("Building Create Error Details:", JSON.stringify(errorData, null, 2));
-        let allErrors = [];
-        if (errorData.errors) {
-          Object.keys(errorData.errors).forEach((key) => {
-            const fieldErrors = errorData.errors[key];
-            if (Array.isArray(fieldErrors)) {
-              fieldErrors.forEach((err) => allErrors.push(`${key}: ${err}`));
-            } else {
-              allErrors.push(`${key}: ${fieldErrors}`);
-            }
-          });
+        if (errorData?.errors) {
+          const firstError = Object.values(errorData.errors)[0];
+          throw {
+            message: Array.isArray(firstError) ? firstError[0] : firstError,
+            errors: errorData.errors,
+            ...errorData,
+          };
         }
-        throw {
-          message: errorData.message || "Validation Error",
-          errors: errorData.errors,
-          allErrors: allErrors,
-          ...errorData
-        };
+        throw errorData;
       }
-      console.error("Building Create Error:", error);
       throw error.response?.data || error.message;
     }
   },
@@ -65,26 +52,25 @@ export const buildingsAPI = {
   update: async (id, data) => {
     try {
       const cleanedData = {
-        complex_id: data.complex_id || data.complex?.id || null,
-        name: data.name || "",
-        status: data.status || "active",
+        complex_id: data?.complex_id ?? null,
+        name: data?.name || "",
         meta: {
-          desc: data.meta?.desc || "",
+          desc: data?.meta?.desc || "",
         },
+        status: data?.status || "active",
       };
 
-      console.log("Building Update Request:", cleanedData);
       const response = await api.patch(`/module/buildings/${id}`, cleanedData);
       return response.data;
     } catch (error) {
       if (error.response?.status === 400 || error.response?.status === 422) {
         const errorData = error.response.data;
-        if (errorData.errors) {
+        if (errorData?.errors) {
           const firstError = Object.values(errorData.errors)[0];
           throw {
             message: Array.isArray(firstError) ? firstError[0] : firstError,
             errors: errorData.errors,
-            ...errorData
+            ...errorData,
           };
         }
         throw errorData;
@@ -103,5 +89,4 @@ export const buildingsAPI = {
   },
 };
 
-export default buildingsAPI;
-
+export default buildingAPI;

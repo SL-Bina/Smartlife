@@ -161,43 +161,47 @@ function PropertiesPage() {
       <PropertiesHeader />
 
       <Card className="border border-red-600 dark:border-gray-700 shadow-sm dark:bg-gray-800">
-        <CardHeader
-          floated={false}
-          shadow={false}
+        <div
+          // floated={false}
+          // shadow={false}
           color="transparent"
-          className="m-0 flex items-center justify-between p-6 dark:bg-gray-800"
+          className="m-0 flex items-center justify-between p-6 dark:bg-gray-800 "
         >
-          <PropertiesActions
-            onFilterClick={() => setFilterOpen(true)}
-            onCreateClick={openCreateModal}
-            sortAscending={sortAscending}
-            onSortChange={setSortAscending}
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-            filters={filters}
-            onFilterChange={updateFilter}
-          />
 
-        </CardHeader>
+        <PropertiesActions
+          onFilterClick={() => setFilterOpen(true)}
+          onCreateClick={openCreateModal}
+          sortAscending={sortAscending}
+          onSortChange={setSortAscending}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          filters={filters}
+          onFilterChange={updateFilter}
+        />
+        </div>
 
         <CardBody className="px-4 pt-4 pb-6 dark:bg-gray-800">
-          {!loading && viewMode === "floor" ? (
+          {loading ? (
+            <div className="py-10 flex items-center justify-center">
+              <Spinner className="h-6 w-6" />
+            </div>
+          ) : viewMode === "floor" ? (
             <PropertiesFloorView
               organizedData={organizedData}
               onEdit={openEditModal}
               onView={openViewModal}
               onDelete={openDeleteModal}
             />
-          ) : !loading ? (
+          ) : (
             <PropertiesTable
               properties={flatProperties}
               onView={openViewModal}
               onEdit={openEditModal}
               onDelete={openDeleteModal}
             />
-          ) : null}
-
+          )}
         </CardBody>
+
       </Card>
 
       <PropertiesFilterModal

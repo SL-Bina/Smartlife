@@ -3,22 +3,15 @@ import { useState } from "react";
 export function useBuildingsFilters() {
   const [filters, setFilters] = useState({
     name: "",
-    complex: "",
   });
   const [filterOpen, setFilterOpen] = useState(false);
 
   const updateFilter = (key, value) => {
-    setFilters((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   const clearFilters = () => {
-    setFilters({
-      name: "",
-      complex: "",
-    });
+    setFilters({ name: "" });
   };
 
   const applyFilters = () => {
@@ -34,4 +27,3 @@ export function useBuildingsFilters() {
     applyFilters,
   };
 }
-

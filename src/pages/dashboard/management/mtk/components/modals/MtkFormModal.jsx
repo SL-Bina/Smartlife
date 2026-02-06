@@ -1,170 +1,180 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import L from "leaflet";
+import { CustomDialog, DialogHeader, DialogBody, DialogFooter } from "@/components/ui/CustomDialog";
+import { CustomInput } from "@/components/ui/CustomInput";
+import { CustomTextarea } from "@/components/ui/CustomTextarea";
+import { CustomSelect } from "@/components/ui/CustomSelect";
+import { CustomButton } from "@/components/ui/CustomButton";
+import { CustomCard, CardBody } from "@/components/ui/CustomCard";
+import { CustomTypography } from "@/components/ui/CustomTypography";
+import AdvancedColorPicker from "@/components/ui/AdvancedColorPicker";
+import DynamicToast from "@/components/DynamicToast";
 import {
-  Dialog,
-  DialogHeader,
-  DialogBody,
-  DialogFooter,
-  Button,
-  Input,
-  Typography,
-} from "@material-tailwind/react";
-import { XMarkIcon, PhotoIcon, TrashIcon, MapPinIcon as MapPinIconSolid } from "@heroicons/react/24/outline";
-import { useTranslation } from "react-i18next";
-import {
-  InformationCircleIcon,
   MapPinIcon,
+  BuildingOfficeIcon,
   EnvelopeIcon,
   PhoneIcon,
   GlobeAltIcon,
-  SwatchIcon,
+  DocumentTextIcon,
+  XMarkIcon,
+  PhotoIcon,
   CameraIcon,
+  TrashIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  MapIcon,
 } from "@heroicons/react/24/outline";
 
-export function MtkFormModal({ open, onClose, title, formData, onFieldChange, onSave, isEdit = false, saving = false, removePhoto }) {
-  const { t } = useTranslation();
-  const [mapCenter, setMapCenter] = useState({ lat: 40.4093, lng: 49.8671 }); // Baku default
-  const [mapZoom, setMapZoom] = useState(12);
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
+  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+});
+
+function LocationMarker({ position, onPositionChange }) {
+  const [markerPosition, setMarkerPosition] = useState(position || [40.4093, 49.8671]);
+
+  useMapEvents({
+    click(e) {
+      const { lat, lng } = e.latlng;
+      const newPos = [lat, lng];
+      setMarkerPosition(newPos);
+      onPositionChange?.(lat, lng);
+    },
+  });
+
+  useEffect(() => {
+    if (position && Array.isArray(position) && position.length === 2) {
+      setMarkerPosition(position);
+    }
+  }, [position]);
+
+  return <Marker position={markerPosition} />;
+}
+
+export function MtkFormModal({ open, mode = "create", onClose, form, onSubmit }) {
+  const [saving, setSaving] = useState(false);
   const [showMap, setShowMap] = useState(false);
-  const [mapLoaded, setMapLoaded] = useState(false);
-  const logoInputRef = useRef(null);
-  const photosInputRef = useRef(null);
-  const mapContainerRef = useRef(null);
-  const mapInstanceRef = useRef(null);
-  const markerRef = useRef(null);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [photosPreview, setPhotosPreview] = useState([]);
+  const [mapPosition, setMapPosition] = useState([40.4093, 49.8671]);
+  const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
+  const logoInputRef = React.useRef(null);
+  const photosInputRef = React.useRef(null);
 
+  const showToast = (type, message, title = "") => {
+    setToast({ open: true, type, message, title });
+  };
+
+  const isEdit = mode === "edit";
+  const title = isEdit ? "MTK Redaktə et" : "Yeni MTK yarat";
+
+  const statusOptions = [
+    { value: "active", label: "Aktiv" },
+    { value: "inactive", label: "Qeyri-aktiv" },
+  ];
+
+  const errorText = useMemo(() => {
+    if (!form?.formData?.name?.trim()) return "Ad mütləqdir";
+    return "";
+  }, [form?.formData?.name]);
+
+  // Logo preview
+  React.useEffect(() => {
+    if (form?.formData?.logo) {
+      setLogoPreview(form.formData.logo);
+    } else {
+      setLogoPreview(null);
+    }
+  }, [form?.formData?.logo]);
+
+  // Photos preview
+  React.useEffect(() => {
+    if (form?.formData?.photos && Array.isArray(form.formData.photos)) {
+      setPhotosPreview(form.formData.photos);
+    } else {
+      setPhotosPreview([]);
+    }
+  }, [form?.formData?.photos]);
+
+  // Map position update
   useEffect(() => {
-    if (formData.meta?.lat && formData.meta?.lng) {
-      const lat = parseFloat(formData.meta.lat);
-      const lng = parseFloat(formData.meta.lng);
+    if (form?.formData?.meta?.lat && form?.formData?.meta?.lng) {
+      const lat = parseFloat(form.formData.meta.lat);
+      const lng = parseFloat(form.formData.meta.lng);
       if (!isNaN(lat) && !isNaN(lng)) {
-        setMapCenter({ lat, lng });
-        if (mapInstanceRef.current && markerRef.current) {
-          const newPosition = { lat, lng };
-          mapInstanceRef.current.setCenter(newPosition);
-          markerRef.current.setPosition(newPosition);
-        }
+        setMapPosition([lat, lng]);
       }
     }
-  }, [formData.meta?.lat, formData.meta?.lng]);
+  }, [form?.formData?.meta?.lat, form?.formData?.meta?.lng]);
 
-  // Check if Google Maps is loaded
-  useEffect(() => {
-    if (showMap) {
-      const checkGoogleMaps = setInterval(() => {
-        if (window.google && window.google.maps) {
-          setMapLoaded(true);
-          clearInterval(checkGoogleMaps);
-        }
-      }, 100);
+  const handleMapClick = (lat, lng) => {
+    form.updateMeta("lat", String(lat));
+    form.updateMeta("lng", String(lng));
+    setMapPosition([lat, lng]);
+  };
 
-      // Timeout after 10 seconds
-      const timeout = setTimeout(() => {
-        clearInterval(checkGoogleMaps);
-        if (!window.google) {
-          console.error("Google Maps API failed to load");
-        }
-      }, 10000);
-
-      return () => {
-        clearInterval(checkGoogleMaps);
-        clearTimeout(timeout);
-      };
+  const handleManualCoordinateInput = () => {
+    const lat = parseFloat(form?.formData?.meta?.lat);
+    const lng = parseFloat(form?.formData?.meta?.lng);
+    if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+      setMapPosition([lat, lng]);
     }
-  }, [showMap]);
-
-  // Initialize map when Google Maps is loaded
-  useEffect(() => {
-    if (showMap && mapContainerRef.current && window.google && window.google.maps && !mapInstanceRef.current && mapLoaded) {
-      const currentCenter = formData.meta?.lat && formData.meta?.lng
-        ? { lat: parseFloat(formData.meta.lat), lng: parseFloat(formData.meta.lng) }
-        : mapCenter;
-
-      const map = new window.google.maps.Map(mapContainerRef.current, {
-        center: currentCenter,
-        zoom: mapZoom,
-        mapTypeControl: true,
-        streetViewControl: false,
-        zoomControl: true,
-        fullscreenControl: true,
-        gestureHandling: 'auto',
-        draggable: true,
-        scrollwheel: true,
-        disableDoubleClickZoom: false,
-      });
-
-      const marker = new window.google.maps.Marker({
-        position: currentCenter,
-        map: map,
-        draggable: true,
-        title: t("mtk.form.pickLocation"),
-      });
-
-      map.addListener("click", (e) => {
-        const lat = e.latLng.lat();
-        const lng = e.latLng.lng();
-        marker.setPosition({ lat, lng });
-        onFieldChange("meta.lat", lat.toString());
-        onFieldChange("meta.lng", lng.toString());
-        setMapCenter({ lat, lng });
-      });
-
-      marker.addListener("dragend", (e) => {
-        const lat = e.latLng.lat();
-        const lng = e.latLng.lng();
-        onFieldChange("meta.lat", lat.toString());
-        onFieldChange("meta.lng", lng.toString());
-        setMapCenter({ lat, lng });
-      });
-
-      mapInstanceRef.current = map;
-      markerRef.current = marker;
-    }
-
-    return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current = null;
-        markerRef.current = null;
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showMap, mapLoaded]);
+  };
 
   const handleGetCurrentLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
-          onFieldChange("meta.lat", lat.toString());
-          onFieldChange("meta.lng", lng.toString());
-          setMapCenter({ lat, lng });
-          if (mapInstanceRef.current && markerRef.current) {
-            const newPosition = { lat, lng };
-            mapInstanceRef.current.setCenter(newPosition);
-            mapInstanceRef.current.setZoom(15);
-            markerRef.current.setPosition(newPosition);
-          }
-        },
-        (error) => {
-          alert(t("mtk.form.geolocationError") || "Yerinizi təyin edə bilmədim. Xahiş edirik manuel seçin.");
-          console.error("Geolocation error:", error);
-        }
-      );
-    } else {
-      alert(t("mtk.form.geolocationNotSupported") || "Brauzeriniz geolocation dəstəkləmir.");
+    if (!navigator.geolocation) {
+      showToast("error", "Brauzeriniz geolocation dəstəkləmir", "Xəta");
+      return;
     }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        form.updateMeta("lat", String(lat));
+        form.updateMeta("lng", String(lng));
+        setMapPosition([lat, lng]);
+        setShowMap(true); // Xəritəni avtomatik aç
+        showToast("success", "Cari yer uğurla seçildi", "Uğurlu");
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        let errorMessage = "Yerinizi təyin edə bilmədim.";
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = "Yer məlumatına icazə verilməyib. Xahiş edirik brauzer parametrlərindən icazə verin.";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "Yer məlumatı mövcud deyil.";
+            break;
+          case error.TIMEOUT:
+            errorMessage = "Yer məlumatı alınarkən vaxt aşdı.";
+            break;
+        }
+        showToast("error", errorMessage, "Xəta");
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
   };
 
   const handleLogoUpload = (e) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert(t("mtk.form.logoSizeError") || "Logo faylının ölçüsü 5MB-dan böyük ola bilməz");
+        showToast("error", "Logo faylının ölçüsü 5MB-dan böyük ola bilməz", "Xəta");
         return;
       }
       const reader = new FileReader();
       reader.onloadend = () => {
-        onFieldChange("logo", reader.result);
+        form.updateField("logo", reader.result);
+        showToast("success", "Logo uğurla yükləndi", "Uğurlu");
       };
       reader.readAsDataURL(file);
     }
@@ -172,21 +182,31 @@ export function MtkFormModal({ open, onClose, title, formData, onFieldChange, on
 
   const handlePhotosUpload = (e) => {
     const files = Array.from(e.target.files || []);
-    const currentPhotos = formData.photos || [];
-    
+    const currentPhotos = form?.formData?.photos || [];
+
     if (files.length + currentPhotos.length > 10) {
-      alert(t("mtk.form.maxPhotos"));
+      showToast("error", "Maksimum 10 şəkil yükləyə bilərsiniz", "Xəta");
       e.target.value = "";
       return;
     }
-    
+
+    const invalidFiles = [];
     const validFiles = files.filter((file) => {
       if (file.size > 10 * 1024 * 1024) {
-        alert(t("mtk.form.photoSizeError") || `${file.name} faylının ölçüsü 10MB-dan böyük ola bilməz`);
+        invalidFiles.push(file.name);
         return false;
       }
       return true;
     });
+
+    if (invalidFiles.length > 0) {
+      showToast("error", `${invalidFiles.join(", ")} fayl(lar)ının ölçüsü 10MB-dan böyükdür`, "Xəta");
+    }
+
+    if (validFiles.length === 0) {
+      e.target.value = "";
+      return;
+    }
 
     const newPhotos = [];
     let loadedCount = 0;
@@ -197,7 +217,8 @@ export function MtkFormModal({ open, onClose, title, formData, onFieldChange, on
         newPhotos.push(reader.result);
         loadedCount++;
         if (loadedCount === validFiles.length) {
-          onFieldChange("photos", [...currentPhotos, ...newPhotos]);
+          form.updateField("photos", [...currentPhotos, ...newPhotos]);
+          showToast("success", `${validFiles.length} şəkil uğurla yükləndi`, "Uğurlu");
         }
       };
       reader.readAsDataURL(file);
@@ -206,466 +227,407 @@ export function MtkFormModal({ open, onClose, title, formData, onFieldChange, on
     e.target.value = "";
   };
 
-
   const handleRemoveLogo = () => {
-    onFieldChange("logo", null);
+    form.updateField("logo", null);
     if (logoInputRef.current) {
       logoInputRef.current.value = "";
     }
   };
 
-  if (!open) return null;
+  const handleRemovePhoto = (index) => {
+    const currentPhotos = form?.formData?.photos || [];
+    const newPhotos = currentPhotos.filter((_, i) => i !== index);
+    form.updateField("photos", newPhotos);
+  };
+
+  const submit = async () => {
+    if (errorText) return;
+    setSaving(true);
+    try {
+      await onSubmit?.(form.formData);
+      onClose?.();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const hasCoordinates = form?.formData?.meta?.lat && form?.formData?.meta?.lng;
 
   return (
-    <Dialog
-      open={open}
-      handler={onClose}
-      size="xl"
-      className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl"
-      dismiss={{ enabled: false }}
-    >
-      <DialogHeader className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700 border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between rounded-t-lg">
-        <Typography variant="h5" className="font-bold text-gray-900 dark:text-white">
-          {title}
-        </Typography>
-        <div className="cursor-pointer p-2 rounded-md transition-all hover:bg-gray-200 dark:hover:bg-gray-700" onClick={onClose}>
-          <XMarkIcon className="dark:text-white h-5 w-5 cursor-pointer" />
-        </div>
-      </DialogHeader>
-      <DialogBody divider className="dark:bg-gray-800 dark:border-gray-700 max-h-[75vh] overflow-y-auto py-6">
-        <div className="space-y-6">
-          {/* Basic Information Section */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
-              <InformationCircleIcon className="h-5 w-5 text-blue-500 dark:text-blue-400" />
-              <Typography variant="h6" className="font-semibold dark:text-white">
-                {t("mtk.form.basicInfo")}
-              </Typography>
+    <>
+      <CustomDialog open={!!open} onClose={onClose} size="xl">
+        <DialogHeader className=" rounded-t-lg">
+          <div className="flex items-center gap-3 flex-1">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <BuildingOfficeIcon className="h-6 w-6" />
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
-                  {t("mtk.form.name")} <span className="text-red-500">*</span>
-                </Typography>
-                <Input
-                  placeholder={t("mtk.form.enterName")}
-                  value={formData.name || ""}
-                  onChange={(e) => onFieldChange("name", e.target.value)}
-                  className="dark:text-white"
-                  labelProps={{ className: "dark:text-gray-400" }}
-                  containerProps={{ className: "!min-w-0" }}
-                  // required
-                />
-              </div>
-
-              <div>
-                <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
-                  {t("mtk.form.status")} <span className="text-red-500">*</span>
-                </Typography>
-                <select
-                  value={formData.status || "active"}
-                  onChange={(e) => onFieldChange("status", e.target.value)}
-                  className="w-full px-3 py-2.5 border border-blue-gray-200 rounded-lg focus:border-blue-500 focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-                >
-                  <option value="active" className="dark:bg-gray-800 dark:text-gray-300">
-                    {t("mtk.form.active")}
-                  </option>
-                  <option value="inactive" className="dark:bg-gray-800 dark:text-gray-300">
-                    {t("mtk.form.inactive")}
-                  </option>
-                </select>
-              </div>
-            </div>
-
-            {/* Logo Upload */}
             <div>
-              <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
-                {t("mtk.form.logo")}
-              </Typography>
-              <div className="flex items-center gap-4">
-                {formData.logo ? (
-                  <div className="relative">
-                    <img
-                      src={formData.logo}
-                      alt="Logo preview"
-                      className="w-24 h-24 object-cover rounded-lg border border-gray-300 dark:border-gray-600"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleRemoveLogo}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                    >
-                      <XMarkIcon className="h-4 w-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="w-24 h-24 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center">
-                    <CameraIcon className="h-8 w-8 text-gray-400" />
-                  </div>
-                )}
-                <div className="flex-1">
-                  <input
-                    ref={logoInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleLogoUpload}
-                    className="hidden"
-                    id="logo-upload"
-                  />
-                  <label
-                    htmlFor="logo-upload"
-                    className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                  >
-                    <PhotoIcon className="h-5 w-5" />
-                    {formData.logo ? t("mtk.form.changeLogo") : t("mtk.form.uploadLogo")}
-                  </label>
-                </div>
-              </div>
+              <CustomTypography variant="h5" className="font-bold">
+                {title}
+              </CustomTypography>
+              <CustomTypography variant="small" className="font-normal">
+                {isEdit ? "MTK məlumatlarını yeniləyin" : "Yeni MTK üçün məlumatları doldurun"}
+              </CustomTypography>
             </div>
           </div>
+          <CustomButton
+            variant="text"
+            size="sm"
+            onClick={onClose}
+            className="text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg p-2"
+          >
+            <XMarkIcon className="h-5 w-5" />
+          </CustomButton>
+        </DialogHeader>
 
-          {/* Location Information Section */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
-              <MapPinIcon className="h-5 w-5 text-green-500 dark:text-green-400" />
-              <Typography variant="h6" className="font-semibold dark:text-white">
-                {t("mtk.form.metaInfo")}
-              </Typography>
+        <DialogBody className="max-h-[75vh] overflow-y-auto">
+          {!form ? (
+            <div className="text-center py-8">
+              <CustomTypography variant="body2" className="text-gray-500 dark:text-gray-300">
+                Form hazır deyil
+              </CustomTypography>
             </div>
-
-            {/* Google Maps Picker */}
-            <div className="md:col-span-2">
-              <div className="flex items-center justify-between mb-2">
-                <Typography variant="small" color="blue-gray" className="font-semibold dark:text-gray-300">
-                  {t("mtk.form.mapPicker")}
-                </Typography>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outlined"
-                    color="green"
-                    onClick={handleGetCurrentLocation}
-                    className="dark:text-green-400 dark:border-green-600"
-                  >
-                    {t("mtk.form.useCurrentLocation") || "Cari yer"}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outlined"
-                    color="blue"
-                    onClick={() => setShowMap(!showMap)}
-                    className="dark:text-blue-400 dark:border-blue-600"
-                  >
-                    {showMap ? t("mtk.form.hideMap") || "Xəritəni gizlət" : t("mtk.form.pickLocation")}
-                  </Button>
-                </div>
-              </div>
-              {showMap && (
-                <div className="mb-4">
-                  <div className="relative w-full h-96 rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800" style={{ touchAction: 'none' }}>
-                    {window.google && window.google.maps && mapLoaded ? (
-                      <div ref={mapContainerRef} className="w-full h-full" style={{ pointerEvents: 'auto' }} />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <div className="text-center">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
-                          <Typography variant="small" className="text-gray-500 dark:text-gray-400">
-                            {t("mtk.form.loadingMap") || "Xəritə yüklənir..."}
-                          </Typography>
-                        </div>
-                      </div>
-                    )}
-                    {window.google && window.google.maps && mapLoaded && (
-                      <div className="absolute top-2 right-2 bg-white dark:bg-gray-800 p-2 rounded-lg shadow-lg z-10 max-w-xs">
-                        <Typography variant="small" className="text-gray-600 dark:text-gray-300">
-                          {t("mtk.form.pickLocationDescription")}
-                        </Typography>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
-                  {t("mtk.form.latitude")}
-                </Typography>
-                <Input
-                  placeholder={t("mtk.form.enterLatitude")}
-                  value={formData.meta?.lat || ""}
-                  readOnly
-                  className="dark:text-white dark:bg-gray-700"
-                  labelProps={{ className: "dark:text-gray-400" }}
-                  containerProps={{ className: "!min-w-0" }}
-                  type="number"
-                  step="any"
-                />
-              </div>
-
-              <div>
-                <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
-                  {t("mtk.form.longitude")}
-                </Typography>
-                <Input
-                  placeholder={t("mtk.form.enterLongitude")}
-                  value={formData.meta?.lng || ""}
-                  readOnly
-                  className="dark:text-white dark:bg-gray-700"
-                  labelProps={{ className: "dark:text-gray-400" }}
-                  containerProps={{ className: "!min-w-0" }}
-                  type="number"
-                  step="any"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
-                  {t("mtk.form.description")}
-                </Typography>
-                <textarea
-                  placeholder={t("mtk.form.enterDescription")}
-                  value={formData.meta?.desc || ""}
-                  onChange={(e) => onFieldChange("meta.desc", e.target.value)}
-                  className="w-full px-3 py-2.5 border border-blue-gray-200 rounded-lg focus:border-blue-500 focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-400 resize-none"
-                  rows={3}
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
-                  {t("mtk.form.address")}
-                </Typography>
-                <Input
-                  placeholder={t("mtk.form.enterAddress")}
-                  value={formData.meta?.address || ""}
-                  onChange={(e) => onFieldChange("meta.address", e.target.value)}
-                  className="dark:text-white"
-                  labelProps={{ className: "dark:text-gray-400" }}
-                  containerProps={{ className: "!min-w-0" }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Photos Section */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
-              <PhotoIcon className="h-5 w-5 text-purple-500 dark:text-purple-400" />
-              <Typography variant="h6" className="font-semibold dark:text-white">
-                {t("mtk.form.photos")}
-              </Typography>
-            </div>
-
-            <div>
-              <input
-                ref={photosInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handlePhotosUpload}
-                className="hidden"
-                id="photos-upload"
-              />
-              <label
-                htmlFor="photos-upload"
-                className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors mb-4"
-              >
-                <PhotoIcon className="h-5 w-5" />
-                {t("mtk.form.uploadPhotos")}
-              </label>
-              <Typography variant="small" className="text-gray-500 dark:text-gray-400 ml-2">
-                {t("mtk.form.maxPhotos")}
-              </Typography>
-
-              {formData.photos && formData.photos.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                  {formData.photos.map((photo, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={typeof photo === "string" ? photo : URL.createObjectURL(photo)}
-                        alt={`Photo ${index + 1}`}
-                        className="w-full h-32 object-cover rounded-lg border border-gray-300 dark:border-gray-600"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removePhoto && removePhoto(index)}
-                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="mt-4 p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center">
-                  <PhotoIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                  <Typography variant="small" className="text-gray-500 dark:text-gray-400">
-                    {t("mtk.form.noPhotos")}
-                  </Typography>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Contact Information Section */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
-              <EnvelopeIcon className="h-5 w-5 text-purple-500 dark:text-purple-400" />
-              <Typography variant="h6" className="font-semibold dark:text-white">
-                {t("mtk.form.contactInfo") || "Əlaqə Məlumatları"}
-              </Typography>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
-                  <EnvelopeIcon className="h-4 w-4 inline mr-1" />
-                  {t("mtk.form.email")}
-                </Typography>
-                <Input
-                  label={t("mtk.form.enterEmail")}
-                  value={formData.meta?.email || ""}
-                  onChange={(e) => onFieldChange("meta.email", e.target.value)}
-                  className="dark:text-white"
-                  labelProps={{ className: "dark:text-gray-400" }}
-                  type="email"
-                />
-              </div>
-
-              <div>
-                <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
-                  <PhoneIcon className="h-4 w-4 inline mr-1" />
-                  {t("mtk.form.phone")}
-                </Typography>
-                <Input
-                  label={t("mtk.form.enterPhone")}
-                  value={formData.meta?.phone || ""}
-                  onChange={(e) => onFieldChange("meta.phone", e.target.value)}
-                  className="dark:text-white"
-                  labelProps={{ className: "dark:text-gray-400" }}
-                  type="tel"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
-                  <GlobeAltIcon className="h-4 w-4 inline mr-1" />
-                  {t("mtk.form.website")}
-                </Typography>
-                <Input
-                  label={t("mtk.form.enterWebsite")}
-                  value={formData.meta?.website || ""}
-                  onChange={(e) => onFieldChange("meta.website", e.target.value)}
-                  className="dark:text-white"
-                  labelProps={{ className: "dark:text-gray-400" }}
-                  type="url"
-                  placeholder="https://example.com"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Color Code Section */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
-              <SwatchIcon className="h-5 w-5 text-pink-500 dark:text-pink-400" />
-              <Typography variant="h6" className="font-semibold dark:text-white">
-                {t("mtk.form.colorCode")}
-              </Typography>
-            </div>
-
-            <div>
-              <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
-                {t("mtk.form.enterColorCode")}
-              </Typography>
-              <div className="flex gap-3 items-end">
-                <div className="flex flex-col">
-                  <label className="text-xs text-gray-600 dark:text-gray-400 mb-1">
-                    {t("mtk.form.colorPicker") || "Rəng seçin"}
-                  </label>
-                  <input
-                    type="color"
-                    value={formData.meta?.color_code || "#237832"}
-                    onChange={(e) => onFieldChange("meta.color_code", e.target.value)}
-                    className="w-16 h-12 rounded cursor-pointer border border-gray-300 dark:border-gray-600"
-                  />
-                </div>
-                <div className="flex-1">
-                  <Input
-                    // label={t("mtk.form.enterColorCode")}
-                    value={formData.meta?.color_code || ""}
-                    onChange={(e) => onFieldChange("meta.color_code", e.target.value)}
-                    className="dark:text-white"
-                    labelProps={{ className: "dark:text-gray-400" }}
-                    placeholder="#237832"
-                    pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
-                  />
-                </div>
-                {formData.meta?.color_code && (
-                  <div
-                    className="w-12 h-12 rounded border border-gray-300 dark:border-gray-600"
-                    style={{ backgroundColor: formData.meta.color_code }}
-                    title={formData.meta.color_code}
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </DialogBody>
-      <DialogFooter className="flex justify-end gap-3 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pt-4">
-        <Button
-          variant="outlined"
-          color="blue-gray"
-          onClick={onClose}
-          disabled={saving}
-          className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 min-w-[100px]"
-        >
-          {isEdit ? t("mtk.edit.cancel") : t("mtk.create.cancel")}
-        </Button>
-        <Button
-          color={isEdit ? "blue" : "green"}
-          onClick={onSave}
-          disabled={saving}
-          className={`min-w-[120px] ${
-            isEdit
-              ? "dark:bg-blue-600 dark:hover:bg-blue-700"
-              : "dark:bg-green-600 dark:hover:bg-green-700"
-          }`}
-        >
-          {saving ? (
-            <span className="flex items-center gap-2">
-              <svg
-                className="animate-spin h-4 w-4"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              {t("mtk.saving")}
-            </span>
           ) : (
-            isEdit ? t("mtk.edit.save") : t("mtk.create.save")
+            <div className="flex flex-col gap-6">
+              {/* Basic Information */}
+              <CustomCard>
+                <CardBody>
+                  <CustomTypography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold">
+                    Əsas məlumatlar
+                  </CustomTypography>
+                  <div className="flex flex-col gap-4">
+                    <CustomInput
+                      label="MTK adı"
+                      value={form.formData.name || ""}
+                      onChange={(e) => form.updateField("name", e.target.value)}
+                      error={errorText}
+                      icon={<BuildingOfficeIcon className="h-5 w-5" />}
+                    />
+
+                    <CustomSelect
+                      label="Status"
+                      value={form.formData.status || "active"}
+                      onChange={(value) => form.updateField("status", value)}
+                      options={statusOptions}
+                      placeholder="Status seç"
+                    />
+
+                    <CustomTextarea
+                      label="Təsvir"
+                      value={form.formData.meta?.desc || ""}
+                      onChange={(e) => form.updateMeta("desc", e.target.value)}
+                      rows={4}
+                      icon={<DocumentTextIcon className="h-5 w-5" />}
+                    />
+                  </div>
+                </CardBody>
+              </CustomCard>
+
+              {/* Logo Upload */}
+              <CustomCard>
+                <CardBody>
+                  <CustomTypography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold">
+                    Logo
+                  </CustomTypography>
+                  <div className="flex items-center gap-4">
+                    {logoPreview ? (
+                      <div className="relative">
+                        <img
+                          src={logoPreview}
+                          alt="Logo preview"
+                          className="w-24 h-24 object-cover rounded-lg border border-gray-300 dark:border-gray-600"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleRemoveLogo}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                        >
+                          <XMarkIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="w-24 h-24 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center">
+                        <CameraIcon className="h-8 w-8 text-gray-400" />
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <input
+                        ref={logoInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoUpload}
+                        className="hidden"
+                        id="logo-upload"
+                      />
+                      <label
+                        htmlFor="logo-upload"
+                        className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        <PhotoIcon className="h-5 w-5" />
+                        {logoPreview ? "Logo dəyiş" : "Logo yüklə"}
+                      </label>
+                      <CustomTypography variant="small" className="text-gray-500 dark:text-gray-400 mt-1">
+                        Maksimum 5MB
+                      </CustomTypography>
+                    </div>
+                  </div>
+                </CardBody>
+              </CustomCard>
+
+              {/* Photos Upload */}
+              <CustomCard>
+                <CardBody>
+                  <CustomTypography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold">
+                    Şəkillər
+                  </CustomTypography>
+                  <div>
+                    <input
+                      ref={photosInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handlePhotosUpload}
+                      className="hidden"
+                      id="photos-upload"
+                    />
+                    <label
+                      htmlFor="photos-upload"
+                      className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors mb-2"
+                    >
+                      <PhotoIcon className="h-5 w-5" />
+                      Şəkil yüklə
+                    </label>
+                    <CustomTypography variant="small" className="text-gray-500 dark:text-gray-400 block">
+                      Maksimum 10 şəkil, hər biri 10MB-dan az
+                    </CustomTypography>
+
+                    {photosPreview.length > 0 ? (
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                        {photosPreview.map((photo, index) => (
+                          <div key={index} className="relative group">
+                            <img
+                              src={typeof photo === "string" ? photo : URL.createObjectURL(photo)}
+                              alt={`Photo ${index + 1}`}
+                              className="w-full h-32 object-cover rounded-lg border border-gray-300 dark:border-gray-600"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemovePhoto(index)}
+                              className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                            >
+                              <TrashIcon className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="mt-4 p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center">
+                        <PhotoIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                        <CustomTypography variant="small" className="text-gray-500 dark:text-gray-400">
+                          Şəkil yoxdur
+                        </CustomTypography>
+                      </div>
+                    )}
+                  </div>
+                </CardBody>
+              </CustomCard>
+
+              {/* Contact Information */}
+              <CustomCard>
+                <CardBody>
+                  <CustomTypography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold">
+                    Əlaqə məlumatları
+                  </CustomTypography>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <CustomInput
+                      label="Email"
+                      type="email"
+                      value={form.formData.meta?.email || ""}
+                      onChange={(e) => form.updateMeta("email", e.target.value)}
+                      icon={<EnvelopeIcon className="h-5 w-5" />}
+                    />
+                    <CustomInput
+                      label="Telefon"
+                      type="tel"
+                      value={form.formData.meta?.phone || ""}
+                      onChange={(e) => form.updateMeta("phone", e.target.value)}
+                      icon={<PhoneIcon className="h-5 w-5" />}
+                    />
+                  </div>
+                </CardBody>
+              </CustomCard>
+
+              {/* Other Information */}
+              <CustomCard>
+                <CardBody>
+                  <CustomTypography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold">
+                    Digər məlumatlar
+                  </CustomTypography>
+                  <div className="flex flex-col gap-4">
+                    <CustomInput
+                      label="Veb sayt"
+                      type="url"
+                      value={form.formData.meta?.website || ""}
+                      onChange={(e) => form.updateMeta("website", e.target.value)}
+                      icon={<GlobeAltIcon className="h-5 w-5" />}
+                      placeholder="https://example.com"
+                    />
+
+                    <AdvancedColorPicker
+                      value={form.formData.meta?.color_code || ""}
+                      onChange={(color) => form.updateMeta("color_code", color)}
+                      label="Rəng kodu"
+                    />
+                  </div>
+                </CardBody>
+              </CustomCard>
+
+              {/* Location Information */}
+              <CustomCard>
+                <CardBody>
+                  <CustomTypography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold">
+                    Ünvan
+                  </CustomTypography>
+                  <CustomInput
+                    label="Ünvan"
+                    value={form.formData.meta?.address || ""}
+                    onChange={(e) => form.updateMeta("address", e.target.value)}
+                    icon={<MapPinIcon className="h-5 w-5" />}
+                  />
+                </CardBody>
+              </CustomCard>
+
+              {/* Coordinates */}
+              <CustomCard>
+                <CardBody>
+                  <div className="flex items-center justify-between mb-4">
+                    <CustomTypography variant="h6" className="text-gray-900 dark:text-white font-semibold">
+                      Koordinatlar
+                    </CustomTypography>
+                    <div className="flex items-center gap-2">
+                      <CustomButton
+                        type="button"
+                        variant="outlined"
+                        size="sm"
+                        color="green"
+                        onClick={handleGetCurrentLocation}
+                        className="flex items-center gap-2"
+                      >
+                        <MapIcon className="h-4 w-4" />
+                        Cari yer
+                      </CustomButton>
+                      <CustomButton
+                        type="button"
+                        variant="outlined"
+                        size="sm"
+                        color="blue"
+                        onClick={() => setShowMap(!showMap)}
+                        className="flex items-center gap-2"
+                      >
+                        <MapPinIcon className="h-4 w-4" />
+                        {showMap ? "Xəritəni gizlət" : "Xəritəni göstər"}
+                        {showMap ? (
+                          <ChevronUpIcon className="h-4 w-4" />
+                        ) : (
+                          <ChevronDownIcon className="h-4 w-4" />
+                        )}
+                      </CustomButton>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <CustomInput
+                      label="Latitude"
+                      value={form.formData.meta?.lat || ""}
+                      onChange={(e) => {
+                        form.updateMeta("lat", e.target.value);
+                      }}
+                      onBlur={handleManualCoordinateInput}
+                      type="number"
+                      step="any"
+                      icon={<MapPinIcon className="h-5 w-5" />}
+                    />
+                    <CustomInput
+                      label="Longitude"
+                      value={form.formData.meta?.lng || ""}
+                      onChange={(e) => {
+                        form.updateMeta("lng", e.target.value);
+                      }}
+                      onBlur={handleManualCoordinateInput}
+                      type="number"
+                      step="any"
+                      icon={<MapPinIcon className="h-5 w-5" />}
+                    />
+                  </div>
+
+                  {showMap && (
+                    <div className="mt-4 w-full h-[400px] rounded-lg overflow-hidden border border-gray-300 dark:border-gray-700">
+                      <MapContainer
+                        key={`${mapPosition[0]}-${mapPosition[1]}`}
+                        center={mapPosition}
+                        zoom={13}
+                        style={{ height: "100%", width: "100%" }}
+                        className="z-0"
+                      >
+                        <TileLayer
+                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        />
+                        <LocationMarker position={mapPosition} onPositionChange={handleMapClick} />
+                      </MapContainer>
+                    </div>
+                  )}
+
+                  {hasCoordinates ? (
+                    <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                      <CustomTypography variant="small" className="text-green-700 dark:text-green-300 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        Koordinatlar seçilib
+                      </CustomTypography>
+                    </div>
+                  ) : (
+                    <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                      <CustomTypography variant="small" className="text-yellow-700 dark:text-yellow-300 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                        Koordinatlar seçilməyib - xəritədə klikləyin və ya əl ilə daxil edin
+                      </CustomTypography>
+                    </div>
+                  )}
+                </CardBody>
+              </CustomCard>
+            </div>
           )}
-        </Button>
-      </DialogFooter>
-    </Dialog>
+        </DialogBody>
+
+        <DialogFooter>
+          <CustomButton
+            variant="outlined"
+            color="gray"
+            onClick={onClose}
+            disabled={saving}
+          >
+            Ləğv et
+          </CustomButton>
+          <CustomButton
+            color="red"
+            onClick={submit}
+            disabled={!!errorText || saving}
+            loading={saving}
+          >
+            {saving ? "Yadda saxlanılır..." : isEdit ? "Yenilə" : "Yarat"}
+          </CustomButton>
+        </DialogFooter>
+      </CustomDialog>
+
+      {/* Toast Notification */}
+      <DynamicToast
+        open={toast.open}
+        type={toast.type}
+        title={toast.title}
+        message={toast.message}
+        onClose={() => setToast({ ...toast, open: false })}
+        duration={3000}
+      />
+    </>
   );
 }
-

@@ -1,51 +1,28 @@
 import React from "react";
 import { Button } from "@material-tailwind/react";
-import { useTranslation } from "react-i18next";
 
-export function MtkPagination({ page, totalPages, onPageChange, onPrev, onNext }) {
-  const { t } = useTranslation();
+export function MtkPagination({ page, lastPage, onPageChange }) {
+  if (!lastPage || lastPage <= 1) {
+    return <div className="text-xs text-blue-gray-400 dark:text-gray-400">Səhifə: 1</div>;
+  }
 
-  if (totalPages <= 1) return null;
+  const canPrev = page > 1;
+  const canNext = page < lastPage;
 
   return (
-    <div className="flex items-center justify-end gap-2 px-6 pt-4">
-      <Button
-        variant="text"
-        size="sm"
-        color="blue-gray"
-        onClick={onPrev}
-        disabled={page === 1}
-        className="dark:text-gray-300 dark:hover:bg-gray-700 dark:disabled:text-gray-600"
-      >
-        {t("mtk.pagination.prev")}
-      </Button>
-      {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
-        <Button
-          key={pageNumber}
-          variant={pageNumber === page ? "filled" : "text"}
-          size="sm"
-          color={pageNumber === page ? "blue" : "blue-gray"}
-          onClick={() => onPageChange(pageNumber)}
-          className={`min-w-[32px] px-2 ${
-            pageNumber === page
-              ? "dark:bg-blue-600 dark:hover:bg-blue-700"
-              : "dark:text-gray-300 dark:hover:bg-gray-700"
-          }`}
-        >
-          {pageNumber}
+    <div className="flex items-center justify-between gap-2">
+      <div className="text-sm text-blue-gray-600 dark:text-gray-300">
+        Səhifə: <b>{page}</b> / {lastPage}
+      </div>
+
+      <div className="flex gap-2">
+        <Button size="sm" variant="outlined" disabled={!canPrev} onClick={() => onPageChange?.(page - 1)}>
+          Prev
         </Button>
-      ))}
-      <Button
-        variant="text"
-        size="sm"
-        color="blue-gray"
-        onClick={onNext}
-        disabled={page === totalPages}
-        className="dark:text-gray-300 dark:hover:bg-gray-700 dark:disabled:text-gray-600"
-      >
-        {t("mtk.pagination.next")}
-      </Button>
+        <Button size="sm" variant="outlined" disabled={!canNext} onClick={() => onPageChange?.(page + 1)}>
+          Next
+        </Button>
+      </div>
     </div>
   );
 }
-

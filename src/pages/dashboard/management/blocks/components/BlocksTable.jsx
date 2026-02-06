@@ -1,138 +1,178 @@
 import React from "react";
-import { Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
-import { EllipsisVerticalIcon, ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/24/outline";
-import { useTranslation } from "react-i18next";
+import { Card, CardBody, Typography, Button } from "@material-tailwind/react";
+import { useManagement } from "@/context/ManagementContext";
+import { useNavigate } from "react-router-dom";
 
-export function BlocksTable({ blocks, onView, onEdit, onDelete, sortConfig, onSortChange }) {
-  const { t } = useTranslation();
+export function BlocksTable({ items = [], loading, onEdit, onDelete, onView }) {
+  const navigate = useNavigate();
+  const { state, actions } = useManagement();
 
-  const columns = [
-    { key: "id", label: t("blocks.table.id"), sortable: true },
-    { key: "name", label: t("blocks.table.block"), sortable: true },
-    { key: "building", label: t("blocks.table.building"), sortable: true },
-    { key: "floors", label: t("blocks.table.floorsCount"), sortable: true },
-    { key: "apartments", label: t("blocks.table.apartmentsCount"), sortable: true },
-    { key: "actions", label: t("blocks.table.actions"), sortable: false },
-  ];
+  const goProperties = (block) => {
+    const mtkId = state.mtkId || block?.building?.complex?.bind_mtk?.id || block?.building?.complex?.mtk_id || null;
+    const complexId = state.complexId || block?.building?.complex?.id || block?.complex?.id || null;
+    const buildingId = state.buildingId || block?.building?.id || block?.building_id || null;
 
-  const handleSort = (key) => {
-    if (!columns.find((col) => col.key === key)?.sortable) return;
+    actions.setMtk(mtkId, null);
+    actions.setComplex(complexId, block?.complex || block?.building?.complex || null);
+    actions.setBuilding(buildingId, block?.building || null);
+    actions.setBlock(block.id, block);
 
-    let direction = "asc";
-    if (sortConfig?.key === key && sortConfig?.direction === "asc") {
-      direction = "desc";
-    }
-    onSortChange({ key, direction });
+    navigate("/dashboard/management/properties", {
+      state: { mtkId, complexId, buildingId, blockId: block.id },
+    });
   };
 
   return (
-    <div className="hidden lg:block">
-      <table className="w-full table-auto">
-        <thead>
-          <tr>
-            {columns.map((col, idx) => (
-              <th
-                key={col.key}
-                onClick={() => col.sortable && handleSort(col.key)}
-                className={`border-b border-blue-gray-100 dark:border-gray-800 py-3 px-6 text-left ${
-                  idx === 5 ? "text-right" : ""
-                } ${col.sortable ? "cursor-pointer hover:bg-blue-gray-50 dark:hover:bg-gray-700 transition-colors" : ""}`}
-              >
-                <div className="flex items-center gap-2">
-                  <Typography
-                    variant="small"
-                    className="text-[11px] font-medium uppercase text-blue-gray-400 dark:text-gray-400"
-                  >
-                    {col.label}
+    <Card className="shadow-sm dark:bg-gray-800">
+      <CardBody className="p-0">
+        <div className="w-full overflow-x-auto">
+          <table className="w-full min-w-[1200px] table-auto">
+            <thead>
+              <tr className="bg-blue-gray-50 dark:bg-gray-900/40">
+                <th className="p-4 text-left">
+                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    Ad
                   </Typography>
-                  {col.sortable && (
-                    <div className="flex flex-col">
-                      <ArrowUpIcon
-                        className={`h-3 w-3 ${
-                          sortConfig?.key === col.key && sortConfig?.direction === "asc"
-                            ? "text-blue-600 dark:text-blue-400"
-                            : "text-blue-gray-300 dark:text-gray-600"
-                        }`}
-                      />
-                      <ArrowDownIcon
-                        className={`h-3 w-3 -mt-1 ${
-                          sortConfig?.key === col.key && sortConfig?.direction === "desc"
-                            ? "text-blue-600 dark:text-blue-400"
-                            : "text-blue-gray-300 dark:text-gray-600"
-                        }`}
-                      />
-                    </div>
-                  )}
-                </div>
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {blocks.map((row, key) => {
-            const className = `py-3 px-6 ${
-              key === blocks.length - 1 ? "" : "border-b border-blue-gray-50 dark:border-gray-800"
-            }`;
-            return (
-              <tr key={row.id} className="dark:hover:bg-gray-700/50">
-                <td className={className}>
-                  <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                    {row.id}
+                </th>
+
+                <th className="p-4 text-left">
+                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    Kompleks
                   </Typography>
-                </td>
-                <td className={className}>
-                  <Typography variant="small" color="blue-gray" className="font-semibold dark:text-white">
-                    {row.name}
+                </th>
+
+                <th className="p-4 text-left">
+                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    Bina
                   </Typography>
-                </td>
-                <td className={className}>
-                  <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                    {row.building}
+                </th>
+
+                <th className="p-4 text-left">
+                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    Mərtəbə
                   </Typography>
-                </td>
-                <td className={className}>
-                  <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                    {row.floors}
+                </th>
+
+                <th className="p-4 text-left">
+                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    Mənzil
                   </Typography>
-                </td>
-                <td className={className}>
-                  <Typography variant="small" color="blue-gray" className="dark:text-gray-300">
-                    {row.apartments}
+                </th>
+
+                <th className="p-4 text-right">
+                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    Əməliyyat
                   </Typography>
-                </td>
-                <td className={`${className} text-right`}>
-                  <Menu placement="left-start">
-                    <MenuHandler>
-                      <IconButton
-                        size="sm"
-                        variant="text"
-                        color="blue-gray"
-                        className="dark:text-gray-300 dark:hover:bg-gray-700"
-                      >
-                        <EllipsisVerticalIcon strokeWidth={2} className="h-5 w-5" />
-                      </IconButton>
-                    </MenuHandler>
-                    <MenuList className="dark:bg-gray-800 dark:border-gray-700">
-                      {onView && (
-                        <MenuItem onClick={() => onView(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
-                          {t("blocks.actions.view")}
-                        </MenuItem>
-                      )}
-                      <MenuItem onClick={() => onEdit(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
-                        {t("blocks.actions.edit")}
-                      </MenuItem>
-                      <MenuItem onClick={() => onDelete(row)} className="dark:text-gray-300 dark:hover:bg-gray-700">
-                        {t("blocks.actions.delete")}
-                      </MenuItem>
-                    </MenuList>
-                  </Menu>
-                </td>
+                </th>
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+            </thead>
+
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td className="p-6" colSpan={6}>
+                    <Typography className="text-sm text-blue-gray-500 dark:text-gray-300">Yüklənir...</Typography>
+                  </td>
+                </tr>
+              ) : items.length === 0 ? (
+                <tr>
+                  <td className="p-6" colSpan={6}>
+                    <Typography className="text-sm text-blue-gray-500 dark:text-gray-300">Heç nə tapılmadı</Typography>
+                  </td>
+                </tr>
+              ) : (
+                items.map((x) => {
+                  const isSelected = String(state.blockId || "") === String(x.id);
+
+                  return (
+                    <tr
+                      key={x.id}
+                      className={`border-b border-blue-gray-50 dark:border-gray-700 cursor-pointer ${
+                        isSelected ? "bg-blue-50/60 dark:bg-gray-700/40" : ""
+                      }`}
+                      onClick={() => actions.setBlock(x.id, x)}
+                      title="Blok seç (scope)"
+                    >
+                      <td className="p-4">
+                        <Typography className="text-sm font-medium text-blue-gray-800 dark:text-white">
+                          {x.name}
+                        </Typography>
+                        <Typography className="text-xs text-blue-gray-500 dark:text-gray-400">ID: {x.id}</Typography>
+                      </td>
+
+                      <td className="p-4">
+                        <Typography className="text-sm text-blue-gray-700 dark:text-gray-200">
+                          {x?.complex?.name || "—"}
+                        </Typography>
+                      </td>
+
+                      <td className="p-4">
+                        <Typography className="text-sm text-blue-gray-700 dark:text-gray-200">
+                          {x?.building?.name || "—"}
+                        </Typography>
+                      </td>
+
+                      <td className="p-4">
+                        <Typography className="text-sm text-blue-gray-700 dark:text-gray-200">
+                          {x?.meta?.total_floor || "—"}
+                        </Typography>
+                      </td>
+
+                      <td className="p-4">
+                        <Typography className="text-sm text-blue-gray-700 dark:text-gray-200">
+                          {x?.meta?.total_apartment || "—"}
+                        </Typography>
+                      </td>
+
+                      <td className="p-4">
+                        <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            onClick={() => onView?.(x)}
+                            className="px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800 transition-colors flex items-center gap-1.5"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            Bax
+                          </button>
+                          <button
+                            onClick={() => onEdit?.(x)}
+                            className="px-3 py-1.5 text-xs font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-lg border border-amber-200 dark:border-amber-800 transition-colors flex items-center gap-1.5"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => onDelete?.(x)}
+                            className="px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-lg transition-all flex items-center gap-1.5 shadow-sm"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            Sil
+                          </button>
+                          <button
+                            onClick={() => goProperties(x)}
+                            className="px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-lg transition-all flex items-center gap-1.5 shadow-sm"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                            </svg>
+                            Mənzillərə keç
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </CardBody>
+    </Card>
   );
 }
-

@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Leaflet + Tailwind fix */
+
+
 @layer base {
   :root {
     --bg-primary: #f8f9fa;

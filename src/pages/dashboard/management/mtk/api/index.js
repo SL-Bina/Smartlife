@@ -23,7 +23,7 @@ export const mtkAPI = {
     try {
       const lat = data.meta?.lat ? parseFloat(data.meta.lat) : null;
       const lng = data.meta?.lng ? parseFloat(data.meta.lng) : null;
-      
+
       const isValidLat = lat !== null && !isNaN(lat) && lat >= -90 && lat <= 90;
       const isValidLng = lng !== null && !isNaN(lng) && lng >= -180 && lng <= 180;
 
@@ -31,8 +31,8 @@ export const mtkAPI = {
         name: data.name || "",
         status: data.status || "active",
         meta: {
-          lat: isValidLat ? String(lat) : (data.meta?.lat || ""),
-          lng: isValidLng ? String(lng) : (data.meta?.lng || ""),
+          lat: isValidLat ? String(lat) : data.meta?.lat || "",
+          lng: isValidLng ? String(lng) : data.meta?.lng || "",
           desc: data.meta?.desc || "",
           address: data.meta?.address || "",
           color_code: data.meta?.color_code || "",
@@ -42,36 +42,21 @@ export const mtkAPI = {
         },
       };
 
-      console.log("MTK Create Request:", cleanedData);
       const response = await api.put("/module/mtk/add", cleanedData);
       return response.data;
     } catch (error) {
       if (error.response?.status === 400 || error.response?.status === 422) {
         const errorData = error.response.data;
-        console.error("MTK Create Error Response:", errorData);
-        
-        if (errorData.errors) {
-          const allErrors = [];
-          Object.keys(errorData.errors).forEach((key) => {
-            const fieldErrors = errorData.errors[key];
-            if (Array.isArray(fieldErrors)) {
-              fieldErrors.forEach((err) => allErrors.push(`${key}: ${err}`));
-            } else {
-              allErrors.push(`${key}: ${fieldErrors}`);
-            }
-          });
-          
+        if (errorData?.errors) {
           const firstError = Object.values(errorData.errors)[0];
           throw {
             message: Array.isArray(firstError) ? firstError[0] : firstError,
             errors: errorData.errors,
-            allErrors: allErrors,
-            ...errorData
+            ...errorData,
           };
         }
         throw errorData;
       }
-      console.error("MTK Create Error:", error);
       throw error.response?.data || error.message;
     }
   },
@@ -80,7 +65,7 @@ export const mtkAPI = {
     try {
       const lat = data.meta?.lat ? parseFloat(data.meta.lat) : null;
       const lng = data.meta?.lng ? parseFloat(data.meta.lng) : null;
-      
+
       const isValidLat = lat !== null && !isNaN(lat) && lat >= -90 && lat <= 90;
       const isValidLng = lng !== null && !isNaN(lng) && lng >= -180 && lng <= 180;
 
@@ -88,8 +73,8 @@ export const mtkAPI = {
         name: data.name || "",
         status: data.status || "active",
         meta: {
-          lat: isValidLat ? String(lat) : (data.meta?.lat || ""),
-          lng: isValidLng ? String(lng) : (data.meta?.lng || ""),
+          lat: isValidLat ? String(lat) : data.meta?.lat || "",
+          lng: isValidLng ? String(lng) : data.meta?.lng || "",
           desc: data.meta?.desc || "",
           address: data.meta?.address || "",
           color_code: data.meta?.color_code || "",
@@ -99,18 +84,17 @@ export const mtkAPI = {
         },
       };
 
-      console.log("MTK Update Request:", cleanedData);
       const response = await api.patch(`/module/mtk/${id}`, cleanedData);
       return response.data;
     } catch (error) {
       if (error.response?.status === 400 || error.response?.status === 422) {
         const errorData = error.response.data;
-        if (errorData.errors) {
+        if (errorData?.errors) {
           const firstError = Object.values(errorData.errors)[0];
           throw {
             message: Array.isArray(firstError) ? firstError[0] : firstError,
             errors: errorData.errors,
-            ...errorData
+            ...errorData,
           };
         }
         throw errorData;
@@ -130,4 +114,3 @@ export const mtkAPI = {
 };
 
 export default mtkAPI;
-
