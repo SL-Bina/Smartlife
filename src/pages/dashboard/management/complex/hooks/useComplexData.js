@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import complexAPI from "../api";
 
 const mapComplex = (x) => ({
@@ -10,7 +10,7 @@ const mapComplex = (x) => ({
   mtk_id: x?.mtk_id ?? null,
 });
 
-export function useComplexData({ search = "", mtkId = null } = {}) {
+export function useComplexData({ search = "", mtkId = null, enabled = true } = {}) {
   const [loading, setLoading] = useState(true);
 
   // MTK seçilməyəndə pagination işləyəcək
@@ -33,6 +33,16 @@ export function useComplexData({ search = "", mtkId = null } = {}) {
 
   // NORMAL: MTK yoxdur -> tək səhifə yüklə
   const fetchNormal = useCallback(async (p = 1) => {
+    // Əgər enabled false-dursa, API sorğusu göndərmə
+    if (!enabled) {
+      setLoading(false);
+      setItems([]);
+      setPage(1);
+      setLastPage(1);
+      setAllItems([]);
+      return;
+    }
+    
     setLoading(true);
     try {
       const r = await fetchPage(p);
@@ -48,10 +58,20 @@ export function useComplexData({ search = "", mtkId = null } = {}) {
     } finally {
       setLoading(false);
     }
-  }, [fetchPage]);
+  }, [fetchPage, enabled]);
 
   // MTK MODE: MTK var -> bütün səhifələri yığ (backend filter işləməsə belə)
   const fetchAllAndFilter = useCallback(async () => {
+    // Əgər enabled false-dursa, API sorğusu göndərmə
+    if (!enabled) {
+      setLoading(false);
+      setAllItems([]);
+      setItems([]);
+      setPage(1);
+      setLastPage(1);
+      return;
+    }
+    
     setLoading(true);
     try {
       // 1) server filter cəhdi (bəlkə işləyir)
@@ -87,13 +107,21 @@ export function useComplexData({ search = "", mtkId = null } = {}) {
     } finally {
       setLoading(false);
     }
-  }, [fetchPage, mtkId]);
+  }, [fetchPage, mtkId, enabled]);
 
   // ilk load + mtk dəyişəndə
+  const prevMtkIdRef = useRef(null);
+  const hasInitializedRef = useRef(false);
   useEffect(() => {
+    // React StrictMode-da iki dəfə çağırılmanın qarşısını almaq üçün
+    if (hasInitializedRef.current && prevMtkIdRef.current === mtkId) return;
+    prevMtkIdRef.current = mtkId;
+    hasInitializedRef.current = true;
+    
     if (mtkId) fetchAllAndFilter();
     else fetchNormal(1);
-  }, [mtkId, fetchAllAndFilter, fetchNormal]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mtkId]); // Yalnız mtkId dəyişəndə yenidən çağır
 
   // Search filter
   const finalItems = useMemo(() => {

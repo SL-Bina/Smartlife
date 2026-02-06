@@ -35,14 +35,12 @@ export const blocksAPI = {
         },
       };
 
-      console.log("Blocks Create Request:", cleanedData);
       const response = await api.put("/module/blocks/add", cleanedData);
       return response.data;
     } catch (error) {
       // MTK/Buildings-dəki kimi 400/422 validasiya xətalarını yığ
       if (error.response?.status === 400 || error.response?.status === 422) {
         const errorData = error.response.data;
-        console.error("Blocks Create Error Response:", errorData);
 
         let allErrors = [];
         if (errorData?.errors) {
@@ -85,7 +83,6 @@ export const blocksAPI = {
         },
       };
 
-      console.log("Blocks Update Request:", cleanedData);
       const response = await api.patch(`/module/blocks/${id}`, cleanedData);
       return response.data;
     } catch (error) {

@@ -31,7 +31,7 @@ export function CustomSelect({
     };
   }, [isOpen]);
 
-  const selectedOption = options.find((opt) => opt.value === value);
+  const selectedOption = options.find((opt) => String(opt.value) === String(value));
 
   const handleSelect = (option) => {
     onChange?.(option.value);
@@ -78,7 +78,7 @@ export function CustomSelect({
                 onClick={() => handleSelect(option)}
                 className={`
                   w-full px-3 py-2 text-left text-sm transition-colors
-                  ${value === option.value
+                  ${String(value) === String(option.value)
                     ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
                     : "text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
                   }

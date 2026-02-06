@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import mtkAPI from "../api";
 
 const mapMtk = (x) => ({
@@ -14,6 +14,7 @@ export function useMtkData({ search = "" } = {}) {
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
+  const hasFetchedRef = useRef(false); // React StrictMode-da iki dəfə çağırılmanın qarşısını almaq üçün
 
   const fetchList = useCallback(async (p = 1) => {
     setLoading(true);
@@ -35,8 +36,12 @@ export function useMtkData({ search = "" } = {}) {
   }, []);
 
   useEffect(() => {
+    // React StrictMode-da iki dəfə çağırılmanın qarşısını almaq üçün
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
     fetchList(1);
-  }, [fetchList]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Yalnız bir dəfə çağırılmalıdır
 
   const filtered = useMemo(() => {
     const q = (search || "").trim().toLowerCase();

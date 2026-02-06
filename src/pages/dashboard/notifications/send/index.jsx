@@ -30,17 +30,6 @@ const SendNotificationPage = () => {
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
 
-  const handleSubmit = () => {
-    // Handle form submission
-    console.log({
-      building: selectedBuilding,
-      block: selectedBlock,
-      apartment: selectedApartment,
-      type: notificationType,
-      title,
-      message,
-    });
-  };
 
   return (
     <div className="mt-12 mb-8">

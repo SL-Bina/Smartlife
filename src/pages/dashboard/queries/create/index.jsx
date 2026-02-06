@@ -47,20 +47,6 @@ const CreateQueryPage = () => {
     );
   };
 
-  const handleSubmit = () => {
-    // Handle form submission
-    console.log({
-      building: selectedBuilding,
-      block: selectedBlock,
-      apartment: selectedApartment,
-      titles: { az: titleAz, en: titleEn, ru: titleRu },
-      descriptions: { az: descriptionAz, en: descriptionEn, ru: descriptionRu },
-      questions: { az: questionAz, en: questionEn },
-      answers,
-      multipleAnswers,
-      showResults,
-    });
-  };
 
   return (
     <div className="mt-12 mb-8">

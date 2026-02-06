@@ -1,56 +1,70 @@
 import { useState, useEffect } from "react";
-import { fetchApartmentById, fetchServiceFeeHistory } from "../api";
+import { fetchPropertyById, fetchServiceFeeList } from "../api";
 
-export function useServiceFeeData(apartmentId) {
-  const [apartment, setApartment] = useState(null);
-  const [feeHistory, setFeeHistory] = useState([]);
+export function useServiceFeeData(propertyId) {
+  const [property, setProperty] = useState(null);
+  const [serviceFees, setServiceFees] = useState([]);
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    last_page: 1,
+    per_page: 10,
+    total: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (!apartmentId) {
+  const loadData = async (page = 1) => {
+    if (!propertyId) {
       setLoading(false);
       return;
     }
 
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    try {
+      setLoading(true);
+      setError(null);
 
-        const [apartmentData, historyData] = await Promise.all([
-          fetchApartmentById(apartmentId),
-          fetchServiceFeeHistory(apartmentId),
-        ]);
+      const [propertyData, serviceFeeResponse] = await Promise.all([
+        fetchPropertyById(propertyId),
+        fetchServiceFeeList(propertyId, { page }),
+      ]);
 
-        setApartment(apartmentData);
-        setFeeHistory(historyData);
-      } catch (err) {
-        console.error("Error loading service fee data:", err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
+      setProperty(propertyData);
+      
+      if (serviceFeeResponse?.success && serviceFeeResponse?.data) {
+        setServiceFees(serviceFeeResponse.data.data || []);
+        setPagination({
+          current_page: serviceFeeResponse.data.current_page || 1,
+          last_page: serviceFeeResponse.data.last_page || 1,
+          per_page: serviceFeeResponse.data.per_page || 10,
+          total: serviceFeeResponse.data.total || 0,
+        });
+      } else {
+        setServiceFees([]);
       }
-    };
-
-    loadData();
-  }, [apartmentId]);
-
-  const addHistoryEntry = (entry) => {
-    setFeeHistory((prev) => [entry, ...prev]);
+    } catch (err) {
+      console.error("Error loading service fee data:", err);
+      setError(err.message || "Xəta baş verdi");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const updateApartmentFee = (newFee) => {
-    setApartment((prev) => (prev ? { ...prev, serviceFee: newFee } : null));
+  useEffect(() => {
+    loadData();
+  }, [propertyId]);
+
+  const refreshData = () => {
+    loadData(pagination.current_page);
   };
 
   return {
-    apartment,
-    feeHistory,
+    property,
+    serviceFees,
+    pagination,
     loading,
     error,
-    addHistoryEntry,
-    updateApartmentFee,
+    refreshData,
+    loadPage: (page) => loadData(page),
   };
 }
 

@@ -37,16 +37,20 @@ export default function BuildingsPage() {
   const [selected, setSelected] = useState(null);
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
 
-  const { state } = useManagement();
+  const { state, actions } = useManagement();
 
   const showToast = (type, message, title = "") => {
     setToast({ open: true, type, message, title });
   };
 
+  // Buildings data yalnız MTK və Complex yükləndikdən sonra yüklənir
+  const shouldLoadBuildingsData = !loadingMtks && !loadingComplexes && mtks.length > 0 && complexes.length > 0;
+  
   const { items, loading, page, lastPage, goToPage, refresh } = useBuildingsData({
     search,
     mtkId: state.mtkId,
     complexId: state.complexId,
+    enabled: shouldLoadBuildingsData,
   });
 
   const form = useBuildingForm();
@@ -70,6 +74,11 @@ export default function BuildingsPage() {
       } while (page <= lastPage);
 
       setMtks(all);
+      
+      // MTK-lar yükləndikdən sonra default olaraq 1-ci MTK seç
+      if (all.length > 0 && !state.mtkId) {
+        actions.setMtk(all[0].id, all[0]);
+      }
     } catch (e) {
       console.error("mtk select load error:", e);
       setMtks([]);
@@ -80,6 +89,11 @@ export default function BuildingsPage() {
 
   // Complex - bütün səhifələr (actions select üçün)
   const loadAllComplexes = async () => {
+    // MTK-lar yüklənib bitməyibsə və ya data yoxdursa gözlə
+    if (loadingMtks || mtks.length === 0) {
+      return;
+    }
+    
     setLoadingComplexes(true);
     try {
       let page = 1;
@@ -97,6 +111,20 @@ export default function BuildingsPage() {
       } while (page <= lastPage);
 
       setComplexes(all);
+      
+      // Komplekslər yükləndikdən sonra, seçilmiş MTK-ya uyğun kompleksləri filter et
+      const selectedMtkId = state.mtkId;
+      if (selectedMtkId && all.length > 0) {
+        const filtered = all.filter((c) => {
+          const mtkId = c?.mtk_id ?? c?.bind_mtk?.id ?? null;
+          return String(mtkId || "") === String(selectedMtkId);
+        });
+        
+        // Default olaraq 1-ci kompleks seç
+        if (filtered.length > 0 && !state.complexId) {
+          actions.setComplex(filtered[0].id, filtered[0]);
+        }
+      }
     } catch (e) {
       console.error("complex select load error:", e);
       setComplexes([]);
@@ -105,10 +133,17 @@ export default function BuildingsPage() {
     }
   };
 
+  // Sequential loading: MTK -> Complex
   useEffect(() => {
     loadAllMtks();
-    loadAllComplexes();
   }, []);
+
+  // MTK-lar yükləndikdən sonra komplekslər yüklənir
+  useEffect(() => {
+    if (!loadingMtks && mtks.length > 0) {
+      loadAllComplexes();
+    }
+  }, [loadingMtks, mtks.length, state.mtkId]);
 
   const pageTitleRight = useMemo(() => {
     if (loading) {
@@ -214,7 +249,11 @@ export default function BuildingsPage() {
             <BuildingsPagination page={page} lastPage={lastPage} onPageChange={goToPage} />
           </div>
 
-          {!loading && items.length === 0 ? (
+          {loading || loadingMtks || loadingComplexes ? (
+            <div className="py-10 flex items-center justify-center">
+              <Spinner className="h-6 w-6" />
+            </div>
+          ) : !loading && items.length === 0 ? (
             <Typography className="text-sm text-blue-gray-500 dark:text-gray-300">
               Bina siyahısı boşdur
             </Typography>

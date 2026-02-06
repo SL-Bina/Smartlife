@@ -1,85 +1,89 @@
 import React from "react";
-import { Card, CardHeader, CardBody, Typography } from "@material-tailwind/react";
 import { useTranslation } from "react-i18next";
+import { CustomCard } from "@/components/ui/CustomCard";
+import { CustomTypography } from "@/components/ui/CustomTypography";
 
-export function ApartmentInfoCard({ apartment }) {
+export function ApartmentInfoCard({ property }) {
   const { t } = useTranslation();
 
-  if (!apartment) return null;
+  if (!property) return null;
+
+  const apartmentNumber = property?.meta?.apartment_number || property?.name || "—";
+  const floor = property?.meta?.floor || "—";
+  const area = property?.meta?.area ? `${property.meta.area} m²` : "—";
+  const blockName = property?.block?.name || property?.sub_data?.block?.name || property?.blockName || "—";
+  const complexName = property?.complex?.name || property?.sub_data?.complex?.name || "—";
+  const buildingName = property?.building?.name || property?.sub_data?.building?.name || "—";
+  const mtkName = property?.mtk?.name || property?.sub_data?.mtk?.name || "—";
 
   return (
-    <Card className="border border-red-600 dark:border-gray-700 shadow-sm dark:bg-gray-800">
-      <CardHeader
-        floated={false}
-        shadow={false}
-        color="transparent"
-        className="m-0 p-6 border-b border-red-600 dark:border-gray-700 dark:bg-gray-800"
-      >
-        <Typography variant="h6" color="blue-gray" className="mb-1 dark:text-white">
-          {t("serviceFee.apartmentInfo")}
-        </Typography>
-      </CardHeader>
-      <CardBody className="px-6 py-6 dark:bg-gray-800">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <CustomCard className="border border-gray-200 dark:border-gray-700 shadow-sm">
+      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+        <CustomTypography variant="h6" className="dark:text-white">
+          Mənzil Məlumatları
+        </CustomTypography>
+      </div>
+      <div className="p-6">
+        <div className="space-y-4">
           <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 font-medium dark:text-gray-400">
-              {t("serviceFee.labels.apartment")}
-            </Typography>
-            <Typography variant="paragraph" color="blue-gray" className="font-semibold dark:text-white">
-              {apartment.number}
-            </Typography>
+            <CustomTypography variant="small" className="text-gray-600 dark:text-gray-400 mb-1">
+              Mənzil nömrəsi
+            </CustomTypography>
+            <CustomTypography variant="small" className="font-semibold text-gray-900 dark:text-white">
+              {apartmentNumber}
+            </CustomTypography>
           </div>
           <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 font-medium dark:text-gray-400">
-              {t("serviceFee.labels.block")}
-            </Typography>
-            <Typography variant="paragraph" color="blue-gray" className="font-semibold dark:text-white">
-              {apartment.block}
-            </Typography>
+            <CustomTypography variant="small" className="text-gray-600 dark:text-gray-400 mb-1">
+              Mərtəbə
+            </CustomTypography>
+            <CustomTypography variant="small" className="font-semibold text-gray-900 dark:text-white">
+              {floor}
+            </CustomTypography>
           </div>
           <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 font-medium dark:text-gray-400">
-              {t("serviceFee.labels.floor")}
-            </Typography>
-            <Typography variant="paragraph" color="blue-gray" className="font-semibold dark:text-white">
-              {apartment.floor}
-            </Typography>
+            <CustomTypography variant="small" className="text-gray-600 dark:text-gray-400 mb-1">
+              Sahə
+            </CustomTypography>
+            <CustomTypography variant="small" className="font-semibold text-gray-900 dark:text-white">
+              {area}
+            </CustomTypography>
           </div>
           <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 font-medium dark:text-gray-400">
-              {t("serviceFee.labels.area")}
-            </Typography>
-            <Typography variant="paragraph" color="blue-gray" className="font-semibold dark:text-white">
-              {apartment.area} m²
-            </Typography>
+            <CustomTypography variant="small" className="text-gray-600 dark:text-gray-400 mb-1">
+              Blok
+            </CustomTypography>
+            <CustomTypography variant="small" className="font-semibold text-gray-900 dark:text-white">
+              {blockName}
+            </CustomTypography>
           </div>
           <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 font-medium dark:text-gray-400">
-              {t("serviceFee.labels.resident")}
-            </Typography>
-            <Typography variant="paragraph" color="blue-gray" className="font-semibold dark:text-white">
-              {apartment.resident}
-            </Typography>
+            <CustomTypography variant="small" className="text-gray-600 dark:text-gray-400 mb-1">
+              Kompleks
+            </CustomTypography>
+            <CustomTypography variant="small" className="font-semibold text-gray-900 dark:text-white">
+              {complexName}
+            </CustomTypography>
           </div>
           <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 font-medium dark:text-gray-400">
-              {t("serviceFee.labels.complex")}
-            </Typography>
-            <Typography variant="paragraph" color="blue-gray" className="font-semibold dark:text-white">
-              {apartment.complex}
-            </Typography>
+            <CustomTypography variant="small" className="text-gray-600 dark:text-gray-400 mb-1">
+              Bina
+            </CustomTypography>
+            <CustomTypography variant="small" className="font-semibold text-gray-900 dark:text-white">
+              {buildingName}
+            </CustomTypography>
           </div>
           <div>
-            <Typography variant="small" color="blue-gray" className="mb-1 font-medium dark:text-gray-400">
-              {t("serviceFee.labels.building")}
-            </Typography>
-            <Typography variant="paragraph" color="blue-gray" className="font-semibold dark:text-white">
-              {apartment.building}
-            </Typography>
+            <CustomTypography variant="small" className="text-gray-600 dark:text-gray-400 mb-1">
+              MTK
+            </CustomTypography>
+            <CustomTypography variant="small" className="font-semibold text-gray-900 dark:text-white">
+              {mtkName}
+            </CustomTypography>
           </div>
         </div>
-      </CardBody>
-    </Card>
+      </div>
+    </CustomCard>
   );
 }
 

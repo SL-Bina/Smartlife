@@ -268,7 +268,6 @@ const UserPermissionsPage = () => {
 
   const handleSavePermissions = () => {
     // Real tətbiqdə API-yə göndəriləcək
-    console.log("Saving permissions for right:", rightId, permissions);
     // Məlumat yadda saxlanıldıqdan sonra hüquqlar səhifəsinə qayıt
     navigate("/dashboard/user-rights");
   };

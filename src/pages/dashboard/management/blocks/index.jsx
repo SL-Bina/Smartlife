@@ -40,17 +40,21 @@ export default function BlocksPage() {
   const [selected, setSelected] = useState(null);
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
 
-  const { state } = useManagement();
+  const { state, actions } = useManagement();
 
   const showToast = (type, message, title = "") => {
     setToast({ open: true, type, message, title });
   };
 
+  // Blocks data yalnız MTK, Complex və Buildings yükləndikdən sonra yüklənir
+  const shouldLoadBlocksData = !loadingMtks && !loadingComplexes && !loadingBuildings && mtks.length > 0 && complexes.length > 0 && buildings.length > 0;
+  
   const { items, loading, page, lastPage, goToPage, refresh } = useBlocksData({
     search,
     mtkId: state.mtkId,
     complexId: state.complexId,
     buildingId: state.buildingId,
+    enabled: shouldLoadBlocksData,
   });
 
   const form = useBlocksForm();
@@ -74,6 +78,11 @@ export default function BlocksPage() {
       } while (page <= lastPage);
 
       setMtks(all);
+      
+      // MTK-lar yükləndikdən sonra default olaraq 1-ci MTK seç
+      if (all.length > 0 && !state.mtkId) {
+        actions.setMtk(all[0].id, all[0]);
+      }
     } catch (e) {
       console.error("mtk select load error:", e);
       setMtks([]);
@@ -84,6 +93,11 @@ export default function BlocksPage() {
 
   // Complex - bütün səhifələr
   const loadAllComplexes = async () => {
+    // MTK-lar yüklənib bitməyibsə və ya data yoxdursa gözlə
+    if (loadingMtks || mtks.length === 0) {
+      return;
+    }
+    
     setLoadingComplexes(true);
     try {
       let page = 1;
@@ -101,6 +115,20 @@ export default function BlocksPage() {
       } while (page <= lastPage);
 
       setComplexes(all);
+      
+      // Komplekslər yükləndikdən sonra, seçilmiş MTK-ya uyğun kompleksləri filter et
+      const selectedMtkId = state.mtkId;
+      if (selectedMtkId && all.length > 0) {
+        const filtered = all.filter((c) => {
+          const mtkId = c?.mtk_id ?? c?.bind_mtk?.id ?? null;
+          return String(mtkId || "") === String(selectedMtkId);
+        });
+        
+        // Default olaraq 1-ci kompleks seç
+        if (filtered.length > 0 && !state.complexId) {
+          actions.setComplex(filtered[0].id, filtered[0]);
+        }
+      }
     } catch (e) {
       console.error("complex select load error:", e);
       setComplexes([]);
@@ -111,6 +139,11 @@ export default function BlocksPage() {
 
   // Buildings - bütün səhifələr
   const loadAllBuildings = async () => {
+    // Komplekslər yüklənib bitməyibsə və ya data yoxdursa gözlə
+    if (loadingMtks || loadingComplexes || mtks.length === 0 || complexes.length === 0) {
+      return;
+    }
+    
     setLoadingBuildings(true);
     try {
       let page = 1;
@@ -128,6 +161,20 @@ export default function BlocksPage() {
       } while (page <= lastPage);
 
       setBuildings(all);
+      
+      // Binələr yükləndikdən sonra, seçilmiş kompleksə uyğun binələri filter et
+      const selectedComplexId = state.complexId;
+      if (selectedComplexId && all.length > 0) {
+        const filtered = all.filter((b) => {
+          const complexId = b?.complex_id ?? b?.complex?.id ?? null;
+          return String(complexId || "") === String(selectedComplexId);
+        });
+        
+        // Default olaraq 1-ci bina seç
+        if (filtered.length > 0 && !state.buildingId) {
+          actions.setBuilding(filtered[0].id, filtered[0]);
+        }
+      }
     } catch (e) {
       console.error("buildings select load error:", e);
       setBuildings([]);
@@ -136,11 +183,24 @@ export default function BlocksPage() {
     }
   };
 
+  // Sequential loading: MTK -> Complex -> Building
   useEffect(() => {
     loadAllMtks();
-    loadAllComplexes();
-    loadAllBuildings();
   }, []);
+
+  // MTK-lar yükləndikdən sonra komplekslər yüklənir
+  useEffect(() => {
+    if (!loadingMtks && mtks.length > 0) {
+      loadAllComplexes();
+    }
+  }, [loadingMtks, mtks.length, state.mtkId]);
+
+  // Komplekslər yükləndikdən sonra binələr yüklənir
+  useEffect(() => {
+    if (!loadingMtks && !loadingComplexes && complexes.length > 0) {
+      loadAllBuildings();
+    }
+  }, [loadingMtks, loadingComplexes, complexes.length, state.complexId]);
 
   const pageTitleRight = useMemo(() => {
     if (loading) {
@@ -248,7 +308,11 @@ export default function BlocksPage() {
             <BlocksPagination page={page} lastPage={lastPage} onPageChange={goToPage} />
           </div>
 
-          {!loading && items.length === 0 ? (
+          {loading || loadingMtks || loadingComplexes || loadingBuildings ? (
+            <div className="py-10 flex items-center justify-center">
+              <Spinner className="h-6 w-6" />
+            </div>
+          ) : !loading && items.length === 0 ? (
             <Typography className="text-sm text-blue-gray-500 dark:text-gray-300">
               Blok siyahısı boşdur
             </Typography>

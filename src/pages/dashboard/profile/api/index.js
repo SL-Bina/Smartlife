@@ -47,8 +47,6 @@ export const profileAPI = {
         payload.password_confirmation = String(data.password_confirmation || "");
       }
 
-      console.log("PATCH /user/me payload:", payload);
-
       const res = await api.patch("/user/me", payload);
       return res.data;
     } catch (error) {

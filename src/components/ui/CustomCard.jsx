@@ -16,3 +16,6 @@ export function CardBody({ children, className = "" }) {
   );
 }
 
+// Default export for backward compatibility (if needed)
+export default CustomCard;
+

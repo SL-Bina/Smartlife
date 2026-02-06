@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import blocksAPI from "../api";
 
 const mapBlock = (x) => ({
@@ -11,7 +11,7 @@ const mapBlock = (x) => ({
   complex_id: x?.complex_id ?? x?.complex?.id ?? null,
 });
 
-export function useBlocksData({ search = "", mtkId = null, complexId = null, buildingId = null } = {}) {
+export function useBlocksData({ search = "", mtkId = null, complexId = null, buildingId = null, enabled = true } = {}) {
   const [loading, setLoading] = useState(true);
 
   // normal pagination (heç nə seçilməyib)
@@ -43,6 +43,16 @@ export function useBlocksData({ search = "", mtkId = null, complexId = null, bui
 
   const fetchNormal = useCallback(
     async (p = 1) => {
+      // Əgər enabled false-dursa, API sorğusu göndərmə
+      if (!enabled) {
+        setLoading(false);
+        setItems([]);
+        setPage(1);
+        setLastPage(1);
+        setAllItems([]);
+        return;
+      }
+      
       setLoading(true);
       try {
         const r = await fetchPage(p);
@@ -59,10 +69,20 @@ export function useBlocksData({ search = "", mtkId = null, complexId = null, bui
         setLoading(false);
       }
     },
-    [fetchPage]
+    [fetchPage, enabled]
   );
 
   const fetchAllAndFilter = useCallback(async () => {
+    // Əgər enabled false-dursa, API sorğusu göndərmə
+    if (!enabled) {
+      setLoading(false);
+      setAllItems([]);
+      setItems([]);
+      setPage(1);
+      setLastPage(1);
+      return;
+    }
+    
     setLoading(true);
     try {
       // server filter cəhdi (işləsə yaxşı)
@@ -125,12 +145,20 @@ export function useBlocksData({ search = "", mtkId = null, complexId = null, bui
     } finally {
       setLoading(false);
     }
-  }, [fetchPage, mtkId, complexId, buildingId]);
+  }, [fetchPage, mtkId, complexId, buildingId, enabled]);
 
+  const prevFiltersRef = useRef({ mtkId: null, complexId: null, buildingId: null });
+  const hasInitializedRef = useRef(false);
   useEffect(() => {
+    // React StrictMode-da iki dəfə çağırılmanın qarşısını almaq üçün
+    if (hasInitializedRef.current && prevFiltersRef.current.mtkId === mtkId && prevFiltersRef.current.complexId === complexId && prevFiltersRef.current.buildingId === buildingId) return;
+    prevFiltersRef.current = { mtkId, complexId, buildingId };
+    hasInitializedRef.current = true;
+    
     if (mtkId || complexId || buildingId) fetchAllAndFilter();
     else fetchNormal(1);
-  }, [mtkId, complexId, buildingId, fetchAllAndFilter, fetchNormal]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mtkId, complexId, buildingId]); // Yalnız mtkId, complexId və buildingId dəyişəndə yenidən çağır
 
   const finalItems = useMemo(() => {
     const base = mtkId || complexId || buildingId ? allItems : items;

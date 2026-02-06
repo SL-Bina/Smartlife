@@ -1,161 +1,175 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL;
-
-const mockApartmentData = Array.from({ length: 50 }, (_, index) => ({
-  id: index + 1,
-  number: `Mənzil ${index + 1}`,
-  block: `Blok ${String.fromCharCode(65 + (index % 5))}`,
-  floor: (index % 16) + 1,
-  area: 60 + (index % 10) * 5,
-  resident: `Sakin ${index + 1}`,
-  serviceFee: 20 + (index % 6) * 2,
-  complex: `Kompleks ${Math.floor(index / 10) + 1}`,
-  building: `Bina ${Math.floor(index / 5) + 1}`,
-}));
-
-const mockFeeHistoryData = [
-  {
-    id: 1,
-    date: "2024-01-15",
-    amount: 18,
-    changedBy: "Admin",
-    reason: "İlkin təyin",
-  },
-  {
-    id: 2,
-    date: "2024-03-20",
-    amount: 20,
-    changedBy: "Admin",
-    reason: "Tarif artımı",
-  },
-  {
-    id: 3,
-    date: "2024-06-10",
-    amount: 22,
-    changedBy: "Admin",
-    reason: "Tarif artımı",
-  },
-];
+import api from "@/services/api";
 
 /**
- * Mənzil məlumatlarını API-dən gətirir
- * @param {number} id - Mənzil ID
- * @returns {Promise<Object>} Mənzil məlumatları
+ * Property məlumatlarını API-dən gətirir
+ * @param {number} propertyId - Property ID
+ * @returns {Promise<Object>} Property məlumatları
  */
-export const fetchApartmentById = async (id) => {
+export const fetchPropertyById = async (propertyId) => {
   try {
-    // Real API çağırışı - hazır olduqda comment-dən çıxarılacaq
-    // if (!API_BASE_URL) {
-    //   throw new Error("API_BASE_URL is not defined in .env file");
-    // }
-    // const response = await fetch(`${API_BASE_URL}/management/apartments/${id}`, {
-    //   method: "GET",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //     Authorization: `Bearer ${localStorage.getItem("token")}`,
-    //   },
-    // });
-    // if (!response.ok) throw new Error("Failed to fetch apartment");
-    // const data = await response.json();
-    // return data;
-
-    // Mock data - real API hazır olduqda comment-ə alınacaq
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const apartment = mockApartmentData.find((a) => a.id === parseInt(id)) || {
-          id: parseInt(id),
-          number: `Mənzil ${id}`,
-          block: "Blok A",
-          floor: 1,
-          area: 60,
-          resident: `Sakin ${id}`,
-          serviceFee: 20,
-          complex: "Kompleks 1",
-          building: "Bina 1",
-        };
-        resolve(apartment);
-      }, 400);
-    });
+    const response = await api.get(`/module/properties/${propertyId}`);
+    return response.data?.data || response.data;
   } catch (error) {
-    console.error("Error fetching apartment:", error);
-    throw error;
+    console.error("Error fetching property:", error);
+    throw error.response?.data || error.message;
   }
 };
 
 /**
- * Servis haqqı tarixçəsini API-dən gətirir
- * @param {number} apartmentId - Mənzil ID
- * @returns {Promise<Array>} Servis haqqı tarixçəsi
+ * Property-nin service fee-lərinin siyahısını API-dən gətirir
+ * @param {number} propertyId - Property ID
+ * @param {Object} params - Pagination və filter parametrləri
+ * @returns {Promise<Object>} Service fee-lərin siyahısı (pagination ilə)
  */
-export const fetchServiceFeeHistory = async (apartmentId) => {
+export const fetchServiceFeeList = async (propertyId, params = {}) => {
   try {
-    // Real API çağırışı - hazır olduqda comment-dən çıxarılacaq
-    // if (!API_BASE_URL) {
-    //   throw new Error("API_BASE_URL is not defined in .env file");
-    // }
-    // const response = await fetch(`${API_BASE_URL}/management/apartments/${apartmentId}/service-fee/history`, {
-    //   method: "GET",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //     Authorization: `Bearer ${localStorage.getItem("token")}`,
-    //   },
-    // });
-    // if (!response.ok) throw new Error("Failed to fetch service fee history");
-    // const data = await response.json();
-    // return data;
-
-    // Mock data - real API hazır olduqda comment-ə alınacaq
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve([...mockFeeHistoryData]);
-      }, 200);
-    });
+    const response = await api.get(`/module/service-configure/property/list/${propertyId}`, { params });
+    return response.data;
   } catch (error) {
-    console.error("Error fetching service fee history:", error);
-    throw error;
+    console.error("Error fetching service fee list:", error);
+    throw error.response?.data || error.message;
   }
 };
 
 /**
- * Servis haqqını yeniləyir
- * @param {number} apartmentId - Mənzil ID
- * @param {number} newFee - Yeni servis haqqı
- * @param {string} reason - Dəyişiklik səbəbi
- * @returns {Promise<Object>} Yenilənmiş mənzil məlumatları
+ * Bir service fee-nin detallarını API-dən gətirir
+ * @param {number} propertyId - Property ID
+ * @param {number} serviceFeeId - Service Fee ID
+ * @returns {Promise<Object>} Service fee detalları
  */
-export const updateServiceFee = async (apartmentId, newFee, reason) => {
+export const fetchServiceFeeById = async (propertyId, serviceFeeId) => {
   try {
-    // Real API çağırışı - hazır olduqda comment-dən çıxarılacaq
-    // if (!API_BASE_URL) {
-    //   throw new Error("API_BASE_URL is not defined in .env file");
-    // }
-    // const response = await fetch(`${API_BASE_URL}/management/apartments/${apartmentId}/service-fee`, {
-    //   method: "PUT",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //     Authorization: `Bearer ${localStorage.getItem("token")}`,
-    //   },
-    //   body: JSON.stringify({
-    //     serviceFee: newFee,
-    //     reason: reason,
-    //   }),
-    // });
-    // if (!response.ok) throw new Error("Failed to update service fee");
-    // const data = await response.json();
-    // return data;
-
-    // Mock data - real API hazır olduqda comment-ə alınacaq
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const updatedApartment = {
-          id: apartmentId,
-          serviceFee: newFee,
-        };
-        resolve(updatedApartment);
-      }, 1000);
-    });
+    const response = await api.get(`/module/service-configure/property/${propertyId}/${serviceFeeId}`);
+    return response.data;
   } catch (error) {
-    console.error("Error updating service fee:", error);
-    throw error;
+    console.error("Error fetching service fee:", error);
+    throw error.response?.data || error.message;
+  }
+};
+
+/**
+ * Yeni service fee əlavə edir
+ * @param {number} propertyId - Property ID
+ * @param {Object} data - Service fee məlumatları
+ * @returns {Promise<Object>} Yeni service fee
+ */
+export const createServiceFee = async (propertyId, data) => {
+  try {
+    // Clean data - include property_id as required by backend
+    const cleanedData = {
+      property_id: Number(propertyId),
+      service_id: Number(data.service_id) || null,
+      price: data.price ? String(data.price) : null,
+      start_date: data.start_date || null,
+      last_date: data.last_date || null,
+      next_date: data.next_date || null,
+      type: data.type || "monthly",
+      status: data.status || "active",
+    };
+
+    // Remove null/empty optional fields
+    if (!cleanedData.last_date) {
+      delete cleanedData.last_date;
+    }
+    if (!cleanedData.next_date) {
+      delete cleanedData.next_date;
+    }
+
+    const response = await api.put(`/module/service-configure/property/${propertyId}/add`, cleanedData);
+    return response.data;
+  } catch (error) {
+    console.error("Service Fee Create Error:", {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message,
+    });
+    
+    // Log full error response for debugging
+    if (error.response?.data) {
+      console.error("Full Error Response Data:", error.response.data);
+      if (error.response.data.errors) {
+        console.error("Validation Errors:", error.response.data.errors);
+      }
+      if (error.response.data.message) {
+        console.error("Error Message:", error.response.data.message);
+      }
+    }
+
+    if (error.response?.status === 400 || error.response?.status === 422) {
+      const errorData = error.response.data;
+      if (errorData?.errors) {
+        const firstError = Object.values(errorData.errors)[0];
+        throw {
+          message: Array.isArray(firstError) ? firstError[0] : firstError,
+          errors: errorData.errors,
+          ...errorData,
+        };
+      }
+      throw errorData;
+    }
+    throw error.response?.data || error.message;
+  }
+};
+
+/**
+ * Service fee-ni yeniləyir
+ * @param {number} propertyId - Property ID
+ * @param {number} serviceFeeId - Service Fee ID
+ * @param {Object} data - Yenilənəcək service fee məlumatları
+ * @returns {Promise<Object>} Yenilənmiş service fee
+ */
+export const updateServiceFee = async (propertyId, serviceFeeId, data) => {
+  try {
+    const cleanedData = {
+      property_id: Number(propertyId),
+      service_id: Number(data.service_id) || null,
+      price: data.price ? String(data.price) : null,
+      start_date: data.start_date || null,
+      last_date: data.last_date || null,
+      next_date: data.next_date || null,
+      type: data.type || "monthly",
+      status: data.status || "active",
+    };
+
+    // Remove null/empty optional fields
+    if (!cleanedData.last_date) {
+      delete cleanedData.last_date;
+    }
+    if (!cleanedData.next_date) {
+      delete cleanedData.next_date;
+    }
+
+    const response = await api.patch(`/module/service-configure/property/${propertyId}/${serviceFeeId}`, cleanedData);
+    return response.data;
+  } catch (error) {
+    if (error.response?.status === 400 || error.response?.status === 422) {
+      const errorData = error.response.data;
+      if (errorData?.errors) {
+        const firstError = Object.values(errorData.errors)[0];
+        throw {
+          message: Array.isArray(firstError) ? firstError[0] : firstError,
+          errors: errorData.errors,
+          ...errorData,
+        };
+      }
+      throw errorData;
+    }
+    throw error.response?.data || error.message;
+  }
+};
+
+/**
+ * Service fee-ni silir
+ * @param {number} propertyId - Property ID
+ * @param {number} serviceFeeId - Service Fee ID
+ * @returns {Promise<Object>} Silinmə nəticəsi
+ */
+export const deleteServiceFee = async (propertyId, serviceFeeId) => {
+  try {
+    const response = await api.delete(`/module/service-configure/property/${propertyId}/${serviceFeeId}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
   }
 };
 

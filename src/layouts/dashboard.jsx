@@ -85,7 +85,6 @@ const filterRoutesByRole = (routes, user, hasModuleAccess) => {
           if (page.moduleName) {
             const hasAccess = hasModuleAccess(page.moduleName);
             if (!hasAccess) {
-              console.log(`🚫 Hiding page ${page.name} - no access to module ${page.moduleName}`);
               return null;
             }
           }

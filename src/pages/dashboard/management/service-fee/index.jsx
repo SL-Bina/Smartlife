@@ -1,48 +1,100 @@
-import React from "react";
-import { useParams } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useServiceFeeData } from "./hooks/useServiceFeeData";
-import { useServiceFeeForm } from "./hooks/useServiceFeeForm";
-import { updateServiceFee } from "./api";
+import { createServiceFee, updateServiceFee, deleteServiceFee } from "./api";
 import { ServiceFeeHeader } from "./components/ServiceFeeHeader";
 import { LoadingState } from "./components/LoadingState";
 import { NotFoundState } from "./components/NotFoundState";
 import { ApartmentInfoCard } from "./components/ApartmentInfoCard";
-import { ServiceFeeFormCard } from "./components/ServiceFeeFormCard";
-import { FeeHistoryCard } from "./components/FeeHistoryCard";
+import { ServiceFeeTable } from "./components/ServiceFeeTable";
+import { ServiceFeeFormModal } from "./components/modals/ServiceFeeFormModal";
+import { ServiceFeeDeleteModal } from "./components/modals/ServiceFeeDeleteModal";
+import DynamicToast from "@/components/DynamicToast";
+import { servicesAPI } from "@/pages/dashboard/services/api";
 
 const PropertyServiceFeePage = () => {
   const { t } = useTranslation();
   const { id } = useParams();
-  const { apartment, feeHistory, loading, error, addHistoryEntry, updateApartmentFee } = useServiceFeeData(id);
-  const { feeValue, saving, setSaving, updateFeeValue } = useServiceFeeForm(apartment);
+  const navigate = useNavigate();
+  const { property, serviceFees, pagination, loading, error, refreshData, loadPage } = useServiceFeeData(id);
+  
+  const [formModalOpen, setFormModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedServiceFee, setSelectedServiceFee] = useState(null);
+  const [services, setServices] = useState([]);
+  const [loadingServices, setLoadingServices] = useState(false);
+  const [toast, setToast] = useState(null);
 
-  const handleSave = async () => {
-    if (!feeValue || parseFloat(feeValue) <= 0) {
-      alert(t("serviceFee.invalidFee"));
-      return;
-    }
+  // Load services for dropdown
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        setLoadingServices(true);
+        const response = await servicesAPI.getAll({ per_page: 1000 });
+        const servicesList = response?.data?.data || response?.data || [];
+        setServices(servicesList);
+      } catch (err) {
+        console.error("Error loading services:", err);
+      } finally {
+        setLoadingServices(false);
+      }
+    };
+    loadServices();
+  }, []);
 
-    setSaving(true);
+  const showToast = (type, message) => {
+    setToast({ type, message });
+    setTimeout(() => setToast(null), 5000);
+  };
+
+  const openCreate = () => {
+    setSelectedServiceFee(null);
+    setFormModalOpen(true);
+  };
+
+  const openEdit = (serviceFee) => {
+    setSelectedServiceFee(serviceFee);
+    setFormModalOpen(true);
+  };
+
+  const openDelete = (serviceFee) => {
+    setSelectedServiceFee(serviceFee);
+    setDeleteModalOpen(true);
+  };
+
+  const handleSubmit = async (formData) => {
     try {
-      await updateServiceFee(apartment.id, parseFloat(feeValue), t("serviceFee.reasons.manualChange"));
       
-      const newHistoryEntry = {
-        id: feeHistory.length + 1,
-        date: new Date().toISOString().split("T")[0],
-        amount: parseFloat(feeValue),
-        changedBy: "Admin",
-        reason: t("serviceFee.reasons.manualChange"),
-      };
-      
-      addHistoryEntry(newHistoryEntry);
-      updateApartmentFee(parseFloat(feeValue));
-      alert(t("serviceFee.successMessage"));
-    } catch (error) {
-      console.error("Error updating service fee:", error);
-      alert(t("serviceFee.errorMessage") || "Xəta baş verdi");
-    } finally {
-      setSaving(false);
+      if (selectedServiceFee) {
+        // Update
+        await updateServiceFee(id, selectedServiceFee.id, formData);
+        showToast("success", "Service fee uğurla yeniləndi");
+      } else {
+        // Create
+        await createServiceFee(id, formData);
+        showToast("success", "Service fee uğurla əlavə edildi");
+      }
+      setFormModalOpen(false);
+      refreshData();
+    } catch (err) {
+      console.error("Submit Error:", err);
+      const errorMessage = err?.message || (err?.errors ? Object.values(err.errors || {})[0]?.[0] : null) || "Xəta baş verdi";
+      showToast("error", errorMessage);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedServiceFee) return;
+    
+    try {
+      await deleteServiceFee(id, selectedServiceFee.id);
+      showToast("success", "Service fee uğurla silindi");
+      setDeleteModalOpen(false);
+      refreshData();
+    } catch (err) {
+      const errorMessage = err?.message || "Xəta baş verdi";
+      showToast("error", errorMessage);
     }
   };
 
@@ -50,30 +102,62 @@ const PropertyServiceFeePage = () => {
     return <LoadingState />;
   }
 
-  if (error || !apartment) {
+  if (error || !property) {
     return <NotFoundState />;
   }
 
   return (
-    <div>
-      <ServiceFeeHeader apartmentNumber={apartment.number} />
+    <div className="space-y-6">
+      <ServiceFeeHeader 
+        propertyName={property?.name || property?.meta?.apartment_number || `Mənzil ${id}`}
+        onBack={() => navigate("/management/properties")}
+        onCreate={openCreate}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <ApartmentInfoCard apartment={apartment} />
-          <ServiceFeeFormCard
-            apartment={apartment}
-            feeValue={feeValue}
-            onFeeChange={updateFeeValue}
-            onSave={handleSave}
-            saving={saving}
+        <div className="lg:col-span-2">
+          <ServiceFeeTable
+            serviceFees={serviceFees}
+            loading={loading}
+            pagination={pagination}
+            onPageChange={loadPage}
+            onEdit={openEdit}
+            onDelete={openDelete}
           />
         </div>
 
         <div className="lg:col-span-1">
-          <FeeHistoryCard feeHistory={feeHistory} />
+          <ApartmentInfoCard property={property} />
         </div>
       </div>
+
+      {formModalOpen && (
+        <ServiceFeeFormModal
+          open={formModalOpen}
+          onClose={() => setFormModalOpen(false)}
+          onSubmit={handleSubmit}
+          serviceFee={selectedServiceFee}
+          services={services}
+          loadingServices={loadingServices}
+        />
+      )}
+
+      {deleteModalOpen && selectedServiceFee && (
+        <ServiceFeeDeleteModal
+          open={deleteModalOpen}
+          onClose={() => setDeleteModalOpen(false)}
+          onConfirm={handleDelete}
+          serviceFee={selectedServiceFee}
+        />
+      )}
+
+      {toast && (
+        <DynamicToast
+          type={toast.type}
+          message={toast.message}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 };

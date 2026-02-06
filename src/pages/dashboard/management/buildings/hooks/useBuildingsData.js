@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import buildingAPI from "../api";
 
 const mapBuilding = (x) => ({
@@ -9,7 +9,7 @@ const mapBuilding = (x) => ({
   complex: x?.complex || null, // list response-da var
 });
 
-export function useBuildingsData({ search = "", mtkId = null, complexId = null } = {}) {
+export function useBuildingsData({ search = "", mtkId = null, complexId = null, enabled = true } = {}) {
   const [loading, setLoading] = useState(true);
 
   // normal pagination (heç nə seçilməyib)
@@ -32,6 +32,16 @@ export function useBuildingsData({ search = "", mtkId = null, complexId = null }
 
   const fetchNormal = useCallback(
     async (p = 1) => {
+      // Əgər enabled false-dursa, API sorğusu göndərmə
+      if (!enabled) {
+        setLoading(false);
+        setItems([]);
+        setPage(1);
+        setLastPage(1);
+        setAllItems([]);
+        return;
+      }
+      
       setLoading(true);
       try {
         const r = await fetchPage(p);
@@ -48,10 +58,20 @@ export function useBuildingsData({ search = "", mtkId = null, complexId = null }
         setLoading(false);
       }
     },
-    [fetchPage]
+    [fetchPage, enabled]
   );
 
   const fetchAllAndFilter = useCallback(async () => {
+    // Əgər enabled false-dursa, API sorğusu göndərmə
+    if (!enabled) {
+      setLoading(false);
+      setAllItems([]);
+      setItems([]);
+      setPage(1);
+      setLastPage(1);
+      return;
+    }
+    
     setLoading(true);
     try {
       // server filter cəhdi (işləsə yaxşı)
@@ -104,12 +124,20 @@ export function useBuildingsData({ search = "", mtkId = null, complexId = null }
     } finally {
       setLoading(false);
     }
-  }, [fetchPage, mtkId, complexId]);
+  }, [fetchPage, mtkId, complexId, enabled]);
 
+  const prevFiltersRef = useRef({ mtkId: null, complexId: null });
+  const hasInitializedRef = useRef(false);
   useEffect(() => {
+    // React StrictMode-da iki dəfə çağırılmanın qarşısını almaq üçün
+    if (hasInitializedRef.current && prevFiltersRef.current.mtkId === mtkId && prevFiltersRef.current.complexId === complexId) return;
+    prevFiltersRef.current = { mtkId, complexId };
+    hasInitializedRef.current = true;
+    
     if (mtkId || complexId) fetchAllAndFilter();
     else fetchNormal(1);
-  }, [mtkId, complexId, fetchAllAndFilter, fetchNormal]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mtkId, complexId]); // Yalnız mtkId və complexId dəyişəndə yenidən çağır
 
   const finalItems = useMemo(() => {
     const base = mtkId || complexId ? allItems : items;

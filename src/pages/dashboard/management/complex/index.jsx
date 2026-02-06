@@ -41,41 +41,49 @@ export default function ComplexPage() {
 
 
 
-  const { state } = useManagement();
+  const { state, actions } = useManagement();
 
+  // Complex data yalnız MTK-lar yükləndikdən sonra yüklənir
+  const shouldLoadComplexData = !loadingMtks && mtks.length > 0;
+  
   const { items, loading, page, lastPage, goToPage, refresh } =
-    useComplexData({ search, mtkId: state.mtkId });
+    useComplexData({ search, mtkId: state.mtkId, enabled: shouldLoadComplexData });
 
   const form = useComplexForm();
 
   // MTK-ları select üçün gətir (bütün səhifələri yığırıq)
-  useEffect(() => {
-    const loadAllMtks = async () => {
-      setLoadingMtks(true);
-      try {
-        let page = 1;
-        let lastPage = 1;
-        const all = [];
+  const loadAllMtks = async () => {
+    setLoadingMtks(true);
+    try {
+      let page = 1;
+      let lastPage = 1;
+      const all = [];
 
-        do {
-          const res = await mtkAPI.getAll({ page });
-          const data = res?.data;
-          const list = data?.data || [];
-          lastPage = data?.last_page || 1;
+      do {
+        const res = await mtkAPI.getAll({ page });
+        const data = res?.data;
+        const list = data?.data || [];
+        lastPage = data?.last_page || 1;
 
-          all.push(...list);
-          page += 1;
-        } while (page <= lastPage);
+        all.push(...list);
+        page += 1;
+      } while (page <= lastPage);
 
-        setMtks(all);
-      } catch (e) {
-        console.error("mtk select load error:", e);
-        setMtks([]);
-    } finally {
-        setLoadingMtks(false);
+      setMtks(all);
+      
+      // MTK-lar yükləndikdən sonra default olaraq 1-ci MTK seç
+      if (all.length > 0 && !state.mtkId) {
+        actions.setMtk(all[0].id, all[0]);
       }
-    };
+    } catch (e) {
+      console.error("mtk select load error:", e);
+      setMtks([]);
+    } finally {
+      setLoadingMtks(false);
+    }
+  };
 
+  useEffect(() => {
     loadAllMtks();
   }, []);
 
@@ -179,10 +187,14 @@ export default function ComplexPage() {
             <ComplexPagination page={page} lastPage={lastPage} onPageChange={goToPage} />
             </div>
 
-          {!loading && items.length === 0 ? (
+          {loading || loadingMtks ? (
+            <div className="py-10 flex items-center justify-center">
+              <Spinner className="h-6 w-6" />
+            </div>
+          ) : !loading && items.length === 0 ? (
             <Typography className="text-sm text-blue-gray-500 dark:text-gray-300">
               Kompleks siyahısı boşdur
-                </Typography>
+            </Typography>
           ) : null}
         </CardBody>
       </Card>
