@@ -28,7 +28,6 @@ import {
 import { useTranslation } from "react-i18next";
 import { permissionsAPI } from "./api";
 
-// Mock data - hüquqlar
 const rightsData = [
   { id: 1, name: "Admin", status: "Aktiv" },
   { id: 2, name: "Moderator", status: "Aktiv" },
