@@ -47,6 +47,27 @@ const CreateQueryPage = () => {
     );
   };
 
+  const handleSubmit = () => {
+    // TODO: Implement query creation logic
+    console.log("Creating query:", {
+      selectedBuilding,
+      selectedBlock,
+      selectedApartment,
+      titleAz,
+      titleEn,
+      titleRu,
+      descriptionAz,
+      descriptionEn,
+      descriptionRu,
+      questionAz,
+      questionEn,
+      answers,
+      multipleAnswers,
+      showResults,
+    });
+    // Add API call here
+  };
+
 
   return (
     <div className="mt-12 mb-8">

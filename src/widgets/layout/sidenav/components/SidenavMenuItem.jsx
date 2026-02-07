@@ -212,7 +212,8 @@ export function SidenavMenuItem({ page, layout, routes, openMenus, setOpenMenus,
                 <ul className="mt-1 xl:mt-1.5 ml-3 xl:ml-4 pl-3 xl:pl-4 border-l-2 border-gray-200 dark:border-gray-700 space-y-0.5">
                 {page.children
                   .filter((child) => !child.hideInSidenav)
-                  .map(({ icon, name, path }) => {
+                  .map((child) => {
+                    const { icon, name, path } = child;
                     const isParentPath = page.children.some(
                       (otherChild) =>
                         otherChild.path !== path &&

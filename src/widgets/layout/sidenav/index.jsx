@@ -4,18 +4,13 @@ import { useMaterialTailwindController, setOpenSidenav } from "@/context";
 import { motion, AnimatePresence } from "framer-motion";
 import { SidenavHeader } from "./components/SidenavHeader";
 import { SidenavMenu } from "./components/SidenavMenu";
-import { useAuth } from "@/context/AuthContext";
-import { filterRoutesByAccess } from "@/utils/routeAccess";
 
 export function Sidenav({ brandImg, brandName, routes }) {
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavType, openSidenav, sidenavCollapsed, sidenavFlatMenu, sidenavExpandAll, sidenavSize, sidenavPosition } = controller;
 
-  const { user } = useAuth();
-
-  const filteredRoutes = React.useMemo(() => {
-    return filterRoutesByAccess(routes, user?.modules || []);
-  }, [routes, user?.modules]);
+  // Routes artıq dashboard.jsx-də filter olunub, burada sadəcə istifadə edirik
+  const filteredRoutes = routes;
 
   const [openMenus, setOpenMenus] = React.useState({});
   const [isMobile, setIsMobile] = React.useState(false);

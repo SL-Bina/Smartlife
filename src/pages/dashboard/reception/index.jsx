@@ -582,7 +582,7 @@ const ReceptionPage = () => {
           {t("reception.viewModal.title")}
         </DialogHeader>
         <DialogBody className="dark:bg-gray-800">
-          {selectedItem && (
+          {selectedItem ? (
             <div className="space-y-4">
               <div>
                 <Typography variant="small" className="text-blue-gray-500 dark:text-gray-400">
@@ -658,6 +658,12 @@ const ReceptionPage = () => {
                   {selectedItem.date}
                 </Typography>
               </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center py-4">
+              <Typography variant="small" className="text-blue-gray-500 dark:text-gray-400">
+                {t("reception.loading") || "Yüklənir..."}
+              </Typography>
             </div>
           )}
         </DialogBody>

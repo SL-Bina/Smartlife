@@ -30,6 +30,18 @@ const SendNotificationPage = () => {
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
 
+  const handleSubmit = () => {
+    // TODO: Implement notification sending logic
+    console.log("Sending notification:", {
+      selectedBuilding,
+      selectedBlock,
+      selectedApartment,
+      notificationType,
+      title,
+      message,
+    });
+    // Add API call here
+  };
 
   return (
     <div className="mt-12 mb-8">

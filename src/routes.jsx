@@ -223,7 +223,7 @@ export const routes = [
             path: "/management/mtk",
             element: <MTK />,
             allowedRoles: ["admin", "manager"],
-            moduleName: "mtk",
+            moduleName: "mtk", // API-dən gələn modul adı: "mtk"
           },
           {
             icon: <BuildingOfficeIcon {...icon} />,
@@ -231,7 +231,7 @@ export const routes = [
             path: "/management/complex",
             element: <ComplexPage />,
             allowedRoles: ["admin", "manager", "operator"],
-            moduleName: "complex",
+            moduleName: "complex", // API-dən gələn modul adı: "complex"
           },
           {
             icon: <BuildingOffice2Icon {...icon} />,
@@ -239,7 +239,7 @@ export const routes = [
             path: "/management/buildings",
             element: <BuildingsPage />,
             allowedRoles: ["admin", "manager", "operator"],
-            moduleName: "building",
+            moduleName: "building", // API-dən gələn modul adı: "building"
           },
           {
             icon: <RectangleStackIcon {...icon} />,
@@ -247,7 +247,7 @@ export const routes = [
             path: "/management/blocks",
             element: <BlocksPage />,
             allowedRoles: ["admin", "manager", "operator"],
-            moduleName: "block",
+            moduleName: "block", // API-dən gələn modul adı: "block"
           },
           {
             icon: <HomeModernIcon {...icon} />,
@@ -255,7 +255,7 @@ export const routes = [
             path: "/management/properties",
             element: <PropertiesPage />,
             allowedRoles: ["admin", "manager", "operator", "viewer"],
-            moduleName: "apartment",
+            moduleName: "property", // API-dən gələn modul adı: "property" (routes.jsx-də "apartment" idi, düzəltdim)
           },
           {
             icon: <BuildingOfficeIcon {...icon} />,
@@ -264,6 +264,7 @@ export const routes = [
             element: <PropertyServiceFeePage />,
             hideInSidenav: true,
             allowedRoles: ["admin", "manager", "operator"],
+            moduleName: "property_service", // API-dən gələn modul adı: "property_service"
           },
           {
             icon: <UsersIcon {...icon} />,
@@ -271,7 +272,7 @@ export const routes = [
             path: "/management/residents",
             element: <ResidentsPage />,
             allowedRoles: ["admin", "manager", "operator", "viewer"],
-            moduleName: "resident",
+            moduleName: "resident", // API-dən gələn modul adı: "resident"
           },
 
           // {
@@ -304,7 +305,7 @@ export const routes = [
         path: "/services",
         element: <ServicesPage />,
         allowedRoles: ["admin", "manager", "operator", "viewer"],
-        moduleName: "service",
+        moduleName: "service", // API-dən gələn modul adı: "service"
       },
       {
         icon: <BookOpenIcon {...icon} />,
@@ -326,7 +327,7 @@ export const routes = [
         path: "/permissions",
         element: <PermissionsPage />,
         allowedRoles: ["admin"],
-        moduleName: "permission",
+        moduleName: "permission", // API-dən gələn modul adı: "permission"
       },
       {
         icon: <UserCircleIcon {...icon} />,
