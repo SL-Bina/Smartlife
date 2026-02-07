@@ -7,6 +7,7 @@ import {
     XMarkIcon,
     EnvelopeIcon,
     ChartBarIcon,
+    PencilIcon,
 } from '@heroicons/react/24/outline';
 import profileAPI from "../api/index";
 import { useTranslation } from 'react-i18next';
@@ -135,7 +136,7 @@ const ProfilePage = () => {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
                 <div className="flex flex-col items-center gap-3">
-                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-red-600"></div>
                     <p className="text-gray-600 dark:text-gray-300">{t('common.loading')}</p>
                 </div>
             </div>
@@ -144,7 +145,7 @@ const ProfilePage = () => {
 
     if (!userData || !userData.id) {
         return (
-            <div className="min-h-screen p-8 text-center text-red-600 dark:text-red-400">
+            <div className="min-h-screen mt-4 p-8 text-center text-red-600 dark:text-red-400">
                 <h2 className="text-2xl font-bold mb-4">{t('profile.dataNotFound')}</h2>
                 <p className="mb-6">{t('profile.checkConsole')}</p>
                 <pre className="bg-gray-100 dark:bg-gray-800 p-6 rounded text-left overflow-auto max-w-4xl mx-auto text-sm text-gray-800 dark:text-gray-200">
@@ -155,30 +156,46 @@ const ProfilePage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 text-gray-900 dark:text-gray-100">
+        <div className="min-h-screen mt-5 rounded-2xl bg-gray-50 dark:bg-gray-900 p-6 text-gray-900 dark:text-gray-100">
             {/* Header */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow border border-gray-200 dark:border-gray-700 p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center text-white">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow border border-gray-200 dark:border-gray-700 p-5 md:p-6 mb-8 flex flex-row flex-wrap items-center justify-between gap-4">
+
+                {/* Sol tərəf - ad və username */}
+                <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center text-white shrink-0">
                         {userData?.profile_photo ? (
                             <img src={userData.profile_photo} alt="Profil" className="w-full h-full object-cover rounded-xl" />
                         ) : (
                             <UserIcon className="w-9 h-9" />
                         )}
                     </div>
-                    <div>
-                        <h2 className="text-xl font-bold">{userData.name || t('profile.nameNotSet')}</h2>
-                        <p className="text-gray-500 dark:text-gray-400 text-sm">
+                    <div className="min-w-0">
+                        <h2 className="text-xl font-bold truncate">{userData.name || t('profile.nameNotSet')}</h2>
+                        <p className="text-gray-500 dark:text-gray-400 text-sm truncate">
                             {userData.username ? `@${userData.username}` : t('profile.usernameNotSet')}
                         </p>
                     </div>
                 </div>
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition"
-                >
-                    {t('profile.editProfile')}
-                </button>
+
+                {/* Sağ tərəf - button / icon */}
+                <div className="flex items-center shrink-0">
+                    {/* Desktop → text button */}
+                    <button
+                        onClick={() => setIsModalOpen(true)}
+                        className="hidden sm:flex px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition items-center gap-2"
+                    >
+                        {t('profile.editProfile')}
+                    </button>
+
+                    {/* Mobile → pencil icon */}
+                    <button
+                        onClick={() => setIsModalOpen(true)}
+                        className="sm:hidden p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition"
+                        title={t('profile.editProfile')}
+                    >
+                        <PencilIcon className="w-6 h-6" />
+                    </button>
+                </div>
             </div>
 
             {/* Cards */}
@@ -211,7 +228,7 @@ const ProfilePage = () => {
                     </div>
                 </div>
 
-                {/* Hesab vəziyyəti - YALNIZ BURADA DÜZƏLİŞ VAR */}
+                {/* Hesab vəziyyəti */}
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow border border-gray-200 dark:border-gray-700">
                     <div className="flex items-center gap-2 mb-5">
                         <ChartBarIcon className="w-5 h-5 text-blue-600" />
@@ -316,10 +333,7 @@ const ProfilePage = () => {
     );
 };
 
-// ────────────────────────────────────────────────
 // Helper components (dəyişməz qalır)
-// ────────────────────────────────────────────────
-
 const InfoBox = ({ label, value }) => (
     <div className="border-b border-gray-100 dark:border-gray-700 pb-3 last:border-0 last:pb-0">
         <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{label}</p>
