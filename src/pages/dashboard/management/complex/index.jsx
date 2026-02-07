@@ -44,7 +44,8 @@ export default function ComplexPage() {
   const { state, actions } = useManagement();
 
   // Complex data yalnız MTK-lar yükləndikdən sonra yüklənir
-  const shouldLoadComplexData = !loadingMtks && mtks.length > 0;
+  // Amma əgər MTK artıq seçilibsə (məsələn MTK səhifəsindən gələndə), dərhal yüklə
+  const shouldLoadComplexData = !loadingMtks && (mtks.length > 0 || state.mtkId);
   
   const { items, loading, page, lastPage, goToPage, refresh } =
     useComplexData({ search, mtkId: state.mtkId, enabled: shouldLoadComplexData });

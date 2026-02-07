@@ -13,6 +13,8 @@ import { MtkDeleteModal } from "./components/modals/MtkDeleteModal";
 
 import { useMtkData } from "./hooks/useMtkData";
 import { useMtkForm } from "./hooks/useMtkForm";
+import { useMtkFilters } from "./hooks/useMtkFilters";
+import { MtkFilterModal } from "./components/modals/MtkFilterModal";
 import mtkAPI from "./api";
 import DynamicToast from "@/components/DynamicToast";
 
@@ -33,8 +35,37 @@ export default function MtkPage() {
     setToast({ open: true, type, message, title });
   };
 
-  const { items, loading, page, lastPage, goToPage, refresh } = useMtkData({ search });
+  const filters = useMtkFilters();
+  const { items, loading, page, lastPage, total, goToPage, refresh } = useMtkData({ 
+    search,
+    filterStatus: filters.filters.status,
+    filterAddress: filters.filters.address,
+    filterEmail: filters.filters.email,
+    filterPhone: filters.filters.phone,
+    filterWebsite: filters.filters.website,
+    filterColor: filters.filters.color
+  });
   const form = useMtkForm();
+
+  const hasActiveFilters = 
+    (filters.filters.status && filters.filters.status !== "") ||
+    (filters.filters.address && filters.filters.address.trim() !== "") ||
+    (filters.filters.email && filters.filters.email.trim() !== "") ||
+    (filters.filters.phone && filters.filters.phone.trim() !== "") ||
+    (filters.filters.website && filters.filters.website.trim() !== "") ||
+    (filters.filters.color && filters.filters.color.trim() !== "");
+
+  const handleFilterApply = () => {
+    filters.applyFilters();
+    // Filter tətbiq olunduqda məlumatları yenilə
+    refresh();
+  };
+
+  const handleFilterClear = () => {
+    filters.clearFilters();
+    // Filter təmizləndikdə məlumatları yenilə
+    refresh();
+  };
 
   const pageTitleRight = useMemo(() => {
     if (loading) {
@@ -45,8 +76,8 @@ export default function MtkPage() {
         </div>
       );
     }
-    return <div className="text-xs text-blue-gray-400 dark:text-gray-400">Cəm: {items.length}</div>;
-  }, [loading, items.length]);
+    return <div className="text-xs text-blue-gray-400 dark:text-gray-400">Cəm: {total}</div>;
+  }, [loading, total]);
 
   const openCreate = () => {
     setMode("create");
@@ -106,15 +137,21 @@ export default function MtkPage() {
   };
 
   return (
-    <div className="p-4">
-      <div className="flex items-start justify-between gap-3">
+    <div className="py-4">
+      <div className="flex items-start justify-between gap-3 mb-6">
         <MtkHeader />
         {pageTitleRight}
       </div>
 
-      <Card className="shadow-sm dark:bg-gray-800">
-        <CardBody className="flex flex-col gap-4">
-          <MtkActions search={search} onSearchChange={setSearch} onCreateClick={openCreate} />
+      <Card className="shadow-lg dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <CardBody className="flex flex-col gap-6 p-6">
+          <MtkActions 
+            search={search} 
+            onSearchChange={setSearch} 
+            onCreateClick={openCreate}
+            onFilterClick={() => filters.setFilterOpen(true)}
+            hasActiveFilters={hasActiveFilters}
+          />
 
           <MtkTable
             items={items}
@@ -125,17 +162,32 @@ export default function MtkPage() {
             onGoComplex={() => navigate("/dashboard/management/complex")}
           />
 
-          <div className="pt-2">
-            <MtkPagination page={page} lastPage={lastPage} onPageChange={goToPage} />
-          </div>
+          {!loading && items.length > 0 && (
+            <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+              <MtkPagination page={page} lastPage={lastPage} total={total} onPageChange={goToPage} />
+            </div>
+          )}
 
-          {!loading && items.length === 0 ? (
-            <Typography className="text-sm text-blue-gray-500 dark:text-gray-300">MTK siyahısı boşdur</Typography>
+          {!loading && items.length === 0 && !search ? (
+            <div className="text-center py-12">
+              <Typography className="text-sm text-blue-gray-500 dark:text-gray-300">
+                MTK siyahısı boşdur
+              </Typography>
+            </div>
           ) : null}
         </CardBody>
       </Card>
 
       {/* Modals */}
+      <MtkFilterModal
+        open={filters.filterOpen}
+        onClose={() => filters.setFilterOpen(false)}
+        filters={filters.filters}
+        onFilterChange={filters.updateFilter}
+        onApply={handleFilterApply}
+        onClear={handleFilterClear}
+      />
+
       <MtkViewModal open={viewOpen} onClose={() => setViewOpen(false)} item={selected} />
 
       <MtkFormModal

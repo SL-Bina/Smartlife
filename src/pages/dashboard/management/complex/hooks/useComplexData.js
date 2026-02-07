@@ -109,19 +109,33 @@ export function useComplexData({ search = "", mtkId = null, enabled = true } = {
     }
   }, [fetchPage, mtkId, enabled]);
 
-  // ilk load + mtk dəyişəndə
+  // ilk load + mtk dəyişəndə + enabled dəyişəndə
   const prevMtkIdRef = useRef(null);
+  const prevEnabledRef = useRef(null);
   const hasInitializedRef = useRef(false);
   useEffect(() => {
+    // Əgər enabled false-dursa, gözlə (yalnız ilk dəfə deyilsə)
+    if (!enabled) {
+      if (!hasInitializedRef.current) {
+        setLoading(false);
+      }
+      return;
+    }
+
     // React StrictMode-da iki dəfə çağırılmanın qarşısını almaq üçün
-    if (hasInitializedRef.current && prevMtkIdRef.current === mtkId) return;
+    // Amma enabled false-dan true-a keçəndə yenidən çağır
+    const enabledChanged = prevEnabledRef.current === false && enabled === true;
+    if (hasInitializedRef.current && prevMtkIdRef.current === mtkId && prevEnabledRef.current === enabled && !enabledChanged) {
+      return;
+    }
     prevMtkIdRef.current = mtkId;
+    prevEnabledRef.current = enabled;
     hasInitializedRef.current = true;
     
     if (mtkId) fetchAllAndFilter();
     else fetchNormal(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mtkId]); // Yalnız mtkId dəyişəndə yenidən çağır
+  }, [mtkId, enabled]); // mtkId və enabled dəyişəndə yenidən çağır
 
   // Search filter
   const finalItems = useMemo(() => {
