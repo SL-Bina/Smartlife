@@ -2,6 +2,7 @@ import React from "react";
 import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Input, Typography } from "@material-tailwind/react";
 import { FunnelIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import AppSelect from "@/components/ui/AppSelect";
+import { useMtkColor } from "@/context";
 
 const statusOptions = [
   { id: "active", name: "Aktiv" },
@@ -9,6 +10,12 @@ const statusOptions = [
 ];
 
 export function MtkFilterModal({ open, onClose, filters, onFilterChange, onApply, onClear }) {
+  const { colorCode, getGradientBackground, getRgba, defaultColor } = useMtkColor();
+  
+  // Default göz yormayan qırmızı ton
+  const defaultRed = "#dc2626";
+  const activeColor = colorCode || defaultRed;
+  
   if (!open) return null;
 
   const hasActiveFilters = 
@@ -27,9 +34,19 @@ export function MtkFilterModal({ open, onClose, filters, onFilterChange, onApply
       className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl"
       dismiss={{ enabled: false }}
     >
-      <DialogHeader className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700 border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between rounded-t-lg">
+      <DialogHeader 
+        className="border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between rounded-t-lg transition-colors"
+        style={{
+          background: colorCode 
+            ? `linear-gradient(to right, ${getRgba(0.1)}, ${getRgba(0.05)})` 
+            : "linear-gradient(to right, rgba(220, 38, 38, 0.1), rgba(185, 28, 28, 0.05))",
+        }}
+      >
         <div className="flex items-center gap-3">
-          <FunnelIcon className="h-5 w-5 text-blue-500" />
+          <FunnelIcon 
+            className="h-5 w-5" 
+            style={{ color: activeColor }}
+          />
           <Typography variant="h5" className="font-bold text-gray-900 dark:text-white">
             Filter
           </Typography>
@@ -100,19 +117,19 @@ export function MtkFilterModal({ open, onClose, filters, onFilterChange, onApply
             />
           </div>
 
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
+        <div>
+          <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
               Web sayt
-            </Typography>
-            <Input
+          </Typography>
+          <Input
               type="url"
               placeholder="Web sayt yaz..."
               value={filters.website || ""}
               onChange={(e) => onFilterChange("website", e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-              containerProps={{ className: "!min-w-0" }}
-            />
+            className="dark:text-white"
+            labelProps={{ className: "dark:text-gray-400" }}
+            containerProps={{ className: "!min-w-0" }}
+          />
           </div>
 
           
@@ -129,7 +146,21 @@ export function MtkFilterModal({ open, onClose, filters, onFilterChange, onApply
         >
           Təmizlə
         </Button>
-        <Button color="blue" onClick={onApply} className="dark:bg-blue-600 dark:hover:bg-blue-700">
+        <Button 
+          onClick={onApply} 
+          className="text-white"
+          style={{
+            backgroundColor: activeColor,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = colorCode 
+              ? getRgba(0.9) 
+              : "#b91c1c";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = activeColor;
+          }}
+        >
           Tətbiq et
         </Button>
       </DialogFooter>

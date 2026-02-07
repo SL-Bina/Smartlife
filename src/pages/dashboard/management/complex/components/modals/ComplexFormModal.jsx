@@ -9,6 +9,7 @@ import { CustomTypography } from "@/components/ui/CustomTypography";
 import AdvancedColorPicker from "@/components/ui/AdvancedColorPicker";
 import MapPicker from "@/components/ui/MapPicker";
 import { useManagement } from "@/context/ManagementContext";
+import { useMtkColor } from "@/context";
 import {
   BuildingOffice2Icon,
   MapPinIcon,
@@ -55,12 +56,17 @@ function LocationMarker({ position, onPositionChange }) {
 
 export function ComplexFormModal({ open, mode = "create", onClose, form, onSubmit, mtks = [] }) {
   const { state, actions } = useManagement();
+  const { colorCode, getRgba, defaultColor } = useMtkColor();
   const [saving, setSaving] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [mapPosition, setMapPosition] = useState([40.4093, 49.8671]);
   const isEdit = mode === "edit";
 
   const title = isEdit ? "Kompleks Redaktə et" : "Yeni Kompleks yarat";
+  
+  // Default göz yormayan qırmızı ton
+  const defaultRed = "#dc2626";
+  const activeColor = colorCode || defaultColor || defaultRed;
 
   const statusOptions = [
     { value: "active", label: "Aktiv" },
@@ -225,16 +231,26 @@ export function ComplexFormModal({ open, mode = "create", onClose, form, onSubmi
   return (
     <>
       <CustomDialog open={!!open} onClose={onClose} size="xl">
-        <DialogHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg">
+        <DialogHeader 
+          className="rounded-t-lg transition-colors"
+          style={{
+            background: colorCode 
+              ? `linear-gradient(to right, ${getRgba(0.2)}, ${getRgba(0.15)})` 
+              : `linear-gradient(to right, rgba(220, 38, 38, 0.2), rgba(185, 28, 28, 0.15))`,
+          }}
+        >
           <div className="flex items-center gap-3 flex-1">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <BuildingOffice2Icon className="h-6 w-6" />
+            <div 
+              className="p-2 rounded-lg"
+              style={{ backgroundColor: activeColor }}
+            >
+              <BuildingOffice2Icon className="h-6 w-6 text-white" />
             </div>
             <div>
-              <CustomTypography variant="h5" className="font-bold text-white">
+              <CustomTypography variant="h5" className="font-bold text-gray-900 dark:text-white">
                 {title}
               </CustomTypography>
-              <CustomTypography variant="small" className="text-blue-100 font-normal">
+              <CustomTypography variant="small" className="text-gray-600 dark:text-gray-300 font-normal">
                 {isEdit ? "Kompleks məlumatlarını yeniləyin" : "Yeni kompleks üçün məlumatları doldurun"}
               </CustomTypography>
             </div>
@@ -243,7 +259,10 @@ export function ComplexFormModal({ open, mode = "create", onClose, form, onSubmi
             variant="text"
             size="sm"
             onClick={onClose}
-            className="text-white hover:bg-white/20 rounded-lg p-2"
+            className="text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg p-2"
+            style={{
+              borderColor: activeColor,
+            }}
           >
             <XMarkIcon className="h-5 w-5" />
           </CustomButton>

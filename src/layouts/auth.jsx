@@ -7,6 +7,7 @@ import {
 } from "@heroicons/react/24/solid";
 import routes from "@/routes";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { ManagementProvider } from "@/context";
 
 export function Auth() {
   useDocumentTitle();
@@ -34,17 +35,19 @@ export function Auth() {
   ];
 
   return (
-    <div className="relative h-screen w-full overflow-hidden">
-      <Routes>
-        {routes.map(
-          ({ layout, pages }) =>
-            layout === "auth" &&
-            pages.map(({ path, element }) => (
-              <Route exact path={path} element={element} />
-            ))
-        )}
-      </Routes>
-    </div>
+    <ManagementProvider>
+      <div className="relative h-screen w-full overflow-hidden">
+        <Routes>
+          {routes.map(
+            ({ layout, pages }) =>
+              layout === "auth" &&
+              pages.map(({ path, element }) => (
+                <Route exact path={path} element={element} />
+              ))
+          )}
+        </Routes>
+      </div>
+    </ManagementProvider>
   );
 }
 

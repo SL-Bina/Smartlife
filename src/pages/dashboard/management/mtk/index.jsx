@@ -36,7 +36,7 @@ export default function MtkPage() {
   };
 
   const filters = useMtkFilters();
-  const { items, loading, page, lastPage, total, goToPage, refresh } = useMtkData({ 
+  const { items, loading, page, lastPage, total, itemsPerPage, setItemsPerPage, goToPage, refresh } = useMtkData({ 
     search,
     filterStatus: filters.filters.status,
     filterAddress: filters.filters.address,
@@ -140,17 +140,20 @@ export default function MtkPage() {
     <div className="py-4">
       <div className="flex items-start justify-between gap-3 mb-6">
         <MtkHeader />
-        {pageTitleRight}
+        {/* {pageTitleRight} */}
       </div>
 
       <Card className="shadow-lg dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
         <CardBody className="flex flex-col gap-6 p-6">
-          <MtkActions 
-            search={search} 
-            onSearchChange={setSearch} 
+          <MtkActions
+            search={search}
+            onSearchChange={setSearch}
             onCreateClick={openCreate}
             onFilterClick={() => filters.setFilterOpen(true)}
             hasActiveFilters={hasActiveFilters}
+            totalItems={total}
+            itemsPerPage={itemsPerPage}
+            onItemsPerPageChange={setItemsPerPage}
           />
 
           <MtkTable
@@ -165,7 +168,7 @@ export default function MtkPage() {
           {!loading && items.length > 0 && (
             <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
               <MtkPagination page={page} lastPage={lastPage} total={total} onPageChange={goToPage} />
-            </div>
+          </div>
           )}
 
           {!loading && items.length === 0 && !search ? (

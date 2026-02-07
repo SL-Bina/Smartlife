@@ -9,10 +9,11 @@ const mapMtk = (x) => ({
   complex_count: x?.complex_count ?? x?._counts?.complexes ?? x?.complexes_count,
 });
 
-const ITEMS_PER_PAGE = 10;
+const DEFAULT_ITEMS_PER_PAGE = 10;
+const STANDARD_OPTIONS = [10, 25, 50, 75, 100];
 
 export function useMtkData({ 
-  search = "", 
+  search = "",  
   filterStatus = "",
   filterAddress = "",
   filterEmail = "",
@@ -23,6 +24,7 @@ export function useMtkData({
   const [loading, setLoading] = useState(true);
   const [allItems, setAllItems] = useState([]); // Bütün yüklənmiş məlumatlar
   const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
   const [total, setTotal] = useState(0);
   const [lastFetchedPage, setLastFetchedPage] = useState(0); // Son yüklənmiş səhifə
   const [totalPages, setTotalPages] = useState(1);
@@ -31,7 +33,7 @@ export function useMtkData({
   // Tək səhifə yüklə (yalnız search üçün, filter yox)
   const fetchPage = useCallback(async (pageNum, searchQuery = "") => {
     try {
-      const params = { page: pageNum, per_page: ITEMS_PER_PAGE };
+      const params = { page: pageNum, per_page: DEFAULT_ITEMS_PER_PAGE };
       
       // Yalnız search parametri (filter frontend-də olacaq)
       if (searchQuery && searchQuery.trim()) {
@@ -181,10 +183,10 @@ export function useMtkData({
 
   // Cari səhifənin məlumatları (filter edilmiş məlumatlardan)
   const currentPageItems = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
     return filteredItems.slice(startIndex, endIndex);
-  }, [filteredItems, currentPage]);
+  }, [filteredItems, currentPage, itemsPerPage]);
 
   // Səhifə dəyişdir
   const goToPage = useCallback(
@@ -192,18 +194,18 @@ export function useMtkData({
       setCurrentPage(pageNum);
       
       // Əgər sonuncu səhifədəyiksə və növbəti səhifə yüklənməyibsə, yüklə
-      const totalPagesFromItems = Math.ceil(allItems.length / ITEMS_PER_PAGE);
+      const totalPagesFromItems = Math.ceil(allItems.length / itemsPerPage);
       if (pageNum >= totalPagesFromItems && lastFetchedPage < totalPages) {
         loadNextPage(search);
       }
     },
-    [allItems.length, lastFetchedPage, totalPages, loadNextPage, search]
+    [allItems.length, lastFetchedPage, totalPages, loadNextPage, search, itemsPerPage]
   );
 
   // Cari səhifələrin sayı (filter edilmiş məlumatlara görə)
   const currentLastPage = useMemo(() => {
-    return Math.ceil(filteredItems.length / ITEMS_PER_PAGE) || 1;
-  }, [filteredItems.length]);
+    return Math.ceil(filteredItems.length / itemsPerPage) || 1;
+  }, [filteredItems.length, itemsPerPage]);
 
   // Həqiqi son səhifə (backend-dən gələn)
   const realLastPage = useMemo(() => {
@@ -221,6 +223,11 @@ export function useMtkData({
     setCurrentPage(1);
   }, [filterStatus, filterAddress, filterEmail, filterPhone, filterWebsite, filterColor]);
 
+  // Items per page dəyişəndə səhifəni 1-ə qaytar
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [itemsPerPage]);
+
   return {
     loading,
     items: currentPageItems,
@@ -230,6 +237,8 @@ export function useMtkData({
     lastPage: currentLastPage,
     realLastPage: realLastPage,
     total: filteredItems.length, // Filter edilmiş məlumatların sayı
+    itemsPerPage,
+    setItemsPerPage,
     goToPage,
     refresh,
   };

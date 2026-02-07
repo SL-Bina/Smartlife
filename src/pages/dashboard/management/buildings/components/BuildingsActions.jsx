@@ -1,7 +1,11 @@
-import React, { useMemo, useEffect } from "react";
-import { Button, Input } from "@material-tailwind/react";
+import React, { useMemo, useEffect, useMemo as useMemoHook } from "react";
+import { Button, Input, IconButton } from "@material-tailwind/react";
+import { PlusIcon, FunnelIcon } from "@heroicons/react/24/outline";
 import { useManagement } from "@/context/ManagementContext";
+import { useMtkColor } from "@/context";
 import AppSelect from "@/components/ui/AppSelect";
+
+const STANDARD_OPTIONS = [10, 25, 50, 75, 100];
 
 export function BuildingsActions({
   search,
@@ -11,8 +15,18 @@ export function BuildingsActions({
   complexes = [],
   loadingMtks = false,
   loadingComplexes = false,
+  onFilterClick,
+  hasActiveFilters = false,
+  totalItems = 0,
+  itemsPerPage = 10,
+  onItemsPerPageChange
 }) {
   const { state, actions } = useManagement();
+  const { colorCode, getRgba } = useMtkColor();
+  
+  // Default göz yormayan qırmızı ton
+  const defaultRed = "#dc2626";
+  const activeColor = colorCode || defaultRed;
 
   const filteredComplexes = useMemo(() => {
     const mid = state.mtkId;
@@ -41,10 +55,50 @@ export function BuildingsActions({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredComplexes.length, loadingComplexes, state.complexId, state.mtkId]);
 
+  // Items per page seçimləri yarat
+  const itemsPerPageOptions = useMemoHook(() => {
+    // Əgər data sayı 25-dən azdırsa, select göstərmə
+    if (totalItems < 25) {
+      return null;
+    }
+
+    const options = [];
+    const maxItems = Math.min(totalItems, 100); // Max 100
+    
+    // Həmişə 10 olmalıdır
+    options.push(10);
+    
+    // Standart variantları əlavə et (yalnız maxItems-dən kiçik və ya bərabər olanlar)
+    STANDARD_OPTIONS.slice(1).forEach(option => {
+      if (option <= maxItems && !options.includes(option)) {
+        options.push(option);
+      }
+    });
+    
+    // Əgər data sayı standart variantlar arasında deyilsə və 100-dən kiçikdirsə, əlavə et
+    if (maxItems < 100 && !STANDARD_OPTIONS.includes(maxItems)) {
+      // Data sayını uyğun yerə daxil et (sıralı şəkildə)
+      const insertIndex = options.findIndex(opt => opt > maxItems);
+      if (insertIndex === -1) {
+        options.push(maxItems);
+      } else {
+        options.splice(insertIndex, 0, maxItems);
+      }
+    } else if (maxItems === 100 && !options.includes(100)) {
+      // Əgər maxItems 100-dürsə və hələ əlavə olunmayıbsa
+      options.push(100);
+    }
+    
+    return options.map(value => ({
+      id: value,
+      name: String(value)
+    }));
+  }, [totalItems]);
+
   return (
-    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-      <div className="flex flex-col sm:flex-row gap-3 sm:items-center flex-wrap">
-        <div className="w-[260px]">
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex gap-3 items-center flex-wrap">
+        <div className="w-full sm:w-[280px]">
           <Input
             label="Axtarış"
             value={search}
@@ -54,7 +108,7 @@ export function BuildingsActions({
           />
         </div>
 
-        <div className="w-[280px]">
+        <div className="w-full sm:w-[280px]">
           <AppSelect
             items={mtks}
             value={state.mtkId || (mtks.length > 0 ? mtks[0].id : null)}
@@ -71,7 +125,7 @@ export function BuildingsActions({
           />
         </div>
 
-        <div className="w-[300px]">
+        <div className="w-full sm:w-[300px]">
           <AppSelect
             items={filteredComplexes}
             value={state.complexId || (filteredComplexes.length > 0 ? filteredComplexes[0].id : null)}
@@ -88,15 +142,48 @@ export function BuildingsActions({
           variant="outlined"
           color="blue-gray"
           onClick={() => actions.resetAll()}
-          className="dark:text-gray-300"
+          className="dark:text-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
         >
           Scope sıfırla
         </Button>
       </div>
 
-      <Button color="red" onClick={onCreateClick} className="bg-red-600 hover:bg-red-700">
-        Bina yarat
-      </Button>
+      <div className="flex items-center gap-2 flex-wrap">
+        {itemsPerPageOptions && (
+          <div className="w-full sm:w-auto">
+            <AppSelect
+              items={itemsPerPageOptions}
+              value={itemsPerPage}
+              onChange={(value) => onItemsPerPageChange?.(value)}
+              placeholder="Göstəriləcək say"
+              allowAll={false}
+            />
+          </div>
+        )}
+        {onFilterClick && (
+          <Button 
+            variant="outlined" 
+            color="blue-gray" 
+            onClick={onFilterClick} 
+            className="border-blue-700 text-blue-700 hover:bg-blue-700 hover:text-white hover:shadow-lg flex items-center gap-2"
+            style={{
+              borderColor: hasActiveFilters ? activeColor : undefined,
+              color: hasActiveFilters ? activeColor : undefined,
+            }}
+          >
+            <FunnelIcon className="h-5 w-5" />
+            Axtarış
+          </Button>
+        )}
+        <Button
+          onClick={onCreateClick}
+          variant="outlined"
+          className="border-green-700 text-green-700 hover:bg-green-700 hover:text-white hover:shadow-lg flex items-center gap-2"
+        >
+          <PlusIcon className="h-5 w-5" />
+          Bina əlavə et
+        </Button>
+      </div>
     </div>
   );
 }

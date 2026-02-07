@@ -4,6 +4,30 @@ import PropTypes from "prop-types";
 export const MaterialTailwind = React.createContext(null);
 MaterialTailwind.displayName = "MaterialTailwindContext";
 
+// Cookie utility funksiyaları
+const getCookie = (name) => {
+  try {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+  } catch (e) {
+    console.error(`Error reading cookie ${name}:`, e);
+    return null;
+  }
+};
+
+const setCookie = (name, value, days = 365) => {
+  try {
+    const date = new Date();
+    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+    const expires = `expires=${date.toUTCString()}`;
+    document.cookie = `${name}=${value};${expires};path=/`;
+  } catch (e) {
+    console.error(`Error writing cookie ${name}:`, e);
+  }
+};
+
 export function reducer(state, action) {
   switch (action.type) {
     case "OPEN_SIDENAV": {
@@ -51,48 +75,98 @@ export function reducer(state, action) {
 export function MaterialTailwindControllerProvider({ children }) {
   const getInitialDarkMode = () => {
     if (typeof window !== "undefined") {
+      // Əvvəlcə cookie-dən oxu, yoxdursa localStorage-dən (migrasiya üçün)
+      const cookieValue = getCookie("darkMode");
+      if (cookieValue !== null) {
+        return cookieValue === "true";
+      }
+      // localStorage-dən köhnə dəyəri oxu və cookie-yə köçür
       const saved = localStorage.getItem("darkMode");
-      return saved === "true";
+      if (saved !== null) {
+        setCookie("darkMode", saved);
+        localStorage.removeItem("darkMode");
+        return saved === "true";
+      }
     }
     return false;
   };
 
   const getInitialSidenavCollapsed = () => {
     if (typeof window !== "undefined") {
+      const cookieValue = getCookie("sidenavCollapsed");
+      if (cookieValue !== null) {
+        return cookieValue === "true";
+      }
       const saved = localStorage.getItem("sidenavCollapsed");
-      return saved === "true";
+      if (saved !== null) {
+        setCookie("sidenavCollapsed", saved);
+        localStorage.removeItem("sidenavCollapsed");
+        return saved === "true";
+      }
     }
     return false;
   };
 
   const getInitialSidenavFlatMenu = () => {
     if (typeof window !== "undefined") {
+      const cookieValue = getCookie("sidenavFlatMenu");
+      if (cookieValue !== null) {
+        return cookieValue === "true";
+      }
       const saved = localStorage.getItem("sidenavFlatMenu");
-      return saved === "true";
+      if (saved !== null) {
+        setCookie("sidenavFlatMenu", saved);
+        localStorage.removeItem("sidenavFlatMenu");
+        return saved === "true";
+      }
     }
     return false;
   };
 
   const getInitialSidenavExpandAll = () => {
     if (typeof window !== "undefined") {
+      const cookieValue = getCookie("sidenavExpandAll");
+      if (cookieValue !== null) {
+        return cookieValue === "true";
+      }
       const saved = localStorage.getItem("sidenavExpandAll");
-      return saved === "true";
+      if (saved !== null) {
+        setCookie("sidenavExpandAll", saved);
+        localStorage.removeItem("sidenavExpandAll");
+        return saved === "true";
+      }
     }
     return false;
   };
 
   const getInitialSidenavSize = () => {
     if (typeof window !== "undefined") {
+      const cookieValue = getCookie("sidenavSize");
+      if (cookieValue !== null) {
+        return cookieValue;
+      }
       const saved = localStorage.getItem("sidenavSize");
-      return saved || "medium";
+      if (saved !== null) {
+        setCookie("sidenavSize", saved);
+        localStorage.removeItem("sidenavSize");
+        return saved;
+      }
     }
     return "medium";
   };
 
   const getInitialSidenavPosition = () => {
     if (typeof window !== "undefined") {
+      const cookieValue = getCookie("sidenavPosition");
+      if (cookieValue !== null) {
+        return cookieValue;
+      }
       const saved = localStorage.getItem("sidenavPosition");
-      return saved || "left";
+      if (saved !== null) {
+        setCookie("sidenavPosition", saved);
+        localStorage.removeItem("sidenavPosition");
+        return saved;
+      }
     }
     return "left";
   };
@@ -120,27 +194,27 @@ export function MaterialTailwindControllerProvider({ children }) {
     } else {
       document.documentElement.classList.remove("dark");
     }
-    localStorage.setItem("darkMode", String(controller.darkMode));
+    setCookie("darkMode", String(controller.darkMode));
   }, [controller.darkMode]);
 
   React.useEffect(() => {
-    localStorage.setItem("sidenavCollapsed", String(controller.sidenavCollapsed));
+    setCookie("sidenavCollapsed", String(controller.sidenavCollapsed));
   }, [controller.sidenavCollapsed]);
 
   React.useEffect(() => {
-    localStorage.setItem("sidenavFlatMenu", String(controller.sidenavFlatMenu));
+    setCookie("sidenavFlatMenu", String(controller.sidenavFlatMenu));
   }, [controller.sidenavFlatMenu]);
 
   React.useEffect(() => {
-    localStorage.setItem("sidenavExpandAll", String(controller.sidenavExpandAll));
+    setCookie("sidenavExpandAll", String(controller.sidenavExpandAll));
   }, [controller.sidenavExpandAll]);
 
   React.useEffect(() => {
-    localStorage.setItem("sidenavSize", controller.sidenavSize);
+    setCookie("sidenavSize", controller.sidenavSize);
   }, [controller.sidenavSize]);
 
   React.useEffect(() => {
-    localStorage.setItem("sidenavPosition", controller.sidenavPosition);
+    setCookie("sidenavPosition", controller.sidenavPosition);
   }, [controller.sidenavPosition]);
 
   const value = React.useMemo(
@@ -198,4 +272,4 @@ export const setSidenavSize = (dispatch, value) =>
 export const setSidenavPosition = (dispatch, value) =>
   dispatch({ type: "SIDENAV_POSITION", value });
 
-export { ManagementProvider, useManagement } from "./ManagementContext";
+export { ManagementProvider, useManagement, colorUtils, useMtkColor } from "./ManagementContext";

@@ -10,9 +10,11 @@ import { ComplexPagination } from "./components/ComplexPagination";
 import { ComplexViewModal } from "./components/modals/ComplexViewModal";
 import { ComplexFormModal } from "./components/modals/ComplexFormModal";
 import { ComplexDeleteModal } from "./components/modals/ComplexDeleteModal";
+import { ComplexFilterModal } from "./components/modals/ComplexFilterModal";
 
 import { useComplexData } from "./hooks/useComplexData";
 import { useComplexForm } from "./hooks/useComplexForm";
+import { useComplexFilters } from "./hooks/useComplexFilters";
 
 import complexAPI from "./api";
 import mtkAPI from "../mtk/api"; // mövcud mtk api-ni istifadə edirik
@@ -43,14 +45,30 @@ export default function ComplexPage() {
 
   const { state, actions } = useManagement();
 
+  const filters = useComplexFilters();
+
   // Complex data yalnız MTK-lar yükləndikdən sonra yüklənir
   // Amma əgər MTK artıq seçilibsə (məsələn MTK səhifəsindən gələndə), dərhal yüklə
   const shouldLoadComplexData = !loadingMtks && (mtks.length > 0 || state.mtkId);
   
-  const { items, loading, page, lastPage, goToPage, refresh } =
-    useComplexData({ search, mtkId: state.mtkId, enabled: shouldLoadComplexData });
+  const { items, loading, page, lastPage, total, itemsPerPage, setItemsPerPage, goToPage, refresh } =
+    useComplexData({ 
+      search, 
+      mtkId: state.mtkId, 
+      enabled: shouldLoadComplexData,
+      filterStatus: filters.filters.status,
+      filterAddress: filters.filters.address,
+      filterEmail: filters.filters.email,
+      filterPhone: filters.filters.phone
+    });
 
   const form = useComplexForm();
+
+  const hasActiveFilters = 
+    (filters.filters.status && filters.filters.status !== "") ||
+    (filters.filters.address && filters.filters.address.trim() !== "") ||
+    (filters.filters.email && filters.filters.email.trim() !== "") ||
+    (filters.filters.phone && filters.filters.phone.trim() !== "");
 
   // MTK-ları select üçün gətir (bütün səhifələri yığırıq)
   const loadAllMtks = async () => {
@@ -159,21 +177,35 @@ export default function ComplexPage() {
     }
   };
 
+  const handleFilterApply = () => {
+    filters.setFilterOpen(false);
+    refresh();
+  };
+
+  const handleFilterClear = () => {
+    filters.clearFilters();
+    refresh();
+  };
+
   return (
-    <div className="p-4">
+    <div className="py-4">
       <div className="flex items-start justify-between gap-3">
         <ComplexHeader />
-        {pageTitleRight}
       </div>
 
-      <Card className="shadow-sm dark:bg-gray-800">
-        <CardBody className="flex flex-col gap-4">
+      <Card className="shadow-lg dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <CardBody className="flex flex-col gap-6 p-6">
           <ComplexActions
             search={search}
             onSearchChange={setSearch}
             onCreateClick={openCreate}
             mtks={mtks}
             loadingMtks={loadingMtks}
+            onFilterClick={() => filters.setFilterOpen(true)}
+            hasActiveFilters={hasActiveFilters}
+            totalItems={total}
+            itemsPerPage={itemsPerPage}
+            onItemsPerPageChange={setItemsPerPage}
           />
 
           <ComplexTable
@@ -184,19 +216,17 @@ export default function ComplexPage() {
             onDelete={openDelete}
           />
 
-          <div className="pt-2">
-            <ComplexPagination page={page} lastPage={lastPage} onPageChange={goToPage} />
-            </div>
-
-          {loading || loadingMtks ? (
-            <div className="py-10 flex items-center justify-center">
-              <Spinner className="h-6 w-6" />
-            </div>
-          ) : !loading && items.length === 0 ? (
-            <Typography className="text-sm text-blue-gray-500 dark:text-gray-300">
+          {!loading && items.length === 0 ? (
+            <Typography className="text-sm text-blue-gray-500 dark:text-gray-300 text-center py-4">
               Kompleks siyahısı boşdur
             </Typography>
           ) : null}
+
+          {!loading && items.length > 0 && (
+            <div className="pt-2">
+              <ComplexPagination page={page} lastPage={lastPage} onPageChange={goToPage} total={total} />
+            </div>
+          )}
         </CardBody>
       </Card>
 
@@ -217,6 +247,15 @@ export default function ComplexPage() {
         onClose={() => setDeleteOpen(false)}
         item={selected}
         onConfirm={confirmDelete}
+      />
+
+      <ComplexFilterModal
+        open={filters.filterOpen}
+        onClose={() => filters.setFilterOpen(false)}
+        filters={filters.filters}
+        onFilterChange={filters.setFilter}
+        onApply={handleFilterApply}
+        onClear={handleFilterClear}
       />
 
       {/* Toast Notification */}

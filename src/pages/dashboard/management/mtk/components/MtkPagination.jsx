@@ -1,8 +1,15 @@
 import React, { useMemo } from "react";
 import { Button, IconButton } from "@material-tailwind/react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { useMtkColor } from "@/context";
 
 export function MtkPagination({ page, lastPage, onPageChange, total = 0 }) {
+  const { colorCode, getRgba, defaultColor } = useMtkColor();
+  
+  // Default göz yormayan qırmızı ton
+  const defaultRed = "#dc2626";
+  const activeColor = colorCode || defaultRed;
+  
   if (!lastPage || lastPage <= 1) {
     return (
       <div className="flex items-center justify-between">
@@ -73,16 +80,31 @@ export function MtkPagination({ page, lastPage, onPageChange, total = 0 }) {
               key={num}
               size="sm"
               variant={num === page ? "filled" : "outlined"}
-              color={num === page ? "blue" : "blue-gray"}
+              color={num === page ? undefined : "blue-gray"}
               onClick={() => onPageChange?.(num)}
               className={`min-w-[40px] ${
                 num === page
-                  ? "bg-blue-600 dark:bg-blue-500 text-white"
+                  ? "text-white"
                   : "dark:border-gray-600 dark:text-gray-300 hover:bg-blue-gray-50 dark:hover:bg-gray-700"
               }`}
+              style={num === page ? {
+                backgroundColor: activeColor,
+              } : {}}
+              onMouseEnter={(e) => {
+                if (num !== page) {
+                  e.currentTarget.style.backgroundColor = colorCode 
+                    ? getRgba(0.1) 
+                    : "rgba(220, 38, 38, 0.1)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (num !== page) {
+                  e.currentTarget.style.backgroundColor = "";
+                }
+              }}
             >
               {num}
-            </Button>
+        </Button>
           ))}
         </div>
 

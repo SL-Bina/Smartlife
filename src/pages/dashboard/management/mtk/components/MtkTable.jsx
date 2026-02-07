@@ -1,17 +1,92 @@
-import React from "react";
-import { Card, CardBody, Typography, Chip, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
-import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
+import React, { useState, useMemo } from "react";
+import { Card, CardBody, Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
+import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import { useManagement } from "@/context/ManagementContext";
 import { MtkTableSkeleton } from "./MtkTableSkeleton";
 
 export function MtkTable({ items = [], loading, onEdit, onDelete, onView, onGoComplex }) {
   const { state, actions } = useManagement();
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const complexCountOf = (x) => {
     const v = x?.complex_count;
     if (v === 0) return 0;
     return v || "—";
   };
+
+  // Rəng koduna görə kontrast mətn rəngi müəyyən et (ağ və ya qara)
+  const getContrastColor = (hexColor) => {
+    if (!hexColor) return "#000000";
+    
+    // Hex rəngi RGB-yə çevir
+    const hex = hexColor.replace("#", "");
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    
+    // Luminance hesabla
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    
+    // Əgər luminance yüksəkdirsə (açıq rəng), qara mətn istifadə et
+    return luminance > 0.5 ? "#000000" : "#FFFFFF";
+  };
+
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig?.key === key && sortConfig?.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedItems = useMemo(() => {
+    if (!sortConfig.key) return items;
+
+    return [...items].sort((a, b) => {
+      let aValue, bValue;
+
+      switch (sortConfig.key) {
+        case "id":
+          aValue = a.id;
+          bValue = b.id;
+          break;
+        case "name":
+          aValue = (a.name || "").toLowerCase();
+          bValue = (b.name || "").toLowerCase();
+          break;
+        case "address":
+          aValue = (a?.meta?.address || "").toLowerCase();
+          bValue = (b?.meta?.address || "").toLowerCase();
+          break;
+        case "status":
+          aValue = (a.status || "").toLowerCase();
+          bValue = (b.status || "").toLowerCase();
+          break;
+        case "email":
+          aValue = (a?.meta?.email || "").toLowerCase();
+          bValue = (b?.meta?.email || "").toLowerCase();
+          break;
+        case "phone":
+          aValue = (a?.meta?.phone || "").toLowerCase();
+          bValue = (b?.meta?.phone || "").toLowerCase();
+          break;
+        case "color":
+          aValue = (a?.meta?.color_code || "").toLowerCase();
+          bValue = (b?.meta?.color_code || "").toLowerCase();
+          break;
+        case "website":
+          aValue = (a?.meta?.website || "").toLowerCase();
+          bValue = (b?.meta?.website || "").toLowerCase();
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [items, sortConfig]);
 
   return (
     <Card className="shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
@@ -20,55 +95,222 @@ export function MtkTable({ items = [], loading, onEdit, onDelete, onView, onGoCo
             <table className="w-full min-w-[1400px] table-auto">
             <thead>
               <tr className="bg-blue-gray-50 dark:bg-gray-900/40">
-                <th className="p-4 text-left">
-                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
-                    ID
-                  </Typography>
+                <th 
+                  className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  onClick={() => handleSort("id")}
+                >
+                  <div className="flex items-center gap-2 justify-center">
+                    <Typography className="text-xs text-center font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                      ID
+                    </Typography>
+                    <div className="flex flex-col">
+                      <ChevronUpIcon
+                        className={`h-3 w-3 ${
+                          sortConfig?.key === "id" && sortConfig?.direction === "asc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                      <ChevronDownIcon
+                        className={`h-3 w-3 -mt-1 ${
+                          sortConfig?.key === "id" && sortConfig?.direction === "desc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                    </div>
+                  </div>
                 </th>
-                <th className="p-4 text-left">
-                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
-                    Ad
-                  </Typography>
+                <th 
+                  className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  onClick={() => handleSort("name")}
+                >
+                  <div className="flex items-center gap-2 justify-center">
+                    <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                      Ad
+                    </Typography>
+                    <div className="flex flex-col">
+                      <ChevronUpIcon
+                        className={`h-3 w-3 ${
+                          sortConfig?.key === "name" && sortConfig?.direction === "asc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                      <ChevronDownIcon
+                        className={`h-3 w-3 -mt-1 ${
+                          sortConfig?.key === "name" && sortConfig?.direction === "desc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                    </div>
+                  </div>
                 </th>
 
-                <th className="p-4 text-left">
-                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
-                    Ünvan
-                  </Typography>
+                <th 
+                  className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  onClick={() => handleSort("address")}
+                >
+                  <div className="flex items-center gap-2 justify-center">
+                    <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                      Ünvan
+                    </Typography>
+                    <div className="flex flex-col">
+                      <ChevronUpIcon
+                        className={`h-3 w-3 ${
+                          sortConfig?.key === "address" && sortConfig?.direction === "asc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                      <ChevronDownIcon
+                        className={`h-3 w-3 -mt-1 ${
+                          sortConfig?.key === "address" && sortConfig?.direction === "desc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                    </div>
+                  </div>
                 </th>
 
-                <th className="p-4 text-left">
-                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
-                    Status
-                  </Typography>
+                <th 
+                  className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  onClick={() => handleSort("status")}
+                >
+                  <div className="flex items-center gap-2 justify-center">
+                    <Typography className="text-xs text-center font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                      Status
+                    </Typography>
+                    <div className="flex flex-col">
+                      <ChevronUpIcon
+                        className={`h-3 w-3 ${
+                          sortConfig?.key === "status" && sortConfig?.direction === "asc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                      <ChevronDownIcon
+                        className={`h-3 w-3 -mt-1 ${
+                          sortConfig?.key === "status" && sortConfig?.direction === "desc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                    </div>
+                  </div>
                 </th>
 
-                <th className="p-4 text-left">
-                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
-                    Email
-                  </Typography>
+                <th 
+                  className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  onClick={() => handleSort("email")}
+                >
+                  <div className="flex items-center gap-2 justify-center">
+                    <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                      Email
+                    </Typography>
+                    <div className="flex flex-col">
+                      <ChevronUpIcon
+                        className={`h-3 w-3 ${
+                          sortConfig?.key === "email" && sortConfig?.direction === "asc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                      <ChevronDownIcon
+                        className={`h-3 w-3 -mt-1 ${
+                          sortConfig?.key === "email" && sortConfig?.direction === "desc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                    </div>
+                  </div>
                 </th>
 
-                <th className="p-4 text-left">
-                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
-                    Telefon
-                  </Typography>
+                <th 
+                  className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  onClick={() => handleSort("phone")}
+                >
+                  <div className="flex items-center gap-2 justify-center">
+                    <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                      Telefon
+                    </Typography>
+                    <div className="flex flex-col">
+                      <ChevronUpIcon
+                        className={`h-3 w-3 ${
+                          sortConfig?.key === "phone" && sortConfig?.direction === "asc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                      <ChevronDownIcon
+                        className={`h-3 w-3 -mt-1 ${
+                          sortConfig?.key === "phone" && sortConfig?.direction === "desc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                    </div>
+                  </div>
                 </th>
 
-
-                <th className="p-4 text-left">
-                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
-                    Rəng
-                  </Typography>
+                <th 
+                  className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  onClick={() => handleSort("color")}
+                >
+                  <div className="flex items-center gap-2 justify-center">
+                    <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                      Rəng
+                    </Typography>
+                    <div className="flex flex-col">
+                      <ChevronUpIcon
+                        className={`h-3 w-3 ${
+                          sortConfig?.key === "color" && sortConfig?.direction === "asc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                      <ChevronDownIcon
+                        className={`h-3 w-3 -mt-1 ${
+                          sortConfig?.key === "color" && sortConfig?.direction === "desc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                    </div>
+                  </div>
                 </th>
 
-                <th className="p-4 text-left">
-                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
-                    Web sayt
-                  </Typography>
+                <th 
+                  className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  onClick={() => handleSort("website")}
+                >
+                  <div className="flex items-center gap-2 justify-center">
+                    <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                      Web sayt
+                    </Typography>
+                    <div className="flex flex-col">
+                      <ChevronUpIcon
+                        className={`h-3 w-3 ${
+                          sortConfig?.key === "website" && sortConfig?.direction === "asc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                      <ChevronDownIcon
+                        className={`h-3 w-3 -mt-1 ${
+                          sortConfig?.key === "website" && sortConfig?.direction === "desc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                    </div>
+                  </div>
                 </th>
 
-                <th className="p-4 text-right">
+                <th className="p-4  justify-center items-center">
                   <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
                     Əməliyyat
                   </Typography>
@@ -89,51 +331,103 @@ export function MtkTable({ items = [], loading, onEdit, onDelete, onView, onGoCo
                 </tr>
               ) : (
                 <>
-                  {items.map((x) => {
+                  {sortedItems.map((x) => {
                     const isSelected = String(state.mtkId || "") === String(x.id);
+                    const colorCode = x?.meta?.color_code;
+                    
+                    // Rəng kodunu rgba-ya çevir (15% opacity)
+                    const getHoverColor = (hex) => {
+                      if (!hex) return null;
+                      const hexClean = hex.replace("#", "");
+                      const r = parseInt(hexClean.substring(0, 2), 16);
+                      const g = parseInt(hexClean.substring(2, 4), 16);
+                      const b = parseInt(hexClean.substring(4, 6), 16);
+                      return `rgba(${r}, ${g}, ${b}, 0.15)`;
+                    };
+                    
+                    // Rəng kodunu rgba-ya çevir (25% opacity)
+                    const getSelectedColor = (hex) => {
+                      if (!hex) return null;
+                      const hexClean = hex.replace("#", "");
+                      const r = parseInt(hexClean.substring(0, 2), 16);
+                      const g = parseInt(hexClean.substring(2, 4), 16);
+                      const b = parseInt(hexClean.substring(4, 6), 16);
+                      return `rgba(${r}, ${g}, ${b}, 0.25)`;
+                    };
+
+                    const hoverColor = getHoverColor(colorCode);
+                    const selectedColor = getSelectedColor(colorCode);
+                    const defaultHover = "bg-blue-gray-50/50 dark:hover:bg-gray-700/30";
+                    const defaultSelected = "bg-blue-50/60 dark:bg-gray-700/40";
 
                     return (
                       <tr
                         key={x.id}
-                        className={`border-b border-blue-gray-50 dark:border-gray-700 cursor-pointer transition-colors hover:bg-blue-gray-50/50 dark:hover:bg-gray-700/30 ${
-                          isSelected ? "bg-blue-50/60 dark:bg-gray-700/40" : ""
+                        className={`border-b border-blue-gray-50 dark:border-gray-700 cursor-pointer transition-colors ${
+                          !colorCode && isSelected ? defaultSelected : ""
                         }`}
+                        style={{
+                          ...(selectedColor && isSelected && {
+                            backgroundColor: selectedColor,
+                          }),
+                        }}
+                        onMouseEnter={(e) => {
+                          if (hoverColor) {
+                            e.currentTarget.style.backgroundColor = hoverColor;
+                          } else {
+                            e.currentTarget.classList.add(...defaultHover.split(" "));
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (hoverColor) {
+                            e.currentTarget.style.backgroundColor = isSelected && selectedColor ? selectedColor : '';
+                          } else {
+                            e.currentTarget.classList.remove(...defaultHover.split(" "));
+                          }
+                        }}
                         onClick={() => actions.setMtk(x.id, x)}
                         title="MTK seç (scope)"
                       >
 
-                        <td className="p-4">
+                        <td className="p-4 text-center">
                           <Typography className="text-base text-blue-gray-500 font-bold dark:text-gray-400">{x.id}</Typography>
                         </td>
 
-                        <td className="p-4">
+                        <td className="p-4 text-center">
                           <Typography className="text-sm font-medium text-blue-gray-800 dark:text-white">
                             {x.name}
                           </Typography>
                         </td>
 
-                        <td className="p-4">
+                        <td className="p-4 text-center">
                           <Typography className="text-sm text-blue-gray-700 dark:text-gray-200">
                             {x?.meta?.address || "—"}
                           </Typography>
                         </td>
 
-                        <td className="p-4">
-                          <Chip
-                            value={x.status || "—"}
-                            size="sm"
-                            color={x.status === "active" ? "green" : "blue-gray"}
-                            className="w-fit"
-                          />
+                        <td className="p-4 text-center items-center justify-center">
+                          <div className="flex items-center justify-center">
+                            <span
+                              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                                x.status === "active" || x.status === "Active"
+                                  ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                                  : x.status === "inactive" || x.status === "Inactive"
+                                  ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                                  : "bg-blue-gray-100 text-blue-gray-800 dark:bg-gray-700 dark:text-gray-300"
+                              }`}
+                            >
+                              {x.status || "—"}
+                            </span>
+                          </div>
                         </td>
 
-                        <td className="p-4">
+                        <td className="p-4 text-center">
                           <Typography className="text-sm text-blue-gray-700 dark:text-gray-200">
                             {x?.meta?.email || "—"}
                           </Typography>
                         </td>
 
-                        <td className="p-4">
+                        <td className="p-4 text-center">
                           <Typography className="text-sm text-blue-gray-700 dark:text-gray-200">
                             {x?.meta?.phone || "—"}
                           </Typography>
@@ -141,24 +435,26 @@ export function MtkTable({ items = [], loading, onEdit, onDelete, onView, onGoCo
 
                         
 
-                        <td className="p-4">
+                        <td className="p-4 text-center">
                           {x?.meta?.color_code ? (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center justify-center">
                               <span
-                                className="h-4 w-4 rounded-full border border-blue-gray-100 dark:border-gray-700"
-                                style={{ backgroundColor: x.meta.color_code }}
+                                className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border border-gray-200 dark:border-gray-600"
+                                style={{ 
+                                  backgroundColor: x.meta.color_code,
+                                  color: getContrastColor(x.meta.color_code)
+                                }}
                                 title={x.meta.color_code}
-                              />
-                              <Typography className="text-sm text-blue-gray-700 dark:text-gray-200">
+                              >
                                 {x.meta.color_code}
-                              </Typography>
+                              </span>
                             </div>
                           ) : (
                             <Typography className="text-sm text-blue-gray-700 dark:text-gray-200">—</Typography>
                           )}
                         </td>
 
-                        <td className="p-4">
+                        <td className="p-4 text-center">
                           {x?.meta?.website ? (
                             <a
                               href={x.meta.website}
@@ -174,11 +470,12 @@ export function MtkTable({ items = [], loading, onEdit, onDelete, onView, onGoCo
                           )}
                         </td>
 
-                        <td className="p-4">
-                          <div className="flex justify-end items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                        <td className="p-4 justify-center items-center">
+                          <div className="flex justify-center items-center gap-2" onClick={(e) => e.stopPropagation()}>
                           <button
                               onClick={(e) => {
                                 e.stopPropagation();
+                                // Context-də ID-ni set et (data yükləməni context özü edəcək)
                                 actions.setMtk(x.id, x);
                                 onGoComplex?.();
                               }}

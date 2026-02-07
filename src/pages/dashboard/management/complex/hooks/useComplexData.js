@@ -10,13 +10,24 @@ const mapComplex = (x) => ({
   mtk_id: x?.mtk_id ?? null,
 });
 
-export function useComplexData({ search = "", mtkId = null, enabled = true } = {}) {
+const DEFAULT_ITEMS_PER_PAGE = 10;
+
+export function useComplexData({ 
+  search = "", 
+  mtkId = null, 
+  enabled = true,
+  filterStatus = "",
+  filterAddress = "",
+  filterEmail = "",
+  filterPhone = ""
+} = {}) {
   const [loading, setLoading] = useState(true);
 
   // MTK seçilməyəndə pagination işləyəcək
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
 
   // MTK seçiləndə bütün data burada saxlanacaq
   const [allItems, setAllItems] = useState([]);
@@ -137,22 +148,89 @@ export function useComplexData({ search = "", mtkId = null, enabled = true } = {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mtkId, enabled]); // mtkId və enabled dəyişəndə yenidən çağır
 
-  // Search filter
+  // Search and filter
   const finalItems = useMemo(() => {
-    const base = mtkId ? allItems : items;
+    let filtered = mtkId ? allItems : items;
+    
+    // Search filter
     const q = (search || "").trim().toLowerCase();
-    if (!q) return base;
-    return base.filter((x) => (x.name || "").toLowerCase().includes(q));
-  }, [items, allItems, search, mtkId]);
+    if (q) {
+      filtered = filtered.filter((x) => (x.name || "").toLowerCase().includes(q));
+    }
+    
+    // Status filter
+    if (filterStatus && filterStatus.trim()) {
+      filtered = filtered.filter((item) => item.status === filterStatus.trim());
+    }
+    
+    // Address filter
+    if (filterAddress && filterAddress.trim()) {
+      const addressLower = filterAddress.trim().toLowerCase();
+      filtered = filtered.filter((item) => 
+        (item.meta?.address || "").toLowerCase().includes(addressLower)
+      );
+    }
+    
+    // Email filter
+    if (filterEmail && filterEmail.trim()) {
+      const emailLower = filterEmail.trim().toLowerCase();
+      filtered = filtered.filter((item) => 
+        (item.meta?.email || "").toLowerCase().includes(emailLower)
+      );
+    }
+    
+    // Phone filter
+    if (filterPhone && filterPhone.trim()) {
+      const phoneLower = filterPhone.trim().toLowerCase();
+      filtered = filtered.filter((item) => 
+        (item.meta?.phone || "").toLowerCase().includes(phoneLower)
+      );
+    }
+    
+    return filtered;
+  }, [items, allItems, search, mtkId, filterStatus, filterAddress, filterEmail, filterPhone]);
+
+  // Paginated items
+  const paginatedItems = useMemo(() => {
+    if (mtkId) {
+      // MTK rejimində frontend pagination
+      const startIndex = (page - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      return finalItems.slice(startIndex, endIndex);
+    }
+    return finalItems;
+  }, [finalItems, page, itemsPerPage, mtkId]);
+
+  // Calculate total pages
+  const totalPages = useMemo(() => {
+    if (mtkId) {
+      return Math.ceil(finalItems.length / itemsPerPage) || 1;
+    }
+    return lastPage;
+  }, [finalItems.length, itemsPerPage, mtkId, lastPage]);
+
+  // Items per page dəyişəndə səhifəni 1-ə qaytar
+  useEffect(() => {
+    setPage(1);
+  }, [itemsPerPage]);
 
   return {
     loading,
-    items: finalItems,
+    items: paginatedItems,
+    filteredItems: finalItems,
+    total: finalItems.length,
 
     // pagination yalnız MTK yoxdursa aktiv olsun
     page,
-    lastPage,
-    goToPage: (p) => (mtkId ? null : fetchNormal(p)),
+    lastPage: totalPages,
+    itemsPerPage,
+    setItemsPerPage,
+    goToPage: (p) => {
+      setPage(p);
+      if (!mtkId) {
+        fetchNormal(p);
+      }
+    },
     refresh: () => (mtkId ? fetchAllAndFilter() : fetchNormal(page)),
   };
 }

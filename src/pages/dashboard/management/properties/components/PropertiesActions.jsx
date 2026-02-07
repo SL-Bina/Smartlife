@@ -1,8 +1,11 @@
 import React, { useMemo, useEffect } from "react";
 import { Button, IconButton, Select, Option, Input, Spinner } from "@material-tailwind/react";
-import { PlusIcon, ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, ArrowUpIcon, ArrowDownIcon, FunnelIcon } from "@heroicons/react/24/outline";
 import { useManagement } from "@/context/ManagementContext";
+import { useMtkColor } from "@/context";
 import AppSelect from "@/components/ui/AppSelect";
+
+const STANDARD_OPTIONS = [10, 25, 50, 75, 100];
 
 export function PropertiesActions({
   search,
@@ -20,8 +23,18 @@ export function PropertiesActions({
   loadingComplexes = false,
   loadingBuildings = false,
   loadingBlocks = false,
+  onFilterClick,
+  hasActiveFilters = false,
+  totalItems = 0,
+  itemsPerPage = 10,
+  onItemsPerPageChange
 }) {
   const { state, actions } = useManagement();
+  const { colorCode, getRgba } = useMtkColor();
+  
+  // Default göz yormayan qırmızı ton
+  const defaultRed = "#dc2626";
+  const activeColor = colorCode || defaultRed;
 
   const filteredComplexes = useMemo(() => {
     const mid = state.mtkId;
@@ -88,6 +101,46 @@ export function PropertiesActions({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredBlocks.length, loadingBlocks, state.blockId, state.buildingId]);
 
+  // Items per page seçimləri yarat
+  const itemsPerPageOptions = useMemo(() => {
+    // Əgər data sayı 25-dən azdırsa, select göstərmə
+    if (totalItems < 25) {
+      return null;
+    }
+
+    const options = [];
+    const maxItems = Math.min(totalItems, 100); // Max 100
+    
+    // Həmişə 10 olmalıdır
+    options.push(10);
+    
+    // Standart variantları əlavə et (yalnız maxItems-dən kiçik və ya bərabər olanlar)
+    STANDARD_OPTIONS.slice(1).forEach(option => {
+      if (option <= maxItems && !options.includes(option)) {
+        options.push(option);
+      }
+    });
+    
+    // Əgər data sayı standart variantlar arasında deyilsə və 100-dən kiçikdirsə, əlavə et
+    if (maxItems < 100 && !STANDARD_OPTIONS.includes(maxItems)) {
+      // Data sayını uyğun yerə daxil et (sıralı şəkildə)
+      const insertIndex = options.findIndex(opt => opt > maxItems);
+      if (insertIndex === -1) {
+        options.push(maxItems);
+      } else {
+        options.splice(insertIndex, 0, maxItems);
+      }
+    } else if (maxItems === 100 && !options.includes(100)) {
+      // Əgər maxItems 100-dürsə və hələ əlavə olunmayıbsa
+      options.push(100);
+    }
+    
+    return options.map(value => ({
+      id: value,
+      name: String(value)
+    }));
+  }, [totalItems]);
+
   return (
     <div className="flex flex-col gap-3 w-full">
       <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 w-full">
@@ -142,14 +195,42 @@ export function PropertiesActions({
 
         <div className="flex-1" />
 
-        <Button
-          color="red"
-          onClick={onCreateClick}
-          className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white"
-        >
-          <PlusIcon className="h-4 w-4" />
-          Mənzil yarat
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          {itemsPerPageOptions && (
+            <div className="w-full sm:w-auto">
+              <AppSelect
+                items={itemsPerPageOptions}
+                value={itemsPerPage}
+                onChange={(value) => onItemsPerPageChange?.(value)}
+                placeholder="Göstəriləcək say"
+                allowAll={false}
+              />
+            </div>
+          )}
+          {onFilterClick && (
+            <Button 
+              variant="outlined" 
+              color="blue-gray" 
+              onClick={onFilterClick} 
+              className="border-blue-700 text-blue-700 hover:bg-blue-700 hover:text-white hover:shadow-lg flex items-center gap-2"
+              style={{
+                borderColor: hasActiveFilters ? activeColor : undefined,
+                color: hasActiveFilters ? activeColor : undefined,
+              }}
+            >
+              <FunnelIcon className="h-5 w-5" />
+              Axtarış
+            </Button>
+          )}
+          <Button
+            color="red"
+            onClick={onCreateClick}
+            className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white"
+          >
+            <PlusIcon className="h-4 w-4" />
+            Mənzil yarat
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 sm:items-center flex-wrap">
@@ -221,7 +302,7 @@ export function PropertiesActions({
           variant="outlined"
           color="blue-gray"
           onClick={() => actions.resetAll()}
-          className="dark:text-gray-300"
+          className="dark:text-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
         >
           Scope sıfırla
         </Button>

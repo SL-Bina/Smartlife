@@ -9,9 +9,11 @@ import { BlocksPagination } from "./components/BlocksPagination";
 import { BlocksViewModal } from "./components/modals/BlocksViewModal";
 import { BlocksFormModal } from "./components/modals/BlocksFormModal";
 import { BlocksDeleteModal } from "./components/modals/BlocksDeleteModal";
+import { BlocksFilterModal } from "./components/modals/BlocksFilterModal";
 
 import { useBlocksData } from "./hooks/useBlocksData";
 import { useBlocksForm } from "./hooks/useBlocksForm";
+import { useBlocksFilters } from "./hooks/useBlocksFilters";
 
 import mtkAPI from "../mtk/api";
 import complexAPI from "../complex/api";
@@ -46,18 +48,34 @@ export default function BlocksPage() {
     setToast({ open: true, type, message, title });
   };
 
+  const filters = useBlocksFilters();
+
   // Blocks data yalnız MTK, Complex və Buildings yükləndikdən sonra yüklənir
-  const shouldLoadBlocksData = !loadingMtks && !loadingComplexes && !loadingBuildings && mtks.length > 0 && complexes.length > 0 && buildings.length > 0;
+  // Amma əgər scope artıq seçilibsə, dərhal yüklə
+  const shouldLoadBlocksData = !loadingMtks && !loadingComplexes && !loadingBuildings && 
+    (mtks.length > 0 || state.mtkId) && 
+    (complexes.length > 0 || state.complexId) && 
+    (buildings.length > 0 || state.buildingId);
   
-  const { items, loading, page, lastPage, goToPage, refresh } = useBlocksData({
+  const { items, loading, page, lastPage, total, itemsPerPage, setItemsPerPage, goToPage, refresh } = useBlocksData({
     search,
     mtkId: state.mtkId,
     complexId: state.complexId,
     buildingId: state.buildingId,
     enabled: shouldLoadBlocksData,
+    filterStatus: filters.filters.status,
+    filterAddress: filters.filters.address,
+    filterEmail: filters.filters.email,
+    filterPhone: filters.filters.phone
   });
 
   const form = useBlocksForm();
+
+  const hasActiveFilters = 
+    (filters.filters.status && filters.filters.status !== "") ||
+    (filters.filters.address && filters.filters.address.trim() !== "") ||
+    (filters.filters.email && filters.filters.email.trim() !== "") ||
+    (filters.filters.phone && filters.filters.phone.trim() !== "");
 
   // MTK - bütün səhifələr
   const loadAllMtks = async () => {
@@ -93,7 +111,6 @@ export default function BlocksPage() {
 
   // Complex - bütün səhifələr
   const loadAllComplexes = async () => {
-    // MTK-lar yüklənib bitməyibsə və ya data yoxdursa gözlə
     if (loadingMtks || mtks.length === 0) {
       return;
     }
@@ -115,20 +132,6 @@ export default function BlocksPage() {
       } while (page <= lastPage);
 
       setComplexes(all);
-      
-      // Komplekslər yükləndikdən sonra, seçilmiş MTK-ya uyğun kompleksləri filter et
-      const selectedMtkId = state.mtkId;
-      if (selectedMtkId && all.length > 0) {
-        const filtered = all.filter((c) => {
-          const mtkId = c?.mtk_id ?? c?.bind_mtk?.id ?? null;
-          return String(mtkId || "") === String(selectedMtkId);
-        });
-        
-        // Default olaraq 1-ci kompleks seç
-        if (filtered.length > 0 && !state.complexId) {
-          actions.setComplex(filtered[0].id, filtered[0]);
-        }
-      }
     } catch (e) {
       console.error("complex select load error:", e);
       setComplexes([]);
@@ -139,7 +142,6 @@ export default function BlocksPage() {
 
   // Buildings - bütün səhifələr
   const loadAllBuildings = async () => {
-    // Komplekslər yüklənib bitməyibsə və ya data yoxdursa gözlə
     if (loadingMtks || loadingComplexes || mtks.length === 0 || complexes.length === 0) {
       return;
     }
@@ -161,20 +163,6 @@ export default function BlocksPage() {
       } while (page <= lastPage);
 
       setBuildings(all);
-      
-      // Binələr yükləndikdən sonra, seçilmiş kompleksə uyğun binələri filter et
-      const selectedComplexId = state.complexId;
-      if (selectedComplexId && all.length > 0) {
-        const filtered = all.filter((b) => {
-          const complexId = b?.complex_id ?? b?.complex?.id ?? null;
-          return String(complexId || "") === String(selectedComplexId);
-        });
-        
-        // Default olaraq 1-ci bina seç
-        if (filtered.length > 0 && !state.buildingId) {
-          actions.setBuilding(filtered[0].id, filtered[0]);
-        }
-      }
     } catch (e) {
       console.error("buildings select load error:", e);
       setBuildings([]);
@@ -188,31 +176,17 @@ export default function BlocksPage() {
     loadAllMtks();
   }, []);
 
-  // MTK-lar yükləndikdən sonra komplekslər yüklənir
   useEffect(() => {
     if (!loadingMtks && mtks.length > 0) {
       loadAllComplexes();
     }
-  }, [loadingMtks, mtks.length, state.mtkId]);
+  }, [loadingMtks, mtks.length]);
 
-  // Komplekslər yükləndikdən sonra binələr yüklənir
   useEffect(() => {
     if (!loadingMtks && !loadingComplexes && complexes.length > 0) {
       loadAllBuildings();
     }
-  }, [loadingMtks, loadingComplexes, complexes.length, state.complexId]);
-
-  const pageTitleRight = useMemo(() => {
-    if (loading) {
-      return (
-        <div className="flex items-center gap-2 text-xs text-blue-gray-400 dark:text-gray-400">
-          <Spinner className="h-4 w-4" />
-          Yüklənir...
-        </div>
-      );
-    }
-    return <div className="text-xs text-blue-gray-400 dark:text-gray-400">Cəm: {items.length}</div>;
-  }, [loading, items.length]);
+  }, [loadingMtks, loadingComplexes, complexes.length]);
 
   const openCreate = () => {
     setMode("create");
@@ -275,15 +249,24 @@ export default function BlocksPage() {
     }
   };
 
+  const handleFilterApply = () => {
+    filters.setFilterOpen(false);
+    refresh();
+  };
+
+  const handleFilterClear = () => {
+    filters.clearFilters();
+    refresh();
+  };
+
   return (
-    <div className="p-4">
+    <div className="py-4">
       <div className="flex items-start justify-between gap-3">
         <BlocksHeader />
-        {pageTitleRight}
       </div>
 
-      <Card className="shadow-sm dark:bg-gray-800">
-        <CardBody className="flex flex-col gap-4">
+      <Card className="shadow-lg dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <CardBody className="flex flex-col gap-6 p-6">
           <BlocksActions
             search={search}
             onSearchChange={setSearch}
@@ -294,6 +277,11 @@ export default function BlocksPage() {
             loadingMtks={loadingMtks}
             loadingComplexes={loadingComplexes}
             loadingBuildings={loadingBuildings}
+            onFilterClick={() => filters.setFilterOpen(true)}
+            hasActiveFilters={hasActiveFilters}
+            totalItems={total}
+            itemsPerPage={itemsPerPage}
+            onItemsPerPageChange={setItemsPerPage}
           />
 
           <BlocksTable
@@ -304,22 +292,21 @@ export default function BlocksPage() {
             onDelete={openDelete}
           />
 
-          <div className="pt-2">
-            <BlocksPagination page={page} lastPage={lastPage} onPageChange={goToPage} />
-          </div>
-
-          {loading || loadingMtks || loadingComplexes || loadingBuildings ? (
-            <div className="py-10 flex items-center justify-center">
-              <Spinner className="h-6 w-6" />
-            </div>
-          ) : !loading && items.length === 0 ? (
-            <Typography className="text-sm text-blue-gray-500 dark:text-gray-300">
+          {!loading && items.length === 0 ? (
+            <Typography className="text-sm text-blue-gray-500 dark:text-gray-300 text-center py-4">
               Blok siyahısı boşdur
             </Typography>
           ) : null}
+
+          {!loading && items.length > 0 && (
+            <div className="pt-2">
+              <BlocksPagination page={page} lastPage={lastPage} onPageChange={goToPage} total={total} />
+            </div>
+          )}
         </CardBody>
       </Card>
 
+      {/* Modals */}
       <BlocksViewModal open={viewOpen} onClose={() => setViewOpen(false)} item={selected} />
 
       <BlocksFormModal
@@ -341,6 +328,15 @@ export default function BlocksPage() {
         onClose={() => setDeleteOpen(false)}
         item={selected}
         onConfirm={confirmDelete}
+      />
+
+      <BlocksFilterModal
+        open={filters.filterOpen}
+        onClose={() => filters.setFilterOpen(false)}
+        filters={filters.filters}
+        onFilterChange={filters.setFilter}
+        onApply={handleFilterApply}
+        onClear={handleFilterClear}
       />
 
       {/* Toast Notification */}

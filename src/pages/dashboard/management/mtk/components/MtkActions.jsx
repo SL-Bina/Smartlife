@@ -1,10 +1,62 @@
-import React from "react";
-import { Button, Input, IconButton } from "@material-tailwind/react";
+import React, { useMemo } from "react";
+import { Button, Input, IconButton, Typography } from "@material-tailwind/react";
 import { PlusIcon, FunnelIcon } from "@heroicons/react/24/outline";
 import { useManagement } from "@/context/ManagementContext";
+import AppSelect from "@/components/ui/AppSelect";
 
-export function MtkActions({ search, onSearchChange, onCreateClick, onFilterClick, hasActiveFilters = false }) {
+const STANDARD_OPTIONS = [10, 25, 50, 75, 100];
+
+export function MtkActions({ 
+  search, 
+  onSearchChange, 
+  onCreateClick, 
+  onFilterClick, 
+  hasActiveFilters = false,
+  totalItems = 0,
+  itemsPerPage = 10,
+  onItemsPerPageChange
+}) {
   const { state, actions } = useManagement();
+
+  // Items per page seçimləri yarat
+  const itemsPerPageOptions = useMemo(() => {
+    // Əgər data sayı 25-dən azdırsa, select göstərmə
+    if (totalItems < 25) {
+      return null;
+    }
+
+    const options = [];
+    const maxItems = Math.min(totalItems, 100); // Max 100
+    
+    // Həmişə 10 olmalıdır
+    options.push(10);
+    
+    // Standart variantları əlavə et (yalnız maxItems-dən kiçik və ya bərabər olanlar)
+    STANDARD_OPTIONS.slice(1).forEach(option => {
+      if (option <= maxItems && !options.includes(option)) {
+        options.push(option);
+      }
+    });
+    
+    // Əgər data sayı standart variantlar arasında deyilsə və 100-dən kiçikdirsə, əlavə et
+    if (maxItems < 100 && !STANDARD_OPTIONS.includes(maxItems)) {
+      // Data sayını uyğun yerə daxil et (sıralı şəkildə)
+      const insertIndex = options.findIndex(opt => opt > maxItems);
+      if (insertIndex === -1) {
+        options.push(maxItems);
+      } else {
+        options.splice(insertIndex, 0, maxItems);
+      }
+    } else if (maxItems === 100 && !options.includes(100)) {
+      // Əgər maxItems 100-dürsə və hələ əlavə olunmayıbsa
+      options.push(100);
+    }
+    
+    return options.map(value => ({
+      id: value,
+      name: String(value)
+    }));
+  }, [totalItems]);
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -28,15 +80,20 @@ export function MtkActions({ search, onSearchChange, onCreateClick, onFilterClic
         >
           Scope sıfırla
         </Button>
-
-        {state.mtkId && (
-          <div className="px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-gray-700 text-sm text-blue-gray-700 dark:text-gray-300">
-            Seçilmiş MTK: <b className="text-blue-600 dark:text-blue-400">{state.mtk?.name || `#${state.mtkId}`}</b>
-          </div>
-        )}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
+        {itemsPerPageOptions && (
+          <div className="w-full sm:w-auto">
+            <AppSelect
+              items={itemsPerPageOptions}
+              value={itemsPerPage}
+              onChange={(value) => onItemsPerPageChange?.(value)}
+              placeholder="Göstəriləcək say"
+              allowAll={false}
+            />
+          </div>
+        )}
         <Button variant="outlined" color="blue-gray" onClick={onFilterClick} className="border-blue-700 text-blue-700 hover:bg-blue-700 hover:text-white hover:shadow-lg flex items-center gap-2">
           <FunnelIcon className="h-5 w-5" />
           Axtarış
@@ -48,7 +105,7 @@ export function MtkActions({ search, onSearchChange, onCreateClick, onFilterClic
         >
           <PlusIcon className="h-5 w-5" />
           MTK əlavə et
-        </Button>
+      </Button>
       </div>
     </div>
   );
