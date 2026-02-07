@@ -8,6 +8,10 @@ import { SidenavMenu } from "./components/SidenavMenu";
 export function Sidenav({ brandImg, brandName, routes }) {
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavType, openSidenav, sidenavCollapsed, sidenavFlatMenu, sidenavExpandAll, sidenavSize, sidenavPosition } = controller;
+
+  // Routes artıq dashboard.jsx-də filter olunub, burada sadəcə istifadə edirik
+  const filteredRoutes = routes;
+
   const [openMenus, setOpenMenus] = React.useState({});
   const [isMobile, setIsMobile] = React.useState(false);
   const [isHovered, setIsHovered] = React.useState(false);
@@ -19,42 +23,24 @@ export function Sidenav({ brandImg, brandName, routes }) {
   };
 
   React.useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1280);
-    };
+    const checkMobile = () => setIsMobile(window.innerWidth < 1280);
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Size mapping
-  const sizeMap = {
-    small: 240,
-    medium: 320,
-    large: 400,
-  };
+  const sizeMap = { small: 240, medium: 320, large: 400 };
 
   const getSidenavWidth = () => {
     if (isMobile) return 288;
-    if (sidenavCollapsed) {
-      return isHovered ? sizeMap[sidenavSize] || 320 : 80;
-    }
+    if (sidenavCollapsed) return isHovered ? (sizeMap[sidenavSize] || 320) : 80;
     return sizeMap[sidenavSize] || 320;
   };
 
-  const getCollapsedWidth = () => {
-    return isHovered ? sizeMap[sidenavSize] || 320 : 80;
-  };
-
   React.useEffect(() => {
-    if (openSidenav && isMobile) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
+    if (openSidenav && isMobile) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "";
+    return () => { document.body.style.overflow = ""; };
   }, [openSidenav, isMobile]);
 
   return (
@@ -80,44 +66,21 @@ export function Sidenav({ brandImg, brandName, routes }) {
           left: sidenavPosition === "right" ? "auto" : 0,
           right: sidenavPosition === "right" ? 0 : "auto",
         }}
-        transition={
-          isMobile
-            ? {
-                type: "spring",
-                stiffness: 300,
-                damping: 30,
-              }
-            : {
-                type: "spring",
-                stiffness: 300,
-                damping: 30,
-              }
-        }
-        onMouseEnter={() => {
-          if (!isMobile && sidenavCollapsed) {
-            setIsHovered(true);
-          }
-        }}
-        onMouseLeave={() => {
-          if (!isMobile && sidenavCollapsed) {
-            setIsHovered(false);
-          }
-        }}
-        className={`${sidenavTypes[sidenavType]} fixed inset-y-0 ${
-          sidenavPosition === "right" ? "right-0" : "left-0"
-        } ${
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        onMouseEnter={() => { if (!isMobile && sidenavCollapsed) setIsHovered(true); }}
+        onMouseLeave={() => { if (!isMobile && sidenavCollapsed) setIsHovered(false); }}
+        className={`${sidenavTypes[sidenavType]} fixed inset-y-0 ${sidenavPosition === "right" ? "right-0" : "left-0"} ${
           sidenavCollapsed && isHovered ? "z-[60]" : "z-50"
-        } xl:translate-x-0 flex flex-col backdrop-blur-xl ${
-          sidenavPosition === "right" ? "border-l" : "border-r"
-        } border-gray-200/50 dark:border-gray-700/50 shadow-2xl ${
+        } xl:translate-x-0 flex flex-col backdrop-blur-xl ${sidenavPosition === "right" ? "border-l" : "border-r"} border-gray-200/50 dark:border-gray-700/50 shadow-2xl ${
           sidenavCollapsed && !isHovered ? "xl:overflow-hidden" : "overflow-y-auto"
         }`}
       >
         <SidenavHeader brandName={brandName} collapsed={sidenavCollapsed && !isHovered} />
-        <SidenavMenu 
-          routes={routes} 
-          openMenus={openMenus} 
-          setOpenMenus={setOpenMenus} 
+
+        <SidenavMenu
+          routes={filteredRoutes}   // ✅ burda artıq filtr olunmuş routes gedir
+          openMenus={openMenus}
+          setOpenMenus={setOpenMenus}
           collapsed={sidenavCollapsed && !isHovered}
           flatMenu={sidenavFlatMenu}
           expandAll={sidenavExpandAll}
@@ -137,7 +100,5 @@ Sidenav.propTypes = {
   brandName: PropTypes.string,
   routes: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
-
-Sidenav.displayName = "/src/widgets/layout/sidenav/index.jsx";
 
 export default Sidenav;

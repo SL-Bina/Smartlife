@@ -63,6 +63,16 @@ const filterRoutesByRole = (routes, user, hasModuleAccess) => {
   const isRoot = originalRole === "root";
   const isResident = originalRole === "resident";
 
+  // User-in modullarını map et (Root üçün bütün modullar)
+  const userModules = isRoot ? [] : (user?.modules || []);
+  // Yalnız `can` array-i boş olmayan modulları götür (icazəsi olan modullar)
+  const userModuleNames = new Set(
+    userModules
+      .filter((m) => m?.can && Array.isArray(m.can) && m.can.length > 0)
+      .map((m) => m?.name?.toLowerCase())
+      .filter(Boolean)
+  );
+
   return routes
     .filter((route) => {
       if (route.layout !== "dashboard") return false;
@@ -82,34 +92,85 @@ const filterRoutesByRole = (routes, user, hasModuleAccess) => {
     .map((route) => {
       const filteredPages = route.pages
         .map((page) => {
+          // Xüsusi səhifələr - həmişə görünür (profile, settings və s.)
+          const isSpecialPage = page.path === "/profile" || page.path === "/settings";
+          
+          // ModuleName yoxlaması - Root üçün keçir, digərləri üçün user-in modullarına görə filter et
+          let hasModuleAccess = false;
           if (page.moduleName) {
-            const hasAccess = hasModuleAccess(page.moduleName);
-            if (!hasAccess) {
-              console.log(`🚫 Hiding page ${page.name} - no access to module ${page.moduleName}`);
+            if (isRoot) {
+              // Root üçün bütün modullar görünür
+              hasModuleAccess = true;
+            } else {
+              const moduleNameLower = page.moduleName.toLowerCase();
+              hasModuleAccess = userModuleNames.has(moduleNameLower);
+              if (!hasModuleAccess) {
+                return null; // Modul yoxdursa və ya icazəsi yoxdursa, səhifəni göstərmə
+              }
+            }
+          } else {
+            // ModuleName yoxdursa
+            if (isRoot) {
+              // Root üçün bütün səhifələr görünür
+              hasModuleAccess = true;
+            } else if (isSpecialPage) {
+              // Xüsusi səhifələr (profile, settings) həmişə görünür
+              hasModuleAccess = true;
+            } else {
+              // Digər səhifələr üçün modul icazəsi yoxdursa, görünməməlidir
+              // allowedRoles yoxlaması aparmırıq, çünki yalnız modul icazəsi olan səhifələr görünməlidir
               return null;
             }
           }
 
-          if (page.allowedRoles && userRole && !isRoot) {
+          // AllowedRoles yoxlaması - yalnız xüsusi səhifələr üçün (profile, settings)
+          if (page.allowedRoles && userRole && !isRoot && isSpecialPage) {
+            // Xüsusi səhifələr üçün allowedRoles yoxlaması apar
             if (!page.allowedRoles.includes(userRole)) {
               return null;
             }
           }
 
+          // Children varsa, onları da filter et
           if (page.children && page.children.length > 0) {
             const filteredChildren = page.children.filter((child) => {
-              if (child.moduleName && !hasModuleAccess(child.moduleName)) {
-                return false;
+              // ModuleName yoxlaması
+              let childHasModuleAccess = false;
+              if (child.moduleName) {
+                if (isRoot) {
+                  // Root üçün bütün modullar görünür
+                  childHasModuleAccess = true;
+                } else {
+                  const moduleNameLower = child.moduleName.toLowerCase();
+                  childHasModuleAccess = userModuleNames.has(moduleNameLower);
+                  if (!childHasModuleAccess) {
+                    return false; // Modul yoxdursa və ya icazəsi yoxdursa, child görünməməlidir
+                  }
+                }
+              } else {
+                // ModuleName yoxdursa, allowedRoles yoxlaması aparılmalıdır
+                childHasModuleAccess = false;
               }
 
+              // AllowedRoles yoxlaması - Root üçün və modul icazəsi olanlar üçün keçir
               if (child.allowedRoles && userRole && !isRoot) {
-                if (!child.allowedRoles.includes(userRole)) {
-                  return false;
+                // Əgər modul varsa və icazəsi varsa, allowedRoles yoxlamasını keçir
+                if (childHasModuleAccess) {
+                  // Modul var, icazəsi var - allowedRoles yoxlamasını keçir
+                } else {
+                  // Modul yoxdursa və ya icazəsi yoxdursa, allowedRoles yoxlamasını apar
+                  if (!child.allowedRoles.includes(userRole)) {
+                    return false;
+                  }
                 }
+              } else if (!childHasModuleAccess && !isRoot) {
+                // Əgər modul yoxdursa və allowedRoles də yoxdursa, child görünməməlidir
+                return false;
               }
               return true;
             });
 
+            // Əgər heç bir child görünmürsə, parent səhifəni də göstərmə
             if (filteredChildren.length === 0) {
               return null;
             }

@@ -48,19 +48,26 @@ const CreateQueryPage = () => {
   };
 
   const handleSubmit = () => {
-    // Handle form submission
-    console.log({
-      building: selectedBuilding,
-      block: selectedBlock,
-      apartment: selectedApartment,
-      titles: { az: titleAz, en: titleEn, ru: titleRu },
-      descriptions: { az: descriptionAz, en: descriptionEn, ru: descriptionRu },
-      questions: { az: questionAz, en: questionEn },
+    // TODO: Implement query creation logic
+    console.log("Creating query:", {
+      selectedBuilding,
+      selectedBlock,
+      selectedApartment,
+      titleAz,
+      titleEn,
+      titleRu,
+      descriptionAz,
+      descriptionEn,
+      descriptionRu,
+      questionAz,
+      questionEn,
       answers,
       multipleAnswers,
       showResults,
     });
+    // Add API call here
   };
+
 
   return (
     <div className="mt-12 mb-8">

@@ -1,65 +1,37 @@
 import { useState } from "react";
 
-const initialFormState = {
+const emptyForm = {
+  mtk_id: null,
+  complex_id: null,
   name: "",
   status: "active",
-  complex_id: null,
-  complex: null,
   meta: {
     desc: "",
   },
 };
 
-export function useBuildingsForm() {
-  const [formData, setFormData] = useState(initialFormState);
+export function useBuildingForm() {
+  const [formData, setFormData] = useState(emptyForm);
 
-  const updateField = (field, value) => {
-    if (field.startsWith("meta.")) {
-      const metaField = field.replace("meta.", "");
-      setFormData((prev) => ({
-        ...prev,
-        meta: {
-          ...prev.meta,
-          [metaField]: value,
-        },
-      }));
-    } else if (field === "complex" || field === "complex_id") {
-      setFormData((prev) => ({
-        ...prev,
-        complex: typeof value === "object" ? value : prev.complex,
-        complex_id: typeof value === "object" ? value?.id : value,
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-    }
+  const resetForm = () => setFormData(emptyForm);
+
+  const updateField = (key, value) => setFormData((p) => ({ ...p, [key]: value }));
+  const updateMeta = (key, value) => setFormData((p) => ({ ...p, meta: { ...p.meta, [key]: value } }));
+
+  const setFormFromBuilding = (item) => {
+    const complex = item?.complex || null;
+    const mtkId = complex?.bind_mtk?.id ?? complex?.mtk_id ?? item?.mtk_id ?? null;
+
+    setFormData({
+      mtk_id: mtkId,
+      complex_id: complex?.id ?? item?.complex_id ?? null,
+      name: item?.name || "",
+      status: item?.status || "active",
+      meta: {
+        desc: item?.meta?.desc || "",
+      },
+    });
   };
 
-  const resetForm = () => {
-    setFormData(initialFormState);
-  };
-
-  const setFormFromBuilding = (building) => {
-    if (building) {
-      setFormData({
-        name: building.name || "",
-        status: building.status || "active",
-        complex_id: building.complex?.id || null,
-        complex: building.complex || null,
-        meta: {
-          desc: building.meta?.desc || "",
-        },
-      });
-    }
-  };
-
-  return {
-    formData,
-    updateField,
-    resetForm,
-    setFormFromBuilding,
-  };
+  return { formData, resetForm, updateField, updateMeta, setFormFromBuilding };
 }
-

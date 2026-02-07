@@ -28,7 +28,6 @@ import {
 import { useTranslation } from "react-i18next";
 import { permissionsAPI } from "./api";
 
-// Mock data - hüquqlar
 const rightsData = [
   { id: 1, name: "Admin", status: "Aktiv" },
   { id: 2, name: "Moderator", status: "Aktiv" },
@@ -268,7 +267,6 @@ const UserPermissionsPage = () => {
 
   const handleSavePermissions = () => {
     // Real tətbiqdə API-yə göndəriləcək
-    console.log("Saving permissions for right:", rightId, permissions);
     // Məlumat yadda saxlanıldıqdan sonra hüquqlar səhifəsinə qayıt
     navigate("/dashboard/user-rights");
   };

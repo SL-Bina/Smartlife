@@ -198,5 +198,4 @@ export const setSidenavSize = (dispatch, value) =>
 export const setSidenavPosition = (dispatch, value) =>
   dispatch({ type: "SIDENAV_POSITION", value });
 
-// Export Management Context
 export { ManagementProvider, useManagement } from "./ManagementContext";

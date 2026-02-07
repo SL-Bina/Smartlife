@@ -4,6 +4,7 @@ export const initialFormState = {
   name: "",
   description: "",
   price: "",
+  complex_id: "",
 };
 
 export function useServicesForm() {

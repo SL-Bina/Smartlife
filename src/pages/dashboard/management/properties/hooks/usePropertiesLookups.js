@@ -75,8 +75,8 @@ export function usePropertiesLookups(open, formData) {
     complexes,
     buildings,
     blocks,
-    // complexes : filteredComplexes,
-    // buildings : filteredBuildings,
-    // blocks : filteredBlocks,
+    complexes : filteredComplexes,
+    buildings : filteredBuildings,
+    blocks : filteredBlocks,
   };
 }

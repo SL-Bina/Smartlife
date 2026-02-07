@@ -1,536 +1,565 @@
-import React, { useRef } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { CustomDialog, DialogHeader, DialogBody, DialogFooter } from "@/components/ui/CustomDialog";
+import { CustomInput } from "@/components/ui/CustomInput";
+import { CustomTextarea } from "@/components/ui/CustomTextarea";
+import { CustomSelect } from "@/components/ui/CustomSelect";
+import { CustomButton } from "@/components/ui/CustomButton";
+import { CustomCard, CardBody } from "@/components/ui/CustomCard";
+import { CustomTypography } from "@/components/ui/CustomTypography";
+import AdvancedColorPicker from "@/components/ui/AdvancedColorPicker";
+import MapPicker from "@/components/ui/MapPicker";
+import { useManagement } from "@/context/ManagementContext";
 import {
-  Dialog,
-  DialogHeader,
-  DialogBody,
-  DialogFooter,
-  Button,
-  Input,
-  Typography,
-} from "@material-tailwind/react";
-import { XMarkIcon, PhotoIcon, CameraIcon, TrashIcon } from "@heroicons/react/24/outline";
-import {
-  InformationCircleIcon,
+  BuildingOffice2Icon,
   MapPinIcon,
   EnvelopeIcon,
   PhoneIcon,
   GlobeAltIcon,
-  SwatchIcon,
+  DocumentTextIcon,
+  XMarkIcon,
+  MapIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
 } from "@heroicons/react/24/outline";
-import { useTranslation } from "react-i18next";
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import L from "leaflet";
 
-export function ComplexFormModal({
-  open,
-  onClose,
-  title,
-  formData,
-  onFieldChange,
-  onSave,
-  isEdit = false,
-  saving = false,
-  removePhoto, // (index) => void  (optional)
-}) {
-  const { t } = useTranslation();
-  const logoInputRef = useRef(null);
-  const photosInputRef = useRef(null);
+// Leaflet marker icon fix
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
+  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+});
 
-  // ---- LOGO ----
-  const handleLogoUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+function LocationMarker({ position, onPositionChange }) {
+  const [markerPosition, setMarkerPosition] = useState(position || [40.4093, 49.8671]);
 
-    if (file.size > 5 * 1024 * 1024) {
-      alert(t("complexes.form.logoSizeError") || "Logo faylının ölçüsü 5MB-dan böyük ola bilməz");
-      return;
+  useMapEvents({
+    click(e) {
+      const { lat, lng } = e.latlng;
+      const newPos = [lat, lng];
+      setMarkerPosition(newPos);
+      onPositionChange?.(lat, lng);
+    },
+  });
+
+  useEffect(() => {
+    if (position && Array.isArray(position) && position.length === 2) {
+      setMarkerPosition(position);
     }
+  }, [position]);
 
-    const reader = new FileReader();
-    reader.onloadend = () => onFieldChange("logo", reader.result); // base64
-    reader.readAsDataURL(file);
-  };
+  return <Marker position={markerPosition} />;
+}
 
-  const handleRemoveLogo = () => {
-    onFieldChange("logo", null);
-    if (logoInputRef.current) logoInputRef.current.value = "";
-  };
+export function ComplexFormModal({ open, mode = "create", onClose, form, onSubmit, mtks = [] }) {
+  const { state, actions } = useManagement();
+  const [saving, setSaving] = useState(false);
+  const [showMap, setShowMap] = useState(false);
+  const [mapPosition, setMapPosition] = useState([40.4093, 49.8671]);
+  const isEdit = mode === "edit";
 
-  // ---- PHOTOS ----
-  const handlePhotosUpload = (e) => {
-    const files = Array.from(e.target.files || []);
-    const currentPhotos = Array.isArray(formData.photos) ? formData.photos : [];
+  const title = isEdit ? "Kompleks Redaktə et" : "Yeni Kompleks yarat";
 
-    // max 10
-    if (files.length + currentPhotos.length > 10) {
-      alert(t("complexes.form.maxPhotos") || "Maksimum 10 şəkil əlavə edə bilərsiniz");
-      e.target.value = "";
-      return;
-    }
+  const statusOptions = [
+    { value: "active", label: "Aktiv" },
+    { value: "inactive", label: "Qeyri-aktiv" },
+  ];
 
-    // size <= 10MB each
-    const validFiles = files.filter((file) => {
-      if (file.size > 10 * 1024 * 1024) {
-        alert(
-          t("complexes.form.photoSizeError") ||
-            `${file.name} faylının ölçüsü 10MB-dan böyük ola bilməz`
-        );
-        return false;
+  // modal açılarkən mtk_id context-dən götür (yalnız create modunda)
+  useEffect(() => {
+    if (!open) return;
+    if (!form) return;
+    
+    // Edit modunda form-da artıq MTK varsa, heç nə etmə
+    if (isEdit && form.formData.mtk_id) return;
+
+    // Create modunda: context-dən MTK götür və form-a yaz
+    if (!isEdit) {
+      if (state.mtkId) {
+        form.updateField("mtk_id", state.mtkId);
+      } else if (mtks.length > 0) {
+        // Context-də MTK yoxdursa, birinci MTK-nı seç və context-ə yaz
+        const firstMtk = mtks[0];
+        form.updateField("mtk_id", firstMtk.id);
+        actions.setMtk(firstMtk.id, firstMtk);
       }
-      return true;
-    });
+    }
+  }, [open, form, state.mtkId, mtks, isEdit, actions]);
 
-    if (validFiles.length === 0) {
-      e.target.value = "";
+  // Map position update
+  useEffect(() => {
+    if (form?.formData?.meta?.lat && form?.formData?.meta?.lng) {
+      const lat = parseFloat(form.formData.meta.lat);
+      const lng = parseFloat(form.formData.meta.lng);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        setMapPosition([lat, lng]);
+      }
+    }
+  }, [form?.formData?.meta?.lat, form?.formData?.meta?.lng]);
+
+  const nameError = useMemo(() => {
+    if (!form?.formData?.name?.trim()) return "Ad mütləqdir";
+    return "";
+  }, [form?.formData?.name]);
+
+  const mtkError = useMemo(() => {
+    // Context-dən və ya form-dan MTK yoxlanılır
+    const currentMtkId = state.mtkId || form?.formData?.mtk_id;
+    if (!currentMtkId) return "MTK seçilməlidir";
+    return "";
+  }, [state.mtkId, form?.formData?.mtk_id]);
+
+  const latError = useMemo(() => {
+    if (!form?.formData?.meta?.lat?.trim()) return "Latitude mütləqdir";
+    return "";
+  }, [form?.formData?.meta?.lat]);
+
+  const lngError = useMemo(() => {
+    if (!form?.formData?.meta?.lng?.trim()) return "Longitude mütləqdir";
+    return "";
+  }, [form?.formData?.meta?.lng]);
+
+  const descError = useMemo(() => {
+    if (!form?.formData?.meta?.desc?.trim()) return "Təsvir mütləqdir";
+    return "";
+  }, [form?.formData?.meta?.desc]);
+
+  const addressError = useMemo(() => {
+    if (!form?.formData?.meta?.address?.trim()) return "Ünvan mütləqdir";
+    return "";
+  }, [form?.formData?.meta?.address]);
+
+  const colorCodeError = useMemo(() => {
+    if (!form?.formData?.meta?.color_code?.trim()) return "Rəng kodu mütləqdir";
+    return "";
+  }, [form?.formData?.meta?.color_code]);
+
+  const phoneError = useMemo(() => {
+    if (!form?.formData?.meta?.phone?.trim()) return "Telefon mütləqdir";
+    return "";
+  }, [form?.formData?.meta?.phone]);
+
+  const emailError = useMemo(() => {
+    if (!form?.formData?.meta?.email?.trim()) return "Email mütləqdir";
+    return "";
+  }, [form?.formData?.meta?.email]);
+
+  const websiteError = useMemo(() => {
+    if (!form?.formData?.meta?.website?.trim()) return "Veb sayt mütləqdir";
+    return "";
+  }, [form?.formData?.meta?.website]);
+
+  const errorText = useMemo(() => {
+    if (nameError) return nameError;
+    if (mtkError) return mtkError;
+    if (latError) return latError;
+    if (lngError) return lngError;
+    if (descError) return descError;
+    if (addressError) return addressError;
+    if (colorCodeError) return colorCodeError;
+    if (phoneError) return phoneError;
+    if (emailError) return emailError;
+    if (websiteError) return websiteError;
+    return "";
+  }, [nameError, mtkError, latError, lngError, descError, addressError, colorCodeError, phoneError, emailError, websiteError]);
+
+  const handleMapClick = (lat, lng) => {
+    form.updateMeta("lat", String(lat));
+    form.updateMeta("lng", String(lng));
+    setMapPosition([lat, lng]);
+  };
+
+  const handleManualCoordinateInput = () => {
+    const lat = parseFloat(form?.formData?.meta?.lat);
+    const lng = parseFloat(form?.formData?.meta?.lng);
+    if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+      setMapPosition([lat, lng]);
+    }
+  };
+
+  const handleGetCurrentLocation = () => {
+    if (!navigator.geolocation) {
       return;
     }
 
-    const newPhotos = [];
-    let loaded = 0;
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        form.updateMeta("lat", String(lat));
+        form.updateMeta("lng", String(lng));
+        setMapPosition([lat, lng]);
+        setShowMap(true);
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
+  };
 
-    validFiles.forEach((file) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        newPhotos.push(reader.result); // base64
-        loaded += 1;
-        if (loaded === validFiles.length) {
-          onFieldChange("photos", [...currentPhotos, ...newPhotos]);
-        }
+  const submit = async () => {
+    if (errorText) return;
+    setSaving(true);
+    try {
+      // Context-dən MTK-nı form-a yaz (əgər form-da yoxdursa)
+      const payload = {
+        ...form.formData,
+        mtk_id: state.mtkId || form.formData.mtk_id,
       };
-      reader.readAsDataURL(file);
-    });
-
-    e.target.value = "";
-  };
-
-  const handleRemovePhotoLocal = (index) => {
-    // Əgər parent removePhoto veribsə onu çağır, yoxdursa local sil
-    if (typeof removePhoto === "function") {
-      removePhoto(index);
-      return;
-    }
-
-    const currentPhotos = Array.isArray(formData.photos) ? formData.photos : [];
-    const next = currentPhotos.filter((_, i) => i !== index);
-    onFieldChange("photos", next);
-
-    if (photosInputRef.current && next.length === 0) {
-      photosInputRef.current.value = "";
+      await onSubmit?.(payload);
+      onClose?.();
+    } finally {
+      setSaving(false);
     }
   };
 
-  if (!open) return null;
+  const hasCoordinates = form?.formData?.meta?.lat && form?.formData?.meta?.lng;
 
   return (
-    <Dialog
-      open={open}
-      handler={onClose}
-      size="xl"
-      className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl"
-      dismiss={{ enabled: false }}
-    >
-      <DialogHeader className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700 border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between rounded-t-lg">
-        <Typography variant="h5" className="font-bold text-gray-900 dark:text-white">
-          {title}
-        </Typography>
-        <div
-          className="cursor-pointer p-2 rounded-md transition-all hover:bg-gray-200 dark:hover:bg-gray-700"
-          onClick={onClose}
-        >
-          <XMarkIcon className="dark:text-white h-5 w-5 cursor-pointer" />
-        </div>
-      </DialogHeader>
-
-      <DialogBody divider className="dark:bg-gray-800 dark:border-gray-700 max-h-[75vh] overflow-y-auto">
-        <div className="space-y-6 py-2">
-          {/* Basic Information */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
-              <InformationCircleIcon className="h-5 w-5 text-blue-500 dark:text-blue-400" />
-              <Typography variant="h6" className="font-semibold dark:text-white">
-                {t("complexes.form.basicInfo") || "Əsas Məlumatlar"}
-              </Typography>
+    <>
+      <CustomDialog open={!!open} onClose={onClose} size="xl">
+        <DialogHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg">
+          <div className="flex items-center gap-3 flex-1">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <BuildingOffice2Icon className="h-6 w-6" />
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
-                  {t("complexes.form.name")} <span className="text-red-500">*</span>
-                </Typography>
-                <Input
-                  placeholder={t("complexes.form.enterName")}
-                  value={formData.name || ""}
-                  onChange={(e) => onFieldChange("name", e.target.value)}
-                  className="dark:text-white"
-                  labelProps={{ className: "dark:text-gray-400" }}
-                  containerProps={{ className: "!min-w-0" }}
-                />
-              </div>
-
-              <div>
-                <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
-                  {t("complexes.form.status")} <span className="text-red-500">*</span>
-                </Typography>
-                <select
-                  value={formData.status || "active"}
-                  onChange={(e) => onFieldChange("status", e.target.value)}
-                  className="w-full px-3 py-2.5 border border-blue-gray-200 rounded-lg focus:border-blue-500 focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-                >
-                  <option value="active" className="dark:bg-gray-800 dark:text-gray-300">
-                    {t("complexes.form.active") || "Aktiv"}
-                  </option>
-                  <option value="inactive" className="dark:bg-gray-800 dark:text-gray-300">
-                    {t("complexes.form.inactive") || "Passiv"}
-                  </option>
-                </select>
-              </div>
-            </div>
-
-            {/* Logo Upload */}
             <div>
-              <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
-                {t("complexes.form.logo") || "Logo"}
-              </Typography>
-
-              <div className="flex items-center gap-4">
-                {formData.logo ? (
-                  <div className="relative">
-                    <img
-                      src={formData.logo}
-                      alt="Logo preview"
-                      className="w-24 h-24 object-cover rounded-lg border border-gray-300 dark:border-gray-600"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleRemoveLogo}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                    >
-                      <XMarkIcon className="h-4 w-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="w-24 h-24 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center">
-                    <CameraIcon className="h-8 w-8 text-gray-400" />
-                  </div>
-                )}
-
-                <div className="flex-1">
-                  <input
-                    ref={logoInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleLogoUpload}
-                    className="hidden"
-                    id="complex-logo-upload"
-                  />
-                  <label
-                    htmlFor="complex-logo-upload"
-                    className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                  >
-                    <PhotoIcon className="h-5 w-5" />
-                    {formData.logo
-                      ? (t("complexes.form.changeLogo") || "Logo dəyiş")
-                      : (t("complexes.form.uploadLogo") || "Logo yüklə")}
-                  </label>
-                </div>
-              </div>
+              <CustomTypography variant="h5" className="font-bold text-white">
+                {title}
+              </CustomTypography>
+              <CustomTypography variant="small" className="text-blue-100 font-normal">
+                {isEdit ? "Kompleks məlumatlarını yeniləyin" : "Yeni kompleks üçün məlumatları doldurun"}
+              </CustomTypography>
             </div>
           </div>
+          <CustomButton
+            variant="text"
+            size="sm"
+            onClick={onClose}
+            className="text-white hover:bg-white/20 rounded-lg p-2"
+          >
+            <XMarkIcon className="h-5 w-5" />
+          </CustomButton>
+        </DialogHeader>
 
-          {/* Location Info */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
-              <MapPinIcon className="h-5 w-5 text-green-500 dark:text-green-400" />
-              <Typography variant="h6" className="font-semibold dark:text-white">
-                {t("complexes.form.metaInfo") || "Yerləşmə Məlumatları"}
-              </Typography>
+        <DialogBody className="max-h-[75vh] overflow-y-auto">
+          {!form ? (
+            <div className="text-center py-8">
+              <CustomTypography variant="body2" className="text-gray-500 dark:text-gray-300">
+                Form hazır deyil
+              </CustomTypography>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
-                  {t("complexes.form.latitude") || "Enlik"}
-                </Typography>
-                <Input
-                  placeholder={t("complexes.form.enterLatitude") || "Enlik daxil edin"}
-                  value={formData.meta?.lat || ""}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (
-                      value === "" ||
-                      (!isNaN(parseFloat(value)) && parseFloat(value) >= -90 && parseFloat(value) <= 90)
-                    ) {
-                      onFieldChange("meta.lat", value);
-                    }
-                  }}
-                  className="dark:text-white"
-                  labelProps={{ className: "dark:text-gray-400" }}
-                  containerProps={{ className: "!min-w-0" }}
-                  type="number"
-                  step="any"
-                  min="-90"
-                  max="90"
-                />
-              </div>
-
-              <div>
-                <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
-                  {t("complexes.form.longitude") || "Uzunluq"}
-                </Typography>
-                <Input
-                  label={t("complexes.form.enterLongitude") || "Uzunluq daxil edin"}
-                  value={formData.meta?.lng || ""}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (
-                      value === "" ||
-                      (!isNaN(parseFloat(value)) && parseFloat(value) >= -180 && parseFloat(value) <= 180)
-                    ) {
-                      onFieldChange("meta.lng", value);
-                    }
-                  }}
-                  className="dark:text-white"
-                  labelProps={{ className: "dark:text-gray-400" }}
-                  type="number"
-                  step="any"
-                  min="-180"
-                  max="180"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
-                  {t("complexes.form.description") || "Təsvir"}
-                </Typography>
-                <textarea
-                  placeholder={t("complexes.form.enterDescription") || "Təsvir daxil edin"}
-                  value={formData.meta?.desc || ""}
-                  onChange={(e) => onFieldChange("meta.desc", e.target.value)}
-                  className="w-full px-3 py-2.5 border border-blue-gray-200 rounded-lg focus:border-blue-500 focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-400 resize-none"
-                  rows={3}
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
-                  {t("complexes.form.address") || "Ünvan"}
-                </Typography>
-                <Input
-                  label={t("complexes.form.enterAddress") || "Ünvan daxil edin"}
-                  value={formData.meta?.address || ""}
-                  onChange={(e) => onFieldChange("meta.address", e.target.value)}
-                  className="dark:text-white"
-                  labelProps={{ className: "dark:text-gray-400" }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Photos Section */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
-              <PhotoIcon className="h-5 w-5 text-purple-500 dark:text-purple-400" />
-              <Typography variant="h6" className="font-semibold dark:text-white">
-                {t("complexes.form.photos") || "Şəkillər"}
-              </Typography>
-            </div>
-
-            <div>
-              <input
-                ref={photosInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handlePhotosUpload}
-                className="hidden"
-                id="complex-photos-upload"
-              />
-              <div className="flex flex-wrap items-center gap-3">
-                <label
-                  htmlFor="complex-photos-upload"
-                  className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
-                >
-                  <PhotoIcon className="h-5 w-5" />
-                  {t("complexes.form.uploadPhotos") || "Şəkil yüklə"}
-                </label>
-                <Typography variant="small" className="text-gray-500 dark:text-gray-400">
-                  {t("complexes.form.maxPhotos") || "Maksimum 10 şəkil"}
-                </Typography>
-              </div>
-
-              {Array.isArray(formData.photos) && formData.photos.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                  {formData.photos.map((photo, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={typeof photo === "string" ? photo : URL.createObjectURL(photo)}
-                        alt={`Photo ${index + 1}`}
-                        className="w-full h-32 object-cover rounded-lg border border-gray-300 dark:border-gray-600"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemovePhotoLocal(index)}
-                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                        title={t("complexes.form.removePhoto") || "Şəkli sil"}
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="mt-4 p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center">
-                  <PhotoIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                  <Typography variant="small" className="text-gray-500 dark:text-gray-400">
-                    {t("complexes.form.noPhotos") || "Şəkil əlavə edilməyib"}
-                  </Typography>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Contact Info */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
-              <EnvelopeIcon className="h-5 w-5 text-purple-500 dark:text-purple-400" />
-              <Typography variant="h6" className="font-semibold dark:text-white">
-                {t("complexes.form.contactInfo") || "Əlaqə Məlumatları"}
-              </Typography>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
-                  <EnvelopeIcon className="h-4 w-4 inline mr-1" />
-                  {t("complexes.form.email") || "Email"}
-                </Typography>
-                <Input
-                  label={t("complexes.form.enterEmail") || "Email daxil edin"}
-                  value={formData.meta?.email || ""}
-                  onChange={(e) => onFieldChange("meta.email", e.target.value)}
-                  className="dark:text-white"
-                  labelProps={{ className: "dark:text-gray-400" }}
-                  type="email"
-                />
-              </div>
-
-              <div>
-                <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
-                  <PhoneIcon className="h-4 w-4 inline mr-1" />
-                  {t("complexes.form.phone") || "Telefon"}
-                </Typography>
-                <Input
-                  label={t("complexes.form.enterPhone") || "Telefon daxil edin"}
-                  value={formData.meta?.phone || ""}
-                  onChange={(e) => onFieldChange("meta.phone", e.target.value)}
-                  className="dark:text-white"
-                  labelProps={{ className: "dark:text-gray-400" }}
-                  type="tel"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
-                  <GlobeAltIcon className="h-4 w-4 inline mr-1" />
-                  {t("complexes.form.website") || "Veb sayt"}
-                </Typography>
-                <Input
-                  label={t("complexes.form.enterWebsite") || "Veb sayt daxil edin"}
-                  value={formData.meta?.website || ""}
-                  onChange={(e) => onFieldChange("meta.website", e.target.value)}
-                  className="dark:text-white"
-                  labelProps={{ className: "dark:text-gray-400" }}
-                  type="url"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Color Code */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
-              <SwatchIcon className="h-5 w-5 text-pink-500 dark:text-pink-400" />
-              <Typography variant="h6" className="font-semibold dark:text-white">
-                {t("complexes.form.colorCode") || "Rəng Kodu"}
-              </Typography>
-            </div>
-
-            <div>
-              <Typography variant="small" color="blue-gray" className="mb-2 font-medium dark:text-gray-300">
-                {t("complexes.form.enterColorCode") || "Rəng kodu daxil edin"}
-              </Typography>
-
-              <div className="flex gap-3 items-end">
-                <div className="flex flex-col">
-                  <label className="text-xs text-gray-600 dark:text-gray-400 mb-1">
-                    {t("complexes.form.colorPicker") || "Rəng seçin"}
-                  </label>
-                  <input
-                    type="color"
-                    value={formData.meta?.color_code || "#237832"}
-                    onChange={(e) => onFieldChange("meta.color_code", e.target.value)}
-                    className="w-16 h-12 rounded cursor-pointer border border-gray-300 dark:border-gray-600"
-                  />
-                </div>
-
-                <div className="flex-1">
-                  <Input
-                    value={formData.meta?.color_code || ""}
-                    onChange={(e) => onFieldChange("meta.color_code", e.target.value)}
-                    className="dark:text-white"
-                    labelProps={{ className: "dark:text-gray-400" }}
-                    placeholder="#237832"
-                    pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
-                  />
-                </div>
-
-                {formData.meta?.color_code && (
-                  <div
-                    className="w-12 h-12 rounded border border-gray-300 dark:border-gray-600"
-                    style={{ backgroundColor: formData.meta.color_code }}
-                    title={formData.meta.color_code}
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </DialogBody>
-
-      <DialogFooter className="flex justify-end gap-3 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pt-4">
-        <Button
-          variant="outlined"
-          color="blue-gray"
-          onClick={onClose}
-          disabled={saving}
-          className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 min-w-[100px]"
-        >
-          {isEdit ? t("complexes.edit.cancel") : t("complexes.create.cancel")}
-        </Button>
-
-        <Button
-          color={isEdit ? "blue" : "green"}
-          onClick={onSave}
-          disabled={saving}
-          className={`min-w-[120px] ${
-            isEdit ? "dark:bg-blue-600 dark:hover:bg-blue-700" : "dark:bg-green-600 dark:hover:bg-green-700"
-          }`}
-        >
-          {saving ? (
-            <span className="flex items-center gap-2">
-              <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-              {isEdit ? t("complexes.edit.saving") || "Saxlanılır..." : t("complexes.create.saving") || "Saxlanılır..."}
-            </span>
           ) : (
-            isEdit ? t("complexes.edit.save") : t("complexes.create.save")
+            <div className="flex flex-col gap-6">
+              {/* Basic Information */}
+              <CustomCard>
+                <CardBody>
+                  <CustomTypography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold">
+                    Əsas məlumatlar
+                  </CustomTypography>
+                  <div className="flex flex-col gap-4">
+                    <CustomInput
+                      label={
+                        <>
+                          Kompleks adı <span className="text-red-500">*</span>
+                        </>
+                      }
+                      value={form.formData.name || ""}
+                      onChange={(e) => form.updateField("name", e.target.value)}
+                      error={nameError || false}
+                      icon={<BuildingOffice2Icon className="h-5 w-5" />}
+                    />
+
+                    <CustomSelect
+                      label={
+                        <>
+                          MTK <span className="text-red-500">*</span>
+                        </>
+                      }
+                      value={state.mtkId || form.formData.mtk_id}
+                      onChange={(value) => {
+                        const newMtkId = value ? Number(value) : null;
+                        const selectedMtk = mtks.find((m) => m.id === newMtkId);
+                        
+                        // Context-ə yaz (bu hər yerdə görünəcək)
+                        actions.setMtk(newMtkId, selectedMtk || null);
+                        
+                        // Form-a da yaz
+                        form.updateField("mtk_id", newMtkId);
+                        
+                        // MTK dəyişəndə (yalnız create modunda) form-u təmizlə
+                        if (!isEdit && (state.mtkId || form.formData.mtk_id) !== newMtkId) {
+                          form.updateField("name", "");
+                          form.updateField("status", "active");
+                          form.updateMeta("lat", "");
+                          form.updateMeta("lng", "");
+                          form.updateMeta("desc", "");
+                          form.updateMeta("address", "");
+                          form.updateMeta("phone", "");
+                          form.updateMeta("email", "");
+                          form.updateMeta("website", "");
+                          form.updateMeta("color_code", "");
+                          form.updateField("modules", [1, 2]);
+                          form.updateField("avaliable_modules", [1, 2]);
+                        }
+                      }}
+                      options={mtks.map((m) => ({ value: m.id, label: m.name }))}
+                      placeholder="MTK seç"
+                      error={mtkError || false}
+                    />
+
+                    <CustomSelect
+                      label="Status"
+                      value={form.formData.status || "active"}
+                      onChange={(value) => form.updateField("status", value)}
+                      options={statusOptions}
+                      placeholder="Status seç"
+                    />
+
+                    <CustomTextarea
+                      label={
+                        <>
+                          Təsvir <span className="text-red-500">*</span>
+                        </>
+                      }
+                      value={form.formData.meta?.desc || ""}
+                      onChange={(e) => form.updateMeta("desc", e.target.value)}
+                      rows={4}
+                      icon={<DocumentTextIcon className="h-5 w-5" />}
+                      error={descError || false}
+                    />
+                  </div>
+                </CardBody>
+              </CustomCard>
+
+              {/* Contact Information */}
+              <CustomCard>
+                <CardBody>
+                  <CustomTypography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold">
+                    Əlaqə məlumatları
+                  </CustomTypography>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <CustomInput
+                      label={
+                        <>
+                          Email <span className="text-red-500">*</span>
+                        </>
+                      }
+                      type="email"
+                      value={form.formData.meta?.email || ""}
+                      onChange={(e) => form.updateMeta("email", e.target.value)}
+                      icon={<EnvelopeIcon className="h-5 w-5" />}
+                      error={emailError || false}
+                    />
+                    <CustomInput
+                      label={
+                        <>
+                          Telefon <span className="text-red-500">*</span>
+                        </>
+                      }
+                      type="tel"
+                      value={form.formData.meta?.phone || ""}
+                      onChange={(e) => form.updateMeta("phone", e.target.value)}
+                      icon={<PhoneIcon className="h-5 w-5" />}
+                      error={phoneError || false}
+                    />
+                  </div>
+                </CardBody>
+              </CustomCard>
+
+              {/* Other Information */}
+              <CustomCard>
+                <CardBody>
+                  <CustomTypography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold">
+                    Digər məlumatlar
+                  </CustomTypography>
+                  <div className="flex flex-col gap-4">
+                    <CustomInput
+                      label={
+                        <>
+                          Veb sayt <span className="text-red-500">*</span>
+                        </>
+                      }
+                      type="url"
+                      value={form.formData.meta?.website || ""}
+                      onChange={(e) => form.updateMeta("website", e.target.value)}
+                      icon={<GlobeAltIcon className="h-5 w-5" />}
+                      placeholder="https://example.com"
+                      error={websiteError || false}
+                    />
+
+                    <div className="flex flex-col gap-2">
+                      <div>
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                          Rəng kodu <span className="text-red-500">*</span>
+                        </label>
+                        <AdvancedColorPicker
+                          value={form.formData.meta?.color_code || ""}
+                          onChange={(color) => form.updateMeta("color_code", color)}
+                          label=""
+                        />
+                      </div>
+                      {colorCodeError && (
+                        <span className="text-xs text-red-500">{colorCodeError}</span>
+                      )}
+                    </div>
+                  </div>
+                </CardBody>
+              </CustomCard>
+
+              {/* Location Information */}
+              <CustomCard>
+                <CardBody>
+                  <CustomTypography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold">
+                    Ünvan
+                  </CustomTypography>
+                  <CustomInput
+                    label={
+                      <>
+                        Ünvan <span className="text-red-500">*</span>
+                      </>
+                    }
+                    value={form.formData.meta?.address || ""}
+                    onChange={(e) => form.updateMeta("address", e.target.value)}
+                    icon={<MapPinIcon className="h-5 w-5" />}
+                    error={addressError || false}
+                  />
+                </CardBody>
+              </CustomCard>
+
+              {/* Coordinates */}
+              <CustomCard>
+                <CardBody>
+                  <div className="flex items-center justify-between mb-4">
+                    <CustomTypography variant="h6" className="text-gray-900 dark:text-white font-semibold">
+                      Koordinatlar
+                    </CustomTypography>
+                    <div className="flex items-center gap-2">
+                      <CustomButton
+                        type="button"
+                        variant="outlined"
+                        size="sm"
+                        color="green"
+                        onClick={handleGetCurrentLocation}
+                        className="flex items-center gap-2"
+                      >
+                        <MapIcon className="h-4 w-4" />
+                        Cari yer
+                      </CustomButton>
+                      <CustomButton
+                        type="button"
+                        variant="outlined"
+                        size="sm"
+                        color="blue"
+                        onClick={() => setShowMap(!showMap)}
+                        className="flex items-center gap-2"
+                      >
+                        <MapPinIcon className="h-4 w-4" />
+                        {showMap ? "Xəritəni gizlət" : "Xəritəni göstər"}
+                        {showMap ? (
+                          <ChevronUpIcon className="h-4 w-4" />
+                        ) : (
+                          <ChevronDownIcon className="h-4 w-4" />
+                        )}
+                      </CustomButton>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <CustomInput
+                      label={
+                        <>
+                          Latitude <span className="text-red-500">*</span>
+                        </>
+                      }
+                      value={form.formData.meta?.lat || ""}
+                      onChange={(e) => {
+                        form.updateMeta("lat", e.target.value);
+                      }}
+                      onBlur={handleManualCoordinateInput}
+                      type="number"
+                      step="any"
+                      icon={<MapPinIcon className="h-5 w-5" />}
+                      error={latError || false}
+                    />
+                    <CustomInput
+                      label={
+                        <>
+                          Longitude <span className="text-red-500">*</span>
+                        </>
+                      }
+                      value={form.formData.meta?.lng || ""}
+                      onChange={(e) => {
+                        form.updateMeta("lng", e.target.value);
+                      }}
+                      onBlur={handleManualCoordinateInput}
+                      type="number"
+                      step="any"
+                      icon={<MapPinIcon className="h-5 w-5" />}
+                      error={lngError || false}
+                    />
+                  </div>
+
+                  {showMap && (
+                    <div className="mt-4 w-full h-[400px] rounded-lg overflow-hidden border border-gray-300 dark:border-gray-700">
+                      <MapContainer
+                        key={`${mapPosition[0]}-${mapPosition[1]}`}
+                        center={mapPosition}
+                        zoom={13}
+                        style={{ height: "100%", width: "100%" }}
+                        className="z-0"
+                      >
+                        <TileLayer
+                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        />
+                        <LocationMarker position={mapPosition} onPositionChange={handleMapClick} />
+                      </MapContainer>
+                    </div>
+                  )}
+
+                  {hasCoordinates ? (
+                    <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                      <CustomTypography variant="small" className="text-green-700 dark:text-green-300 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        Koordinatlar seçilib
+                      </CustomTypography>
+                    </div>
+                  ) : (
+                    <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                      <CustomTypography variant="small" className="text-yellow-700 dark:text-yellow-300 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                        Koordinatlar seçilməyib - xəritədə klikləyin və ya əl ilə daxil edin
+                      </CustomTypography>
+                    </div>
+                  )}
+                </CardBody>
+              </CustomCard>
+            </div>
           )}
-        </Button>
-      </DialogFooter>
-    </Dialog>
+        </DialogBody>
+
+        <DialogFooter>
+          <CustomButton variant="outlined" color="gray" onClick={onClose} disabled={saving}>
+            Ləğv et
+          </CustomButton>
+          <CustomButton
+            color="red"
+            onClick={submit}
+            disabled={!!errorText || saving}
+            loading={saving}
+          >
+            {saving ? "Yadda saxlanılır..." : isEdit ? "Yenilə" : "Yarat"}
+          </CustomButton>
+        </DialogFooter>
+      </CustomDialog>
+    </>
   );
 }

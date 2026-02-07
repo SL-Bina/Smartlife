@@ -25,9 +25,9 @@ export const servicesAPI = {
         name: data.name || "",
         description: data.description || "",
         price: data.price ? parseFloat(data.price) : 0,
+        complex_id: data.complex_id ? Number(data.complex_id) : null,
       };
 
-      console.log("Service Create Request:", cleanedData);
       const response = await api.put("/module/services/add", cleanedData);
       return response.data;
     } catch (error) {
@@ -55,9 +55,9 @@ export const servicesAPI = {
         name: data.name || "",
         description: data.description || "",
         price: data.price ? parseFloat(data.price) : 0,
+        complex_id: data.complex_id ? Number(data.complex_id) : null,
       };
 
-      console.log("Service Update Request:", cleanedData);
       const response = await api.patch(`/module/services/${id}`, cleanedData);
       return response.data;
     } catch (error) {

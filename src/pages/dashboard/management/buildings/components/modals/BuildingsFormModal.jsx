@@ -1,177 +1,238 @@
-import React, { useState, useEffect } from "react";
-import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Input, Typography } from "@material-tailwind/react";
-import { XMarkIcon, XCircleIcon } from "@heroicons/react/24/outline";
-import { useTranslation } from "react-i18next";
-import { complexAPI } from "../../../complex/api";
+import React, { useEffect, useMemo, useState } from "react";
+import { CustomDialog, DialogHeader, DialogBody, DialogFooter } from "@/components/ui/CustomDialog";
+import { CustomInput } from "@/components/ui/CustomInput";
+import { CustomTextarea } from "@/components/ui/CustomTextarea";
+import { CustomSelect } from "@/components/ui/CustomSelect";
+import { CustomButton } from "@/components/ui/CustomButton";
+import { CustomCard, CardBody } from "@/components/ui/CustomCard";
+import { CustomTypography } from "@/components/ui/CustomTypography";
+import { useManagement } from "@/context/ManagementContext";
+import {
+  BuildingOffice2Icon,
+  DocumentTextIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 
-export function BuildingsFormModal({ open, onClose, title, formData, onFieldChange, onSave, isEdit = false, saving = false }) {
-  const { t } = useTranslation();
-  const [complexes, setComplexes] = useState([]);
-  const [loadingComplexes, setLoadingComplexes] = useState(false);
+export function BuildingFormModal({ open, mode = "create", onClose, form, onSubmit, complexes = [], mtks = [], loadingMtks = false }) {
+  const { state } = useManagement();
+  const [saving, setSaving] = useState(false);
+  const [filteredComplexes, setFilteredComplexes] = useState([]);
+  const isEdit = mode === "edit";
 
+  const title = isEdit ? "Bina Redaktə et" : "Yeni Bina yarat";
+
+  const statusOptions = [
+    { value: "active", label: "Aktiv" },
+    { value: "inactive", label: "Qeyri-aktiv" },
+  ];
+
+  // Complex-ləri MTK-ya görə filter et
   useEffect(() => {
-    if (open) {
-      const fetchComplexes = async () => {
-        try {
-          setLoadingComplexes(true);
-          const response = await complexAPI.getAll({ page: 1 });
-          if (response.success && response.data) {
-            setComplexes(response.data.data || []);
-          }
-        } catch (error) {
-          console.error("Error fetching complexes:", error);
-        } finally {
-          setLoadingComplexes(false);
-        }
-      };
-      fetchComplexes();
+    if (!form?.formData?.mtk_id) {
+      setFilteredComplexes(complexes);
+      // MTK seçilməyibsə kompleks də sıfırlanmalıdır
+      if (form?.formData?.complex_id) {
+        form.updateField("complex_id", null);
+      }
+      return;
     }
-  }, [open]);
 
-  if (!open) return null;
+    const filtered = complexes.filter((c) => {
+      const id1 = c?.bind_mtk?.id;
+      const id2 = c?.mtk_id;
+      return String(id1 || id2 || "") === String(form.formData.mtk_id);
+    });
+
+    setFilteredComplexes(filtered);
+
+    // MTK dəyişəndə kompleks seçimini sıfırla
+    if (form.formData.complex_id) {
+      const currentComplex = filtered.find((c) => c.id === form.formData.complex_id);
+      if (!currentComplex) {
+        form.updateField("complex_id", null);
+      }
+    }
+  }, [complexes, form?.formData?.mtk_id, form]);
+
+  // modal açılarkən default dəyərlər
+  useEffect(() => {
+    if (!open) return;
+    if (!form) return;
+
+    // MTK default
+    if (!form.formData.mtk_id && state.mtkId) {
+      form.updateField("mtk_id", state.mtkId);
+    } else if (!form.formData.mtk_id && mtks.length > 0) {
+      form.updateField("mtk_id", mtks[0].id);
+    }
+
+    // Complex default
+    if (!form.formData.complex_id && state.complexId) {
+      form.updateField("complex_id", state.complexId);
+    } else if (!form.formData.complex_id && filteredComplexes.length > 0) {
+      form.updateField("complex_id", filteredComplexes[0].id);
+    }
+  }, [open, form, state.mtkId, state.complexId, mtks, filteredComplexes]);
+
+  const nameError = useMemo(() => {
+    if (!form?.formData?.name?.trim()) return "Ad mütləqdir";
+    return "";
+  }, [form?.formData?.name]);
+
+  const mtkError = useMemo(() => {
+    if (!form?.formData?.mtk_id) return "MTK seçilməlidir";
+    return "";
+  }, [form?.formData?.mtk_id]);
+
+  const complexError = useMemo(() => {
+    if (!form?.formData?.complex_id) return "Kompleks seçilməlidir";
+    return "";
+  }, [form?.formData?.complex_id]);
+
+  const errorText = useMemo(() => {
+    if (nameError) return nameError;
+    if (mtkError) return mtkError;
+    if (complexError) return complexError;
+    return "";
+  }, [nameError, mtkError, complexError]);
+
+  const submit = async () => {
+    if (errorText) return;
+    setSaving(true);
+    try {
+      await onSubmit?.(form.formData);
+      onClose?.();
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
-    <Dialog open={open} handler={onClose} size="md" className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl" dismiss={{ enabled: false }}>
-      <DialogHeader className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700 border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between rounded-t-lg">
-        <Typography variant="h5" className="font-bold text-gray-900 dark:text-white">
-          {title}
-        </Typography>
-        <div className="cursor-pointer p-2 rounded-md transition-all hover:bg-gray-200 dark:hover:bg-gray-700" onClick={onClose}>
-          <XMarkIcon className="dark:text-white h-5 w-5 cursor-pointer" />
-        </div>
-      </DialogHeader>
-      <DialogBody divider className="space-y-4 dark:bg-gray-800 py-6 max-h-[70vh] overflow-y-auto">
-        <div>
-          <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
-            {isEdit ? t("buildings.edit.name") : t("buildings.create.name")}
-          </Typography>
-          <Input
-            placeholder={isEdit ? t("buildings.edit.enterName") : t("buildings.create.enterName")}
-            value={formData.name || ""}
-            onChange={(e) => onFieldChange("name", e.target.value)}
-            className="dark:text-white"
-            labelProps={{ className: "dark:text-gray-400" }}
-            containerProps={{ className: "!min-w-0" }}
-          />
-        </div>
-        <div>
-          <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
-            {isEdit ? t("buildings.edit.complex") : t("buildings.create.complex")}
-          </Typography>
-          <div className="flex items-center gap-2">
-            <div className="flex-1">
-              <select
-                value={formData.complex_id ? String(formData.complex_id) : ""}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  const selectedComplex = complexes.find(c => String(c.id) === value);
-                  onFieldChange("complex", selectedComplex || null);
-                  onFieldChange("complex_id", selectedComplex?.id || null);
-                }}
-                disabled={loadingComplexes}
-                className="w-full px-3 py-2.5 border border-blue-gray-200 rounded-lg focus:border-blue-500 focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <option value="" className="dark:bg-gray-800 dark:text-gray-300">
-                  {t("buildings.form.selectComplex") || "Kompleks seçin"}
-                </option>
-                {complexes.map((complex) => (
-                  <option key={complex.id} value={String(complex.id)} className="dark:bg-gray-800 dark:text-gray-300">
-                    {complex.name}
-                  </option>
-                ))}
-              </select>
+    <>
+      <CustomDialog open={!!open} onClose={onClose} size="xl">
+        <DialogHeader className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-t-lg">
+          <div className="flex items-center gap-3 flex-1">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <BuildingOffice2Icon className="h-6 w-6" />
             </div>
-            {formData.complex_id && (
-              <button
-                type="button"
-                onClick={() => {
-                  onFieldChange("complex", null);
-                  onFieldChange("complex_id", null);
-                }}
-                className="flex-shrink-0 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                title={t("buttons.clear") || "Təmizlə"}
-              >
-                <XCircleIcon className="h-5 w-5" />
-              </button>
-            )}
+            <div>
+              <CustomTypography variant="h5" className="font-bold text-white">
+                {title}
+              </CustomTypography>
+              <CustomTypography variant="small" className="text-green-100 font-normal">
+                {isEdit ? "Bina məlumatlarını yeniləyin" : "Yeni bina üçün məlumatları doldurun"}
+              </CustomTypography>
+            </div>
           </div>
-        </div>
-        <div>
-          <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
-            {isEdit ? t("buildings.edit.status") : t("buildings.create.status")}
-          </Typography>
-          <select
-            value={formData.status || "active"}
-            onChange={(e) => onFieldChange("status", e.target.value)}
-            className="w-full px-3 py-2.5 border border-blue-gray-200 rounded-lg focus:border-blue-500 focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+          <CustomButton
+            variant="text"
+            size="sm"
+            onClick={onClose}
+            className="text-white hover:bg-white/20 rounded-lg p-2"
           >
-            <option value="active" className="dark:bg-gray-800 dark:text-gray-300">
-              {t("buildings.form.active") || "Aktiv"}
-            </option>
-            <option value="inactive" className="dark:bg-gray-800 dark:text-gray-300">
-              {t("buildings.form.inactive") || "Passiv"}
-            </option>
-          </select>
-        </div>
-        <div>
-          <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
-            {isEdit ? t("buildings.edit.description") : t("buildings.create.description")}
-          </Typography>
-          <textarea
-            placeholder={isEdit ? t("buildings.edit.enterDescription") : t("buildings.create.enterDescription")}
-            value={formData.meta?.desc || ""}
-            onChange={(e) => onFieldChange("meta.desc", e.target.value)}
-            className="w-full px-3 py-2.5 border border-blue-gray-200 rounded-lg focus:border-blue-500 focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-400 resize-none"
-            rows={3}
-          />
-        </div>
-      </DialogBody>
-      <DialogFooter className="flex justify-end gap-2 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pt-4">
-        <Button
-          variant="outlined"
-          color="blue-gray"
-          onClick={onClose}
-          disabled={saving}
-          className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
-        >
-          {isEdit ? t("buildings.edit.cancel") : t("buildings.create.cancel")}
-        </Button>
-        <Button
-          color={isEdit ? "blue" : "green"}
-          onClick={onSave}
-          disabled={saving}
-          className={isEdit ? "dark:bg-blue-600 dark:hover:bg-blue-700" : "dark:bg-green-600 dark:hover:bg-green-700"}
-        >
-          {saving ? (
-            <span className="flex items-center gap-2">
-              <svg
-                className="animate-spin h-4 w-4"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              {isEdit ? t("buildings.edit.saving") || "Saxlanılır..." : t("buildings.create.saving") || "Yaradılır..."}
-            </span>
+            <XMarkIcon className="h-5 w-5" />
+          </CustomButton>
+        </DialogHeader>
+
+        <DialogBody className="max-h-[75vh] overflow-y-auto">
+          {!form ? (
+            <div className="text-center py-8">
+              <CustomTypography variant="body2" className="text-gray-500 dark:text-gray-300">
+                Form hazır deyil
+              </CustomTypography>
+            </div>
           ) : (
-            isEdit ? t("buildings.edit.save") : t("buildings.create.save")
+            <div className="flex flex-col gap-6">
+              {/* Basic Information */}
+              <CustomCard>
+                <CardBody>
+                  <CustomTypography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold">
+                    Əsas məlumatlar
+                  </CustomTypography>
+                  <div className="flex flex-col gap-4">
+                    <CustomInput
+                      label={
+                        <>
+                          Bina adı <span className="text-red-500">*</span>
+                        </>
+                      }
+                      value={form.formData.name || ""}
+                      onChange={(e) => form.updateField("name", e.target.value)}
+                      error={nameError || false}
+                      icon={<BuildingOffice2Icon className="h-5 w-5" />}
+                    />
+
+                    <CustomSelect
+                      label={
+                        <>
+                          MTK <span className="text-red-500">*</span>
+                        </>
+                      }
+                      value={form.formData.mtk_id}
+                      onChange={(value) => {
+                        const newMtkId = value ? Number(value) : null;
+                        form.updateField("mtk_id", newMtkId);
+                        // MTK dəyişəndə kompleks seçimini sıfırla
+                        if (form.formData.complex_id) {
+                          form.updateField("complex_id", null);
+                        }
+                      }}
+                      options={mtks.map((m) => ({ value: m.id, label: m.name }))}
+                      placeholder="MTK seç"
+                      error={mtkError || false}
+                      disabled={loadingMtks || mtks.length === 0}
+                    />
+
+                    <CustomSelect
+                      label={
+                        <>
+                          Kompleks <span className="text-red-500">*</span>
+                        </>
+                      }
+                      value={form.formData.complex_id}
+                      onChange={(value) => form.updateField("complex_id", value ? Number(value) : null)}
+                      options={filteredComplexes.map((c) => ({ value: c.id, label: c.name }))}
+                      placeholder="Kompleks seç"
+                      error={complexError || false}
+                      disabled={!form.formData.mtk_id || filteredComplexes.length === 0}
+                    />
+
+                    <CustomSelect
+                      label="Status"
+                      value={form.formData.status || "active"}
+                      onChange={(value) => form.updateField("status", value)}
+                      options={statusOptions}
+                      placeholder="Status seç"
+                    />
+
+                    <CustomTextarea
+                      label="Təsvir"
+                      value={form.formData.meta?.desc || ""}
+                      onChange={(e) => form.updateMeta("desc", e.target.value)}
+                      rows={4}
+                      icon={<DocumentTextIcon className="h-5 w-5" />}
+                    />
+                  </div>
+                </CardBody>
+              </CustomCard>
+            </div>
           )}
-        </Button>
-      </DialogFooter>
-    </Dialog>
+        </DialogBody>
+
+        <DialogFooter>
+          <CustomButton variant="outlined" color="gray" onClick={onClose} disabled={saving}>
+            Ləğv et
+          </CustomButton>
+          <CustomButton
+            color="red"
+            onClick={submit}
+            disabled={!!errorText || saving}
+            loading={saving}
+          >
+            {saving ? "Yadda saxlanılır..." : isEdit ? "Yenilə" : "Yarat"}
+          </CustomButton>
+        </DialogFooter>
+      </CustomDialog>
+    </>
   );
 }
-

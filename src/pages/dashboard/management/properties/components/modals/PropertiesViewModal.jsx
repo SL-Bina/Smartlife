@@ -17,16 +17,24 @@ import {
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
-const Field = ({ label, value }) => (
-  <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-white/60 dark:bg-gray-900/20">
-    <Typography className="text-xs font-semibold text-gray-600 dark:text-gray-400">
-      {label}
-    </Typography>
-    <Typography className="mt-1 text-sm font-semibold text-gray-900 dark:text-white break-words">
-      {value ?? "—"}
-    </Typography>
-  </div>
-);
+const Field = ({ label, value }) => {
+  // Əgər value object-dirsə, onu string-ə çevir
+  let displayValue = value;
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    displayValue = value?.name || value?.id || JSON.stringify(value);
+  }
+  
+  return (
+    <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-white/60 dark:bg-gray-900/20">
+      <Typography className="text-xs font-semibold text-gray-600 dark:text-gray-400">
+        {label}
+      </Typography>
+      <Typography className="mt-1 text-sm font-semibold text-gray-900 dark:text-white break-words">
+        {displayValue ?? "—"}
+      </Typography>
+    </div>
+  );
+};
 
 export function PropertiesViewModal({ open, onClose, item }) {
   const { t } = useTranslation();
@@ -133,7 +141,10 @@ export function PropertiesViewModal({ open, onClose, item }) {
                   : "—"
               }
             />
-            <Field label={t("properties.fields.block")} value={item?.block || "—"} />
+            <Field 
+              label={t("properties.fields.block")} 
+              value={item?.block?.name || item?.sub_data?.block?.name || item?.blockName || "—"} 
+            />
           </div>
         </div>
 

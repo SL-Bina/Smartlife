@@ -315,9 +315,9 @@ export function DesktopNavbar({ pathParts, pageTitle, fixedNavbar }) {
         </div>
       </div>
 
-      <div className="flex items-center justify-center w-[70%] mx-4">
+      {/* <div className="flex items-center justify-center w-[70%] mx-4">
         <WeatherPillCenter />
-      </div>
+      </div> */}
 
       <div className="flex items-center justify-end gap-1.5 lg:gap-2 flex-shrink-0">
         <DarkModeToggle />

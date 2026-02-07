@@ -36,8 +36,6 @@ export const propertiesAPI = {
         status: data.status || "active",
       };
 
-      // backend required-ləri yoxla
-      console.log("Properties Create Request:", cleanedData);
       const response = await api.put("/module/properties/add", cleanedData);
       return response.data;
     } catch (error) {
@@ -74,7 +72,6 @@ export const propertiesAPI = {
         status: data.status || "active",
       };
 
-      console.log("Properties Update Request:", cleanedData);
       const response = await api.patch(`/module/properties/${id}`, cleanedData);
       return response.data;
     } catch (error) {

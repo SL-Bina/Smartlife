@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import {
   Card,
   CardHeader,
@@ -8,8 +8,15 @@ import {
   Spinner,
   Chip,
   IconButton,
+  Input,
 } from "@material-tailwind/react";
-import { PlusIcon, UserGroupIcon, PencilIcon } from "@heroicons/react/24/outline";
+import {
+  PlusIcon,
+  UserGroupIcon,
+  PencilIcon,
+  MagnifyingGlassIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
 export function RolesPanel({
@@ -19,16 +26,31 @@ export function RolesPanel({
   onRoleSelect,
   onCreateClick,
   onEditClick,
+  onDeleteClick,
 }) {
   const { t } = useTranslation();
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const getStatusColor = () => "green"; // status field yoxdur
+  const getStatusColor = () => "green";
 
   const getRoleId = (role) => role.role_id ?? role.id;
   const getRoleName = (role) => role.role_name ?? role.name ?? "";
 
+  const filteredRoles = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    if (!q) return roles || [];
+
+    return (roles || []).filter((role) => {
+      const id = String(getRoleId(role) ?? "").toLowerCase();
+      const name = getRoleName(role).toLowerCase();
+      const label = (t(`permissions.rolesDict.${getRoleName(role)}`) || getRoleName(role)).toLowerCase();
+
+      return id.includes(q) || name.includes(q) || label.includes(q);
+    });
+  }, [roles, searchTerm, t]);
+
   return (
-    <Card className="border border-red-600 dark:border-gray-700 shadow-lg dark:bg-gray-800 h-full flex flex-col">
+    <Card className="border border-red-600 dark:border-gray-700 shadow-lg dark:bg-gray-800 max-h-[700px] h-full flex flex-col max-w-full">
       <CardHeader
         floated={false}
         shadow={false}
@@ -46,6 +68,20 @@ export function RolesPanel({
           </Typography>
         </div>
 
+        <div className="relative mb-3">
+          <Input
+            type="text"
+            placeholder={t("permissions.searchRoles") || t("permissions.search") || "Axtarış..."}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full dark:text-white dark:bg-gray-800/50 pr-10 border-gray-300 dark:border-gray-600 focus:border-purple-500 dark:focus:border-purple-400"
+            labelProps={{ className: "dark:text-gray-300" }}
+          />
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+            <MagnifyingGlassIcon className="h-4 w-4 text-gray-400 dark:text-gray-400" />
+          </div>
+        </div>
+
         <Button
           color="purple"
           size="sm"
@@ -53,7 +89,7 @@ export function RolesPanel({
           onClick={onCreateClick}
         >
           <PlusIcon className="h-4 w-4" />
-          {t("permissions.roles.create") || "+ Hüquq yarat"}
+          {t("permissions.roles.create") || "Hüquq yarat"}
         </Button>
       </CardHeader>
 
@@ -65,15 +101,17 @@ export function RolesPanel({
               {t("permissions.loading") || "Yüklənir..."}
             </Typography>
           </div>
-        ) : !roles || roles.length === 0 ? (
+        ) : !filteredRoles || filteredRoles.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10">
             <Typography variant="small" className="text-blue-gray-400 dark:text-gray-400">
-              {t("permissions.roles.noRoles") || "Rol tapılmadı"}
+              {searchTerm
+                ? t("permissions.roles.noRolesFiltered") || "Axtarışa uyğun rol tapılmadı"
+                : t("permissions.roles.noRoles") || "Rol tapılmadı"}
             </Typography>
           </div>
         ) : (
           <div className="space-y-2 p-4">
-            {roles.map((role) => {
+            {filteredRoles.map((role) => {
               const roleId = getRoleId(role);
               const roleName = getRoleName(role);
               const roleLabel = t(`permissions.rolesDict.${roleName}`) || roleName;
@@ -84,10 +122,9 @@ export function RolesPanel({
                   onClick={() => onRoleSelect(roleId)}
                   className={`
                     p-3 rounded-lg border cursor-pointer transition-all
-                    ${
-                      selectedRoleId === roleId
-                        ? "bg-purple-50 dark:bg-purple-900/30 border-purple-300 dark:border-purple-700"
-                        : "bg-white dark:bg-gray-900/50 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/70"
+                    ${selectedRoleId === roleId
+                      ? "bg-purple-50 dark:bg-purple-900/30 border-purple-300 dark:border-purple-700"
+                      : "bg-white dark:bg-gray-900/50 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/70"
                     }
                   `}
                 >
@@ -130,7 +167,20 @@ export function RolesPanel({
                           onEditClick(role);
                         }}
                       >
+
                         <PencilIcon className="h-4 w-4" />
+                      </IconButton>
+                      <IconButton
+                        size="sm"
+                        variant="text"
+                        color="red"
+                        className="dark:hover:bg-red-900/30"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteClick(role);
+                        }}
+                      >
+                        <TrashIcon className="h-4 w-4" />
                       </IconButton>
                     </div>
                   </div>

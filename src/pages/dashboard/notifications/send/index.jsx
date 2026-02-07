@@ -31,15 +31,16 @@ const SendNotificationPage = () => {
   const [message, setMessage] = useState("");
 
   const handleSubmit = () => {
-    // Handle form submission
-    console.log({
-      building: selectedBuilding,
-      block: selectedBlock,
-      apartment: selectedApartment,
-      type: notificationType,
+    // TODO: Implement notification sending logic
+    console.log("Sending notification:", {
+      selectedBuilding,
+      selectedBlock,
+      selectedApartment,
+      notificationType,
       title,
       message,
     });
+    // Add API call here
   };
 
   return (

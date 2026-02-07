@@ -1,145 +1,157 @@
-import { useState, useEffect } from "react";
-import { buildingsAPI } from "../api";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import buildingAPI from "../api";
 
-export function useBuildingsData(filters, page, refreshKey = 0, sortConfig = { key: null, direction: "asc" }) {
-  const [buildings, setBuildings] = useState([]);
-  const [allBuildings, setAllBuildings] = useState([]);
+const mapBuilding = (x) => ({
+  id: x?.id,
+  name: x?.name || "",
+  status: x?.status || "active",
+  meta: x?.meta || {},
+  complex: x?.complex || null, // list response-da var
+});
+
+export function useBuildingsData({ search = "", mtkId = null, complexId = null, enabled = true } = {}) {
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    itemsPerPage: 20,
-    total: 0,
-    totalPages: 0,
-  });
 
-  // Natural sort function
-  const naturalSort = (a, b) => {
-    const aStr = String(a).toLowerCase();
-    const bStr = String(b).toLowerCase();
-    const aParts = aStr.match(/(\d+|\D+)/g) || [];
-    const bParts = bStr.match(/(\d+|\D+)/g) || [];
-    const maxLength = Math.max(aParts.length, bParts.length);
-    
-    for (let i = 0; i < maxLength; i++) {
-      const aPart = aParts[i] || "";
-      const bPart = bParts[i] || "";
-      if (/^\d+$/.test(aPart) && /^\d+$/.test(bPart)) {
-        const aNum = parseInt(aPart, 10);
-        const bNum = parseInt(bPart, 10);
-        if (aNum !== bNum) return aNum - bNum;
-      } else if (aPart !== bPart) {
-        return aPart < bPart ? -1 : 1;
+  // normal pagination (heç nə seçilməyib)
+  const [items, setItems] = useState([]);
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+
+  // scope mode (mtk/complex seçilib) -> bütün səhifələr
+  const [allItems, setAllItems] = useState([]);
+
+  const fetchPage = useCallback(async (p = 1, extraParams = {}) => {
+    const res = await buildingAPI.getAll({ page: p, ...extraParams });
+    const data = res?.data;
+    return {
+      list: (data?.data || []).map(mapBuilding),
+      currentPage: data?.current_page || p,
+      lastPage: data?.last_page || 1,
+    };
+  }, []);
+
+  const fetchNormal = useCallback(
+    async (p = 1) => {
+      // Əgər enabled false-dursa, API sorğusu göndərmə
+      if (!enabled) {
+        setLoading(false);
+        setItems([]);
+        setPage(1);
+        setLastPage(1);
+        setAllItems([]);
+        return;
       }
-    }
-    return 0;
-  };
-
-  useEffect(() => {
-    const fetchBuildings = async () => {
+      
+      setLoading(true);
       try {
-        setLoading(true);
-        setError(null);
-        
-        // Fetch all data for sorting
-        const params = {
-          page: 1,
-          per_page: 10000, // Get all data
-        };
-        
-        if (filters.name) params.name = filters.name;
-        if (filters.complex) params.complex = filters.complex;
-        if (filters.status) params.status = filters.status;
-
-        const response = await buildingsAPI.getAll(params);
-        
-        if (response.success && response.data) {
-          let buildingsData = response.data.data || [];
-          
-          // Apply sorting
-          if (sortConfig.key) {
-            buildingsData = [...buildingsData].sort((a, b) => {
-              let aValue = a[sortConfig.key];
-              let bValue = b[sortConfig.key];
-
-              // Handle complex nested value
-              if (sortConfig.key === "complex") {
-                aValue = a.complex?.name || "";
-                bValue = b.complex?.name || "";
-              }
-
-              // Handle numeric values
-              if (sortConfig.key === "id") {
-                aValue = parseFloat(aValue) || 0;
-                bValue = parseFloat(bValue) || 0;
-              }
-              // Handle string values with natural sort
-              else if (typeof aValue === "string" && typeof bValue === "string") {
-                const comparison = naturalSort(aValue, bValue);
-                return sortConfig.direction === "asc" ? comparison : -comparison;
-              }
-
-              // Compare numeric values
-              if (typeof aValue === "number" && typeof bValue === "number") {
-                if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
-                if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
-                return 0;
-              }
-
-              return 0;
-            });
-          }
-
-          setAllBuildings(buildingsData);
-          
-          // Apply pagination
-          const total = buildingsData.length;
-          const itemsPerPage = 20;
-          const startIndex = (page - 1) * itemsPerPage;
-          const endIndex = startIndex + itemsPerPage;
-          const paginatedData = buildingsData.slice(startIndex, endIndex);
-          
-          setBuildings(paginatedData);
-          setPagination({
-            page,
-            itemsPerPage,
-            total,
-            totalPages: Math.ceil(total / itemsPerPage),
-          });
-        } else {
-          setBuildings([]);
-          setAllBuildings([]);
-          setPagination({
-            page: 1,
-            itemsPerPage: 20,
-            total: 0,
-            totalPages: 0,
-          });
-        }
-      } catch (err) {
-        console.error("Error fetching Buildings data:", err);
-        setError(err.message || "Failed to fetch Buildings data");
-        setBuildings([]);
-        setAllBuildings([]);
-        setPagination({
-          page: 1,
-          itemsPerPage: 20,
-          total: 0,
-          totalPages: 0,
-        });
+        const r = await fetchPage(p);
+        setItems(r.list);
+        setPage(r.currentPage);
+        setLastPage(r.lastPage);
+        setAllItems([]);
+      } catch (e) {
+        console.error("Buildings list error:", e);
+        setItems([]);
+        setPage(1);
+        setLastPage(1);
       } finally {
         setLoading(false);
       }
-    };
+    },
+    [fetchPage, enabled]
+  );
 
-    fetchBuildings();
-  }, [filters, page, refreshKey, sortConfig]);
+  const fetchAllAndFilter = useCallback(async () => {
+    // Əgər enabled false-dursa, API sorğusu göndərmə
+    if (!enabled) {
+      setLoading(false);
+      setAllItems([]);
+      setItems([]);
+      setPage(1);
+      setLastPage(1);
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      // server filter cəhdi (işləsə yaxşı)
+      const params = {};
+      if (complexId) params.complex_id = complexId;
+      if (mtkId) params.mtk_id = mtkId;
+
+      const first = await fetchPage(1, params);
+
+      let all = [...first.list];
+      let lp = first.lastPage;
+
+      for (let p = 2; p <= lp; p++) {
+        const r = await fetchPage(p, params);
+        all.push(...r.list);
+        lp = r.lastPage;
+      }
+
+      // client-side filter (backend vecinə almasa belə)
+      // Əsas prioritet: complexId seçilibsə, yalnız həmin kompleks-ə aid binalar
+      const filtered = all.filter((b) => {
+        const c = b?.complex;
+        const cId = c?.id;
+        const cMtkId = c?.bind_mtk?.id || c?.mtk_id || null;
+        const buildingComplexId = b?.complex_id;
+
+        // Əgər complexId seçilibsə, yalnız həmin kompleks-ə aid binalar
+        if (complexId) {
+          // Əvvəlcə complex object-dən, sonra direct complex_id-dən yoxla
+          if (String(cId || "") !== String(complexId) && String(buildingComplexId || "") !== String(complexId)) {
+            return false;
+          }
+        }
+
+        // Əgər mtkId seçilibsə (və complexId seçilməyibsə), MTK-ya görə filter et
+        if (mtkId && !complexId) {
+          if (String(cMtkId || "") !== String(mtkId)) return false;
+        }
+
+        return true;
+      });
+
+      setAllItems(filtered);
+      setItems([]);
+      setPage(1);
+      setLastPage(1);
+    } catch (e) {
+      console.error("Buildings all-pages error:", e);
+      setAllItems([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchPage, mtkId, complexId, enabled]);
+
+  const prevFiltersRef = useRef({ mtkId: null, complexId: null });
+  const hasInitializedRef = useRef(false);
+  useEffect(() => {
+    // React StrictMode-da iki dəfə çağırılmanın qarşısını almaq üçün
+    if (hasInitializedRef.current && prevFiltersRef.current.mtkId === mtkId && prevFiltersRef.current.complexId === complexId) return;
+    prevFiltersRef.current = { mtkId, complexId };
+    hasInitializedRef.current = true;
+    
+    if (mtkId || complexId) fetchAllAndFilter();
+    else fetchNormal(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mtkId, complexId]); // Yalnız mtkId və complexId dəyişəndə yenidən çağır
+
+  const finalItems = useMemo(() => {
+    const base = mtkId || complexId ? allItems : items;
+    const q = (search || "").trim().toLowerCase();
+    if (!q) return base;
+    return base.filter((x) => (x.name || "").toLowerCase().includes(q));
+  }, [items, allItems, search, mtkId, complexId]);
 
   return {
-    buildings,
     loading,
-    error,
-    pagination,
+    items: finalItems,
+    page,
+    lastPage,
+    goToPage: (p) => (mtkId || complexId ? null : fetchNormal(p)),
+    refresh: () => (mtkId || complexId ? fetchAllAndFilter() : fetchNormal(page)),
   };
 }
-

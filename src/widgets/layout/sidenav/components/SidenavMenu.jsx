@@ -55,7 +55,18 @@ export function SidenavMenu({ routes, openMenus, setOpenMenus, collapsed = false
           {!collapsed && <SidenavSection title={title} />}
           <ul className={collapsed ? "space-y-1" : "space-y-0.5 xl:space-y-1"}>
             {pages
-              .filter((page) => !page.hideInSidenav)
+              .filter((page) => {
+                // hideInSidenav yoxlaması
+                if (page.hideInSidenav) return false;
+                
+                // Əgər children varsa, ən azı bir child görünməlidir
+                if (page.children && Array.isArray(page.children) && page.children.length > 0) {
+                  const visibleChildren = page.children.filter((child) => !child.hideInSidenav);
+                  if (visibleChildren.length === 0) return false;
+                }
+                
+                return true;
+              })
               .map((page) => (
                 <SidenavMenuItem
                   key={page.name}

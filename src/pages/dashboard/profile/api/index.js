@@ -37,7 +37,12 @@ export const profileAPI = {
         payload.password_confirmation = form.password_confirmation?.trim() || "";
       }
 
-      console.log("PATCH /user/me → payload:", payload);
+
+      // password "sometimes" – yalnız user daxil edəndə göndər
+      if (data.password) {
+        payload.password = String(data.password);
+        payload.password_confirmation = String(data.password_confirmation || "");
+      }
 
       const res = await api.patch("/user/me", payload);
       return res.data;
