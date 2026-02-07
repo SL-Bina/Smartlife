@@ -1906,7 +1906,7 @@
       "Mtk manager": "Менеджер МТК"
     }
   },
-  "profile": {
+"profile": {
     "pageTitle": "Профиль",
     "personalInfo": "Личная информация",
     "password": "Мой пароль",
@@ -1936,8 +1936,22 @@
     "complexInfo": "ИНФОРМАЦИЯ О КОМПЛЕКСЕ",
     "complex": "Комплекс",
     "additionalInfo": "ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ",
-    "personalCode": "Личный код"
-  },
+    "personalCode": "Личный код",
+    "editProfile": "Редактировать профиль",
+    "changePassword": "Изменить пароль",
+    "accountStatus": "Статус аккаунта",
+    "fullName": "Полное имя",
+    "account": "Аккаунт",
+    "active": "АКТИВЕН",
+    "inactive": "НЕАКТИВЕН",
+    "id": "ID",
+    "lastUpdated": "Последнее обновление",
+    "nameNotSet": "Имя не указано",
+    "usernameNotSet": "Имя пользователя не указано",
+    "dataNotFound": "Данные профиля не найдены",
+    "checkConsole": "Проверьте логи консоли (F12 → Console)",
+    "profilePhoto": "Фото профиля"
+},
   "kpi": {
     "pageTitle": "Отчет KPI сотрудников",
     "loading": "Загрузка...",

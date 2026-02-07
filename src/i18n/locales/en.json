@@ -1926,7 +1926,7 @@
       "permission": "permission"
     }
   },
-  "profile": {
+ "profile": {
     "pageTitle": "Profile",
     "personalInfo": "Personal information",
     "password": "My password",
@@ -1956,8 +1956,22 @@
     "complexInfo": "COMPLEX INFORMATION",
     "complex": "Complex",
     "additionalInfo": "ADDITIONAL INFORMATION",
-    "personalCode": "Personal code"
-  },
+    "personalCode": "Personal code",
+    "editProfile": "Edit Profile",
+    "changePassword": "Change Password",
+    "accountStatus": "Account Status",
+    "fullName": "Full Name",
+    "account": "Account",
+    "active": "ACTIVE",
+    "inactive": "INACTIVE",
+    "id": "ID",
+    "lastUpdated": "Last Updated",
+    "nameNotSet": "Name not set",
+    "usernameNotSet": "Username not set",
+    "dataNotFound": "Profile data not found",
+    "checkConsole": "Check console logs (F12 → Console)",
+    "profilePhoto": "Profile Photo"
+},
   "kpi": {
     "pageTitle": "Employee KPI Report",
     "loading": "Loading...",

@@ -2164,7 +2164,7 @@
       "Mtk manager": "MTK meneceri"
     }
   },
-  "profile": {
+ "profile": {
     "pageTitle": "Profil",
     "personalInfo": "Şəxsi məlumatlar",
     "password": "Şifrəm",
@@ -2194,8 +2194,24 @@
     "complexInfo": "KOMPLEKS MƏLUMATLARI",
     "complex": "Kompleks",
     "additionalInfo": "ƏLAVƏ MƏLUMATLAR",
-    "personalCode": "Şəxsi kod"
-  },
+    "personalCode": "Şəxsi kod",
+
+    
+    "editProfile": "Profili Redaktə Et",
+    "changePassword": "Şifrəni Dəyiş",
+    "accountStatus": "Hesab Vəziyyəti",
+    "fullName": "Tam Ad",
+    "account": "Hesab",
+    "active": "AKTİV",
+    "inactive": "DEAKTİV",
+    "id": "ID",
+    "lastUpdated": "Son yenilənmə",
+    "nameNotSet": "Ad qeyd olunmayıb",
+    "usernameNotSet": "İstifadəçi adı yoxdur",
+    "dataNotFound": "Profil məlumatı tapılmadı",
+    "checkConsole": "Konsoldakı logları yoxlayın (F12 → Console)",
+    "profilePhoto": "Profil şəkli"
+},
   "kpi": {
     "pageTitle": "Əməkdaş KPI hesabatı",
     "loading": "Yüklənir...",
