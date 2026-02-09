@@ -18,7 +18,7 @@ import { useBuildingsFilters } from "./hooks/useBuildingsFilters";
 import mtkAPI from "../mtk/api";
 import complexAPI from "../complex/api";
 
-import { useManagement } from "@/context/ManagementContext";
+import { useManagementEnhanced } from "@/context";
 import buildingAPI from "./api";
 import DynamicToast from "@/components/DynamicToast";
 
@@ -39,7 +39,7 @@ export default function BuildingsPage() {
   const [selected, setSelected] = useState(null);
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
 
-  const { state, actions } = useManagement();
+  const { state, actions } = useManagementEnhanced();
 
   const showToast = (type, message, title = "") => {
     setToast({ open: true, type, message, title });

@@ -7,7 +7,7 @@ import { useMaterialTailwindController, setOpenSidenav } from "@/context";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/context/AuthContext";
 
-export function SidenavHeader({ brandName, collapsed = false }) {
+export function SidenavHeader({ brandName, collapsed = false, isLowHeight = false }) {
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavSize } = controller;
   const { t, i18n } = useTranslation();
@@ -76,10 +76,16 @@ export function SidenavHeader({ brandName, collapsed = false }) {
         "linear-gradient(135deg, rgba(15,23,42,.95), rgba(17,24,39,.92))",
     };
 
+  // Responsive padding - aşağı hündürlüklü ekranlarda azalt
+  const getHeaderPadding = () => {
+    if (collapsed) return "px-2 py-2 xl:px-2 xl:py-3";
+    if (isLowHeight) return "px-3 py-2 xl:px-4 xl:py-3";
+    return "px-3 py-3 xl:px-6 xl:py-5";
+  };
+
   return (
     <div
-      className={`relative flex-shrink-0 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-br from-red-600/5 via-red-500/3 to-transparent dark:from-red-600/10 dark:via-red-500/5 dark:to-transparent ${collapsed ? "px-2 py-3 xl:px-2 xl:py-4" : "px-3 py-3 xl:px-6 xl:py-6"
-        }`}
+      className={`relative flex-shrink-0 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-br from-red-600/5 via-red-500/3 to-transparent dark:from-red-600/10 dark:via-red-500/5 dark:to-transparent ${getHeaderPadding()}`}
     >
       <Link
         to="/"
@@ -106,61 +112,63 @@ export function SidenavHeader({ brandName, collapsed = false }) {
         </motion.div>
 
         {!collapsed && (
-          <div className="flex flex-col gap-0.5 xl:gap-1 min-w-0 flex-1 xl:flex-none xl:items-center">
+          <div className={`flex flex-col ${isLowHeight ? "gap-0.5" : "gap-0.5 xl:gap-1"} min-w-0 flex-1 xl:flex-none xl:items-center`}>
             <Typography
               variant="h5"
               className={`font-bold ${getTextSize(
-                "text-sm xl:text-base",
-                "text-base xl:text-xl",
-                "text-lg xl:text-2xl"
+                isLowHeight ? "text-xs xl:text-sm" : "text-sm xl:text-base",
+                isLowHeight ? "text-sm xl:text-base" : "text-base xl:text-xl",
+                isLowHeight ? "text-base xl:text-lg" : "text-lg xl:text-2xl"
               )} bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 dark:from-white dark:via-gray-100 dark:to-white bg-clip-text text-transparent truncate xl:truncate-none`}
             >
               {brandName}
             </Typography>
 
-            <div className="flex flex-col gap-0.5 xl:gap-1 xl:items-center">
-              <Typography
-                variant="small"
-                className={`${getTextSize(
-                  "text-[10px] xl:text-xs",
-                  "text-xs xl:text-sm",
-                  "text-sm xl:text-base"
-                )} font-medium text-gray-600 dark:text-gray-400`}
-              >
-                {t("sidebar.welcome") || "Xoş gəldin"}
-              </Typography>
-
-              {user?.username && (
+            {!isLowHeight && (
+              <div className="flex flex-col gap-0.5 xl:gap-1 xl:items-center">
                 <Typography
                   variant="small"
                   className={`${getTextSize(
+                    "text-[10px] xl:text-xs",
                     "text-xs xl:text-sm",
-                    "text-sm xl:text-base",
-                    "text-base xl:text-lg"
-                  )} font-semibold text-gray-900 dark:text-white truncate xl:truncate-none`}
+                    "text-sm xl:text-base"
+                  )} font-medium text-gray-600 dark:text-gray-400`}
                 >
-                  {user.username}
+                  {t("sidebar.welcome") || "Xoş gəldin"}
                 </Typography>
-              )}
-            </div>
+
+                {user?.username && (
+                  <Typography
+                    variant="small"
+                    className={`${getTextSize(
+                      "text-xs xl:text-sm",
+                      "text-sm xl:text-base",
+                      "text-base xl:text-lg"
+                    )} font-semibold text-gray-900 dark:text-white truncate xl:truncate-none`}
+                  >
+                    {user.username}
+                  </Typography>
+                )}
+              </div>
+            )}
           </div>
         )}
       </Link>
 
-      {/* ✅ iOS-style mini “lockscreen clock” container */}
-      {!collapsed && (
+      {/* ✅ iOS-style mini "lockscreen clock" container - aşağı hündürlüklü ekranlarda gizlənir */}
+      {!collapsed && !isLowHeight && (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25 }}
-          className="mt-4 xl:mt-5"
+          className={`${isLowHeight ? "hidden" : "mt-2 xl:mt-3"}`}
         >
           <div
             className="
               relative overflow-hidden
-              rounded-3xl
+              rounded-2xl xl:rounded-3xl
               border border-white/10 dark:border-white/10
-              shadow-[0_18px_50px_rgba(0,0,0,.25)]
+              shadow-[0_8px_25px_rgba(0,0,0,.2)]
             "
             style={iosWallpaperStyle}
           >
@@ -168,18 +176,18 @@ export function SidenavHeader({ brandName, collapsed = false }) {
 
             {/* <div className="absolute left-1/2 top-2 -translate-x-1/2 h-[10px] w-[110px] rounded-full bg-black/25 dark:bg-black/40" /> */}
 
-            <div className="relative px-4 py-4 xl:px-5 xl:py-5">
-              <div className="flex items-start justify-between gap-3">
+            <div className={`relative ${isLowHeight ? "px-3 py-2.5 xl:px-4 xl:py-3" : "px-3 py-3 xl:px-4 xl:py-4"}`}>
+              <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <div className="text-[11px] xl:text-xs text-white/80 capitalize truncate">
+                  <div className={`${isLowHeight ? "text-[9px] xl:text-[10px]" : "text-[10px] xl:text-[11px]"} text-white/80 capitalize truncate`}>
                     {dateText}
                   </div>
 
-                  <div className="mt-2 flex items-end gap-2">
-                    <div className="text-4xl xl:text-5xl font-semibold tracking-tight text-white drop-shadow">
+                  <div className={`${isLowHeight ? "mt-0.5" : "mt-1.5"} flex items-end gap-1.5`}>
+                    <div className={`${isLowHeight ? "text-xl xl:text-2xl" : "text-2xl xl:text-3xl"} font-semibold tracking-tight text-white drop-shadow`}>
                       {hh}:{mm}
                     </div>
-                    <div className="pb-1 text-sm xl:text-base font-semibold text-white/85">
+                    <div className={`pb-0.5 ${isLowHeight ? "text-[10px] xl:text-xs" : "text-xs xl:text-sm"} font-semibold text-white/85`}>
                       {ss}
                     </div>
                   </div>

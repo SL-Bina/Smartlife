@@ -9,7 +9,19 @@ import { DesktopNavbar } from "./components/DesktopNavbar";
 
 export function DashboardNavbar() {
   const [controller] = useMaterialTailwindController();
-  const { fixedNavbar } = controller;
+  const {
+    fixedNavbar,
+    navbarColor,
+    navbarHeight,
+    navbarStyle,
+    navbarShadow,
+    navbarBorder,
+    navbarBlur,
+    navbarTransparency,
+    navbarPosition,
+    navbarAnimations,
+    navbarHoverEffects,
+  } = controller;
   const { pathname } = useLocation();
   const { t } = useTranslation();
 
@@ -23,18 +35,133 @@ export function DashboardNavbar() {
       ? t(pageTitleKeyMap[page])
       : page;
 
+  // Navbar konfiqurasiyaları - daha görünən və effektiv
+  const getNavbarColorClasses = () => {
+    const transparency = getNavbarTransparency();
+    const colors = {
+      default: {
+        light: `from-white/${transparency} via-white/${Math.max(parseInt(transparency) - 15, 0)} to-white/${transparency}`,
+        dark: `dark:from-gray-900/${transparency} dark:via-gray-800/${Math.max(parseInt(transparency) - 15, 0)} dark:to-gray-900/${transparency}`,
+      },
+      red: {
+        light: `from-red-100/${transparency} via-red-200/${Math.max(parseInt(transparency) - 15, 0)} to-red-100/${transparency}`,
+        dark: `dark:from-red-900/${transparency} dark:via-red-800/${Math.max(parseInt(transparency) - 15, 0)} dark:to-red-900/${transparency}`,
+      },
+      blue: {
+        light: `from-blue-100/${transparency} via-blue-200/${Math.max(parseInt(transparency) - 15, 0)} to-blue-100/${transparency}`,
+        dark: `dark:from-blue-900/${transparency} dark:via-blue-800/${Math.max(parseInt(transparency) - 15, 0)} dark:to-blue-900/${transparency}`,
+      },
+      green: {
+        light: `from-green-100/${transparency} via-green-200/${Math.max(parseInt(transparency) - 15, 0)} to-green-100/${transparency}`,
+        dark: `dark:from-green-900/${transparency} dark:via-green-800/${Math.max(parseInt(transparency) - 15, 0)} dark:to-green-900/${transparency}`,
+      },
+      purple: {
+        light: `from-purple-100/${transparency} via-purple-200/${Math.max(parseInt(transparency) - 15, 0)} to-purple-100/${transparency}`,
+        dark: `dark:from-purple-900/${transparency} dark:via-purple-800/${Math.max(parseInt(transparency) - 15, 0)} dark:to-purple-900/${transparency}`,
+      },
+    };
+    const color = colors[navbarColor] || colors.default;
+    return `bg-gradient-to-br ${color.light} ${color.dark}`;
+  };
+
+  const getNavbarHeightClasses = () => {
+    const heights = {
+      compact: "py-1 sm:py-1.5 md:py-2 min-h-[44px] sm:min-h-[48px] md:min-h-[52px]",
+      normal: "py-2 sm:py-3 md:py-4 min-h-[56px] sm:min-h-[64px] md:min-h-[72px]",
+      large: "py-3 sm:py-5 md:py-7 min-h-[72px] sm:min-h-[88px] md:min-h-[104px]",
+    };
+    return heights[navbarHeight] || heights.normal;
+  };
+
+  const getNavbarStyleClasses = () => {
+    const styles = {
+      minimalist: "rounded-none border-0",
+      modern: "rounded-none sm:rounded-xl md:rounded-2xl lg:rounded-3xl",
+      classic: "rounded-none sm:rounded-md md:rounded-lg border-0 sm:border-2",
+    };
+    return styles[navbarStyle] || styles.modern;
+  };
+
+  const getNavbarShadowClasses = () => {
+    if (navbarShadow === "none") return "";
+    const shadows = {
+      small: "shadow-md sm:shadow-lg md:shadow-xl shadow-gray-300/50 dark:shadow-gray-900/50",
+      medium: "shadow-lg sm:shadow-xl md:shadow-2xl shadow-gray-400/60 dark:shadow-gray-900/70",
+      large: "shadow-xl sm:shadow-2xl md:shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)] shadow-gray-500/70 dark:shadow-gray-950/80",
+    };
+    return shadows[navbarShadow] || shadows.medium;
+  };
+
+  const getNavbarBorderClasses = () => {
+    if (navbarBorder === "disabled") return "border-0";
+    const borderColors = {
+      default: "border-0 sm:border-2 border-gray-300/80 dark:border-gray-600/80",
+      red: "border-0 sm:border-2 border-red-300/80 dark:border-red-600/80",
+      blue: "border-0 sm:border-2 border-blue-300/80 dark:border-blue-600/80",
+      green: "border-0 sm:border-2 border-green-300/80 dark:border-green-600/80",
+      purple: "border-0 sm:border-2 border-purple-300/80 dark:border-purple-600/80",
+    };
+    return borderColors[navbarColor] || borderColors.default;
+  };
+
+  const getNavbarBlurClasses = () => {
+    if (navbarBlur === "disabled") return "";
+    const blurIntensity = {
+      enabled: "backdrop-blur-md sm:backdrop-blur-xl md:backdrop-blur-2xl backdrop-saturate-150",
+    };
+    return blurIntensity.enabled;
+  };
+
+  const getNavbarTransparency = () => {
+    const transparency = navbarTransparency || "95";
+    return transparency;
+  };
+
+  const getNavbarPositionClasses = () => {
+    if (!fixedNavbar) return "";
+    const positions = {
+      top: "sticky top-0 sm:top-2 md:top-4",
+      bottom: "sticky bottom-0 sm:bottom-2 md:bottom-4",
+    };
+    return positions[navbarPosition] || positions.top;
+  };
+
+  const getNavbarAnimationClasses = () => {
+    if (navbarAnimations === "disabled") return "";
+    return "transition-all duration-500 ease-in-out";
+  };
+
+  const getNavbarHoverClasses = () => {
+    if (navbarHoverEffects === "disabled") return "";
+    return "";
+  };
+
+  const navbarClasses = [
+    getNavbarStyleClasses(),
+    getNavbarAnimationClasses(),
+    getNavbarBlurClasses(),
+    getNavbarColorClasses(),
+    getNavbarBorderClasses(),
+    getNavbarHoverClasses(),
+    fixedNavbar
+      ? `${getNavbarPositionClasses()} z-40 ${getNavbarHeightClasses()} ${getNavbarShadowClasses()}`
+      : `px-2 sm:px-3 md:px-4 lg:px-6 ${getNavbarHeightClasses()}`,
+  ].filter(Boolean).join(" ");
+
   return (
     <Navbar
       color={fixedNavbar ? "white" : "transparent"}
-      className={`rounded-none sm:rounded-2xl transition-all duration-300 backdrop-blur-xl bg-gradient-to-br from-white/95 via-white/80 to-white/95 dark:from-gray-900/95 dark:via-gray-800/80 dark:to-gray-900/95 border-0 sm:border border-gray-200/50 dark:border-gray-700/50 ${fixedNavbar
-        ? "sticky top-0 sm:top-4 z-40 py-3 sm:py-4 shadow-lg sm:shadow-2xl shadow-gray-200/50 dark:shadow-gray-900/50"
-        : "px-3 sm:px-4 lg:px-6 py-3 sm:py-4"
-        }`}
+      className={navbarClasses}
       fullWidth
-      blurred={fixedNavbar}
+      blurred={fixedNavbar && navbarBlur === "enabled"}
     >
-      <MobileNavbar pageTitle={pageTitle} />
-      <DesktopNavbar pathParts={pathParts} pageTitle={pageTitle} fixedNavbar={fixedNavbar} />
+      <MobileNavbar pageTitle={pageTitle} navbarHoverEffects={navbarHoverEffects} />
+      <DesktopNavbar 
+        pathParts={pathParts} 
+        pageTitle={pageTitle} 
+        fixedNavbar={fixedNavbar}
+        navbarHoverEffects={navbarHoverEffects}
+      />
     </Navbar>
   );
 }

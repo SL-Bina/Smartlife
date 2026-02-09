@@ -2,8 +2,7 @@ import React, { useState, useMemo } from "react";
 import { Card, CardBody, Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem, Button } from "@material-tailwind/react";
 import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon, EyeIcon, PencilIcon, TrashIcon, CurrencyDollarIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
-import { useManagement } from "@/context/ManagementContext";
-import { useMtkColor } from "@/context";
+import { useManagementEnhanced, useMtkColor } from "@/context";
 import { PropertiesTableSkeleton } from "./PropertiesTableSkeleton";
 
 export function PropertiesTable({
@@ -14,7 +13,7 @@ export function PropertiesTable({
   loading = false,
 }) {
   const navigate = useNavigate();
-  const { state, actions } = useManagement();
+  const { state, actions } = useManagementEnhanced();
   const { colorCode, getRgba } = useMtkColor();
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 

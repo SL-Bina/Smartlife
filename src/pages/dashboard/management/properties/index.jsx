@@ -17,7 +17,7 @@ import { PropertiesViewModal } from "./components/modals/PropertiesViewModal";
 import { PropertiesFilterModal } from "./components/modals/PropertiesFilterModal";
 
 import DynamicToast from "@/components/DynamicToast";
-import { useManagement } from "@/context/ManagementContext";
+import { useManagementEnhanced } from "@/context";
 
 import mtkAPI from "../mtk/api";
 import complexAPI from "../complex/api";
@@ -28,7 +28,7 @@ import propertiesAPI from "./api";
 
 function PropertiesPage() {
   const { t } = useTranslation();
-  const { state, actions } = useManagement();
+  const { state, actions } = useManagementEnhanced();
 
   const [search, setSearch] = useState("");
   const [viewOpen, setViewOpen] = useState(false);

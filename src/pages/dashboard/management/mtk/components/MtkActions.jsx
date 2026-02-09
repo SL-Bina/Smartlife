@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { Button, Input, IconButton, Typography } from "@material-tailwind/react";
 import { PlusIcon, FunnelIcon } from "@heroicons/react/24/outline";
-import { useManagement } from "@/context/ManagementContext";
+import { useManagementEnhanced } from "@/context";
 import AppSelect from "@/components/ui/AppSelect";
 
 const STANDARD_OPTIONS = [10, 25, 50, 75, 100];
@@ -16,7 +16,7 @@ export function MtkActions({
   itemsPerPage = 10,
   onItemsPerPageChange
 }) {
-  const { state, actions } = useManagement();
+  const { state, actions } = useManagementEnhanced();
 
   // Items per page seçimləri yarat
   const itemsPerPageOptions = useMemo(() => {

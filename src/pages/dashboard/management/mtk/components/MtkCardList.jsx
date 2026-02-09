@@ -1,9 +1,9 @@
 import React from "react";
 import { Card, CardBody, Typography, Chip, Button } from "@material-tailwind/react";
-import { useManagement } from "@/context/ManagementContext";
+import { useManagementEnhanced } from "@/context";
 
 export function MtkCardList({ items = [], loading, onEdit, onDelete, onView, onGoComplex }) {
-  const { actions } = useManagement();
+  const { actions } = useManagementEnhanced();
 
   if (loading) {
     return <Typography className="text-sm text-blue-gray-500 dark:text-gray-300">Yüklənir...</Typography>;

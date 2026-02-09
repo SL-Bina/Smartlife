@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect } from "react";
 import { Button, Input } from "@material-tailwind/react";
 import { PlusIcon, FunnelIcon } from "@heroicons/react/24/outline";
-import { useManagement } from "@/context/ManagementContext";
+import { useManagementEnhanced } from "@/context";
 import { useMtkColor } from "@/context";
 import AppSelect from "@/components/ui/AppSelect";
 
@@ -23,7 +23,7 @@ export function BlocksActions({
   itemsPerPage = 10,
   onItemsPerPageChange
 }) {
-  const { state, actions } = useManagement();
+  const { state, actions } = useManagementEnhanced();
   const { colorCode, getRgba } = useMtkColor();
   
   // Default göz yormayan qırmızı ton

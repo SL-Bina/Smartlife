@@ -19,7 +19,7 @@ import mtkAPI from "../mtk/api";
 import complexAPI from "../complex/api";
 import buildingAPI from "../buildings/api";
 
-import { useManagement } from "@/context/ManagementContext";
+import { useManagementEnhanced } from "@/context";
 import blocksAPI from "./api";
 import DynamicToast from "@/components/DynamicToast";
 
@@ -42,7 +42,7 @@ export default function BlocksPage() {
   const [selected, setSelected] = useState(null);
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
 
-  const { state, actions } = useManagement();
+  const { state, actions } = useManagementEnhanced();
 
   const showToast = (type, message, title = "") => {
     setToast({ open: true, type, message, title });

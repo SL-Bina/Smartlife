@@ -6,7 +6,7 @@ import { CustomSelect } from "@/components/ui/CustomSelect";
 import { CustomButton } from "@/components/ui/CustomButton";
 import { CustomCard, CardBody } from "@/components/ui/CustomCard";
 import { CustomTypography } from "@/components/ui/CustomTypography";
-import { useManagement } from "@/context/ManagementContext";
+import { useManagementEnhanced } from "@/context";
 import { useMtkColor } from "@/context";
 import {
   BuildingOffice2Icon,
@@ -15,7 +15,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 export function BuildingFormModal({ open, mode = "create", onClose, form, onSubmit, complexes = [], mtks = [], loadingMtks = false }) {
-  const { state } = useManagement();
+  const { state } = useManagementEnhanced();
   const { colorCode, getRgba, defaultColor } = useMtkColor();
   const [saving, setSaving] = useState(false);
   const [filteredComplexes, setFilteredComplexes] = useState([]);

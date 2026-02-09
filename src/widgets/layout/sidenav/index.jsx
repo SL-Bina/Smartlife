@@ -20,6 +20,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
   const [openMenus, setOpenMenus] = React.useState({});
   const [isMobile, setIsMobile] = React.useState(false);
   const [isHovered, setIsHovered] = React.useState(false);
+  const [isLowHeight, setIsLowHeight] = React.useState(false);
 
   // Rəng kodunu rgba-ya çevir
   const getRgbaColor = (hex, opacity = 1) => {
@@ -58,9 +59,15 @@ export function Sidenav({ brandImg, brandName, routes }) {
 
   React.useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1280);
+    const checkLowHeight = () => setIsLowHeight(window.innerHeight < 700);
     checkMobile();
+    checkLowHeight();
     window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+    window.addEventListener("resize", checkLowHeight);
+    return () => {
+      window.removeEventListener("resize", checkMobile);
+      window.removeEventListener("resize", checkLowHeight);
+    };
   }, []);
 
   const sizeMap = { small: 240, medium: 320, large: 400 };
@@ -113,7 +120,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
           borderColor: mtkColorCode ? getRgbaColor(mtkColorCode, 0.3) : undefined,
         }}
       >
-        <SidenavHeader brandName={brandName} collapsed={sidenavCollapsed && !isHovered} />
+        <SidenavHeader brandName={brandName} collapsed={sidenavCollapsed && !isHovered} isLowHeight={isLowHeight} />
 
         <SidenavMenu
           routes={filteredRoutes}   // ✅ burda artıq filtr olunmuş routes gedir
@@ -122,6 +129,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
           collapsed={sidenavCollapsed && !isHovered}
           flatMenu={sidenavFlatMenu}
           expandAll={sidenavExpandAll}
+          isLowHeight={isLowHeight}
         />
       </motion.aside>
     </>

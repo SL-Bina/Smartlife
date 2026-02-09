@@ -9,7 +9,7 @@ import {
   ManagementInfo,
 } from "@/widgets/layout";
 import routes from "@/routes";
-import { useMaterialTailwindController, ManagementProvider } from "@/context";
+import { useMaterialTailwindController, ManagementProviderEnhanced } from "@/context";
 import { useAuth } from "@/context/AuthContext";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import AiChat from "@/widgets/layout/ai-chat";
@@ -237,7 +237,7 @@ export function Dashboard() {
     : routes.filter((r) => r.layout === "dashboard");
 
   return (
-    <ManagementProvider>
+    <ManagementProviderEnhanced>
       <div className="min-h-screen bg-blue-gray-50/50 dark:bg-black flex flex-col">
         <Sidenav
           routes={filteredRoutes}
@@ -309,7 +309,7 @@ export function Dashboard() {
         <ManagementInfo />
       </div>
       <Footer />
-    </ManagementProvider>
+    </ManagementProviderEnhanced>
   );
 }
 

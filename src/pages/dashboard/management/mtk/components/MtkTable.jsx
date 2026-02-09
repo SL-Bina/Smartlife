@@ -1,11 +1,11 @@
 import React, { useState, useMemo } from "react";
 import { Card, CardBody, Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
 import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
-import { useManagement } from "@/context/ManagementContext";
+import { useManagementEnhanced } from "@/context";
 import { MtkTableSkeleton } from "./MtkTableSkeleton";
 
 export function MtkTable({ items = [], loading, onEdit, onDelete, onView, onGoComplex }) {
-  const { state, actions } = useManagement();
+  const { state, actions } = useManagementEnhanced();
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const complexCountOf = (x) => {

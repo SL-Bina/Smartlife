@@ -1,8 +1,7 @@
 import React, { useMemo, useEffect } from "react";
 import { Button, IconButton, Select, Option, Input, Spinner } from "@material-tailwind/react";
 import { PlusIcon, ArrowUpIcon, ArrowDownIcon, FunnelIcon } from "@heroicons/react/24/outline";
-import { useManagement } from "@/context/ManagementContext";
-import { useMtkColor } from "@/context";
+import { useManagementEnhanced, useMtkColor } from "@/context";
 import AppSelect from "@/components/ui/AppSelect";
 
 const STANDARD_OPTIONS = [10, 25, 50, 75, 100];
@@ -29,7 +28,7 @@ export function PropertiesActions({
   itemsPerPage = 10,
   onItemsPerPageChange
 }) {
-  const { state, actions } = useManagement();
+  const { state, actions } = useManagementEnhanced();
   const { colorCode, getRgba } = useMtkColor();
   
   // Default göz yormayan qırmızı ton

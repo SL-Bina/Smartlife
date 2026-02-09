@@ -2,22 +2,21 @@ import React, { useState, useMemo } from "react";
 import { Card, CardBody, Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
 import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
-import { useManagement } from "@/context/ManagementContext";
+import { useManagementEnhanced } from "@/context";
 import { useMtkColor } from "@/context";
 import { ComplexTableSkeleton } from "./ComplexTableSkeleton";
 
 export function ComplexTable({ items = [], loading, onEdit, onDelete, onView }) {
   const navigate = useNavigate();
-  const { state, actions } = useManagement();
+  const { state, actions } = useManagementEnhanced();
   const { colorCode, getRgba } = useMtkColor();
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const buildingCountOf = (x) => (Array.isArray(x?.buildings) ? x.buildings.length : 0);
-  
+
   const goBuildings = (complex) => {
     const mtkId = complex?.bind_mtk?.id || complex?.mtk_id || null;
 
-    // Context-də ID-ləri set et (data yükləməni context özü edəcək)
     if (mtkId) {
       actions.setMtk(mtkId, complex?.bind_mtk || null);
     }
@@ -27,20 +26,16 @@ export function ComplexTable({ items = [], loading, onEdit, onDelete, onView }) 
     navigate("/dashboard/management/buildings");
   };
 
-  // Rəng koduna görə kontrast mətn rəngi müəyyən et (ağ və ya qara)
   const getContrastColor = (hexColor) => {
     if (!hexColor) return "#000000";
-    
-    // Hex rəngi RGB-yə çevir
+
     const hex = hexColor.replace("#", "");
     const r = parseInt(hex.substring(0, 2), 16);
     const g = parseInt(hex.substring(2, 4), 16);
     const b = parseInt(hex.substring(4, 6), 16);
-    
-    // Luminance hesabla
+
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    
-    // Əgər luminance yüksəkdirsə (açıq rəng), qara mətn istifadə et
+
     return luminance > 0.5 ? "#000000" : "#FFFFFF";
   };
 
@@ -59,6 +54,10 @@ export function ComplexTable({ items = [], loading, onEdit, onDelete, onView }) 
       let aValue, bValue;
 
       switch (sortConfig.key) {
+        case "id":
+          aValue = a.id;
+          bValue = b.id;
+          break;
         case "name":
           aValue = (a.name || "").toLowerCase();
           bValue = (b.name || "").toLowerCase();
@@ -89,7 +88,6 @@ export function ComplexTable({ items = [], loading, onEdit, onDelete, onView }) 
     });
   }, [items, sortConfig]);
 
-  // Rəng kodunu rgba-ya çevir
   const getRgbaColor = (hex, opacity = 1) => {
     if (!hex) return null;
     const hexClean = hex.replace("#", "");
@@ -106,34 +104,58 @@ export function ComplexTable({ items = [], loading, onEdit, onDelete, onView }) 
           <table className="w-full min-w-[1200px] table-auto">
             <thead>
               <tr className="bg-blue-gray-50 dark:bg-gray-900/40">
-                <th 
+                <th className="p-4 text-center cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors" onClick={() => handleSort("id")}>
+                  <div className="flex items-center gap-2 justify-center">
+                    <Typography className="text-sm font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                      ID
+                    </Typography>
+                    <div className="flex flex-col">
+                      <div className="flex flex-col">
+                        <ChevronUpIcon
+                          className={`h-3 w-3 ${sortConfig?.key === "id" && sortConfig?.direction === "asc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                            }`}
+                        />
+                      </div>
+                      <div className="flex flex-col">
+                        <ChevronDownIcon
+                          className={`h-3 w-3 -mt-1 ${sortConfig?.key === "id" && sortConfig?.direction === "desc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                            }`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </th>
+                <th
                   className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
                   onClick={() => handleSort("name")}
                 >
+
                   <div className="flex items-center gap-2 justify-center">
                     <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
                       Ad
                     </Typography>
                     <div className="flex flex-col">
                       <ChevronUpIcon
-                        className={`h-3 w-3 ${
-                          sortConfig?.key === "name" && sortConfig?.direction === "asc"
-                            ? "text-blue-600 dark:text-blue-400"
-                            : "text-blue-gray-300 dark:text-gray-600"
-                        }`}
+                        className={`h-3 w-3 ${sortConfig?.key === "name" && sortConfig?.direction === "asc"
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-blue-gray-300 dark:text-gray-600"
+                          }`}
                       />
                       <ChevronDownIcon
-                        className={`h-3 w-3 -mt-1 ${
-                          sortConfig?.key === "name" && sortConfig?.direction === "desc"
-                            ? "text-blue-600 dark:text-blue-400"
-                            : "text-blue-gray-300 dark:text-gray-600"
-                        }`}
+                        className={`h-3 w-3 -mt-1 ${sortConfig?.key === "name" && sortConfig?.direction === "desc"
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-blue-gray-300 dark:text-gray-600"
+                          }`}
                       />
                     </div>
                   </div>
                 </th>
 
-                <th 
+                <th
                   className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
                   onClick={() => handleSort("mtk")}
                 >
@@ -143,24 +165,22 @@ export function ComplexTable({ items = [], loading, onEdit, onDelete, onView }) 
                     </Typography>
                     <div className="flex flex-col">
                       <ChevronUpIcon
-                        className={`h-3 w-3 ${
-                          sortConfig?.key === "mtk" && sortConfig?.direction === "asc"
-                            ? "text-blue-600 dark:text-blue-400"
-                            : "text-blue-gray-300 dark:text-gray-600"
-                        }`}
+                        className={`h-3 w-3 ${sortConfig?.key === "mtk" && sortConfig?.direction === "asc"
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-blue-gray-300 dark:text-gray-600"
+                          }`}
                       />
                       <ChevronDownIcon
-                        className={`h-3 w-3 -mt-1 ${
-                          sortConfig?.key === "mtk" && sortConfig?.direction === "desc"
-                            ? "text-blue-600 dark:text-blue-400"
-                            : "text-blue-gray-300 dark:text-gray-600"
-                        }`}
+                        className={`h-3 w-3 -mt-1 ${sortConfig?.key === "mtk" && sortConfig?.direction === "desc"
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-blue-gray-300 dark:text-gray-600"
+                          }`}
                       />
                     </div>
                   </div>
                 </th>
 
-                <th 
+                <th
                   className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
                   onClick={() => handleSort("address")}
                 >
@@ -170,24 +190,22 @@ export function ComplexTable({ items = [], loading, onEdit, onDelete, onView }) 
                     </Typography>
                     <div className="flex flex-col">
                       <ChevronUpIcon
-                        className={`h-3 w-3 ${
-                          sortConfig?.key === "address" && sortConfig?.direction === "asc"
-                            ? "text-blue-600 dark:text-blue-400"
-                            : "text-blue-gray-300 dark:text-gray-600"
-                        }`}
+                        className={`h-3 w-3 ${sortConfig?.key === "address" && sortConfig?.direction === "asc"
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-blue-gray-300 dark:text-gray-600"
+                          }`}
                       />
                       <ChevronDownIcon
-                        className={`h-3 w-3 -mt-1 ${
-                          sortConfig?.key === "address" && sortConfig?.direction === "desc"
-                            ? "text-blue-600 dark:text-blue-400"
-                            : "text-blue-gray-300 dark:text-gray-600"
-                        }`}
+                        className={`h-3 w-3 -mt-1 ${sortConfig?.key === "address" && sortConfig?.direction === "desc"
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-blue-gray-300 dark:text-gray-600"
+                          }`}
                       />
                     </div>
                   </div>
                 </th>
 
-                <th 
+                <th
                   className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
                   onClick={() => handleSort("status")}
                 >
@@ -197,24 +215,22 @@ export function ComplexTable({ items = [], loading, onEdit, onDelete, onView }) 
                     </Typography>
                     <div className="flex flex-col">
                       <ChevronUpIcon
-                        className={`h-3 w-3 ${
-                          sortConfig?.key === "status" && sortConfig?.direction === "asc"
-                            ? "text-blue-600 dark:text-blue-400"
-                            : "text-blue-gray-300 dark:text-gray-600"
-                        }`}
+                        className={`h-3 w-3 ${sortConfig?.key === "status" && sortConfig?.direction === "asc"
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-blue-gray-300 dark:text-gray-600"
+                          }`}
                       />
                       <ChevronDownIcon
-                        className={`h-3 w-3 -mt-1 ${
-                          sortConfig?.key === "status" && sortConfig?.direction === "desc"
-                            ? "text-blue-600 dark:text-blue-400"
-                            : "text-blue-gray-300 dark:text-gray-600"
-                        }`}
+                        className={`h-3 w-3 -mt-1 ${sortConfig?.key === "status" && sortConfig?.direction === "desc"
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-blue-gray-300 dark:text-gray-600"
+                          }`}
                       />
                     </div>
                   </div>
                 </th>
 
-                <th 
+                <th
                   className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
                   onClick={() => handleSort("buildings")}
                 >
@@ -224,25 +240,23 @@ export function ComplexTable({ items = [], loading, onEdit, onDelete, onView }) 
                     </Typography>
                     <div className="flex flex-col">
                       <ChevronUpIcon
-                        className={`h-3 w-3 ${
-                          sortConfig?.key === "buildings" && sortConfig?.direction === "asc"
-                            ? "text-blue-600 dark:text-blue-400"
-                            : "text-blue-gray-300 dark:text-gray-600"
-                        }`}
+                        className={`h-3 w-3 ${sortConfig?.key === "buildings" && sortConfig?.direction === "asc"
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-blue-gray-300 dark:text-gray-600"
+                          }`}
                       />
                       <ChevronDownIcon
-                        className={`h-3 w-3 -mt-1 ${
-                          sortConfig?.key === "buildings" && sortConfig?.direction === "desc"
-                            ? "text-blue-600 dark:text-blue-400"
-                            : "text-blue-gray-300 dark:text-gray-600"
-                        }`}
+                        className={`h-3 w-3 -mt-1 ${sortConfig?.key === "buildings" && sortConfig?.direction === "desc"
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-blue-gray-300 dark:text-gray-600"
+                          }`}
                       />
                     </div>
                   </div>
                 </th>
 
-                <th className="p-4 text-right">
-                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                <th className="p-4 text-center">
+                  <Typography className="text-sm font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
                     Əməliyyat
                   </Typography>
                 </th>
@@ -264,8 +278,7 @@ export function ComplexTable({ items = [], loading, onEdit, onDelete, onView }) 
                 sortedItems.map((x) => {
                   const isSelected = String(state.complexId || "") === String(x.id);
                   const mtkColorCode = x?.bind_mtk?.meta?.color_code || colorCode;
-                  
-                  // Rəng kodunu rgba-ya çevir (15% opacity)
+
                   const getHoverColor = (hex) => {
                     if (!hex) return null;
                     const hexClean = hex.replace("#", "");
@@ -274,7 +287,7 @@ export function ComplexTable({ items = [], loading, onEdit, onDelete, onView }) 
                     const b = parseInt(hexClean.substring(4, 6), 16);
                     return `rgba(${r}, ${g}, ${b}, 0.15)`;
                   };
-                  
+
                   // Rəng kodunu rgba-ya çevir (25% opacity)
                   const getSelectedColor = (hex) => {
                     if (!hex) return null;
@@ -293,9 +306,8 @@ export function ComplexTable({ items = [], loading, onEdit, onDelete, onView }) 
                   return (
                     <tr
                       key={x.id}
-                      className={`border-b border-blue-gray-50 dark:border-gray-700 cursor-pointer transition-colors ${
-                        !mtkColorCode && isSelected ? defaultSelected : ""
-                      }`}
+                      className={`border-b border-blue-gray-50 dark:border-gray-700 cursor-pointer transition-colors ${!mtkColorCode && isSelected ? defaultSelected : ""
+                        }`}
                       style={{
                         ...(selectedColor && isSelected && {
                           backgroundColor: selectedColor,
@@ -319,10 +331,12 @@ export function ComplexTable({ items = [], loading, onEdit, onDelete, onView }) 
                       title="Kompleks seç (scope)"
                     >
                       <td className="p-4 text-center">
+                        <Typography className="text-base font-bold text-blue-gray-700 dark:text-gray-200">{x.id}</Typography>
+                      </td>
+                      <td className="p-4 text-center">
                         <Typography className="text-sm font-medium text-blue-gray-800 dark:text-white">
                           {x.name}
                         </Typography>
-                        <Typography className="text-xs text-blue-gray-500 dark:text-gray-400">ID: {x.id}</Typography>
                       </td>
 
                       <td className="p-4 text-center">
@@ -340,13 +354,12 @@ export function ComplexTable({ items = [], loading, onEdit, onDelete, onView }) 
                       <td className="p-4 text-center items-center justify-center">
                         <div className="flex items-center justify-center">
                           <span
-                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                              x.status === "active" || x.status === "Active"
-                                ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                                : x.status === "inactive" || x.status === "Inactive"
+                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${x.status === "active" || x.status === "Active"
+                              ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                              : x.status === "inactive" || x.status === "Inactive"
                                 ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
                                 : "bg-blue-gray-100 text-blue-gray-800 dark:bg-gray-700 dark:text-gray-300"
-                            }`}
+                              }`}
                           >
                             {x.status || "—"}
                           </span>

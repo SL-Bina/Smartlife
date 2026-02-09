@@ -5,7 +5,7 @@ import { CustomSelect } from "@/components/ui/CustomSelect";
 import { CustomButton } from "@/components/ui/CustomButton";
 import { CustomCard, CardBody } from "@/components/ui/CustomCard";
 import { CustomTypography } from "@/components/ui/CustomTypography";
-import { useManagement } from "@/context/ManagementContext";
+import { useManagementEnhanced } from "@/context";
 import {
   RectangleStackIcon,
   XMarkIcon,
@@ -24,7 +24,7 @@ export function BlocksFormModal({
   loadingComplexes = false,
   loadingBuildings = false,
 }) {
-  const { state } = useManagement();
+  const { state } = useManagementEnhanced();
   const [saving, setSaving] = useState(false);
   const [filteredComplexes, setFilteredComplexes] = useState([]);
   const [filteredBuildings, setFilteredBuildings] = useState([]);

@@ -7,7 +7,7 @@ import { useMaterialTailwindController, setOpenSidenav } from "@/context";
 import { useTranslation } from "react-i18next";
 import { SidenavSubMenuItem } from "./SidenavSubMenuItem";
 
-export function SidenavMenuItem({ page, layout, routes, openMenus, setOpenMenus, collapsed = false, flatMenu = false, expandAll = false, mtkColorCode = null }) {
+export function SidenavMenuItem({ page, layout, routes, openMenus, setOpenMenus, collapsed = false, flatMenu = false, expandAll = false, mtkColorCode = null, isLowHeight = false }) {
   
   // Rəng kodunu rgba-ya çevir
   const getRgbaColor = (hex, opacity = 1) => {
@@ -162,7 +162,7 @@ export function SidenavMenuItem({ page, layout, routes, openMenus, setOpenMenus,
             }}
             className={`w-full flex items-center ${collapsed ? "justify-center" : "justify-between"} gap-2 xl:gap-3 ${
               collapsed ? "px-1 xl:px-1" : "px-2 xl:px-3"
-            } py-2 xl:py-2.5 rounded-lg xl:rounded-xl transition-all duration-200 group ${
+            } ${isLowHeight ? "py-1.5 xl:py-2" : "py-2 xl:py-2.5"} rounded-lg xl:rounded-xl transition-all duration-200 group ${
               isParentActive
                 ? mtkColorCode ? "text-white" : "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-500/30"
                 : isOpen
@@ -254,6 +254,7 @@ export function SidenavMenuItem({ page, layout, routes, openMenus, setOpenMenus,
                         layout={layout}
                         isParentPath={isParentPath}
                         mtkColorCode={mtkColorCode}
+                        isLowHeight={isLowHeight}
                       />
                     );
                   })}
@@ -306,7 +307,7 @@ export function SidenavMenuItem({ page, layout, routes, openMenus, setOpenMenus,
               <div
                 className={`flex items-center ${collapsed ? "justify-center" : ""} gap-2 xl:gap-3 ${
                   collapsed ? "px-1 xl:px-1" : "px-2 xl:px-3"
-                } py-2 xl:py-2.5 rounded-lg xl:rounded-xl transition-all duration-200 group ${
+                } ${isLowHeight ? "py-1.5 xl:py-2" : "py-2 xl:py-2.5"} rounded-lg xl:rounded-xl transition-all duration-200 group ${
                   shouldBeActive
                     ? mtkColorCode ? "text-white" : "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-500/30"
                     : "text-gray-700 dark:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-800/30"

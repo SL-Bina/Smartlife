@@ -8,7 +8,7 @@ import { CustomCard, CardBody } from "@/components/ui/CustomCard";
 import { CustomTypography } from "@/components/ui/CustomTypography";
 import AdvancedColorPicker from "@/components/ui/AdvancedColorPicker";
 import MapPicker from "@/components/ui/MapPicker";
-import { useManagement } from "@/context/ManagementContext";
+import { useManagementEnhanced } from "@/context";
 import { useMtkColor } from "@/context";
 import {
   BuildingOffice2Icon,
@@ -55,7 +55,7 @@ function LocationMarker({ position, onPositionChange }) {
 }
 
 export function ComplexFormModal({ open, mode = "create", onClose, form, onSubmit, mtks = [] }) {
-  const { state, actions } = useManagement();
+  const { state, actions } = useManagementEnhanced();
   const { colorCode, getRgba, defaultColor } = useMtkColor();
   const [saving, setSaving] = useState(false);
   const [showMap, setShowMap] = useState(false);

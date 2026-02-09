@@ -2,13 +2,13 @@ import React, { useState, useMemo } from "react";
 import { Card, CardBody, Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
 import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
-import { useManagement } from "@/context/ManagementContext";
+import { useManagementEnhanced } from "@/context";
 import { useMtkColor } from "@/context";
 import { BlocksTableSkeleton } from "./BlocksTableSkeleton";
 
 export function BlocksTable({ items = [], loading, onEdit, onDelete, onView }) {
   const navigate = useNavigate();
-  const { state, actions } = useManagement();
+  const { state, actions } = useManagementEnhanced();
   const { colorCode, getRgba } = useMtkColor();
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 

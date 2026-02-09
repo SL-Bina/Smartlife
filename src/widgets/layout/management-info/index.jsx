@@ -6,12 +6,12 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
 } from "@heroicons/react/24/outline";
-import { useManagement, useMtkColor } from "@/context";
+import { useManagementEnhanced, useMtkColor } from "@/context";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
 
 export function ManagementInfo() {
-  const { state } = useManagement();
+  const { state } = useManagementEnhanced();
   const { colorCode, getRgba } = useMtkColor();
   const location = useLocation();
   const [isExpanded, setIsExpanded] = useState(true);

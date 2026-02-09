@@ -4,7 +4,7 @@ import { useMtkColor } from "@/context";
 import { SidenavSection } from "./SidenavSection";
 import { SidenavMenuItem } from "./SidenavMenuItem";
 
-export function SidenavMenu({ routes, openMenus, setOpenMenus, collapsed = false, flatMenu = false, expandAll = false }) {
+export function SidenavMenu({ routes, openMenus, setOpenMenus, collapsed = false, flatMenu = false, expandAll = false, isLowHeight = false }) {
   const location = useLocation();
   
   // MTK rəng kodunu al (localStorage-dən də oxuyur)
@@ -50,15 +50,15 @@ export function SidenavMenu({ routes, openMenus, setOpenMenus, collapsed = false
   }, [location.pathname, routes, expandAll]);
 
   return (
-    <div className={`flex-1 py-3 xl:py-4 ${
+    <div className={`flex-1 min-h-0 ${isLowHeight ? "py-2 xl:py-2.5" : "py-3 xl:py-4"} ${
       collapsed 
         ? "px-1 xl:px-1 overflow-hidden" 
         : "px-2 xl:px-3 overflow-y-auto overflow-x-hidden custom-sidenav-scrollbar"
     }`}>
       {routes.map(({ layout, title, pages }, key) => (
-        <div key={key} className={collapsed ? "mb-2 xl:mb-3" : "mb-4 xl:mb-6"}>
+        <div key={key} className={collapsed ? "mb-2 xl:mb-3" : isLowHeight ? "mb-2 xl:mb-3" : "mb-4 xl:mb-6"}>
           {!collapsed && <SidenavSection title={title} />}
-          <ul className={collapsed ? "space-y-1" : "space-y-0.5 xl:space-y-1"}>
+          <ul className={collapsed ? "space-y-1" : isLowHeight ? "space-y-0.5" : "space-y-0.5 xl:space-y-1"}>
             {pages
               .filter((page) => {
                 // hideInSidenav yoxlaması
@@ -84,6 +84,7 @@ export function SidenavMenu({ routes, openMenus, setOpenMenus, collapsed = false
                   flatMenu={flatMenu}
                   expandAll={expandAll}
                   mtkColorCode={mtkColorCode}
+                  isLowHeight={isLowHeight}
                 />
               ))}
           </ul>

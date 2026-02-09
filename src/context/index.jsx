@@ -66,6 +66,36 @@ export function reducer(state, action) {
     case "SIDENAV_POSITION": {
       return { ...state, sidenavPosition: action.value };
     }
+    case "NAVBAR_COLOR": {
+      return { ...state, navbarColor: action.value };
+    }
+    case "NAVBAR_HEIGHT": {
+      return { ...state, navbarHeight: action.value };
+    }
+    case "NAVBAR_STYLE": {
+      return { ...state, navbarStyle: action.value };
+    }
+    case "NAVBAR_SHADOW": {
+      return { ...state, navbarShadow: action.value };
+    }
+    case "NAVBAR_BORDER": {
+      return { ...state, navbarBorder: action.value };
+    }
+    case "NAVBAR_BLUR": {
+      return { ...state, navbarBlur: action.value };
+    }
+    case "NAVBAR_TRANSPARENCY": {
+      return { ...state, navbarTransparency: action.value };
+    }
+    case "NAVBAR_POSITION": {
+      return { ...state, navbarPosition: action.value };
+    }
+    case "NAVBAR_ANIMATIONS": {
+      return { ...state, navbarAnimations: action.value };
+    }
+    case "NAVBAR_HOVER_EFFECTS": {
+      return { ...state, navbarHoverEffects: action.value };
+    }
     default: {
       throw new Error(`Unhandled action type: ${action.type}`);
     }
@@ -171,6 +201,22 @@ export function MaterialTailwindControllerProvider({ children }) {
     return "left";
   };
 
+  const getInitialNavbarValue = (key, defaultValue) => {
+    if (typeof window !== "undefined") {
+      const cookieValue = getCookie(key);
+      if (cookieValue !== null) {
+        return cookieValue;
+      }
+      const saved = localStorage.getItem(key);
+      if (saved !== null) {
+        setCookie(key, saved);
+        localStorage.removeItem(key);
+        return saved;
+      }
+    }
+    return defaultValue;
+  };
+
   const initialState = {
     openSidenav: false,
     sidenavColor: "dark",
@@ -184,6 +230,16 @@ export function MaterialTailwindControllerProvider({ children }) {
     sidenavExpandAll: getInitialSidenavExpandAll(),
     sidenavSize: getInitialSidenavSize(),
     sidenavPosition: getInitialSidenavPosition(),
+    navbarColor: getInitialNavbarValue("navbarColor", "default"),
+    navbarHeight: getInitialNavbarValue("navbarHeight", "normal"),
+    navbarStyle: getInitialNavbarValue("navbarStyle", "modern"),
+    navbarShadow: getInitialNavbarValue("navbarShadow", "medium"),
+    navbarBorder: getInitialNavbarValue("navbarBorder", "enabled"),
+    navbarBlur: getInitialNavbarValue("navbarBlur", "enabled"),
+    navbarTransparency: getInitialNavbarValue("navbarTransparency", "95"),
+    navbarPosition: getInitialNavbarValue("navbarPosition", "top"),
+    navbarAnimations: getInitialNavbarValue("navbarAnimations", "enabled"),
+    navbarHoverEffects: getInitialNavbarValue("navbarHoverEffects", "enabled"),
   };
 
   const [controller, dispatch] = React.useReducer(reducer, initialState);
@@ -216,6 +272,46 @@ export function MaterialTailwindControllerProvider({ children }) {
   React.useEffect(() => {
     setCookie("sidenavPosition", controller.sidenavPosition);
   }, [controller.sidenavPosition]);
+
+  React.useEffect(() => {
+    setCookie("navbarColor", controller.navbarColor);
+  }, [controller.navbarColor]);
+
+  React.useEffect(() => {
+    setCookie("navbarHeight", controller.navbarHeight);
+  }, [controller.navbarHeight]);
+
+  React.useEffect(() => {
+    setCookie("navbarStyle", controller.navbarStyle);
+  }, [controller.navbarStyle]);
+
+  React.useEffect(() => {
+    setCookie("navbarShadow", controller.navbarShadow);
+  }, [controller.navbarShadow]);
+
+  React.useEffect(() => {
+    setCookie("navbarBorder", controller.navbarBorder);
+  }, [controller.navbarBorder]);
+
+  React.useEffect(() => {
+    setCookie("navbarBlur", controller.navbarBlur);
+  }, [controller.navbarBlur]);
+
+  React.useEffect(() => {
+    setCookie("navbarTransparency", controller.navbarTransparency);
+  }, [controller.navbarTransparency]);
+
+  React.useEffect(() => {
+    setCookie("navbarPosition", controller.navbarPosition);
+  }, [controller.navbarPosition]);
+
+  React.useEffect(() => {
+    setCookie("navbarAnimations", controller.navbarAnimations);
+  }, [controller.navbarAnimations]);
+
+  React.useEffect(() => {
+    setCookie("navbarHoverEffects", controller.navbarHoverEffects);
+  }, [controller.navbarHoverEffects]);
 
   const value = React.useMemo(
     () => [controller, dispatch],
@@ -271,5 +367,26 @@ export const setSidenavSize = (dispatch, value) =>
   dispatch({ type: "SIDENAV_SIZE", value });
 export const setSidenavPosition = (dispatch, value) =>
   dispatch({ type: "SIDENAV_POSITION", value });
+export const setNavbarColor = (dispatch, value) =>
+  dispatch({ type: "NAVBAR_COLOR", value });
+export const setNavbarHeight = (dispatch, value) =>
+  dispatch({ type: "NAVBAR_HEIGHT", value });
+export const setNavbarStyle = (dispatch, value) =>
+  dispatch({ type: "NAVBAR_STYLE", value });
+export const setNavbarShadow = (dispatch, value) =>
+  dispatch({ type: "NAVBAR_SHADOW", value });
+export const setNavbarBorder = (dispatch, value) =>
+  dispatch({ type: "NAVBAR_BORDER", value });
+export const setNavbarBlur = (dispatch, value) =>
+  dispatch({ type: "NAVBAR_BLUR", value });
+export const setNavbarTransparency = (dispatch, value) =>
+  dispatch({ type: "NAVBAR_TRANSPARENCY", value });
+export const setNavbarPosition = (dispatch, value) =>
+  dispatch({ type: "NAVBAR_POSITION", value });
+export const setNavbarAnimations = (dispatch, value) =>
+  dispatch({ type: "NAVBAR_ANIMATIONS", value });
+export const setNavbarHoverEffects = (dispatch, value) =>
+  dispatch({ type: "NAVBAR_HOVER_EFFECTS", value });
 
-export { ManagementProvider, useManagement, colorUtils, useMtkColor } from "./ManagementContext";
+export { ManagementProvider, useManagement, colorUtils } from "./ManagementContext";
+export { ManagementProviderEnhanced, useManagementEnhanced, colorUtils as colorUtilsEnhanced, useMtkColor } from "./ManagementContextEnhanced";

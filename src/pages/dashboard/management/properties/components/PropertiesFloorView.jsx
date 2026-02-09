@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, CardBody, Typography, Button } from "@material-tailwind/react";
-import { useManagement } from "@/context/ManagementContext";
+import { useManagementEnhanced } from "@/context";
 import { useNavigate } from "react-router-dom";
 import {
   CurrencyDollarIcon,
@@ -11,7 +11,7 @@ import {
 
 export function PropertiesFloorView({ organizedData, onEdit, onView, onDelete, loading = false }) {
   const navigate = useNavigate();
-  const { state, actions } = useManagement();
+  const { state, actions } = useManagementEnhanced();
 
   const openFeePage = (apartment) => {
     navigate(`/dashboard/management/service-fee/${apartment.id}`);

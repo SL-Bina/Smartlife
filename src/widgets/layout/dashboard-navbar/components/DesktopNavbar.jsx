@@ -9,12 +9,13 @@ import {
   ExclamationTriangleIcon,
   MapPinIcon,
 } from "@heroicons/react/24/outline";
-import { useMaterialTailwindController, setOpenSidenav } from "@/context";
+import { useMaterialTailwindController, setOpenSidenav, useManagementEnhanced, useMtkColor } from "@/context";
 import { NavbarBreadcrumbs } from "./NavbarBreadcrumbs";
 import { DarkModeToggle } from "./DarkModeToggle";
 import { LanguageSelector } from "./LanguageSelector";
 import { NotificationsMenu } from "./NotificationsMenu";
 import { UserMenu } from "./UserMenu";
+import { BuildingOfficeIcon } from "@heroicons/react/24/outline";
 
 /* --------------------------- Weather Pill (center, dynamic) --------------------------- */
 /**
@@ -99,6 +100,17 @@ function WeatherPillCenter() {
     };
   };
 
+  // Fallback function to get approximate city name
+  const getCityNameFromCoordinates = React.useCallback((lat, lon) => {
+    // Approximate city detection based on coordinates
+    // This is a simple fallback - you can enhance it with a local database
+    if (lat >= 40.0 && lat <= 41.0 && lon >= 49.0 && lon <= 50.0) {
+      return "Baku, Azerbaijan";
+    }
+    // Add more regions as needed
+    return "Nearby";
+  }, []);
+
   const fetchWeather = React.useCallback(async (lat, lon) => {
     abortRef.current?.abort?.();
     const controller = new AbortController();
@@ -121,22 +133,40 @@ function WeatherPillCenter() {
   }, []);
 
   const fetchPlace = React.useCallback(async (lat, lon) => {
-    const url =
-      `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${encodeURIComponent(lat)}` +
-      `&longitude=${encodeURIComponent(lon)}&language=en`;
+    try {
+      // Try using CORS proxy or direct API call
+      const url =
+        `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${encodeURIComponent(lat)}` +
+        `&longitude=${encodeURIComponent(lon)}&language=en`;
 
-    const res = await fetch(url);
-    if (!res.ok) return "Nearby";
-    const data = await res.json();
+      const res = await fetch(url, {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
 
-    const best = data?.results?.[0];
-    const name = best?.name;
-    const admin = best?.admin1 || best?.admin2;
-    const country = best?.country;
+      if (!res.ok) {
+        // If API fails, try to get city name from coordinates using alternative method
+        return getCityNameFromCoordinates(lat, lon);
+      }
 
-    // Short pretty label
-    return [name, admin, country].filter(Boolean).join(", ") || "Nearby";
-  }, []);
+      const data = await res.json();
+
+      const best = data?.results?.[0];
+      const name = best?.name;
+      const admin = best?.admin1 || best?.admin2;
+      const country = best?.country;
+
+      // Short pretty label
+      return [name, admin, country].filter(Boolean).join(", ") || "Nearby";
+    } catch (error) {
+      // If CORS or network error, use fallback
+      console.warn("Geocoding API error:", error);
+      return getCityNameFromCoordinates(lat, lon);
+    }
+  }, [getCityNameFromCoordinates]);
 
   React.useEffect(() => {
     let mounted = true;
@@ -159,10 +189,12 @@ function WeatherPillCenter() {
             const lat = pos.coords.latitude;
             const lon = pos.coords.longitude;
 
-            const [w, place] = await Promise.all([
-              fetchWeather(lat, lon),
-              fetchPlace(lat, lon).catch(() => "Nearby"),
-            ]);
+            // Fetch weather first (this usually works)
+            const w = await fetchWeather(lat, lon);
+            
+            // Try to get place name, but don't fail if it doesn't work
+            // fetchPlace already has error handling and fallback
+            const place = await fetchPlace(lat, lon);
 
             if (!mounted) return;
 
@@ -213,63 +245,59 @@ function WeatherPillCenter() {
   const WIcon = ui.Icon;
 
   return (
-    <div className="hidden md:flex items-center justify-center w-full">
-      {/* Center pill: longer */}
+    <div className="hidden lg:flex items-center justify-center w-full">
+      {/* Center pill: responsive */}
       <div
         className={`
           relative
-          w-[520px] lg:w-[620px] xl:w-[720px]
-          px-5 py-3
-          rounded-[22px]
+          w-full max-w-[420px] lg:max-w-[500px] xl:max-w-[560px] 2xl:max-w-[600px]
+          px-3 lg:px-3.5 xl:px-4
+          py-2 lg:py-2.5
+          rounded-xl lg:rounded-xl xl:rounded-2xl
           border border-white/10 dark:border-white/10
-          shadow-[0_18px_55px_rgba(0,0,0,.22)]
+          shadow-[0_8px_25px_rgba(0,0,0,.18)]
           overflow-hidden
           ${ui.pill}
           text-white
         `}
         title="Weather (current location)"
       >
-        <div className="flex items-center gap-3">
-          <div className="rounded-2xl bg-white/10 border border-white/10 p-2.5">
+        <div className="flex items-center gap-2 lg:gap-2.5">
+          <div className="rounded-lg lg:rounded-xl bg-white/10 border border-white/10 p-1.5 lg:p-2 flex-shrink-0">
             {state.error ? (
-              <ExclamationTriangleIcon className="h-6 w-6 text-white/90" />
+              <ExclamationTriangleIcon className="h-4 w-4 lg:h-5 lg:w-5 text-white/90" />
             ) : (
-              <WIcon className="h-6 w-6 text-white/90" />
+              <WIcon className="h-4 w-4 lg:h-5 lg:w-5 text-white/90" />
             )}
           </div>
 
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5 text-white/80">
-              <MapPinIcon className="h-4 w-4 text-white/70" />
-              <span className="text-[12px] font-medium truncate">
+            <div className="flex items-center gap-1 lg:gap-1.5 text-white/80">
+              <MapPinIcon className="h-3 w-3 lg:h-3.5 lg:w-3.5 text-white/70 flex-shrink-0" />
+              <span className="text-[10px] lg:text-[11px] font-medium truncate">
                 {state.loading ? "Finding location…" : state.place}
               </span>
             </div>
 
-            <div className="flex items-end justify-between gap-3">
+            <div className="flex items-end justify-between gap-2 lg:gap-2.5 mt-0.5">
               {state.loading ? (
-                <Typography className="text-base font-semibold text-white/90">
+                <Typography className="text-xs lg:text-sm font-semibold text-white/90">
                   Loading…
                 </Typography>
               ) : state.error ? (
-                <Typography className="text-base font-semibold text-white/90">
+                <Typography className="text-xs lg:text-sm font-semibold text-white/90">
                   {state.error}
                 </Typography>
               ) : (
                 <>
-                  <div className="flex items-end gap-3">
-                    <Typography className="text-2xl font-bold leading-none text-white">
+                  <div className="flex items-end gap-1.5 lg:gap-2">
+                    <Typography className="text-lg lg:text-xl font-bold leading-none text-white">
                       {state.temp ?? "—"}°C
                     </Typography>
-                    <Typography className="text-[13px] font-semibold text-white/80">
+                    <Typography className="text-[11px] lg:text-[12px] font-semibold text-white/80">
                       {ui.label}
                     </Typography>
                   </div>
-
-                  {/* subtle hint (optional) */}
-                  <Typography className="text-[11px] text-white/65">
-                    Current weather
-                  </Typography>
                 </>
               )}
             </div>
@@ -277,53 +305,117 @@ function WeatherPillCenter() {
         </div>
 
         {/* gloss */}
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(800px_220px_at_25%_10%,rgba(255,255,255,.22),transparent_55%)]" />
-        <div className="pointer-events-none absolute -bottom-10 left-1/2 h-24 w-72 -translate-x-1/2 rounded-full bg-white/10 blur-3xl" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(600px_180px_at_25%_10%,rgba(255,255,255,.18),transparent_55%)]" />
+        <div className="pointer-events-none absolute -bottom-8 left-1/2 h-20 w-60 -translate-x-1/2 rounded-full bg-white/8 blur-2xl" />
       </div>
     </div>
   );
 }
 
 /* ------------------------------ Desktop Navbar ------------------------------ */
-export function DesktopNavbar({ pathParts, pageTitle, fixedNavbar }) {
+export function DesktopNavbar({ pathParts, pageTitle, fixedNavbar, navbarHoverEffects }) {
   const [controller, dispatch] = useMaterialTailwindController();
   const { openSidenav } = controller;
+  const { mtk } = useManagementEnhanced();
+  const { colorCode } = useMtkColor();
+  
+  // MTK rəng kodunu al (mtk-dan və ya context-dən)
+  const mtkColorCode = mtk?.meta?.color_code || colorCode;
+  
+  // Rəng kodunu rgba-ya çevir
+  const getRgbaColor = (hex, opacity = 1) => {
+    if (!hex) return null;
+    const hexClean = hex.replace("#", "");
+    const r = parseInt(hexClean.substring(0, 2), 16);
+    const g = parseInt(hexClean.substring(2, 4), 16);
+    const b = parseInt(hexClean.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
+
+  const getHoverClasses = () => {
+    if (navbarHoverEffects === "disabled") return "";
+    return "hover:scale-110 hover:shadow-lg hover:brightness-110 transition-all duration-300 ease-out";
+  };
 
   return (
-    <div className="hidden md:flex items-center justify-between gap-2 lg:gap-4 w-full">
+    <div className="hidden md:flex items-center justify-between gap-2 lg:gap-3 xl:gap-4 w-full">
       {/* LEFT */}
-      <div className="flex items-center gap-2 lg:gap-3 flex-1 min-w-0">
+      <div className="flex items-center gap-2 md:gap-2.5 lg:gap-3 flex-1 min-w-0">
         <IconButton
           variant="text"
           color="blue-gray"
-          className="grid xl:hidden dark:text-gray-300 hover:bg-gray-200/70 dark:hover:bg-gray-700/70 flex-shrink-0 rounded-xl transition-all"
+          className={`grid xl:hidden dark:text-gray-300 flex-shrink-0 rounded-xl transition-all ${
+            navbarHoverEffects === "enabled" 
+              ? "hover:bg-gray-200/70 dark:hover:bg-gray-700/70 hover:scale-110 hover:rotate-3 hover:shadow-lg active:scale-95" 
+              : "hover:bg-gray-200/70 dark:hover:bg-gray-700/70 active:scale-95"
+          }`}
           onClick={() => setOpenSidenav(dispatch, !openSidenav)}
           size="sm"
         >
-          <div className="w-8 h-8 rounded-lg bg-gray-200/50 dark:bg-gray-700/50 flex items-center justify-center">
-            <Bars3Icon strokeWidth={3} className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+          <div className={`w-7 h-7 md:w-8 md:h-8 rounded-lg bg-gray-200/50 dark:bg-gray-700/50 flex items-center justify-center ${
+            navbarHoverEffects === "enabled" ? "transition-transform duration-200" : ""
+          }`}>
+            <Bars3Icon strokeWidth={3} className="h-3.5 w-3.5 md:h-4 md:w-4 text-gray-700 dark:text-gray-300" />
           </div>
         </IconButton>
 
+        {/* MTK Badge */}
+        {mtk && (
+          <div 
+            className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border flex-shrink-0"
+            style={{
+              background: mtkColorCode 
+                ? `linear-gradient(to right, ${getRgbaColor(mtkColorCode, 0.15)}, ${getRgbaColor(mtkColorCode, 0.1)})`
+                : "linear-gradient(to right, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.1))",
+              borderColor: mtkColorCode 
+                ? getRgbaColor(mtkColorCode, 0.3)
+                : "rgba(59, 130, 246, 0.3)",
+            }}
+          >
+            <BuildingOfficeIcon 
+              className="h-4 w-4 flex-shrink-0"
+              style={{
+                color: mtkColorCode || "#3b82f6"
+              }}
+            />
+            <Typography 
+              variant="small" 
+              className="text-xs font-semibold truncate max-w-[120px] xl:max-w-[160px]"
+              style={{
+                color: mtkColorCode || "#1e40af"
+              }}
+            >
+              {mtk.name}
+            </Typography>
+          </div>
+        )}
+
         <div className="min-w-0 flex-1">
-          <NavbarBreadcrumbs pathParts={pathParts} fixedNavbar={fixedNavbar} />
-          {/* İstəsən title-ni geri qaytar:
-          <Typography variant="h6" className="text-gray-900 dark:text-white text-sm lg:text-base xl:text-lg font-bold truncate">
-            {pageTitle}
-          </Typography>
-          */}
+          <NavbarBreadcrumbs pathParts={pathParts} fixedNavbar={fixedNavbar} navbarHoverEffects={navbarHoverEffects} />
         </div>
       </div>
 
-      {/* <div className="flex items-center justify-center w-[70%] mx-4">
-        <WeatherPillCenter />
+      {/* CENTER - Weather (hidden for now) */}
+      {/* <div className="hidden lg:flex items-center justify-center flex-1 mx-2 xl:mx-4 max-w-[600px]">
+        <div className={`w-full ${getHoverClasses()}`}>
+          <WeatherPillCenter />
+        </div>
       </div> */}
 
-      <div className="flex items-center justify-end gap-1.5 lg:gap-2 flex-shrink-0">
-        <DarkModeToggle />
-        <LanguageSelector />
-        <NotificationsMenu />
-        <UserMenu showButton={true} />
+      {/* RIGHT - Actions */}
+      <div className="flex items-center justify-end gap-1 md:gap-1.5 lg:gap-2 flex-shrink-0">
+        <div className={navbarHoverEffects === "enabled" ? "hover:scale-125 hover:rotate-6 hover:brightness-110 active:scale-100 transition-all duration-300 ease-out cursor-pointer" : "active:scale-95"}>
+          <DarkModeToggle />
+        </div>
+        <div className={navbarHoverEffects === "enabled" ? "hover:scale-125 hover:rotate-6 hover:brightness-110 active:scale-100 transition-all duration-300 ease-out cursor-pointer" : "active:scale-95"}>
+          <LanguageSelector />
+        </div>
+        <div className={navbarHoverEffects === "enabled" ? "hover:scale-125 hover:rotate-6 hover:brightness-110 active:scale-100 transition-all duration-300 ease-out cursor-pointer" : "active:scale-95"}>
+          <NotificationsMenu />
+        </div>
+        <div className={navbarHoverEffects === "enabled" ? "hover:scale-125 hover:rotate-6 hover:brightness-110 active:scale-100 transition-all duration-300 ease-out cursor-pointer" : "active:scale-95"}>
+          <UserMenu showButton={true} />
+        </div>
       </div>
     </div>
   );

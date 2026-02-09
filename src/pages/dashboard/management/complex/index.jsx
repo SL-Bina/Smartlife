@@ -18,7 +18,7 @@ import { useComplexFilters } from "./hooks/useComplexFilters";
 
 import complexAPI from "./api";
 import mtkAPI from "../mtk/api"; // mövcud mtk api-ni istifadə edirik
-import { useManagement } from "@/context/ManagementContext";
+import { useManagementEnhanced } from "@/context";
 import DynamicToast from "@/components/DynamicToast";
 
 export default function ComplexPage() {
@@ -43,7 +43,7 @@ export default function ComplexPage() {
 
 
 
-  const { state, actions } = useManagement();
+  const { state, actions } = useManagementEnhanced();
 
   const filters = useComplexFilters();
 
