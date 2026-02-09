@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { useMaterialTailwindController, setOpenSidenav } from "@/context";
+import { useMtkColor } from "@/context";
 import { motion, AnimatePresence } from "framer-motion";
 import { SidenavHeader } from "./components/SidenavHeader";
 import { SidenavMenu } from "./components/SidenavMenu";
@@ -8,6 +9,10 @@ import { SidenavMenu } from "./components/SidenavMenu";
 export function Sidenav({ brandImg, brandName, routes }) {
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavType, openSidenav, sidenavCollapsed, sidenavFlatMenu, sidenavExpandAll, sidenavSize, sidenavPosition } = controller;
+  
+  // MTK rəng kodunu al (localStorage-dən də oxuyur)
+  const { colorCode } = useMtkColor();
+  const mtkColorCode = colorCode;
 
   // Routes artıq dashboard.jsx-də filter olunub, burada sadəcə istifadə edirik
   const filteredRoutes = routes;
@@ -16,9 +21,38 @@ export function Sidenav({ brandImg, brandName, routes }) {
   const [isMobile, setIsMobile] = React.useState(false);
   const [isHovered, setIsHovered] = React.useState(false);
 
+  // Rəng kodunu rgba-ya çevir
+  const getRgbaColor = (hex, opacity = 1) => {
+    if (!hex) return null;
+    const hexClean = hex.replace("#", "");
+    const r = parseInt(hexClean.substring(0, 2), 16);
+    const g = parseInt(hexClean.substring(2, 4), 16);
+    const b = parseInt(hexClean.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
+
+  // Sidenav background rəngini müəyyən et
+  const getSidenavBackground = () => {
+    if (mtkColorCode && sidenavType === "white") {
+      const color1 = getRgbaColor(mtkColorCode, 0.1);
+      const color2 = getRgbaColor(mtkColorCode, 0.05);
+      return {
+        background: `linear-gradient(to bottom, ${color1}, ${color2}, ${color1})`,
+      };
+    }
+    if (mtkColorCode && sidenavType === "dark") {
+      const color1 = getRgbaColor(mtkColorCode, 0.2);
+      const color2 = getRgbaColor(mtkColorCode, 0.15);
+      return {
+        background: `linear-gradient(to bottom, ${color1}, ${color2}, ${color1})`,
+      };
+    }
+    return {};
+  };
+
   const sidenavTypes = {
-    dark: "bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900",
-    white: "bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900",
+    dark: mtkColorCode ? "" : "bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900",
+    white: mtkColorCode ? "" : "bg-gradient-to-b from-white via-gray-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900",
     transparent: "bg-transparent",
   };
 
@@ -71,9 +105,13 @@ export function Sidenav({ brandImg, brandName, routes }) {
         onMouseLeave={() => { if (!isMobile && sidenavCollapsed) setIsHovered(false); }}
         className={`${sidenavTypes[sidenavType]} fixed inset-y-0 ${sidenavPosition === "right" ? "right-0" : "left-0"} ${
           sidenavCollapsed && isHovered ? "z-[60]" : "z-50"
-        } xl:translate-x-0 flex flex-col backdrop-blur-xl ${sidenavPosition === "right" ? "border-l" : "border-r"} border-gray-200/50 dark:border-gray-700/50 shadow-2xl ${
+        } xl:translate-x-0 flex flex-col backdrop-blur-xl ${sidenavPosition === "right" ? "border-l" : "border-r"} shadow-2xl ${
           sidenavCollapsed && !isHovered ? "xl:overflow-hidden" : "overflow-y-auto"
         }`}
+        style={{
+          ...getSidenavBackground(),
+          borderColor: mtkColorCode ? getRgbaColor(mtkColorCode, 0.3) : undefined,
+        }}
       >
         <SidenavHeader brandName={brandName} collapsed={sidenavCollapsed && !isHovered} />
 

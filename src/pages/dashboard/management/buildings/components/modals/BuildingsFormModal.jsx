@@ -7,6 +7,7 @@ import { CustomButton } from "@/components/ui/CustomButton";
 import { CustomCard, CardBody } from "@/components/ui/CustomCard";
 import { CustomTypography } from "@/components/ui/CustomTypography";
 import { useManagement } from "@/context/ManagementContext";
+import { useMtkColor } from "@/context";
 import {
   BuildingOffice2Icon,
   DocumentTextIcon,
@@ -15,11 +16,16 @@ import {
 
 export function BuildingFormModal({ open, mode = "create", onClose, form, onSubmit, complexes = [], mtks = [], loadingMtks = false }) {
   const { state } = useManagement();
+  const { colorCode, getRgba, defaultColor } = useMtkColor();
   const [saving, setSaving] = useState(false);
   const [filteredComplexes, setFilteredComplexes] = useState([]);
   const isEdit = mode === "edit";
 
   const title = isEdit ? "Bina Redaktə et" : "Yeni Bina yarat";
+  
+  // Default göz yormayan qırmızı ton
+  const defaultRed = "#dc2626";
+  const activeColor = colorCode || defaultColor || defaultRed;
 
   const statusOptions = [
     { value: "active", label: "Aktiv" },
@@ -110,16 +116,26 @@ export function BuildingFormModal({ open, mode = "create", onClose, form, onSubm
   return (
     <>
       <CustomDialog open={!!open} onClose={onClose} size="xl">
-        <DialogHeader className="bg-gradient-to-r from-green-600 to-green-700 text-white rounded-t-lg">
+        <DialogHeader 
+          className="rounded-t-lg transition-colors"
+          style={{
+            background: colorCode 
+              ? `linear-gradient(to right, ${getRgba(0.2)}, ${getRgba(0.15)})` 
+              : `linear-gradient(to right, rgba(220, 38, 38, 0.2), rgba(185, 28, 28, 0.15))`,
+          }}
+        >
           <div className="flex items-center gap-3 flex-1">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <BuildingOffice2Icon className="h-6 w-6" />
+            <div 
+              className="p-2 rounded-lg"
+              style={{ backgroundColor: activeColor }}
+            >
+              <BuildingOffice2Icon className="h-6 w-6 text-white" />
             </div>
             <div>
-              <CustomTypography variant="h5" className="font-bold text-white">
+              <CustomTypography variant="h5" className="font-bold text-gray-900 dark:text-white">
                 {title}
               </CustomTypography>
-              <CustomTypography variant="small" className="text-green-100 font-normal">
+              <CustomTypography variant="small" className="text-gray-600 dark:text-gray-300 font-normal">
                 {isEdit ? "Bina məlumatlarını yeniləyin" : "Yeni bina üçün məlumatları doldurun"}
               </CustomTypography>
             </div>
@@ -128,7 +144,10 @@ export function BuildingFormModal({ open, mode = "create", onClose, form, onSubm
             variant="text"
             size="sm"
             onClick={onClose}
-            className="text-white hover:bg-white/20 rounded-lg p-2"
+            className="text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg p-2"
+            style={{
+              borderColor: activeColor,
+            }}
           >
             <XMarkIcon className="h-5 w-5" />
           </CustomButton>

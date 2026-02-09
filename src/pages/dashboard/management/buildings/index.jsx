@@ -9,9 +9,11 @@ import { BuildingsPagination } from "./components/BuildingsPagination";
 import { BuildingViewModal } from "./components/modals/BuildingsViewModal";
 import { BuildingFormModal } from "./components/modals/BuildingsFormModal";
 import { BuildingDeleteModal } from "./components/modals/BuildingsDeleteModal";
+import { BuildingsFilterModal } from "./components/modals/BuildingsFilterModal";
 
 import { useBuildingsData } from "./hooks/useBuildingsData";
 import { useBuildingForm } from "./hooks/useBuildingsForm";
+import { useBuildingsFilters } from "./hooks/useBuildingsFilters";
 
 import mtkAPI from "../mtk/api";
 import complexAPI from "../complex/api";
@@ -43,17 +45,30 @@ export default function BuildingsPage() {
     setToast({ open: true, type, message, title });
   };
 
+  const filters = useBuildingsFilters();
+
   // Buildings data yalnız MTK və Complex yükləndikdən sonra yüklənir
-  const shouldLoadBuildingsData = !loadingMtks && !loadingComplexes && mtks.length > 0 && complexes.length > 0;
+  // Amma əgər MTK və Complex artıq seçilibsə (məsələn Complex səhifəsindən gələndə), dərhal yüklə
+  const shouldLoadBuildingsData = !loadingMtks && !loadingComplexes && (mtks.length > 0 || state.mtkId) && (complexes.length > 0 || state.complexId);
   
-  const { items, loading, page, lastPage, goToPage, refresh } = useBuildingsData({
+  const { items, loading, page, lastPage, total, itemsPerPage, setItemsPerPage, goToPage, refresh } = useBuildingsData({
     search,
     mtkId: state.mtkId,
     complexId: state.complexId,
     enabled: shouldLoadBuildingsData,
+    filterStatus: filters.filters.status,
+    filterAddress: filters.filters.address,
+    filterEmail: filters.filters.email,
+    filterPhone: filters.filters.phone
   });
 
   const form = useBuildingForm();
+
+  const hasActiveFilters = 
+    (filters.filters.status && filters.filters.status !== "") ||
+    (filters.filters.address && filters.filters.address.trim() !== "") ||
+    (filters.filters.email && filters.filters.email.trim() !== "") ||
+    (filters.filters.phone && filters.filters.phone.trim() !== "");
 
   // MTK - bütün səhifələr
   const loadAllMtks = async () => {
@@ -218,15 +233,24 @@ export default function BuildingsPage() {
     }
   };
 
+  const handleFilterApply = () => {
+    filters.setFilterOpen(false);
+    refresh();
+  };
+
+  const handleFilterClear = () => {
+    filters.clearFilters();
+    refresh();
+  };
+
   return (
-    <div className="p-4">
+    <div className="py-4">
       <div className="flex items-start justify-between gap-3">
         <BuildingsHeader />
-        {pageTitleRight}
       </div>
 
-      <Card className="shadow-sm dark:bg-gray-800">
-        <CardBody className="flex flex-col gap-4">
+      <Card className="shadow-lg dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <CardBody className="flex flex-col gap-6 p-6">
           <BuildingsActions
             search={search}
             onSearchChange={setSearch}
@@ -235,6 +259,11 @@ export default function BuildingsPage() {
             complexes={complexes}
             loadingMtks={loadingMtks}
             loadingComplexes={loadingComplexes}
+            onFilterClick={() => filters.setFilterOpen(true)}
+            hasActiveFilters={hasActiveFilters}
+            totalItems={total}
+            itemsPerPage={itemsPerPage}
+            onItemsPerPageChange={setItemsPerPage}
           />
 
           <BuildingsTable
@@ -245,19 +274,17 @@ export default function BuildingsPage() {
             onDelete={openDelete}
           />
 
-          <div className="pt-2">
-            <BuildingsPagination page={page} lastPage={lastPage} onPageChange={goToPage} />
-          </div>
-
-          {loading || loadingMtks || loadingComplexes ? (
-            <div className="py-10 flex items-center justify-center">
-              <Spinner className="h-6 w-6" />
-            </div>
-          ) : !loading && items.length === 0 ? (
-            <Typography className="text-sm text-blue-gray-500 dark:text-gray-300">
+          {!loading && items.length === 0 ? (
+            <Typography className="text-sm text-blue-gray-500 dark:text-gray-300 text-center py-4">
               Bina siyahısı boşdur
             </Typography>
           ) : null}
+
+          {!loading && items.length > 0 && (
+            <div className="pt-2">
+              <BuildingsPagination page={page} lastPage={lastPage} onPageChange={goToPage} total={total} />
+            </div>
+          )}
         </CardBody>
       </Card>
 
@@ -279,6 +306,15 @@ export default function BuildingsPage() {
         onClose={() => setDeleteOpen(false)}
         item={selected}
         onConfirm={confirmDelete}
+      />
+
+      <BuildingsFilterModal
+        open={filters.filterOpen}
+        onClose={() => filters.setFilterOpen(false)}
+        filters={filters.filters}
+        onFilterChange={filters.setFilter}
+        onApply={handleFilterApply}
+        onClear={handleFilterClear}
       />
 
       {/* Toast Notification */}

@@ -35,7 +35,7 @@ import BuildingsPage from "./pages/dashboard/management/buildings";
 import PropertiesPage from "./pages/dashboard/management/properties";
 import BlocksPage from "./pages/dashboard/management/blocks";
 import ApartmentGroupsPage from "./pages/dashboard/management/apartment-groups";
-import BuildingServiceFeePage from "./pages/dashboard/management/building-service-fee";
+// import BuildingServiceFeePage from "./pages/dashboard/management/building-service-fee";
 import PropertyServiceFeePage from "./pages/dashboard/management/service-fee";
 import InvoicesPage from "./pages/dashboard/finance/invoices";
 import PaymentHistoryPage from "./pages/dashboard/finance/payment-history";
@@ -282,14 +282,14 @@ export const routes = [
           //   element: <ApartmentGroupsPage />,
           //   allowedRoles: ["admin", "manager", "operator"],
           // },
-          {
-            icon: <BuildingOfficeIcon {...icon} />,
-            name: "sidebar.buildingServiceFee",
-            path: "/management/building-service-fee",
-            element: <BuildingServiceFeePage />,
-            hideInSidenav: true,
-            allowedRoles: ["admin", "manager", "operator"],
-          },
+          // {
+          //   icon: <BuildingOfficeIcon {...icon} />,
+          //   name: "sidebar.buildingServiceFee",
+          //   path: "/management/building-service-fee",
+          //   element: <BuildingServiceFeePage />,
+          //   hideInSidenav: true,
+          //   allowedRoles: ["admin", "manager", "operator"],
+          // },
         ],
       },
       {

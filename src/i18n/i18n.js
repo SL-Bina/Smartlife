@@ -28,8 +28,9 @@ i18n
       escapeValue: false,
     },
     detection: {
-      order: ["localStorage", "navigator", "htmlTag"],
-      caches: ["localStorage"],
+      order: ["cookie", "localStorage", "navigator", "htmlTag"],
+      caches: ["cookie", "localStorage"],
+      lookupCookie: "i18nextLng",
     },
   });
 

@@ -1,29 +1,27 @@
 import { useState } from "react";
 
 export function useBuildingsFilters() {
-  const [filters, setFilters] = useState({
-    name: "",
-  });
   const [filterOpen, setFilterOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    status: "",
+    address: "",
+    email: "",
+    phone: "",
+  });
 
-  const updateFilter = (key, value) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
+  const setFilter = (key, value) => {
+    setFilters((p) => ({ ...p, [key]: value }));
   };
 
   const clearFilters = () => {
-    setFilters({ name: "" });
+    setFilters({ status: "", address: "", email: "", phone: "" });
   };
 
-  const applyFilters = () => {
-    setFilterOpen(false);
-  };
-
-  return {
-    filters,
-    filterOpen,
-    setFilterOpen,
-    updateFilter,
-    clearFilters,
-    applyFilters,
+  return { 
+    filterOpen, 
+    setFilterOpen, 
+    filters, 
+    setFilter, 
+    clearFilters 
   };
 }

@@ -7,7 +7,30 @@ import { useMaterialTailwindController, setOpenSidenav } from "@/context";
 import { useTranslation } from "react-i18next";
 import { SidenavSubMenuItem } from "./SidenavSubMenuItem";
 
-export function SidenavMenuItem({ page, layout, routes, openMenus, setOpenMenus, collapsed = false, flatMenu = false, expandAll = false }) {
+export function SidenavMenuItem({ page, layout, routes, openMenus, setOpenMenus, collapsed = false, flatMenu = false, expandAll = false, mtkColorCode = null }) {
+  
+  // Rəng kodunu rgba-ya çevir
+  const getRgbaColor = (hex, opacity = 1) => {
+    if (!hex) return null;
+    const hexClean = hex.replace("#", "");
+    const r = parseInt(hexClean.substring(0, 2), 16);
+    const g = parseInt(hexClean.substring(2, 4), 16);
+    const b = parseInt(hexClean.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
+
+  // Aktiv menu item üçün rəng
+  const getActiveGradient = () => {
+    if (mtkColorCode) {
+      const color1 = getRgbaColor(mtkColorCode, 0.9);
+      const color2 = getRgbaColor(mtkColorCode, 1);
+      return {
+        background: `linear-gradient(to right, ${color1}, ${color2})`,
+        boxShadow: `0 10px 15px -3px ${getRgbaColor(mtkColorCode, 0.3)}, 0 4px 6px -2px ${getRgbaColor(mtkColorCode, 0.2)}`,
+      };
+    }
+    return {};
+  };
   const location = useLocation();
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavSize } = controller;
@@ -70,9 +93,10 @@ export function SidenavMenuItem({ page, layout, routes, openMenus, setOpenMenus,
                           <div
                             className={`flex items-center gap-2 xl:gap-3 px-2 xl:px-3 py-2 xl:py-2.5 rounded-lg xl:rounded-xl transition-all duration-200 group ${
                               shouldBeActive
-                                ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-500/30"
+                                ? mtkColorCode ? "text-white" : "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-500/30"
                                 : "text-gray-700 dark:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-800/30"
                             }`}
+                            style={shouldBeActive && mtkColorCode ? getActiveGradient() : {}}
                             onClick={() => {
                               if (window.innerWidth < 1280) {
                                 setOpenSidenav(dispatch, false);
@@ -140,11 +164,12 @@ export function SidenavMenuItem({ page, layout, routes, openMenus, setOpenMenus,
               collapsed ? "px-1 xl:px-1" : "px-2 xl:px-3"
             } py-2 xl:py-2.5 rounded-lg xl:rounded-xl transition-all duration-200 group ${
               isParentActive
-                ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-500/30"
+                ? mtkColorCode ? "text-white" : "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-500/30"
                 : isOpen
                 ? "bg-gray-100/50 dark:bg-gray-800/30 text-gray-900 dark:text-gray-100"
                 : "text-gray-700 dark:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-800/30"
             }`}
+            style={isParentActive && mtkColorCode ? getActiveGradient() : {}}
           >
             <div className={`flex items-center ${collapsed ? "justify-center" : ""} gap-2 xl:gap-3 ${collapsed ? "" : "min-w-0 flex-1"}`}>
               <div
@@ -228,6 +253,7 @@ export function SidenavMenuItem({ page, layout, routes, openMenus, setOpenMenus,
                         path={path}
                         layout={layout}
                         isParentPath={isParentPath}
+                        mtkColorCode={mtkColorCode}
                       />
                     );
                   })}
@@ -282,9 +308,10 @@ export function SidenavMenuItem({ page, layout, routes, openMenus, setOpenMenus,
                   collapsed ? "px-1 xl:px-1" : "px-2 xl:px-3"
                 } py-2 xl:py-2.5 rounded-lg xl:rounded-xl transition-all duration-200 group ${
                   shouldBeActive
-                    ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-500/30"
+                    ? mtkColorCode ? "text-white" : "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-500/30"
                     : "text-gray-700 dark:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-800/30"
                 }`}
+                style={shouldBeActive && mtkColorCode ? getActiveGradient() : {}}
                 onClick={() => {
                   if (window.innerWidth < 1280) {
                     setOpenSidenav(dispatch, false);

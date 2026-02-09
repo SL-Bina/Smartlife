@@ -54,7 +54,19 @@ const groupByFloor = (items = []) => {
   }));
 };
 
-export function usePropertiesData({ search = "", mtkId = null, complexId = null, buildingId = null, blockId = null, sortAscending = true, enabled = true } = {}) {
+export function usePropertiesData({ 
+  search = "", 
+  mtkId = null, 
+  complexId = null, 
+  buildingId = null, 
+  blockId = null, 
+  sortAscending = true, 
+  enabled = true,
+  filterStatus = "",
+  filterNumber = "",
+  filterBlock = "",
+  filterArea = ""
+} = {}) {
   const [raw, setRaw] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -101,7 +113,7 @@ export function usePropertiesData({ search = "", mtkId = null, complexId = null,
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled]); // Yalnız enabled dəyişəndə yenidən çağır
 
-  // ✅ 1) Filter (raw -> filtered) - context-dən filter
+  // ✅ 1) Filter (raw -> filtered) - context-dən filter + search + filter modal
   const filtered = useMemo(() => {
     let list = [...raw];
 
@@ -141,8 +153,40 @@ export function usePropertiesData({ search = "", mtkId = null, complexId = null,
       });
     }
 
+    // Status filter
+    if (filterStatus && filterStatus.trim()) {
+      list = list.filter((item) => item.status === filterStatus.trim());
+    }
+
+    // Number filter
+    if (filterNumber && filterNumber.trim()) {
+      const numberLower = filterNumber.trim().toLowerCase();
+      list = list.filter((item) => 
+        (item.number || "").toLowerCase().includes(numberLower)
+      );
+    }
+
+    // Block filter
+    if (filterBlock && filterBlock.trim()) {
+      const blockLower = filterBlock.trim().toLowerCase();
+      list = list.filter((item) => 
+        (item.blockName || "").toLowerCase().includes(blockLower)
+      );
+    }
+
+    // Area filter
+    if (filterArea && filterArea.trim()) {
+      const areaValue = parseFloat(filterArea.trim());
+      if (!isNaN(areaValue)) {
+        list = list.filter((item) => {
+          const itemArea = parseFloat(item.area) || 0;
+          return itemArea >= areaValue;
+        });
+      }
+    }
+
     return list;
-  }, [raw, search, mtkId, complexId, buildingId, blockId]);
+  }, [raw, search, mtkId, complexId, buildingId, blockId, filterStatus, filterNumber, filterBlock, filterArea]);
 
   // ✅ 2) Group by floor + floor sort + inside sort
   const organizedData = useMemo(() => {

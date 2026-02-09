@@ -65,21 +65,33 @@ export function AiChatToggleButton({
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
-      <IconButton
-        variant="gradient"
-        size={isMobile ? "md" : "lg"}
-        className="
-          rounded-full
-          shadow-2xl
-          bg-gradient-to-r from-blue-700 to-red-700
-         
-          active:scale-95
-          transition
-        "
-        onClick={() => setOpenChat(true)}
+      <motion.div
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+        className="relative"
       >
-        <ChatBubbleLeftRightIcon className="h-6 w-6 text-white" />
-      </IconButton>
+        <IconButton
+          variant="gradient"
+          size={isMobile ? "md" : "lg"}
+          className="
+            rounded-full
+            shadow-2xl
+            bg-gradient-to-r from-red-600 via-red-600 to-red-700
+            hover:from-red-700 hover:via-red-700 hover:to-red-800
+            active:scale-95
+            transition-all
+            border-2 border-white/20
+          "
+          onClick={() => setOpenChat(true)}
+        >
+          <ChatBubbleLeftRightIcon className="h-6 w-6 text-white" />
+        </IconButton>
+        <motion.div
+          animate={{ scale: [1, 1.2, 1] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="absolute inset-0 rounded-full bg-red-500/30 blur-xl -z-10"
+        />
+      </motion.div>
     </motion.div>
   );
 }

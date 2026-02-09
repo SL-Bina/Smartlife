@@ -1,10 +1,15 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
+import { useMtkColor } from "@/context";
 import { SidenavSection } from "./SidenavSection";
 import { SidenavMenuItem } from "./SidenavMenuItem";
 
 export function SidenavMenu({ routes, openMenus, setOpenMenus, collapsed = false, flatMenu = false, expandAll = false }) {
   const location = useLocation();
+  
+  // MTK rəng kodunu al (localStorage-dən də oxuyur)
+  const { colorCode } = useMtkColor();
+  const mtkColorCode = colorCode;
 
   React.useEffect(() => {
     if (expandAll) {
@@ -78,6 +83,7 @@ export function SidenavMenu({ routes, openMenus, setOpenMenus, collapsed = false
                   collapsed={collapsed}
                   flatMenu={flatMenu}
                   expandAll={expandAll}
+                  mtkColorCode={mtkColorCode}
                 />
               ))}
           </ul>

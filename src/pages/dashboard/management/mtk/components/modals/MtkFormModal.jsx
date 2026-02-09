@@ -252,14 +252,26 @@ export function MtkFormModal({ open, mode = "create", onClose, form, onSubmit })
   };
 
   const hasCoordinates = form?.formData?.meta?.lat && form?.formData?.meta?.lng;
+  const colorCode = form?.formData?.meta?.color_code;
+  const iconBgColor = colorCode || '#3b82f6';
 
   return (
     <>
       <CustomDialog open={!!open} onClose={onClose} size="xl">
-        <DialogHeader className=" rounded-t-lg">
+        <DialogHeader 
+          className="rounded-t-lg transition-colors"
+          style={{
+            background: colorCode 
+              ? `linear-gradient(to right, ${colorCode}20, ${colorCode}15)` 
+              : undefined,
+          }}
+        >
           <div className="flex items-center gap-3 flex-1">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <BuildingOfficeIcon className="h-6 w-6" />
+            <div 
+              className="p-2 rounded-lg"
+              style={{ backgroundColor: iconBgColor }}
+            >
+              <BuildingOfficeIcon className="h-6 w-6 text-white" />
             </div>
             <div>
               <CustomTypography variant="h5" className="font-bold">

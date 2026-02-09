@@ -54,7 +54,7 @@ export default function AppSelect({
   };
 
   return (
-    <Menu placement="bottom-start" allowHover={false}>
+    <Menu placement="bottom-start" allowHover={false} offset={5}>
       <MenuHandler>
         <Button
           variant="outlined"
@@ -71,8 +71,8 @@ export default function AppSelect({
       </MenuHandler>
 
       <MenuList
-        className="dark:bg-gray-800 dark:border-gray-700 max-h-[320px] overflow-y-auto scrollbar-thin"
-        style={{ maxHeight, overflowY: "auto" }}
+        className="dark:bg-gray-800 dark:border-gray-700 max-h-[320px] overflow-y-auto scrollbar-thin z-[9999]"
+        style={{ maxHeight, overflowY: "auto", zIndex: 9999 }}
         {...menuProps}
       >
         {allowAll ? (

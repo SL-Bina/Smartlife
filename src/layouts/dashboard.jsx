@@ -6,6 +6,7 @@ import {
   Sidenav,
   DashboardNavbar,
   Configurator,
+  ManagementInfo,
 } from "@/widgets/layout";
 import routes from "@/routes";
 import { useMaterialTailwindController, ManagementProvider } from "@/context";
@@ -305,6 +306,7 @@ export function Dashboard() {
         </motion.div>
         <Configurator />
         <AiChat />
+        <ManagementInfo />
       </div>
       <Footer />
     </ManagementProvider>

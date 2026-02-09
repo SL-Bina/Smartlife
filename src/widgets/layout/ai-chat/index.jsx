@@ -1,6 +1,6 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Typography, IconButton, Input, Button, Spinner } from "@material-tailwind/react";
+import { Typography, IconButton, Input, Button, Spinner, Chip } from "@material-tailwind/react";
 import {
   ChatBubbleLeftRightIcon,
   XMarkIcon,
@@ -8,8 +8,70 @@ import {
   Bars3Icon,
   ChevronLeftIcon,
   PaperClipIcon,
+  SparklesIcon,
+  PlusIcon,
 } from "@heroicons/react/24/outline";
 import { AiChatToggleButton } from "./components/AiChatToggleButton";
+
+// Cookie utility funksiyaları
+const getCookie = (name) => {
+  try {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+  } catch (e) {
+    console.error(`Error reading cookie ${name}:`, e);
+    return null;
+  }
+};
+
+const setCookie = (name, value, days = 365) => {
+  try {
+    const date = new Date();
+    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+    const expires = `expires=${date.toUTCString()}`;
+    document.cookie = `${name}=${value};${expires};path=/`;
+  } catch (e) {
+    console.error(`Error writing cookie ${name}:`, e);
+  }
+};
+
+const CHAT_HISTORY_COOKIE = "smartchat_history";
+const ACTIVE_CHAT_COOKIE = "smartchat_active";
+
+// Chat tarixçəsini cookie-dən yüklə
+const loadChatHistory = () => {
+  try {
+    const saved = getCookie(CHAT_HISTORY_COOKIE);
+    if (saved) {
+      return JSON.parse(decodeURIComponent(saved));
+    }
+  } catch (e) {
+    console.error("Error loading chat history:", e);
+  }
+  return null;
+};
+
+// Chat tarixçəsini cookie-yə yadda saxla
+const saveChatHistory = (chats) => {
+  try {
+    const data = JSON.stringify(chats);
+    setCookie(CHAT_HISTORY_COOKIE, encodeURIComponent(data), 365);
+  } catch (e) {
+    console.error("Error saving chat history:", e);
+  }
+};
+
+// Aktiv chat ID-ni cookie-dən yüklə
+const loadActiveChatId = () => {
+  return getCookie(ACTIVE_CHAT_COOKIE) || "support";
+};
+
+// Aktiv chat ID-ni cookie-yə yadda saxla
+const saveActiveChatId = (chatId) => {
+  setCookie(ACTIVE_CHAT_COOKIE, chatId, 365);
+};
 
 export function AiChat({ sidenavPosition = "left" }) {
   const [openChat, setOpenChat] = React.useState(false);
@@ -46,22 +108,43 @@ export function AiChat({ sidenavPosition = "left" }) {
   }, [openChat, isMobile]);
 
   // ---------- Conversations (history) ----------
-  const [chats, setChats] = React.useState([
+  // Default chat-lər
+  const getDefaultChats = () => [
     {
       id: "support",
-      title: "Support Chat",
-      subtitle: "Son mesaj: Salam…",
-      messages: [{ role: "assistant", content: "Salam 👋 Mən kömək edim. Nə lazımdır?" }],
+      title: "SmartChat",
+      subtitle: "Son mesaj: SmartLife platforması haqqında kömək",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      messages: [{ 
+        role: "assistant", 
+        content: "Salam! 👋 Mən SmartChat - SmartLife platformasının AI köməkçisiyəm. Sizə platformanın bütün funksionallığı haqqında kömək edə bilərəm.\n\nSmartLife platformasında:\n🏢 MTK, Complex, Buildings, Blocks, Properties idarəetməsi\n💰 Maliyyə modulu (invoices, payments, reports)\n🔔 Bildirişlər və müraciətlər\n📊 Dashboard və hesabatlar\n⚙️ Xidmətlər və cihazlar\n\nNə ilə kömək edə bilərəm? 😊" 
+      }],
     },
-    {
-      id: "helper",
-      title: "AI Helper",
-      subtitle: "Son mesaj: Fayl göndər…",
-      messages: [{ role: "assistant", content: "Salam! Fayl göndərə bilərsən 📎" }],
-    },
-  ]);
+  ];
 
-  const [activeChatId, setActiveChatId] = React.useState("support");
+  // Chat tarixçəsini yüklə (cookie-dən və ya default)
+  const [chats, setChats] = React.useState(() => {
+    const saved = loadChatHistory();
+    if (saved && saved.length > 0) {
+      return saved;
+    }
+    return getDefaultChats();
+  });
+
+  const [activeChatId, setActiveChatId] = React.useState(() => {
+    return loadActiveChatId();
+  });
+
+  // Chat tarixçəsini cookie-yə yadda saxla
+  React.useEffect(() => {
+    saveChatHistory(chats);
+  }, [chats]);
+
+  // Aktiv chat ID-ni cookie-yə yadda saxla
+  React.useEffect(() => {
+    saveActiveChatId(activeChatId);
+  }, [activeChatId]);
 
   // mobile view state: "list" | "chat"
   const [mobileView, setMobileView] = React.useState("list");
@@ -94,7 +177,6 @@ export function AiChat({ sidenavPosition = "left" }) {
       document.body.style.width = "";
       document.body.style.overflow = "";
       document.body.style.height = "";
-      document.body.style.touchAction = "";
       document.documentElement.style.overflow = "";
       document.documentElement.style.height = "";
 
@@ -115,7 +197,6 @@ export function AiChat({ sidenavPosition = "left" }) {
     document.body.style.width = "100%";
     document.body.style.height = "100%";
     document.body.style.overflow = "hidden";
-    document.body.style.touchAction = "none"; // mobil üçün də yaxşı olur (body scroll tam dayansın)
 
     return () => {
       document.body.style.position = "";
@@ -125,7 +206,6 @@ export function AiChat({ sidenavPosition = "left" }) {
       document.body.style.width = "";
       document.body.style.overflow = "";
       document.body.style.height = "";
-      document.body.style.touchAction = "";
       document.documentElement.style.overflow = "";
       document.documentElement.style.height = "";
 
@@ -140,19 +220,69 @@ export function AiChat({ sidenavPosition = "left" }) {
     const isInsidePanel = (target) => {
       const p = panelRef.current;
       if (!p) return false;
-      return p.contains(target);
+      
+      // Element və ya onun valideynləri panelin içindədirsə
+      let el = target;
+      while (el && el !== document.body) {
+        if (el === p || p.contains(el)) return true;
+        el = el.parentElement;
+      }
+      return false;
+    };
+
+    const isScrollable = (target) => {
+      // Element scrollable-dırsa (overflow-y: auto/scroll)
+      const el = target;
+      const style = window.getComputedStyle(el);
+      const isScrollable = 
+        style.overflowY === 'auto' || 
+        style.overflowY === 'scroll' ||
+        style.overflow === 'auto' ||
+        style.overflow === 'scroll';
+      
+      if (isScrollable && el.scrollHeight > el.clientHeight) {
+        return true;
+      }
+      
+      // Valideyn element scrollable-dırsa
+      let parent = el.parentElement;
+      while (parent && parent !== document.body) {
+        const parentStyle = window.getComputedStyle(parent);
+        const parentScrollable = 
+          parentStyle.overflowY === 'auto' || 
+          parentStyle.overflowY === 'scroll' ||
+          parentStyle.overflow === 'auto' ||
+          parentStyle.overflow === 'scroll';
+        
+        if (parentScrollable && parent.scrollHeight > parent.clientHeight) {
+          return true;
+        }
+        parent = parent.parentElement;
+      }
+      
+      return false;
     };
 
     const onWheel = (e) => {
-      // panelin içindəsə qoy scroll olsun
-      if (isInsidePanel(e.target)) return;
-      // panelin çölündə body scroll olmasın
-      e.preventDefault();
+      // Panelin içində və scrollable elementdədirsə, scroll-a icazə ver
+      if (isInsidePanel(e.target) && isScrollable(e.target)) {
+        return;
+      }
+      // Panelin çölündə body scroll olmasın
+      if (!isInsidePanel(e.target)) {
+        e.preventDefault();
+      }
     };
 
     const onTouchMove = (e) => {
-      if (isInsidePanel(e.target)) return;
-      e.preventDefault();
+      // Panelin içində və scrollable elementdədirsə, scroll-a icazə ver
+      if (isInsidePanel(e.target) && isScrollable(e.target)) {
+        return;
+      }
+      // Panelin çölündə body scroll olmasın
+      if (!isInsidePanel(e.target)) {
+        e.preventDefault();
+      }
     };
 
     // capture + passive:false mütləqdir
@@ -204,13 +334,211 @@ export function AiChat({ sidenavPosition = "left" }) {
   };
 
   /**
-   * AI integration point:
-   * burada backend-ə request atacaqsan (Groq/OpenAI və s.)
+   * Groq API integration
+   * Groq API-yə sorğu atır və AI cavabını qaytarır
    */
   const callAI = async (nextMessages, newFiles = []) => {
-    // DEMO:
-    await new Promise((r) => setTimeout(r, 600));
-    return "AI cavabı burda olacaq ✅ (inteqrasiya edəndə backend-dən gələcək)";
+    try {
+      // Groq API key-i environment variable-dan götür
+      const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
+      
+      if (!GROQ_API_KEY) {
+        throw new Error("Groq API key tapılmadı. Zəhmət olmasa VITE_GROQ_API_KEY environment variable-ını təyin edin.");
+      }
+
+      // Groq API endpoint
+      const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
+
+      // AI System Prompt - SmartLife platforması üçün (sadə, real həyatdan nümunələrlə)
+      const systemPrompt = `Sən SmartLife platformasının AI köməkçisidir. SmartLife - müasir, gözoxşayan dizaynı olan, istifadəsi asan property/real estate idarəetmə platformasıdır.
+
+🎯 SƏNİN ROLUN:
+Sən mehriban, köməkçi və dostluqla danışan AI köməkçisidir. İstifadəçilərə SmartLife platformasını real həyatdan nümunələrlə, sadə və anlaşıqlı şəkildə izah edirsən. Texniki detallar vermə, sadəcə saytın nə işlətdiyini, necə istifadə olunduğunu real həyatdan nümunələrlə izah et.
+
+📋 ƏSAS QAYDALAR:
+1. ✅ YALNIZ SmartLife platforması ilə bağlı suallara cavab ver
+2. ✅ Platformanın bütün modulları, funksionallığı, istifadəsi haqqında ətraflı məlumat ver
+3. ❌ Kənar mövzular haqqında (siyasət, din, başqa platformalar, ümumi məlumatlar) danışma
+4. ✅ Əgər sual SmartLife ilə bağlı deyilsə, mehriban və hörmətlə bildir: "Bağışlayın, mən yalnız SmartLife platforması ilə bağlı kömək edə bilərəm. SmartLife haqqında nə bilmək istəyirsiniz?"
+5. ✅ Azərbaycan və ya Türk dillərində cavab ver (istifadəçinin dilinə uyğun)
+6. ✅ Həmişə mehriban, dostluqla və köməkçi ol
+7. ✅ Platformanın funksionallığı haqqında dəqiq məlumat ver
+8. ✅ İstifadəçiyə addım-addım təlimatlar ver
+
+🏢 SMARTLIFE PLATFORMASI - DƏRİN MƏLUMAT:
+
+📊 1. DASHBOARD (Əsas Səhifə):
+- Statistika kartları (Statistics Cards)
+- Resident statistikaları
+- Application status chart (Müraciət statusu qrafiki)
+- Department stats chart (Şöbə statistikaları)
+- Employee performance chart (İşçi performansı)
+- Payment dynamics chart (Ödəniş dinamikası)
+- KPI göstəriciləri
+- Complex Dashboard (Kompleks dashboard)
+
+💰 2. FINANCE MODULU (Maliyyə İdarəetməsi):
+Təsəvvür et ki, bir kooperativin maliyyəçisisən. Əvvəl hər şeyi kağız üzərində, Excel-də idarə edirdin - çətin, vaxt aparan, səhvə yol verən. 
+
+SmartLife-də isə hər şey avtomatikdir! Məsələn, bir sakin ödəniş edəndə, sistem dərhal qeydə alır, hesab-faktura yaradır, borcunu yeniləyir. Borclu mənzilləri bir kliklə görə bilirsən - hansı sakin nə qədər borcludur, nə vaxt ödəyib, hamısı gözəl cədvəllərdə göstərilir. 
+
+Hesabatlar isə tam gözəl - rəngli qrafiklər, statistikalar. Məsələn, "Bu ay nə qədər gəlir gəlib?" sualına cavabı dərhal görürsən, hətta hansı mənzillərdən gəlir gəlib, onu da görə bilirsən.
+
+🏗️ 3. MANAGEMENT MODULU (İdarəetmə):
+
+SmartLife-də hər şey məntiqi bir qaydada təşkil olunub - necə ki, real həyatda: əvvəl kooperativ (MTK), sonra kompleks, sonra bina, sonra blok, sonra mənzil.
+
+3.1. MTK (Mənzil Tikinti Kooperativi):
+Məsələn, "Yeni Həyat" kooperativi var. Platformada bu kooperativi yaradırsan, onun məlumatlarını daxil edirsən - ünvan, telefon, email. Hər kooperativin öz rəngi var - məsələn, "Yeni Həyat" mavi rəngdə, "Şəhər" yaşıl rəngdə. Bu rəng bütün səhifələrdə görünür - gözəl, müasir görünüş!
+
+3.2. Complex (Kompleks):
+Bir kooperativin altında bir neçə kompleks ola bilər. Məsələn, "Yeni Həyat" kooperativinin "Park Kompleks" və "Göl Kompleks" adlı iki kompleksi var. Platformada bunları asanlıqla idarə edə bilirsən.
+
+3.3. Buildings (Binalar):
+Kompleksin altında binalar var. Məsələn, "Park Kompleks"də 5 bina var - A binası, B binası və s. Hər binanın öz məlumatları var.
+
+3.4. Blocks (Bloklar):
+Binanın altında bloklar var. Məsələn, A binasında 3 blok var - 1-ci blok, 2-ci blok, 3-cü blok.
+
+3.5. Properties (Mənzillər):
+Blokun altında mənzillər var. Məsələn, 1-ci blokda 20 mənzil var - 1, 2, 3, 4... və s. Platformada mənzilləri mərtəbə görünüşündə də görə bilirsən - tam real həyatda olduğu kimi! Hər mənzilin sahibi, statusu, borcu və s. məlumatları var.
+
+3.6. Residents (Sakinlər):
+Hər mənzilin sahibi var. Platformada sakinlərin məlumatlarını idarə edə bilirsən - ad, soyad, telefon, email və s.
+
+3.7. Service Fee (Xidmət haqqı):
+Hər mənzil üçün xidmət haqqı təyin edə bilirsən - məsələn, lift xidməti, təmizlik xidməti və s.
+
+🔔 4. NOTIFICATIONS (Bildirişlər):
+Məsələn, kooperativdə təmizlik günü var. Platformadan bütün sakinlərə bildiriş göndərə bilirsən - SMS və ya platforma daxilində. Bütün göndərilən bildirişlər arxivdə saxlanılır - necə ki, email-də köhnə mesajlar saxlanır.
+
+📝 5. APPLICATIONS (Müraciətlər):
+Sakinlər platformadan müraciət edə bilir - məsələn, "Lift işləmir", "Su problemi var" və s. Sən bu müraciətləri görürsən, qiymətləndirirsən, həll edirsən. Hamısı gözəl cədvəllərdə, statuslarla göstərilir.
+
+❓ 6. QUERIES (Sorğular):
+Sakinlər sual verə bilir, sən cavab verə bilirsən. Tam real həyatda olduğu kimi - sakin soruşur, sən cavab verirsən.
+
+📱 7. DEVICES (Cihazlar):
+Kompleksdə olan cihazları idarə edə bilirsən - məsələn, lift, generator və s.
+
+⚙️ 8. SERVICES (Xidmətlər):
+Kompleksdə olan xidmətləri idarə edə bilirsən - məsələn, təmizlik, təhlükəsizlik və s.
+
+📄 9. ELECTRONIC DOCUMENTS (Elektron Sənədlər):
+Bütün sənədləri elektron şəkildə saxlayırsan - məsələn, müqavilələr, hesab-fakturalar və s. Kağız qarışıqlığı yoxdur!
+
+🏢 10. RECEPTION (Qəbul):
+Qəbulda gələn ziyarətçiləri qeydə ala bilirsən - tam real həyatda olduğu kimi.
+
+🔐 11. PERMISSIONS (İcazələr):
+Hər istifadəçinin öz rolu var - admin hər şeyi görür, manager idarə edir, operator işləyir, sakin yalnız öz məlumatlarını görür. Hər kəs öz işini görür!
+
+👤 12. PROFILE (Profil):
+Öz profilini idarə edə bilirsən - şifrə dəyişdirmə, məlumat yeniləmə və s.
+
+🎨 PLATFORMANIN XÜSUSİYYƏTLƏRİ:
+
+1. **Gözoxşayan Dizayn:**
+   SmartLife platforması tam müasir görünüşə malikdir - rəngli, gözəl, istifadəsi asan. Hər kooperativin öz rəngi var və bu rəng bütün səhifələrdə görünür - tam şəxsi görünüş! Məsələn, "Yeni Həyat" kooperativini seçəndə, bütün səhifələr mavi rəngdə olur - gözəl!
+
+2. **Məntiqi Struktur:**
+   Platformada hər şey real həyatda olduğu kimi təşkil olunub - əvvəl kooperativ, sonra kompleks, sonra bina, sonra blok, sonra mənzil. Hər şey bir-birinə bağlıdır, məntiqlidir.
+
+3. **Asan İstifadə:**
+   Platforma istifadəsi çox asandır - hər şey aydındır, izah olunur. Məsələn, mənzil axtarmaq istəyəndə, sadəcə filtrləri seçirsən və dərhal tapırsan. Axtarış çox sürətlidir - bir saniyədə nəticə gəlir!
+
+4. **Mobil Uyğunluq:**
+   Platforma həm kompüterdə, həm də telefonunda işləyir - tam mobil uyğundur! Telefondan da rahatlıqla idarə edə bilirsən.
+
+5. **Təhlükəsizlik:**
+   Hər istifadəçinin öz rolu var - admin hər şeyi görür, sakin yalnız öz məlumatlarını görür. Təhlükəsizlik çox yüksəkdir.
+
+6. **Avtomatik İşlər:**
+   Çox şey avtomatikdir - məsələn, ödəniş edəndə sistem dərhal qeydə alır, borcunu yeniləyir. Əl ilə heç nə yazmaq lazım deyil!
+
+7. **Gözəl Görünüş:**
+   Platforma tam müasir dizayna malikdir - rəngli, animasiyalı, gözəl. İstifadə etmək zövqlüdür!
+
+💬 DANIŞMA TƏRZİN:
+- Həmişə mehriban, dostluqla və sadə danış
+- "Siz", "Sizin" kimi hörmətli ünvanlardan istifadə et
+- Real həyatdan nümunələr gətirərək izah et
+- Texniki detallar vermə - sadəcə saytın nə işlətdiyini, necə istifadə olunduğunu izah et
+- Platformanın gözoxşayan dizaynı, müasir görünüşü haqqında danış
+- Məsələn, "Məsələn", "Təsəvvür et ki", "Necə ki, real həyatda" kimi ifadələrdən istifadə et
+- Emoji-lərdən məqsədəuyğun istifadə et (lakin həddən artıq yox)
+- İstifadəçiyə kömək etməyə hazır olduğunu göstər
+- Mürəkkəb məsələləri sadə, anlaşıqlı şəkildə izah et
+
+❌ NƏ ETMƏMƏLİSƏN:
+- Texniki detallar vermə (kod, API, texniki terminlər)
+- Kənar mövzular haqqında danışma
+- Siyasət, din, başqa platformalar haqqında məlumat vermə
+- Qaba, qeyri-hörmətli cavablar vermə
+- Çox uzun, mürəkkəb izahlar vermə
+
+Yadda saxla: Sən SmartLife platformasının mehriban, köməkçi AI-sısan. Platformanı real həyatdan nümunələrlə, sadə və anlaşıqlı şəkildə izah edirsən. Platformanın gözoxşayan dizaynı, müasir görünüşü, istifadəsi asan olması haqqında danışırsan.`;
+
+      // Mesajları Groq formatına çevir (attachments-i nəzərə al)
+      const messages = [
+        { role: "system", content: systemPrompt },
+        ...nextMessages.map((msg) => {
+          const groqMsg = {
+            role: msg.role,
+            content: msg.content || "",
+          };
+
+          // Əgər attachments varsa, onları content-ə daxil et
+          if (msg.attachments && msg.attachments.length > 0) {
+            const attachmentsInfo = msg.attachments
+              .map((a) => `[Fayl: ${a.name} (${a.mime})]`)
+              .join("\n");
+            groqMsg.content = `${groqMsg.content}\n\n${attachmentsInfo}`.trim();
+          }
+
+          return groqMsg;
+        }),
+      ];
+
+      // Groq API-yə sorğu at
+      const response = await fetch(GROQ_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${GROQ_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile", // Yeni model (llama-3.1-70b-versatile-ın davamçısı)
+          messages: messages,
+          temperature: 0.7,
+          max_tokens: 2048,
+          top_p: 1,
+          stream: false,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.error?.message || 
+          `Groq API xətası: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+      
+      // Groq API response struktur: { choices: [{ message: { content: "..." } }] }
+      const assistantMessage = data.choices?.[0]?.message?.content;
+      
+      if (!assistantMessage) {
+        throw new Error("AI-dan cavab alınmadı");
+      }
+
+      return assistantMessage;
+    } catch (error) {
+      console.error("Groq API xətası:", error);
+      throw error;
+    }
   };
 
   const updateActiveChatMessages = (nextMessages) => {
@@ -221,12 +549,53 @@ export function AiChat({ sidenavPosition = "left" }) {
               ...c,
               messages: nextMessages,
               subtitle: `Son mesaj: ${
-                nextMessages[nextMessages.length - 1]?.content?.slice(0, 22) || ""
+                nextMessages[nextMessages.length - 1]?.content?.slice(0, 30) || ""
               }…`,
+              updatedAt: new Date().toISOString(),
             }
           : c
       )
     );
+  };
+
+  // Yeni chat yarat
+  const createNewChat = () => {
+    const newChatId = `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const newChat = {
+      id: newChatId,
+      title: `SmartChat ${chats.length + 1}`,
+      subtitle: "Yeni söhbət başladı",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      messages: [{ 
+        role: "assistant", 
+        content: "Salam! 👋 Mən SmartChat - SmartLife platformasının AI köməkçisiyəm. Sizə platformanın bütün funksionallığı haqqında kömək edə bilərəm.\n\nNə ilə kömək edə bilərəm? 😊" 
+      }],
+    };
+    
+    setChats((prev) => [newChat, ...prev]);
+    setActiveChatId(newChatId);
+    if (isMobile) setMobileView("chat");
+  };
+
+  // Chat sil
+  const deleteChat = (chatId) => {
+    if (chats.length <= 1) {
+      // Son chat-i silmək olmaz, yeni default chat yarat
+      const defaultChats = getDefaultChats();
+      setChats(defaultChats);
+      setActiveChatId(defaultChats[0].id);
+      return;
+    }
+    
+    setChats((prev) => {
+      const filtered = prev.filter((c) => c.id !== chatId);
+      if (activeChatId === chatId) {
+        // Silinən chat aktivdirsə, ilk chat-ə keç
+        setActiveChatId(filtered[0]?.id || "support");
+      }
+      return filtered;
+    });
   };
 
   const send = async () => {
@@ -364,8 +733,8 @@ export function AiChat({ sidenavPosition = "left" }) {
               transition={{ type: "spring", stiffness: 260, damping: 30 }}
               className={`
                 fixed z-50 flex flex-col overflow-hidden shadow-2xl
-                bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800
-                overscroll-contain
+                bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800
+                overscroll-contain backdrop-blur-sm
                 ${isMobile
                   ? "inset-0 w-full h-full"
                   : `inset-y-0 ${
@@ -374,40 +743,53 @@ export function AiChat({ sidenavPosition = "left" }) {
                 }
               `}
               style={{
+                maxHeight: "100vh",
+                height: isMobile && vv.height ? `${vv.height}px` : (isMobile ? "100vh" : "100%"),
                 paddingBottom: isMobile ? "env(safe-area-inset-bottom)" : undefined,
-                height: isMobile && vv.height ? `${vv.height}px` : undefined,
                 transform: isMobile && vv.offsetTop ? `translateY(${vv.offsetTop}px)` : undefined,
               }}
             >
               {/* HEADER */}
-              <div className="px-4 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-                <div className="flex items-center gap-2">
+              <div className="relative px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-gradient-to-r from-red-50 via-red-50 to-red-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
+                <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 via-red-500/5 to-red-500/5 dark:from-red-500/10 dark:via-red-500/10 dark:to-red-500/10" />
+                <div className="relative flex items-center gap-3">
                   {isMobile ? (
                     mobileView === "chat" ? (
                       <IconButton
                         variant="text"
                         onClick={() => setMobileView("list")}
-                        className="rounded-lg dark:text-gray-300 dark:hover:bg-gray-800"
+                        className="rounded-xl hover:bg-white/80 dark:hover:bg-gray-800/80 transition-all"
                         title="Chats"
                       >
-                        <ChevronLeftIcon className="h-5 w-5" />
+                        <ChevronLeftIcon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
                       </IconButton>
                     ) : (
-                      <span className="w-10" />
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg">
+                        <SparklesIcon className="h-5 w-5 text-white" />
+                      </div>
                     )
                   ) : (
-                    <ChatBubbleLeftRightIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg">
+                      <ChatBubbleLeftRightIcon className="h-5 w-5 text-white" />
+                    </div>
                   )}
 
                   <div className="leading-tight">
-                    <Typography variant="h6" className="text-gray-900 dark:text-white">
-                      {isMobile
-                        ? mobileView === "list"
-                          ? "Chats"
-                          : activeChat?.title || "Smart Chat"
-                        : "Smart Chat"}
-                    </Typography>
-                    <Typography variant="small" className="text-gray-600 dark:text-gray-400 text-xs">
+                    <div className="flex items-center gap-2">
+                      <Typography variant="h6" className="text-gray-900 dark:text-white font-bold">
+                        {isMobile
+                          ? mobileView === "list"
+                            ? "Chats"
+                            : activeChat?.title || "SmartChat"
+                          : "SmartChat"}
+                      </Typography>
+                      <Chip
+                        value="AI"
+                        size="sm"
+                        className="bg-gradient-to-r from-red-500 to-red-600 text-white text-[10px] px-2 py-0.5 h-5"
+                      />
+                    </div>
+                    <Typography variant="small" className="text-gray-600 dark:text-gray-400 text-xs mt-0.5">
                       {isMobile
                         ? mobileView === "list"
                           ? "Tarixçə / söhbətlər"
@@ -420,49 +802,100 @@ export function AiChat({ sidenavPosition = "left" }) {
                 <IconButton
                   variant="text"
                   onClick={close}
-                  className="rounded-lg dark:text-gray-300 dark:hover:bg-gray-800"
+                  className="relative rounded-xl hover:bg-white/80 dark:hover:bg-gray-800/80 transition-all"
                 >
-                  <XMarkIcon className="h-5 w-5" />
+                  <XMarkIcon className="h-5 w-5 text-gray-700 dark:text-gray-300" />
                 </IconButton>
               </div>
 
               {/* BODY */}
-              <div className="flex-1 overflow-hidden bg-gray-50/60 dark:bg-gray-900/60">
+              <div className="flex-1 min-h-0 overflow-hidden bg-gradient-to-b from-gray-50/80 via-white to-gray-50/80 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
                 {/* DESKTOP: split layout */}
                 {!isMobile && (
-                  <div className="h-full grid grid-cols-[260px_1fr]">
+                  <div className="h-full min-h-0 grid grid-cols-[260px_1fr]" style={{ maxHeight: "100%" }}>
                     {/* LEFT: history */}
                     <div
-                      className="border-r border-gray-100 dark:border-gray-800 p-4 overflow-y-auto custom-sidenav-scrollbar overscroll-contain"
-                      style={{ WebkitOverflowScrolling: "touch" }}
+                      className="border-r border-gray-200 dark:border-gray-800 p-4 overflow-y-auto custom-sidenav-scrollbar overscroll-contain bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm"
+                      style={{ 
+                        WebkitOverflowScrolling: "touch",
+                        overflowY: "auto",
+                        overscrollBehavior: "contain",
+                      }}
                     >
-                      <Typography variant="small" className="text-gray-500 dark:text-gray-400 mb-3 text-xs">
-                        Chats
-                      </Typography>
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <Typography variant="small" className="text-gray-700 dark:text-gray-300 font-semibold text-xs uppercase tracking-wider">
+                            Chats
+                          </Typography>
+                          <Chip
+                            value={chats.length}
+                            size="sm"
+                            className="bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-[10px] px-2 py-0.5 h-5"
+                          />
+                        </div>
+                        <IconButton
+                          variant="text"
+                          size="sm"
+                          onClick={createNewChat}
+                          className="rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
+                          title="Yeni chat"
+                        >
+                          <PlusIcon className="h-4 w-4" />
+                        </IconButton>
+                      </div>
 
                       <div className="space-y-2">
                         {chats.map((c) => {
                           const active = c.id === activeChatId;
                           return (
-                            <button
+                            <motion.div
                               key={c.id}
-                              onClick={() => selectChat(c.id)}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
                               className={`
-                                w-full text-left rounded-xl px-3 py-3 border transition
+                                relative w-full rounded-2xl border transition-all duration-200 group
                                 ${
                                   active
-                                    ? "bg-gray-900 text-white border-gray-800"
-                                    : "bg-white dark:bg-gray-900 text-gray-900 dark:text-white border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                    ? "bg-gradient-to-br from-red-600 to-red-700 text-white border-red-500 shadow-lg shadow-red-500/30"
+                                    : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 hover:border-red-300 dark:hover:border-red-700 hover:shadow-md"
                                 }
                               `}
                             >
-                              <div className="flex items-center justify-between gap-2">
-                                <span className="font-semibold text-sm truncate">{c.title}</span>
-                              </div>
-                              <div className={`text-xs mt-1 truncate ${active ? "text-gray-300" : "text-gray-500 dark:text-gray-400"}`}>
-                                {c.subtitle}
-                              </div>
-                            </button>
+                              <button
+                                onClick={() => selectChat(c.id)}
+                                className="w-full text-left px-4 py-3.5"
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className={`font-semibold text-sm truncate ${active ? "text-white" : "text-gray-900 dark:text-white"}`}>
+                                    {c.title}
+                                  </span>
+                                  {active && (
+                                    <div className="w-2 h-2 rounded-full bg-white/80 animate-pulse" />
+                                  )}
+                                </div>
+                                <div className={`text-xs mt-1.5 truncate ${active ? "text-white/80" : "text-gray-500 dark:text-gray-400"}`}>
+                                  {c.subtitle}
+                                </div>
+                              </button>
+                              {chats.length > 1 && (
+                                <IconButton
+                                  variant="text"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteChat(c.id);
+                                  }}
+                                  className={`absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg ${
+                                    active
+                                      ? "text-white/80 hover:bg-white/20"
+                                      : "text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                  }`}
+                                  title="Chat-i sil"
+                                >
+                                  <XMarkIcon className="h-4 w-4" />
+                                </IconButton>
+                              )}
+                            </motion.div>
                           );
                         })}
                       </div>
@@ -497,38 +930,96 @@ export function AiChat({ sidenavPosition = "left" }) {
                         exit={{ opacity: 0, x: 10 }}
                         transition={{ duration: 0.15 }}
                         className="h-full p-4 overflow-y-auto custom-sidenav-scrollbar overscroll-contain"
-                        style={{ WebkitOverflowScrolling: "touch" }}
+                        style={{ 
+                          WebkitOverflowScrolling: "touch",
+                          overflowY: "auto",
+                          overscrollBehavior: "contain",
+                        }}
                       >
-                        <div className="space-y-2">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-2">
+                            <Typography variant="small" className="text-gray-700 dark:text-gray-300 font-semibold text-xs uppercase tracking-wider">
+                              Chats
+                            </Typography>
+                            <Chip
+                              value={chats.length}
+                              size="sm"
+                              className="bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-[10px] px-2 py-0.5 h-5"
+                            />
+                          </div>
+                          <IconButton
+                            variant="text"
+                            size="sm"
+                            onClick={createNewChat}
+                            className="rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
+                            title="Yeni chat"
+                          >
+                            <PlusIcon className="h-5 w-5" />
+                          </IconButton>
+                        </div>
+
+                        <div className="space-y-3">
                           {chats.map((c) => {
                             const active = c.id === activeChatId;
                             return (
-                              <button
+                              <motion.div
                                 key={c.id}
-                                onClick={() => selectChat(c.id)}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
                                 className={`
-                                  w-full text-left rounded-2xl px-4 py-4 border transition
+                                  relative w-full rounded-2xl border transition-all duration-200 group
                                   ${
                                     active
-                                      ? "bg-gray-900 text-white border-gray-800"
-                                      : "bg-white dark:bg-gray-900 text-gray-900 dark:text-white border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                      ? "bg-gradient-to-br from-blue-600 to-indigo-600 text-white border-blue-500 shadow-lg shadow-blue-500/30"
+                                      : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-md"
                                   }
                                 `}
                               >
-                                <div className="flex items-center justify-between gap-2">
-                                  <span className="font-semibold text-sm truncate">{c.title}</span>
-                                  <Bars3Icon className={`h-5 w-5 ${active ? "text-white/80" : "text-gray-500 dark:text-gray-400"}`} />
-                                </div>
-                                <div className={`text-xs mt-1 truncate ${active ? "text-gray-300" : "text-gray-500 dark:text-gray-400"}`}>
-                                  {c.subtitle}
-                                </div>
-                              </button>
+                                <button
+                                  onClick={() => selectChat(c.id)}
+                                  className="w-full text-left px-4 py-4"
+                                >
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className={`font-semibold text-sm truncate ${active ? "text-white" : "text-gray-900 dark:text-white"}`}>
+                                      {c.title}
+                                    </span>
+                                    {active ? (
+                                      <div className="w-2 h-2 rounded-full bg-white/80 animate-pulse" />
+                                    ) : (
+                                      <Bars3Icon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                                    )}
+                                  </div>
+                                  <div className={`text-xs mt-1.5 truncate ${active ? "text-white/80" : "text-gray-500 dark:text-gray-400"}`}>
+                                    {c.subtitle}
+                                  </div>
+                                </button>
+                                {chats.length > 1 && (
+                                  <IconButton
+                                    variant="text"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      deleteChat(c.id);
+                                    }}
+                                    className={`absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg ${
+                                      active
+                                        ? "text-white/80 hover:bg-white/20"
+                                        : "text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                    }`}
+                                    title="Chat-i sil"
+                                  >
+                                    <XMarkIcon className="h-4 w-4" />
+                                  </IconButton>
+                                )}
+                              </motion.div>
                             );
                           })}
                         </div>
 
-                        <div className="mt-4 text-[11px] text-gray-500 dark:text-gray-400">
-                          Chat seç → mesajlaşma açılacaq
+                        <div className="mt-6 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                          <Typography variant="small" className="text-[11px] text-red-700 dark:text-red-300 text-center">
+                            💡 Chat seç → mesajlaşma açılacaq
+                          </Typography>
                         </div>
                       </motion.div>
                     ) : (
@@ -538,7 +1029,8 @@ export function AiChat({ sidenavPosition = "left" }) {
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -10 }}
                         transition={{ duration: 0.15 }}
-                        className="h-full"
+                        className="h-full min-h-0"
+                        style={{ maxHeight: "100%" }}
                       >
                         <ChatView
                           listRef={listRef}
@@ -585,15 +1077,22 @@ function ChatView({
   compact = false,
 }) {
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col" style={{ minHeight: 0, maxHeight: "100%" }}>
       {/* Messages */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden" style={{ minHeight: 0, maxHeight: "100%" }}>
         <div
           ref={listRef}
-          className={`h-full overflow-y-auto custom-sidenav-scrollbar overscroll-contain ${
+          className={`h-full w-full overflow-y-auto custom-sidenav-scrollbar overscroll-contain ${
             compact ? "px-4 py-4" : "px-6 py-6"
           } space-y-3`}
-          style={{ WebkitOverflowScrolling: "touch" }}
+          style={{ 
+            WebkitOverflowScrolling: "touch",
+            overflowY: "auto",
+            overflowX: "hidden",
+            overscrollBehavior: "contain",
+            minHeight: 0,
+            maxHeight: "100%",
+          }}
         >
           {messages.map((m, idx) => (
             <ChatBubble key={idx} role={m.role} text={m.content} attachments={m.attachments || []} />
@@ -601,10 +1100,14 @@ function ChatView({
 
           {sending && (
             <div className="flex justify-start">
-              <div className="max-w-[85%] rounded-2xl px-4 py-2 text-sm shadow-sm border bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 flex items-center gap-2">
-                <Spinner className="h-4 w-4" />
-                Yazır...
-              </div>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="max-w-[85%] rounded-2xl px-4 py-3 text-sm shadow-lg border bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-700 text-gray-900 dark:text-white border-gray-200 dark:border-gray-600 flex items-center gap-3"
+              >
+                <Spinner className="h-4 w-4 text-red-600 dark:text-red-400" />
+                <span className="text-gray-700 dark:text-gray-300">Yazır...</span>
+              </motion.div>
             </div>
           )}
         </div>
@@ -612,24 +1115,29 @@ function ChatView({
 
       {/* Error */}
       {error && (
-        <div className={`${compact ? "px-4" : "px-6"} pt-2`}>
-          <div className="p-3 rounded-xl border border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800">
-            <Typography variant="small" className="text-red-700 dark:text-red-300 text-xs">
-              {error}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={`${compact ? "px-4" : "px-6"} pt-2`}
+        >
+          <div className="p-3 rounded-xl border border-red-300 dark:border-red-800 bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-900/20 shadow-sm">
+            <Typography variant="small" className="text-red-700 dark:text-red-300 text-xs font-medium">
+              ⚠️ {error}
             </Typography>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Composer */}
       <div
         className={`
           ${compact ? "px-4" : "px-6"}
-          py-3 sm:py-4
-          border-t border-gray-100 dark:border-gray-800
-          bg-white dark:bg-gray-900
+          py-4 sm:py-5
+          border-t border-gray-200 dark:border-gray-800
+          bg-gradient-to-t from-white via-gray-50/50 to-white dark:from-gray-900 dark:via-gray-900 dark:to-gray-900
+          backdrop-blur-sm
         `}
-        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)" }}
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)" }}
       >
         <input
           ref={fileRef}
@@ -639,15 +1147,15 @@ function ChatView({
           onChange={onFileSelected}
         />
 
-        <div className="flex items-end gap-2">
+        <div className="flex items-end gap-3">
           <IconButton
             variant="text"
             onClick={onPickFile}
-            className="rounded-xl dark:text-gray-300 dark:hover:bg-gray-800"
+            className="rounded-xl hover:bg-red-50 dark:hover:bg-gray-800 transition-all border border-gray-200 dark:border-gray-700"
             title="Fayl əlavə et"
             disabled={sending}
           >
-            <PaperClipIcon className="h-5 w-5" />
+            <PaperClipIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
           </IconButton>
 
           <div className="flex-1">
@@ -657,7 +1165,7 @@ function ChatView({
               onChange={(e) => setText(e.target.value)}
               onKeyDown={onKeyDown}
               placeholder="Mesaj yaz… (Enter = göndər)"
-              className="dark:text-white"
+              className="dark:text-white !border-gray-300 dark:!border-gray-700 focus:!border-red-500 dark:focus:!border-red-500"
               labelProps={{ className: "dark:text-gray-400" }}
               containerProps={{ className: "!min-w-0" }}
               disabled={sending}
@@ -666,18 +1174,22 @@ function ChatView({
           </div>
 
           <Button
-            color="blue"
             onClick={onSend}
             disabled={sending || !text.trim()}
-            className="dark:bg-blue-600 dark:hover:bg-blue-700 flex items-center gap-2 rounded-xl"
+            className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white flex items-center gap-2 rounded-xl shadow-lg shadow-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             <PaperAirplaneIcon className="h-4 w-4" />
-            Göndər
+            <span className="hidden sm:inline">Göndər</span>
           </Button>
         </div>
 
-        <Typography variant="small" className="mt-2 text-[11px] text-gray-500 dark:text-gray-400">
-          Shift+Enter: yeni sətir • Fayl: PaperClip ilə • Mesajlar paneldə saxlanır
+        <Typography variant="small" className="mt-3 text-[11px] text-gray-500 dark:text-gray-400 text-center">
+          <span className="inline-flex items-center gap-1">
+            <kbd className="px-1.5 py-0.5 text-[10px] font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded">Shift+Enter</kbd>
+            yeni sətir •
+            <kbd className="px-1.5 py-0.5 text-[10px] font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded">📎</kbd>
+            fayl əlavə et
+          </span>
         </Typography>
       </div>
     </div>
@@ -689,12 +1201,17 @@ function ChatBubble({ role, text, attachments = [] }) {
   const isUser = role === "user";
 
   return (
-    <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+      className={`flex ${isUser ? "justify-end" : "justify-start"}`}
+    >
       <div
-        className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm shadow-sm border ${
+        className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm shadow-lg border ${
           isUser
-            ? "bg-blue-600 text-white border-blue-700"
-            : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700"
+            ? "bg-gradient-to-br from-red-600 to-red-700 text-white border-red-500 shadow-red-500/30"
+            : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 shadow-gray-200/50 dark:shadow-gray-900/50"
         }`}
       >
         {/* attachments */}
@@ -704,7 +1221,15 @@ function ChatBubble({ role, text, attachments = [] }) {
               const isImage = a?.mime?.startsWith("image/") || a?.type === "image";
               if (isImage) {
                 return (
-                  <div key={i} className="rounded-xl overflow-hidden border border-white/10">
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="rounded-xl overflow-hidden border shadow-md"
+                    style={{
+                      borderColor: isUser ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.1)",
+                    }}
+                  >
                     <img
                       src={a.url}
                       alt={a.name || "image"}
@@ -712,40 +1237,54 @@ function ChatBubble({ role, text, attachments = [] }) {
                       loading="lazy"
                     />
                     {a.name && (
-                      <div className={`px-2 py-1 text-[11px] ${isUser ? "text-white/80" : "text-gray-500 dark:text-gray-400"}`}>
+                      <div className={`px-3 py-1.5 text-[11px] bg-black/20 backdrop-blur-sm ${
+                        isUser ? "text-white/90" : "text-gray-700 dark:text-gray-300 bg-white/80 dark:bg-gray-800/80"
+                      }`}>
                         {a.name}
                       </div>
                     )}
-                  </div>
+                  </motion.div>
                 );
               }
 
               // non-image file
               return (
-                <a
+                <motion.a
                   key={i}
                   href={a.url}
                   download={a.name}
-                  className={`block rounded-xl px-3 py-2 border ${
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  whileHover={{ scale: 1.02 }}
+                  className={`block rounded-xl px-4 py-3 border transition-all shadow-sm hover:shadow-md ${
                     isUser
-                      ? "border-white/20 bg-white/10 text-white"
-                      : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 text-gray-900 dark:text-white"
+                      ? "border-white/30 bg-white/15 text-white hover:bg-white/20"
+                      : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
                   }`}
                 >
-                  <div className="text-xs font-semibold truncate">{a.name || "Fayl"}</div>
-                  <div className={`text-[11px] ${isUser ? "text-white/70" : "text-gray-500 dark:text-gray-400"}`}>
-                    {a.mime || "file"}
+                  <div className="flex items-center gap-2">
+                    <PaperClipIcon className={`h-4 w-4 ${isUser ? "text-white/80" : "text-gray-500 dark:text-gray-400"}`} />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-semibold truncate">{a.name || "Fayl"}</div>
+                      <div className={`text-[11px] mt-0.5 ${isUser ? "text-white/70" : "text-gray-500 dark:text-gray-400"}`}>
+                        {a.mime || "file"}
+                      </div>
+                    </div>
                   </div>
-                </a>
+                </motion.a>
               );
             })}
           </div>
         )}
 
         {/* text */}
-        {text ? <div className="whitespace-pre-wrap">{text}</div> : null}
+        {text ? (
+          <div className={`whitespace-pre-wrap leading-relaxed ${isUser ? "text-white" : "text-gray-900 dark:text-gray-100"}`}>
+            {text}
+          </div>
+        ) : null}
       </div>
-    </div>
+    </motion.div>
   );
 }
 

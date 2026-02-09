@@ -5,7 +5,30 @@ import { motion } from "framer-motion";
 import { useMaterialTailwindController, setOpenSidenav } from "@/context";
 import { useTranslation } from "react-i18next";
 
-export function SidenavSubMenuItem({ icon, name, path, layout, isParentPath }) {
+export function SidenavSubMenuItem({ icon, name, path, layout, isParentPath, mtkColorCode = null }) {
+  
+  // Rəng kodunu rgba-ya çevir
+  const getRgbaColor = (hex, opacity = 1) => {
+    if (!hex) return null;
+    const hexClean = hex.replace("#", "");
+    const r = parseInt(hexClean.substring(0, 2), 16);
+    const g = parseInt(hexClean.substring(2, 4), 16);
+    const b = parseInt(hexClean.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
+
+  // Aktiv menu item üçün rəng
+  const getActiveGradient = () => {
+    if (mtkColorCode) {
+      const color1 = getRgbaColor(mtkColorCode, 0.9);
+      const color2 = getRgbaColor(mtkColorCode, 1);
+      return {
+        background: `linear-gradient(to right, ${color1}, ${color2})`,
+        boxShadow: `0 4px 6px -1px ${getRgbaColor(mtkColorCode, 0.3)}, 0 2px 4px -1px ${getRgbaColor(mtkColorCode, 0.2)}`,
+      };
+    }
+    return {};
+  };
   const [controller, dispatch] = useMaterialTailwindController();
   const { sidenavSize } = controller;
   const { t } = useTranslation();
@@ -46,9 +69,10 @@ export function SidenavSubMenuItem({ icon, name, path, layout, isParentPath }) {
             <div
               className={`flex items-center gap-2 xl:gap-2.5 px-2 xl:px-3 py-1.5 xl:py-2 rounded-lg xl:rounded-lg transition-all duration-200 ${
                 isActive
-                  ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-md shadow-red-500/20"
+                  ? mtkColorCode ? "text-white" : "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-md shadow-red-500/20"
                   : "text-gray-600 dark:text-gray-400 hover:bg-gray-100/50 dark:hover:bg-gray-800/30 hover:text-gray-900 dark:hover:text-gray-200"
               }`}
+              style={isActive && mtkColorCode ? getActiveGradient() : {}}
               onClick={() => {
                 if (window.innerWidth < 1280) {
                   setOpenSidenav(dispatch, false);

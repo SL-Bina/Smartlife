@@ -1,19 +1,27 @@
 import { useState } from "react";
 
 export function useComplexFilters() {
+  const [filterOpen, setFilterOpen] = useState(false);
   const [filters, setFilters] = useState({
-    mtk_id: "", // ✅ select buranı dolduracaq
-    search: "",
     status: "",
+    address: "",
+    email: "",
+    phone: "",
   });
 
-  const updateFilter = (key, value) => {
+  const setFilter = (key, value) => {
     setFilters((p) => ({ ...p, [key]: value }));
   };
 
   const clearFilters = () => {
-    setFilters({ mtk_id: "", search: "", status: "" });
+    setFilters({ status: "", address: "", email: "", phone: "" });
   };
 
-  return { filters, updateFilter, clearFilters };
+  return { 
+    filterOpen, 
+    setFilterOpen, 
+    filters, 
+    setFilter, 
+    clearFilters 
+  };
 }

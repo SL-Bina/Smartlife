@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { usePropertiesData } from "./hooks/usePropertiesData";
 import { usePropertiesForm } from "./hooks/usePropertiesForm";
+import { usePropertiesFilters } from "./hooks/usePropertiesFilters";
 
 import { PropertiesHeader } from "./components/PropertiesHeader";
 import { PropertiesActions } from "./components/PropertiesActions";
@@ -13,6 +14,7 @@ import { PropertiesTable } from "./components/PropertiesTable";
 import { PropertiesFormModal } from "./components/modals/PropertiesFormModal";
 import { PropertiesDeleteModal } from "./components/modals/PropertiesDeleteModal";
 import { PropertiesViewModal } from "./components/modals/PropertiesViewModal";
+import { PropertiesFilterModal } from "./components/modals/PropertiesFilterModal";
 
 import DynamicToast from "@/components/DynamicToast";
 import { useManagement } from "@/context/ManagementContext";
@@ -53,16 +55,19 @@ function PropertiesPage() {
     setToast({ open: true, type, message, title });
   };
 
+  const filters = usePropertiesFilters();
+
   // Properties yalnız bütün lookup data-lar yükləndikdən sonra yüklənir
+  // Amma əgər scope artıq seçilibsə, dərhal yüklə
   const shouldLoadProperties = 
     !loadingMtks && 
     !loadingComplexes && 
     !loadingBuildings && 
     !loadingBlocks && 
-    mtks.length > 0 && 
-    complexes.length > 0 && 
-    buildings.length > 0 && 
-    blocks.length > 0;
+    (mtks.length > 0 || state.mtkId) && 
+    (complexes.length > 0 || state.complexId) && 
+    (buildings.length > 0 || state.buildingId) && 
+    (blocks.length > 0 || state.blockId);
   
   const { organizedData, loading, refresh, items } = usePropertiesData({
     search,
@@ -71,10 +76,20 @@ function PropertiesPage() {
     buildingId: state.buildingId,
     blockId: state.blockId,
     sortAscending,
-    enabled: shouldLoadProperties, // Properties yalnız lookup data-lar hazır olduqda yüklənir
+    enabled: shouldLoadProperties,
+    filterStatus: filters.filters.status,
+    filterNumber: filters.filters.number,
+    filterBlock: filters.filters.block,
+    filterArea: filters.filters.area
   });
 
   const form = usePropertiesForm();
+
+  const hasActiveFilters = 
+    (filters.filters.status && filters.filters.status !== "") ||
+    (filters.filters.number && filters.filters.number.trim() !== "") ||
+    (filters.filters.block && filters.filters.block.trim() !== "") ||
+    (filters.filters.area && filters.filters.area.trim() !== "");
 
   // MTK - bütün səhifələr
   const loadAllMtks = async () => {
@@ -110,7 +125,6 @@ function PropertiesPage() {
 
   // Complex - bütün səhifələr
   const loadAllComplexes = async () => {
-    // MTK-lar yüklənib bitməyibsə və ya data yoxdursa gözlə
     if (loadingMtks || mtks.length === 0) {
       return;
     }
@@ -132,20 +146,6 @@ function PropertiesPage() {
       } while (page <= lastPage);
 
       setComplexes(all);
-      
-      // Komplekslər yükləndikdən sonra, seçilmiş MTK-ya uyğun kompleksləri filter et
-      const selectedMtkId = state.mtkId;
-      if (selectedMtkId && all.length > 0) {
-        const filtered = all.filter((c) => {
-          const mtkId = c?.mtk_id ?? c?.bind_mtk?.id ?? null;
-          return String(mtkId || "") === String(selectedMtkId);
-        });
-        
-        // Default olaraq 1-ci kompleks seç
-        if (filtered.length > 0 && !state.complexId) {
-          actions.setComplex(filtered[0].id, filtered[0]);
-        }
-      }
     } catch (e) {
       console.error("complex select load error:", e);
       setComplexes([]);
@@ -156,7 +156,6 @@ function PropertiesPage() {
 
   // Buildings - bütün səhifələr
   const loadAllBuildings = async () => {
-    // Komplekslər yüklənib bitməyibsə və ya data yoxdursa gözlə
     if (loadingMtks || loadingComplexes || mtks.length === 0 || complexes.length === 0) {
       return;
     }
@@ -178,20 +177,6 @@ function PropertiesPage() {
       } while (page <= lastPage);
 
       setBuildings(all);
-      
-      // Binələr yükləndikdən sonra, seçilmiş kompleksə uyğun binələri filter et
-      const selectedComplexId = state.complexId;
-      if (selectedComplexId && all.length > 0) {
-        const filtered = all.filter((b) => {
-          const complexId = b?.complex_id ?? b?.complex?.id ?? null;
-          return String(complexId || "") === String(selectedComplexId);
-        });
-        
-        // Default olaraq 1-ci bina seç
-        if (filtered.length > 0 && !state.buildingId) {
-          actions.setBuilding(filtered[0].id, filtered[0]);
-        }
-      }
     } catch (e) {
       console.error("buildings select load error:", e);
       setBuildings([]);
@@ -202,7 +187,6 @@ function PropertiesPage() {
 
   // Blocks - bütün səhifələr
   const loadAllBlocks = async () => {
-    // Binələr yüklənib bitməyibsə və ya data yoxdursa gözlə
     if (loadingMtks || loadingComplexes || loadingBuildings || mtks.length === 0 || complexes.length === 0 || buildings.length === 0) {
       return;
     }
@@ -215,13 +199,8 @@ function PropertiesPage() {
 
       do {
         const res = await blockAPI.getAll({ page });
-        // blockAPI.getAll() artıq response.data qaytarır
-        // res = { success: true, data: { current_page: 1, data: [...], last_page: 1 } }
-        
-        
         let responseData = res;
         
-        // Əgər success: true formatındadırsa
         if (responseData?.success && responseData?.data) {
           responseData = responseData.data;
         } else if (responseData?.data) {
@@ -231,26 +210,11 @@ function PropertiesPage() {
         const list = responseData?.data || [];
         lastPage = responseData?.last_page || 1;
 
-
         all.push(...list);
         page += 1;
       } while (page <= lastPage);
 
       setBlocks(all);
-      
-      // Bloklar yükləndikdən sonra, seçilmiş binəyə uyğun blokları filter et
-      const selectedBuildingId = state.buildingId;
-      if (selectedBuildingId && all.length > 0) {
-        const filtered = all.filter((bl) => {
-          const buildingId = bl?.building_id ?? bl?.building?.id ?? null;
-          return String(buildingId || "") === String(selectedBuildingId);
-        });
-        
-        // Default olaraq 1-ci blok seç
-        if (filtered.length > 0 && !state.blockId) {
-          actions.setBlock(filtered[0].id, filtered[0]);
-        }
-      }
     } catch (e) {
       console.error("blocks select load error:", e);
       setBlocks([]);
@@ -264,44 +228,29 @@ function PropertiesPage() {
     loadAllMtks();
   }, []);
 
-  // MTK-lar yükləndikdən sonra komplekslər yüklənir
   useEffect(() => {
     if (!loadingMtks && mtks.length > 0) {
       loadAllComplexes();
     }
-  }, [loadingMtks, mtks.length, state.mtkId]);
+  }, [loadingMtks, mtks.length]);
 
-  // Komplekslər yükləndikdən sonra binələr yüklənir
   useEffect(() => {
     if (!loadingMtks && !loadingComplexes && complexes.length > 0) {
       loadAllBuildings();
     }
-  }, [loadingMtks, loadingComplexes, complexes.length, state.complexId]);
+  }, [loadingMtks, loadingComplexes, complexes.length]);
 
-  // Binələr yükləndikdən sonra bloklar yüklənir
   useEffect(() => {
     if (!loadingMtks && !loadingComplexes && !loadingBuildings && buildings.length > 0) {
       loadAllBlocks();
     }
-  }, [loadingMtks, loadingComplexes, loadingBuildings, buildings.length, state.buildingId]);
+  }, [loadingMtks, loadingComplexes, loadingBuildings, buildings.length]);
 
   // ✅ table üçün flat data
   const flatProperties = useMemo(
     () => organizedData.flatMap((floorGroup) => floorGroup.apartments || []),
     [organizedData]
   );
-
-  const pageTitleRight = useMemo(() => {
-    if (loading) {
-      return (
-        <div className="flex items-center gap-2 text-xs text-blue-gray-400 dark:text-gray-400">
-          <Spinner className="h-4 w-4" />
-          Yüklənir...
-        </div>
-      );
-    }
-    return <div className="text-xs text-blue-gray-400 dark:text-gray-400">Cəm: {flatProperties.length}</div>;
-  }, [loading, flatProperties.length]);
 
   const openCreate = () => {
     setMode("create");
@@ -364,15 +313,24 @@ function PropertiesPage() {
     }
   };
 
+  const handleFilterApply = () => {
+    filters.setFilterOpen(false);
+    refresh();
+  };
+
+  const handleFilterClear = () => {
+    filters.clearFilters();
+    refresh();
+  };
+
   return (
-    <div className="p-4">
+    <div className="py-4">
       <div className="flex items-start justify-between gap-3">
         <PropertiesHeader />
-        {pageTitleRight}
       </div>
 
-      <Card className="shadow-sm dark:bg-gray-800">
-        <CardBody className="flex flex-col gap-4">
+      <Card className="shadow-lg dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <CardBody className="flex flex-col gap-6 p-6">
           <PropertiesActions
             search={search}
             onSearchChange={setSearch}
@@ -389,6 +347,11 @@ function PropertiesPage() {
             loadingComplexes={loadingComplexes}
             loadingBuildings={loadingBuildings}
             loadingBlocks={loadingBlocks}
+            onFilterClick={() => filters.setFilterOpen(true)}
+            hasActiveFilters={hasActiveFilters}
+            totalItems={flatProperties.length}
+            itemsPerPage={10}
+            onItemsPerPageChange={() => {}}
           />
 
           {loading || loadingMtks || loadingComplexes || loadingBuildings || loadingBlocks ? (
@@ -414,13 +377,14 @@ function PropertiesPage() {
           )}
 
           {!loading && flatProperties.length === 0 ? (
-            <Typography className="text-sm text-blue-gray-500 dark:text-gray-300">
+            <Typography className="text-sm text-blue-gray-500 dark:text-gray-300 text-center py-4">
               Mənzil siyahısı boşdur
             </Typography>
           ) : null}
         </CardBody>
       </Card>
 
+      {/* Modals */}
       <PropertiesViewModal open={viewOpen} onClose={() => setViewOpen(false)} item={selected} />
 
       <PropertiesFormModal
@@ -444,6 +408,15 @@ function PropertiesPage() {
         onClose={() => setDeleteOpen(false)}
         item={selected}
         onConfirm={confirmDelete}
+      />
+
+      <PropertiesFilterModal
+        open={filters.filterOpen}
+        onClose={() => filters.setFilterOpen(false)}
+        filters={filters.filters}
+        onFilterChange={filters.setFilter}
+        onApply={handleFilterApply}
+        onClear={handleFilterClear}
       />
 
       {/* Toast Notification */}

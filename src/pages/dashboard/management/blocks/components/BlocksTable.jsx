@@ -1,62 +1,251 @@
-import React from "react";
-import { Card, CardBody, Typography, Button } from "@material-tailwind/react";
-import { useManagement } from "@/context/ManagementContext";
+import React, { useState, useMemo } from "react";
+import { Card, CardBody, Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
+import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
+import { useManagement } from "@/context/ManagementContext";
+import { useMtkColor } from "@/context";
+import { BlocksTableSkeleton } from "./BlocksTableSkeleton";
 
 export function BlocksTable({ items = [], loading, onEdit, onDelete, onView }) {
   const navigate = useNavigate();
   const { state, actions } = useManagement();
+  const { colorCode, getRgba } = useMtkColor();
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const goProperties = (block) => {
     const mtkId = state.mtkId || block?.building?.complex?.bind_mtk?.id || block?.building?.complex?.mtk_id || null;
     const complexId = state.complexId || block?.building?.complex?.id || block?.complex?.id || null;
     const buildingId = state.buildingId || block?.building?.id || block?.building_id || null;
 
-    actions.setMtk(mtkId, null);
-    actions.setComplex(complexId, block?.complex || block?.building?.complex || null);
-    actions.setBuilding(buildingId, block?.building || null);
+    // Context-də ID-ləri set et (data yükləməni context özü edəcək)
+    if (mtkId) {
+      actions.setMtk(mtkId, block?.building?.complex?.bind_mtk || null);
+    }
+    if (complexId) {
+      actions.setComplex(complexId, block?.complex || block?.building?.complex || null);
+    }
+    if (buildingId) {
+      actions.setBuilding(buildingId, block?.building || null);
+    }
     actions.setBlock(block.id, block);
 
-    navigate("/dashboard/management/properties", {
-      state: { mtkId, complexId, buildingId, blockId: block.id },
+    // Navigate et
+    navigate("/dashboard/management/properties");
+  };
+
+  // Rəng koduna görə kontrast mətn rəngi müəyyən et (ağ və ya qara)
+  const getContrastColor = (hexColor) => {
+    if (!hexColor) return "#000000";
+    const hex = hexColor.replace("#", "");
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.5 ? "#000000" : "#FFFFFF";
+  };
+
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig?.key === key && sortConfig?.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedItems = useMemo(() => {
+    if (!sortConfig.key) return items;
+
+    return [...items].sort((a, b) => {
+      let aValue, bValue;
+
+      switch (sortConfig.key) {
+        case "name":
+          aValue = (a.name || "").toLowerCase();
+          bValue = (b.name || "").toLowerCase();
+          break;
+        case "complex":
+          aValue = (a?.complex?.name || "").toLowerCase();
+          bValue = (b?.complex?.name || "").toLowerCase();
+          break;
+        case "building":
+          aValue = (a?.building?.name || "").toLowerCase();
+          bValue = (b?.building?.name || "").toLowerCase();
+          break;
+        case "floor":
+          aValue = a?.meta?.total_floor || 0;
+          bValue = b?.meta?.total_floor || 0;
+          break;
+        case "apartment":
+          aValue = a?.meta?.total_apartment || 0;
+          bValue = b?.meta?.total_apartment || 0;
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
+      return 0;
     });
+  }, [items, sortConfig]);
+
+  // Rəng kodunu rgba-ya çevir
+  const getRgbaColor = (hex, opacity = 1) => {
+    if (!hex) return null;
+    const hexClean = hex.replace("#", "");
+    const r = parseInt(hexClean.substring(0, 2), 16);
+    const g = parseInt(hexClean.substring(2, 4), 16);
+    const b = parseInt(hexClean.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
+
+  // MTK rəng kodunu tap (block-dan və ya context-dən)
+  const getMtkColorCode = (block) => {
+    return block?.building?.complex?.bind_mtk?.meta?.color_code || 
+           block?.complex?.bind_mtk?.meta?.color_code || 
+           colorCode;
   };
 
   return (
-    <Card className="shadow-sm dark:bg-gray-800">
+    <Card className="shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
       <CardBody className="p-0">
         <div className="w-full overflow-x-auto">
           <table className="w-full min-w-[1200px] table-auto">
             <thead>
               <tr className="bg-blue-gray-50 dark:bg-gray-900/40">
-                <th className="p-4 text-left">
-                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
-                    Ad
-                  </Typography>
+                <th 
+                  className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  onClick={() => handleSort("name")}
+                >
+                  <div className="flex items-center gap-2">
+                    <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                      Ad
+                    </Typography>
+                    <div className="flex flex-col">
+                      <ChevronUpIcon
+                        className={`h-3 w-3 ${
+                          sortConfig?.key === "name" && sortConfig?.direction === "asc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                      <ChevronDownIcon
+                        className={`h-3 w-3 -mt-1 ${
+                          sortConfig?.key === "name" && sortConfig?.direction === "desc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                    </div>
+                  </div>
                 </th>
 
-                <th className="p-4 text-left">
-                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
-                    Kompleks
-                  </Typography>
+                <th 
+                  className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  onClick={() => handleSort("complex")}
+                >
+                  <div className="flex items-center gap-2">
+                    <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                      Kompleks
+                    </Typography>
+                    <div className="flex flex-col">
+                      <ChevronUpIcon
+                        className={`h-3 w-3 ${
+                          sortConfig?.key === "complex" && sortConfig?.direction === "asc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                      <ChevronDownIcon
+                        className={`h-3 w-3 -mt-1 ${
+                          sortConfig?.key === "complex" && sortConfig?.direction === "desc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                    </div>
+                  </div>
                 </th>
 
-                <th className="p-4 text-left">
-                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
-                    Bina
-                  </Typography>
+                <th 
+                  className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  onClick={() => handleSort("building")}
+                >
+                  <div className="flex items-center gap-2">
+                    <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                      Bina
+                    </Typography>
+                    <div className="flex flex-col">
+                      <ChevronUpIcon
+                        className={`h-3 w-3 ${
+                          sortConfig?.key === "building" && sortConfig?.direction === "asc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                      <ChevronDownIcon
+                        className={`h-3 w-3 -mt-1 ${
+                          sortConfig?.key === "building" && sortConfig?.direction === "desc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                    </div>
+                  </div>
                 </th>
 
-                <th className="p-4 text-left">
-                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
-                    Mərtəbə
-                  </Typography>
+                <th 
+                  className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  onClick={() => handleSort("floor")}
+                >
+                  <div className="flex items-center gap-2">
+                    <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                      Mərtəbə
+                    </Typography>
+                    <div className="flex flex-col">
+                      <ChevronUpIcon
+                        className={`h-3 w-3 ${
+                          sortConfig?.key === "floor" && sortConfig?.direction === "asc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                      <ChevronDownIcon
+                        className={`h-3 w-3 -mt-1 ${
+                          sortConfig?.key === "floor" && sortConfig?.direction === "desc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                    </div>
+                  </div>
                 </th>
 
-                <th className="p-4 text-left">
-                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
-                    Mənzil
-                  </Typography>
+                <th 
+                  className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  onClick={() => handleSort("apartment")}
+                >
+                  <div className="flex items-center gap-2">
+                    <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                      Mənzil
+                    </Typography>
+                    <div className="flex flex-col">
+                      <ChevronUpIcon
+                        className={`h-3 w-3 ${
+                          sortConfig?.key === "apartment" && sortConfig?.direction === "asc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                      <ChevronDownIcon
+                        className={`h-3 w-3 -mt-1 ${
+                          sortConfig?.key === "apartment" && sortConfig?.direction === "desc"
+                            ? "text-blue-600 dark:text-blue-400"
+                            : "text-blue-gray-300 dark:text-gray-600"
+                        }`}
+                      />
+                    </div>
+                  </div>
                 </th>
 
                 <th className="p-4 text-right">
@@ -69,100 +258,147 @@ export function BlocksTable({ items = [], loading, onEdit, onDelete, onView }) {
 
             <tbody>
               {loading ? (
+                <BlocksTableSkeleton rows={10} />
+              ) : sortedItems.length === 0 ? (
                 <tr>
                   <td className="p-6" colSpan={6}>
-                    <Typography className="text-sm text-blue-gray-500 dark:text-gray-300">Yüklənir...</Typography>
-                  </td>
-                </tr>
-              ) : items.length === 0 ? (
-                <tr>
-                  <td className="p-6" colSpan={6}>
-                    <Typography className="text-sm text-blue-gray-500 dark:text-gray-300">Heç nə tapılmadı</Typography>
+                    <Typography className="text-sm text-blue-gray-500 dark:text-gray-300 text-center">
+                      Heç nə tapılmadı
+                    </Typography>
                   </td>
                 </tr>
               ) : (
-                items.map((x) => {
+                sortedItems.map((x) => {
                   const isSelected = String(state.blockId || "") === String(x.id);
+                  const mtkColorCode = getMtkColorCode(x);
+                  
+                  // Rəng kodunu rgba-ya çevir (15% opacity)
+                  const getHoverColor = (hex) => {
+                    if (!hex) return null;
+                    const hexClean = hex.replace("#", "");
+                    const r = parseInt(hexClean.substring(0, 2), 16);
+                    const g = parseInt(hexClean.substring(2, 4), 16);
+                    const b = parseInt(hexClean.substring(4, 6), 16);
+                    return `rgba(${r}, ${g}, ${b}, 0.15)`;
+                  };
+                  
+                  // Rəng kodunu rgba-ya çevir (25% opacity)
+                  const getSelectedColor = (hex) => {
+                    if (!hex) return null;
+                    const hexClean = hex.replace("#", "");
+                    const r = parseInt(hexClean.substring(0, 2), 16);
+                    const g = parseInt(hexClean.substring(2, 4), 16);
+                    const b = parseInt(hexClean.substring(4, 6), 16);
+                    return `rgba(${r}, ${g}, ${b}, 0.25)`;
+                  };
+
+                  const hoverColor = getHoverColor(mtkColorCode);
+                  const selectedColor = getSelectedColor(mtkColorCode);
+                  const defaultHover = "bg-blue-gray-50/50 dark:hover:bg-gray-700/30";
+                  const defaultSelected = "bg-blue-50/60 dark:bg-gray-700/40";
 
                   return (
                     <tr
                       key={x.id}
-                      className={`border-b border-blue-gray-50 dark:border-gray-700 cursor-pointer ${
-                        isSelected ? "bg-blue-50/60 dark:bg-gray-700/40" : ""
+                      className={`border-b border-blue-gray-50 dark:border-gray-700 cursor-pointer transition-colors ${
+                        !mtkColorCode && isSelected ? defaultSelected : ""
                       }`}
+                      style={{
+                        ...(selectedColor && isSelected && {
+                          backgroundColor: selectedColor,
+                        }),
+                      }}
+                      onMouseEnter={(e) => {
+                        if (hoverColor) {
+                          e.currentTarget.style.backgroundColor = hoverColor;
+                        } else {
+                          e.currentTarget.classList.add(...defaultHover.split(" "));
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (hoverColor) {
+                          e.currentTarget.style.backgroundColor = isSelected && selectedColor ? selectedColor : '';
+                        } else {
+                          e.currentTarget.classList.remove(...defaultHover.split(" "));
+                        }
+                      }}
                       onClick={() => actions.setBlock(x.id, x)}
                       title="Blok seç (scope)"
                     >
-                      <td className="p-4">
+                      <td className="p-4 text-center">
                         <Typography className="text-sm font-medium text-blue-gray-800 dark:text-white">
                           {x.name}
                         </Typography>
                         <Typography className="text-xs text-blue-gray-500 dark:text-gray-400">ID: {x.id}</Typography>
                       </td>
 
-                      <td className="p-4">
+                      <td className="p-4 text-center">
                         <Typography className="text-sm text-blue-gray-700 dark:text-gray-200">
                           {x?.complex?.name || "—"}
                         </Typography>
                       </td>
 
-                      <td className="p-4">
+                      <td className="p-4 text-center">
                         <Typography className="text-sm text-blue-gray-700 dark:text-gray-200">
                           {x?.building?.name || "—"}
                         </Typography>
                       </td>
 
-                      <td className="p-4">
+                      <td className="p-4 text-center">
                         <Typography className="text-sm text-blue-gray-700 dark:text-gray-200">
                           {x?.meta?.total_floor || "—"}
                         </Typography>
                       </td>
 
-                      <td className="p-4">
+                      <td className="p-4 text-center">
                         <Typography className="text-sm text-blue-gray-700 dark:text-gray-200">
                           {x?.meta?.total_apartment || "—"}
                         </Typography>
                       </td>
 
-                      <td className="p-4">
-                        <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                      <td className="p-4 justify-center items-center">
+                        <div className="flex justify-center items-center gap-2" onClick={(e) => e.stopPropagation()}>
                           <button
-                            onClick={() => onView?.(x)}
-                            className="px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800 transition-colors flex items-center gap-1.5"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              goProperties(x);
+                            }}
+                            className="px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                            Bax
-                          </button>
-                          <button
-                            onClick={() => onEdit?.(x)}
-                            className="px-3 py-1.5 text-xs font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-lg border border-amber-200 dark:border-amber-800 transition-colors flex items-center gap-1.5"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => onDelete?.(x)}
-                            className="px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-lg transition-all flex items-center gap-1.5 shadow-sm"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                            Sil
-                          </button>
-                          <button
-                            onClick={() => goProperties(x)}
-                            className="px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-lg transition-all flex items-center gap-1.5 shadow-sm"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                            </svg>
                             Mənzillərə keç
                           </button>
+                          <Menu placement="left-start">
+                            <MenuHandler>
+                              <IconButton
+                                size="sm"
+                                variant="text"
+                                color="blue-gray"
+                                className="dark:text-gray-300 dark:hover:bg-gray-700"
+                              >
+                                <EllipsisVerticalIcon strokeWidth={2} className="h-5 w-5" />
+                              </IconButton>
+                            </MenuHandler>
+                            <MenuList className="dark:bg-gray-800 dark:border-gray-800">
+                              <MenuItem
+                                onClick={() => onView?.(x)}
+                                className="dark:text-gray-300 dark:hover:bg-gray-700"
+                              >
+                                Bax
+                              </MenuItem>
+                              <MenuItem
+                                onClick={() => onEdit?.(x)}
+                                className="dark:text-gray-300 dark:hover:bg-gray-700"
+                              >
+                                Düzəliş et
+                              </MenuItem>
+                              <MenuItem
+                                onClick={() => onDelete?.(x)}
+                                className="dark:text-gray-300 dark:hover:bg-gray-700"
+                              >
+                                Sil
+                              </MenuItem>
+                            </MenuList>
+                          </Menu>
                         </div>
                       </td>
                     </tr>

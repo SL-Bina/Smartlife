@@ -1,12 +1,28 @@
 import React from "react";
 import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Input, Typography } from "@material-tailwind/react";
-import { useTranslation } from "react-i18next";
-import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { FunnelIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import AppSelect from "@/components/ui/AppSelect";
+import { useMtkColor } from "@/context";
+
+const statusOptions = [
+  { id: "active", name: "Aktiv" },
+  { id: "inactive", name: "Qeyri-aktiv" },
+];
 
 export function ComplexFilterModal({ open, onClose, filters, onFilterChange, onApply, onClear }) {
-  const { t } = useTranslation();
-
+  const { colorCode, getRgba, defaultColor } = useMtkColor();
+  
+  // Default göz yormayan qırmızı ton
+  const defaultRed = "#dc2626";
+  const activeColor = colorCode || defaultRed;
+  
   if (!open) return null;
+
+  const hasActiveFilters = 
+    (filters.status && filters.status !== "") ||
+    (filters.address && filters.address.trim() !== "") ||
+    (filters.email && filters.email.trim() !== "") ||
+    (filters.phone && filters.phone.trim() !== "");
 
   return (
     <Dialog
@@ -16,41 +32,50 @@ export function ComplexFilterModal({ open, onClose, filters, onFilterChange, onA
       className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl"
       dismiss={{ enabled: false }}
     >
-      <DialogHeader className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700 border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between rounded-t-lg">
+      <DialogHeader 
+        className="border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between rounded-t-lg transition-colors"
+        style={{
+          background: colorCode 
+            ? `linear-gradient(to right, ${getRgba(0.1)}, ${getRgba(0.05)})` 
+            : "linear-gradient(to right, rgba(220, 38, 38, 0.1), rgba(185, 28, 28, 0.05))",
+        }}
+      >
         <div className="flex items-center gap-3">
-          <MagnifyingGlassIcon className="h-5 w-5 text-blue-500" />
+          <FunnelIcon 
+            className="h-5 w-5" 
+            style={{ color: activeColor }}
+          />
           <Typography variant="h5" className="font-bold text-gray-900 dark:text-white">
-            {t("complexes.filter.title")}
+            Filter
           </Typography>
         </div>
-        <div
-          className="cursor-pointer p-2 rounded-md transition-all hover:bg-gray-200 dark:hover:bg-gray-700"
-          onClick={onClose}
-        >
+
+        <div className="cursor-pointer p-2 rounded-md transition-all hover:bg-gray-200 dark:hover:bg-gray-700" onClick={onClose}>
           <XMarkIcon className="dark:text-white h-5 w-5 cursor-pointer" />
         </div>
       </DialogHeader>
-      <DialogBody divider className="space-y-6 dark:bg-gray-800 py-6 max-h-[70vh] overflow-y-auto">
+      <DialogBody divider className="space-y-4 dark:bg-gray-800 py-6 max-h-[70vh] overflow-y-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
-              {t("complexes.filter.name")}
+              Status
             </Typography>
-            <Input
-              placeholder={t("complexes.filter.enterName")}
-              value={filters.name || ""}
-              onChange={(e) => onFilterChange("name", e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-              containerProps={{ className: "!min-w-0" }}
+            <AppSelect
+              items={statusOptions}
+              value={filters.status && filters.status !== "" ? filters.status : null}
+              onChange={(value) => onFilterChange("status", value === null ? "" : value)}
+              placeholder="Status seç"
+              allowAll={true}
+              allLabel="Hamısı"
             />
           </div>
+
           <div>
             <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
-              {t("complexes.filter.address") || "Ünvan"}
+              Ünvan
             </Typography>
             <Input
-              placeholder={t("complexes.filter.enterAddress") || "Ünvan daxil edin"}
+              placeholder="Ünvan yaz..."
               value={filters.address || ""}
               onChange={(e) => onFilterChange("address", e.target.value)}
               className="dark:text-white"
@@ -58,71 +83,65 @@ export function ComplexFilterModal({ open, onClose, filters, onFilterChange, onA
               containerProps={{ className: "!min-w-0" }}
             />
           </div>
+
           <div>
             <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
-              {t("complexes.filter.status") || "Status"}
-            </Typography>
-            <select
-              value={filters.status || ""}
-              onChange={(e) => onFilterChange("status", e.target.value)}
-              className="w-full px-3 py-2.5 border border-blue-gray-200 rounded-lg focus:border-blue-500 focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-            >
-              <option value="" className="dark:bg-gray-800 dark:text-gray-300">
-                {t("complexes.filter.all") || "Hamısı"}
-              </option>
-              <option value="active" className="dark:bg-gray-800 dark:text-gray-300">
-                {t("complexes.filter.active") || "Aktiv"}
-              </option>
-              <option value="inactive" className="dark:bg-gray-800 dark:text-gray-300">
-                {t("complexes.filter.inactive") || "Passiv"}
-              </option>
-            </select>
-          </div>
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
-              {t("complexes.filter.email") || "Email"}
+              Email
             </Typography>
             <Input
-              placeholder={t("complexes.filter.enterEmail") || "Email daxil edin"}
+              type="email"
+              placeholder="Email yaz..."
               value={filters.email || ""}
               onChange={(e) => onFilterChange("email", e.target.value)}
               className="dark:text-white"
               labelProps={{ className: "dark:text-gray-400" }}
               containerProps={{ className: "!min-w-0" }}
-              type="email"
             />
           </div>
+
           <div>
             <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
-              {t("complexes.filter.phone") || "Telefon"}
+              Telefon
             </Typography>
             <Input
-              placeholder={t("complexes.filter.enterPhone") || "Telefon daxil edin"}
+              type="tel"
+              placeholder="Telefon yaz..."
               value={filters.phone || ""}
               onChange={(e) => onFilterChange("phone", e.target.value)}
               className="dark:text-white"
               labelProps={{ className: "dark:text-gray-400" }}
               containerProps={{ className: "!min-w-0" }}
-              type="tel"
             />
           </div>
         </div>
       </DialogBody>
+
       <DialogFooter className="flex justify-between gap-2 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pt-4">
         <Button
           variant="outlined"
           color="blue-gray"
           onClick={onClear}
-          className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
+          disabled={!hasActiveFilters}
+          className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 disabled:opacity-50"
         >
-          {t("buttons.clear") || "Təmizlə"}
+          Təmizlə
         </Button>
-        <Button
-          color="blue"
-          onClick={onApply}
-          className="dark:bg-blue-600 dark:hover:bg-blue-700"
+        <Button 
+          onClick={onApply} 
+          className="text-white"
+          style={{
+            backgroundColor: activeColor,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = colorCode 
+              ? getRgba(0.9) 
+              : "#b91c1c";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = activeColor;
+          }}
         >
-          {t("buttons.search") || "Axtar"}
+          Tətbiq et
         </Button>
       </DialogFooter>
     </Dialog>

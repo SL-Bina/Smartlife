@@ -9,13 +9,25 @@ const mapBuilding = (x) => ({
   complex: x?.complex || null, // list response-da var
 });
 
-export function useBuildingsData({ search = "", mtkId = null, complexId = null, enabled = true } = {}) {
+const DEFAULT_ITEMS_PER_PAGE = 10;
+
+export function useBuildingsData({ 
+  search = "", 
+  mtkId = null, 
+  complexId = null, 
+  enabled = true,
+  filterStatus = "",
+  filterAddress = "",
+  filterEmail = "",
+  filterPhone = ""
+} = {}) {
   const [loading, setLoading] = useState(true);
 
   // normal pagination (heç nə seçilməyib)
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
 
   // scope mode (mtk/complex seçilib) -> bütün səhifələr
   const [allItems, setAllItems] = useState([]);
@@ -127,31 +139,113 @@ export function useBuildingsData({ search = "", mtkId = null, complexId = null, 
   }, [fetchPage, mtkId, complexId, enabled]);
 
   const prevFiltersRef = useRef({ mtkId: null, complexId: null });
+  const prevEnabledRef = useRef(null);
   const hasInitializedRef = useRef(false);
   useEffect(() => {
+    // Əgər enabled false-dursa, gözlə (yalnız ilk dəfə deyilsə)
+    if (!enabled) {
+      if (!hasInitializedRef.current) {
+        setLoading(false);
+      }
+      return;
+    }
+
     // React StrictMode-da iki dəfə çağırılmanın qarşısını almaq üçün
-    if (hasInitializedRef.current && prevFiltersRef.current.mtkId === mtkId && prevFiltersRef.current.complexId === complexId) return;
+    // Amma enabled false-dan true-a keçəndə yenidən çağır
+    const enabledChanged = prevEnabledRef.current === false && enabled === true;
+    if (hasInitializedRef.current && prevFiltersRef.current.mtkId === mtkId && prevFiltersRef.current.complexId === complexId && prevEnabledRef.current === enabled && !enabledChanged) {
+      return;
+    }
     prevFiltersRef.current = { mtkId, complexId };
+    prevEnabledRef.current = enabled;
     hasInitializedRef.current = true;
     
     if (mtkId || complexId) fetchAllAndFilter();
     else fetchNormal(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mtkId, complexId]); // Yalnız mtkId və complexId dəyişəndə yenidən çağır
+  }, [mtkId, complexId, enabled]); // mtkId, complexId və enabled dəyişəndə yenidən çağır
 
+  // Search and filter
   const finalItems = useMemo(() => {
-    const base = mtkId || complexId ? allItems : items;
+    let filtered = mtkId || complexId ? allItems : items;
+    
+    // Search filter
     const q = (search || "").trim().toLowerCase();
-    if (!q) return base;
-    return base.filter((x) => (x.name || "").toLowerCase().includes(q));
-  }, [items, allItems, search, mtkId, complexId]);
+    if (q) {
+      filtered = filtered.filter((x) => (x.name || "").toLowerCase().includes(q));
+    }
+    
+    // Status filter
+    if (filterStatus && filterStatus.trim()) {
+      filtered = filtered.filter((item) => item.status === filterStatus.trim());
+    }
+    
+    // Address filter
+    if (filterAddress && filterAddress.trim()) {
+      const addressLower = filterAddress.trim().toLowerCase();
+      filtered = filtered.filter((item) => 
+        (item.meta?.address || "").toLowerCase().includes(addressLower)
+      );
+    }
+    
+    // Email filter
+    if (filterEmail && filterEmail.trim()) {
+      const emailLower = filterEmail.trim().toLowerCase();
+      filtered = filtered.filter((item) => 
+        (item.meta?.email || "").toLowerCase().includes(emailLower)
+      );
+    }
+    
+    // Phone filter
+    if (filterPhone && filterPhone.trim()) {
+      const phoneLower = filterPhone.trim().toLowerCase();
+      filtered = filtered.filter((item) => 
+        (item.meta?.phone || "").toLowerCase().includes(phoneLower)
+      );
+    }
+    
+    return filtered;
+  }, [items, allItems, search, mtkId, complexId, filterStatus, filterAddress, filterEmail, filterPhone]);
+
+  // Paginated items
+  const paginatedItems = useMemo(() => {
+    if (mtkId || complexId) {
+      // Scope rejimində frontend pagination
+      const startIndex = (page - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      return finalItems.slice(startIndex, endIndex);
+    }
+    return finalItems;
+  }, [finalItems, page, itemsPerPage, mtkId, complexId]);
+
+  // Calculate total pages
+  const totalPages = useMemo(() => {
+    if (mtkId || complexId) {
+      return Math.ceil(finalItems.length / itemsPerPage) || 1;
+    }
+    return lastPage;
+  }, [finalItems.length, itemsPerPage, mtkId, complexId, lastPage]);
+
+  // Items per page dəyişəndə səhifəni 1-ə qaytar
+  useEffect(() => {
+    setPage(1);
+  }, [itemsPerPage]);
 
   return {
     loading,
-    items: finalItems,
+    items: paginatedItems,
+    filteredItems: finalItems,
+    total: finalItems.length,
     page,
-    lastPage,
-    goToPage: (p) => (mtkId || complexId ? null : fetchNormal(p)),
+    lastPage: totalPages,
+    itemsPerPage,
+    setItemsPerPage,
+    goToPage: (p) => {
+      setPage(p);
+      if (!mtkId && !complexId) {
+        fetchNormal(p);
+      }
+    },
     refresh: () => (mtkId || complexId ? fetchAllAndFilter() : fetchNormal(page)),
   };
 }
