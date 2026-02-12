@@ -18,7 +18,7 @@ import {
   setNavbarAnimations,
   setNavbarHoverEffects,
   useMaterialTailwindController,
-} from "@/context";
+} from "@/store/exports";
 
 export function NavbarSection({
   dispatch,

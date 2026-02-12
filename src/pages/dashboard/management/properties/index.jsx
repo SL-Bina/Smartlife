@@ -17,7 +17,7 @@ import { PropertiesViewModal } from "./components/modals/PropertiesViewModal";
 import { PropertiesFilterModal } from "./components/modals/PropertiesFilterModal";
 
 import DynamicToast from "@/components/DynamicToast";
-import { useManagementEnhanced } from "@/context";
+import { useManagementEnhanced } from "@/store/exports";
 
 import mtkAPI from "../mtk/api";
 import complexAPI from "../complex/api";

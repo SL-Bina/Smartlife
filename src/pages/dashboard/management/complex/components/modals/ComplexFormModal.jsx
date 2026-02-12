@@ -8,8 +8,7 @@ import { CustomCard, CardBody } from "@/components/ui/CustomCard";
 import { CustomTypography } from "@/components/ui/CustomTypography";
 import AdvancedColorPicker from "@/components/ui/AdvancedColorPicker";
 import MapPicker from "@/components/ui/MapPicker";
-import { useManagementEnhanced } from "@/context";
-import { useMtkColor } from "@/context";
+import { useManagementEnhanced, useMtkColor } from "@/store/exports";
 import {
   BuildingOffice2Icon,
   MapPinIcon,

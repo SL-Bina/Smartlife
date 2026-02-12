@@ -22,20 +22,18 @@ export function useMtkData({
   filterColor = ""
 } = {}) {
   const [loading, setLoading] = useState(true);
-  const [allItems, setAllItems] = useState([]); // Bütün yüklənmiş məlumatlar
+  const [allItems, setAllItems] = useState([]); 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
   const [total, setTotal] = useState(0);
-  const [lastFetchedPage, setLastFetchedPage] = useState(0); // Son yüklənmiş səhifə
+  const [lastFetchedPage, setLastFetchedPage] = useState(0); 
   const [totalPages, setTotalPages] = useState(1);
   const hasFetchedRef = useRef(false);
 
-  // Tək səhifə yüklə (yalnız search üçün, filter yox)
   const fetchPage = useCallback(async (pageNum, searchQuery = "") => {
     try {
       const params = { page: pageNum, per_page: DEFAULT_ITEMS_PER_PAGE };
       
-      // Yalnız search parametri (filter frontend-də olacaq)
       if (searchQuery && searchQuery.trim()) {
         params.search = searchQuery.trim();
       }
@@ -55,18 +53,15 @@ export function useMtkData({
     }
   }, []);
 
-  // Bütün səhifələri yüklə (yalnız search üçün, filter frontend-də)
   const fetchAllPages = useCallback(async (searchQuery = "") => {
     setLoading(true);
     try {
-      // İlk səhifəni yüklə
       const firstPageData = await fetchPage(1, searchQuery);
       let allData = [...firstPageData.items];
       let totalPagesCount = firstPageData.lastPage;
       setTotalPages(totalPagesCount);
       setLastFetchedPage(1);
 
-      // Qalan səhifələri yüklə (əgər varsa)
       if (totalPagesCount > 1) {
         const promises = [];
         for (let i = 2; i <= totalPagesCount; i++) {
@@ -75,7 +70,6 @@ export function useMtkData({
         const results = await Promise.all(promises);
         results.forEach((result) => {
           allData.push(...result.items);
-          // Əgər backend-dən gələn lastPage daha böyükdürsə, yenilə
           if (result.lastPage > totalPagesCount) {
             totalPagesCount = result.lastPage;
           }
@@ -96,9 +90,8 @@ export function useMtkData({
     }
   }, [fetchPage]);
 
-  // Növbəti səhifəni yüklə (lazy loading)
   const loadNextPage = useCallback(async (searchQuery = "") => {
-    if (lastFetchedPage >= totalPages) return; // Artıq bütün səhifələr yüklənib
+    if (lastFetchedPage >= totalPages) return; 
 
     try {
       const nextPage = lastFetchedPage + 1;
@@ -112,33 +105,27 @@ export function useMtkData({
     }
   }, [lastFetchedPage, totalPages, fetchPage]);
 
-  // İlk yükləmə
   useEffect(() => {
     if (hasFetchedRef.current) return;
     hasFetchedRef.current = true;
     fetchAllPages(search);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Search dəyişəndə yenidən yüklə (filter frontend-də olacaq)
   useEffect(() => {
-    if (!hasFetchedRef.current) return; // İlk yükləmə hələ baş verməyibsə gözlə
+    if (!hasFetchedRef.current) return; 
     
     setCurrentPage(1);
     setLastFetchedPage(0);
     fetchAllPages(search);
   }, [search, fetchAllPages]);
 
-  // Frontend-də filter et
   const filteredItems = useMemo(() => {
     let filtered = [...allItems];
     
-    // Status filter
     if (filterStatus && filterStatus.trim()) {
       filtered = filtered.filter((item) => item.status === filterStatus.trim());
     }
     
-    // Address filter
     if (filterAddress && filterAddress.trim()) {
       const addressLower = filterAddress.trim().toLowerCase();
       filtered = filtered.filter((item) => 
@@ -146,7 +133,6 @@ export function useMtkData({
       );
     }
     
-    // Email filter
     if (filterEmail && filterEmail.trim()) {
       const emailLower = filterEmail.trim().toLowerCase();
       filtered = filtered.filter((item) => 
@@ -154,7 +140,6 @@ export function useMtkData({
       );
     }
     
-    // Phone filter
     if (filterPhone && filterPhone.trim()) {
       const phoneLower = filterPhone.trim().toLowerCase();
       filtered = filtered.filter((item) => 
@@ -162,7 +147,6 @@ export function useMtkData({
       );
     }
     
-    // Website filter
     if (filterWebsite && filterWebsite.trim()) {
       const websiteLower = filterWebsite.trim().toLowerCase();
       filtered = filtered.filter((item) => 
@@ -170,7 +154,6 @@ export function useMtkData({
       );
     }
     
-    // Color filter
     if (filterColor && filterColor.trim()) {
       const colorLower = filterColor.trim().toLowerCase();
       filtered = filtered.filter((item) => 
@@ -181,19 +164,16 @@ export function useMtkData({
     return filtered;
   }, [allItems, filterStatus, filterAddress, filterEmail, filterPhone, filterWebsite, filterColor]);
 
-  // Cari səhifənin məlumatları (filter edilmiş məlumatlardan)
   const currentPageItems = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     return filteredItems.slice(startIndex, endIndex);
   }, [filteredItems, currentPage, itemsPerPage]);
 
-  // Səhifə dəyişdir
   const goToPage = useCallback(
     (pageNum) => {
       setCurrentPage(pageNum);
       
-      // Əgər sonuncu səhifədəyiksə və növbəti səhifə yüklənməyibsə, yüklə
       const totalPagesFromItems = Math.ceil(allItems.length / itemsPerPage);
       if (pageNum >= totalPagesFromItems && lastFetchedPage < totalPages) {
         loadNextPage(search);
@@ -202,12 +182,10 @@ export function useMtkData({
     [allItems.length, lastFetchedPage, totalPages, loadNextPage, search, itemsPerPage]
   );
 
-  // Cari səhifələrin sayı (filter edilmiş məlumatlara görə)
   const currentLastPage = useMemo(() => {
     return Math.ceil(filteredItems.length / itemsPerPage) || 1;
   }, [filteredItems.length, itemsPerPage]);
 
-  // Həqiqi son səhifə (backend-dən gələn)
   const realLastPage = useMemo(() => {
     return totalPages;
   }, [totalPages]);
@@ -218,12 +196,10 @@ export function useMtkData({
     fetchAllPages(search);
   }, [search, fetchAllPages]);
 
-  // Filter dəyişəndə səhifəni 1-ə qaytar
   useEffect(() => {
     setCurrentPage(1);
   }, [filterStatus, filterAddress, filterEmail, filterPhone, filterWebsite, filterColor]);
 
-  // Items per page dəyişəndə səhifəni 1-ə qaytar
   useEffect(() => {
     setCurrentPage(1);
   }, [itemsPerPage]);
@@ -236,7 +212,7 @@ export function useMtkData({
     page: currentPage,
     lastPage: currentLastPage,
     realLastPage: realLastPage,
-    total: filteredItems.length, // Filter edilmiş məlumatların sayı
+    total: filteredItems.length, 
     itemsPerPage,
     setItemsPerPage,
     goToPage,

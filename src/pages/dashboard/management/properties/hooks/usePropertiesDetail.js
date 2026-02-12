@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { useManagementEnhanced } from "@/context/ManagementContextEnhanced";
+import { useManagementEnhanced } from "@/store/exports";
 import propertiesAPI from "../api";
 
 /**
@@ -65,5 +65,8 @@ export function usePropertiesDetail(propertyId) {
     isSelected,
   };
 }
+
+
+
 
 

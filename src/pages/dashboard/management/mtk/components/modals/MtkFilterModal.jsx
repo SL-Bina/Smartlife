@@ -2,7 +2,7 @@ import React from "react";
 import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Input, Typography } from "@material-tailwind/react";
 import { FunnelIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import AppSelect from "@/components/ui/AppSelect";
-import { useMtkColor } from "@/context";
+import { useMtkColor } from "@/store/exports";
 
 const statusOptions = [
   { id: "active", name: "Aktiv" },
@@ -10,9 +10,8 @@ const statusOptions = [
 ];
 
 export function MtkFilterModal({ open, onClose, filters, onFilterChange, onApply, onClear }) {
-  const { colorCode, getGradientBackground, getRgba, defaultColor } = useMtkColor();
+  const { colorCode, getRgba } = useMtkColor();
   
-  // Default göz yormayan qırmızı ton
   const defaultRed = "#dc2626";
   const activeColor = colorCode || defaultRed;
   
@@ -56,11 +55,11 @@ export function MtkFilterModal({ open, onClose, filters, onFilterChange, onApply
           <XMarkIcon className="dark:text-white h-5 w-5 cursor-pointer" />
         </div>
       </DialogHeader>
-
-      <DialogBody divider className="space-y-4 dark:bg-gray-800 py-6 max-h-[70vh] overflow-y-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
+      <DialogBody divider className="dark:bg-gray-800 py-6 max-h-[70vh] overflow-y-auto">
+        <div className="flex flex-col gap-6">
+          {/* Status - Full Width */}
+          <div className="w-full">
+            <Typography variant="small" color="blue-gray" className="mb-3 font-semibold dark:text-gray-300">
               Status
             </Typography>
             <AppSelect
@@ -73,8 +72,9 @@ export function MtkFilterModal({ open, onClose, filters, onFilterChange, onApply
             />
           </div>
 
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
+          {/* Ünvan - Full Width */}
+          <div className="w-full">
+            <Typography variant="small" color="blue-gray" className="mb-3 font-semibold dark:text-gray-300">
               Ünvan
             </Typography>
             <Input
@@ -87,52 +87,54 @@ export function MtkFilterModal({ open, onClose, filters, onFilterChange, onApply
             />
           </div>
 
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
-              Email
-            </Typography>
-            <Input
-              type="email"
-              placeholder="Email yaz..."
-              value={filters.email || ""}
-              onChange={(e) => onFilterChange("email", e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-              containerProps={{ className: "!min-w-0" }}
-            />
+          {/* Email və Telefon - Yan-yana */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Typography variant="small" color="blue-gray" className="mb-3 font-semibold dark:text-gray-300">
+                Email
+              </Typography>
+              <Input
+                type="email"
+                placeholder="Email yaz..."
+                value={filters.email || ""}
+                onChange={(e) => onFilterChange("email", e.target.value)}
+                className="dark:text-white"
+                labelProps={{ className: "dark:text-gray-400" }}
+                containerProps={{ className: "!min-w-0" }}
+              />
+            </div>
+
+            <div>
+              <Typography variant="small" color="blue-gray" className="mb-3 font-semibold dark:text-gray-300">
+                Telefon
+              </Typography>
+              <Input
+                type="tel"
+                placeholder="Telefon yaz..."
+                value={filters.phone || ""}
+                onChange={(e) => onFilterChange("phone", e.target.value)}
+                className="dark:text-white"
+                labelProps={{ className: "dark:text-gray-400" }}
+                containerProps={{ className: "!min-w-0" }}
+              />
+            </div>
           </div>
 
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
-              Telefon
-            </Typography>
-            <Input
-              type="tel"
-              placeholder="Telefon yaz..."
-              value={filters.phone || ""}
-              onChange={(e) => onFilterChange("phone", e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-              containerProps={{ className: "!min-w-0" }}
-            />
-          </div>
-
-        <div>
-          <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
+          {/* Web sayt - Full Width */}
+          <div className="w-full">
+            <Typography variant="small" color="blue-gray" className="mb-3 font-semibold dark:text-gray-300">
               Web sayt
-          </Typography>
-          <Input
+            </Typography>
+            <Input
               type="url"
               placeholder="Web sayt yaz..."
               value={filters.website || ""}
               onChange={(e) => onFilterChange("website", e.target.value)}
-            className="dark:text-white"
-            labelProps={{ className: "dark:text-gray-400" }}
-            containerProps={{ className: "!min-w-0" }}
-          />
+              className="dark:text-white"
+              labelProps={{ className: "dark:text-gray-400" }}
+              containerProps={{ className: "!min-w-0" }}
+            />
           </div>
-
-          
         </div>
       </DialogBody>
 

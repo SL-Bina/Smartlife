@@ -19,7 +19,8 @@ export function CustomTypography({
     caption: "text-xs text-gray-500 dark:text-gray-400",
   };
 
-  const Tag = variant.startsWith("h") ? variant : "p";
+  // Use span for non-heading variants to avoid nesting issues
+  const Tag = variant.startsWith("h") ? variant : "span";
 
   return (
     <Tag className={`${variants[variant] || variants.body1} text-gray-900 dark:text-white ${className}`} {...props}>

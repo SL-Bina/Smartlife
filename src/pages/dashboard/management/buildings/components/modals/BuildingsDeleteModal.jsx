@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography } from "@material-tailwind/react";
 import { ExclamationTriangleIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useMtkColor } from "@/context";
+import { useMtkColor } from "@/store/exports";
 
 export function BuildingDeleteModal({ open, onClose, item, onConfirm }) {
   const [loading, setLoading] = useState(false);

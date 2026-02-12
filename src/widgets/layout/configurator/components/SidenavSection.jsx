@@ -11,7 +11,7 @@ import {
   setSidenavExpandAll,
   setSidenavSize,
   setSidenavPosition,
-} from "@/context";
+} from "@/store/exports";
 
 export function SidenavSection({
   dispatch,

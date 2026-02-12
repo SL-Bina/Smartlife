@@ -2,8 +2,7 @@ import React, { useState, useMemo } from "react";
 import { Card, CardBody, Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
 import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
-import { useManagementEnhanced } from "@/context";
-import { useMtkColor } from "@/context";
+import { useManagementEnhanced, useMtkColor } from "@/store/exports";
 import { BlocksTableSkeleton } from "./BlocksTableSkeleton";
 
 export function BlocksTable({ items = [], loading, onEdit, onDelete, onView }) {

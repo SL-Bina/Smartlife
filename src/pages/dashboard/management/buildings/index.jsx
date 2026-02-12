@@ -15,21 +15,12 @@ import { useBuildingsData } from "./hooks/useBuildingsData";
 import { useBuildingForm } from "./hooks/useBuildingsForm";
 import { useBuildingsFilters } from "./hooks/useBuildingsFilters";
 
-import mtkAPI from "../mtk/api";
-import complexAPI from "../complex/api";
-
-import { useManagementEnhanced } from "@/context";
+import { useManagementEnhanced } from "@/store/exports";
 import buildingAPI from "./api";
 import DynamicToast from "@/components/DynamicToast";
 
 export default function BuildingsPage() {
   const [search, setSearch] = useState("");
-
-  const [mtks, setMtks] = useState([]);
-  const [complexes, setComplexes] = useState([]);
-
-  const [loadingMtks, setLoadingMtks] = useState(false);
-  const [loadingComplexes, setLoadingComplexes] = useState(false);
 
   const [viewOpen, setViewOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
@@ -40,6 +31,12 @@ export default function BuildingsPage() {
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
 
   const { state, actions } = useManagementEnhanced();
+  
+  // Context-dən MTK və Complex məlumatlarını al
+  const mtks = state.mtks || [];
+  const complexes = state.complexes || [];
+  const loadingMtks = state.loading?.mtks || false;
+  const loadingComplexes = state.loading?.complexes || false;
 
   const showToast = (type, message, title = "") => {
     setToast({ open: true, type, message, title });
@@ -48,8 +45,8 @@ export default function BuildingsPage() {
   const filters = useBuildingsFilters();
 
   // Buildings data yalnız MTK və Complex yükləndikdən sonra yüklənir
-  // Amma əgər MTK və Complex artıq seçilibsə (məsələn Complex səhifəsindən gələndə), dərhal yüklə
-  const shouldLoadBuildingsData = !loadingMtks && !loadingComplexes && (mtks.length > 0 || state.mtkId) && (complexes.length > 0 || state.complexId);
+  // Context-dən məlumatlar artıq yüklənib, yalnız loading state-i yoxlayırıq
+  const shouldLoadBuildingsData = !loadingMtks && !loadingComplexes;
   
   const { items, loading, page, lastPage, total, itemsPerPage, setItemsPerPage, goToPage, refresh } = useBuildingsData({
     search,
@@ -70,95 +67,29 @@ export default function BuildingsPage() {
     (filters.filters.email && filters.filters.email.trim() !== "") ||
     (filters.filters.phone && filters.filters.phone.trim() !== "");
 
-  // MTK - bütün səhifələr
-  const loadAllMtks = async () => {
-    setLoadingMtks(true);
-    try {
-      let page = 1;
-      let lastPage = 1;
-      const all = [];
-
-      do {
-        const res = await mtkAPI.getAll({ page });
-        const data = res?.data;
-        const list = data?.data || [];
-        lastPage = data?.last_page || 1;
-
-        all.push(...list);
-        page += 1;
-      } while (page <= lastPage);
-
-      setMtks(all);
-      
-      // MTK-lar yükləndikdən sonra default olaraq 1-ci MTK seç
-      if (all.length > 0 && !state.mtkId) {
-        actions.setMtk(all[0].id, all[0]);
-      }
-    } catch (e) {
-      console.error("mtk select load error:", e);
-      setMtks([]);
-    } finally {
-      setLoadingMtks(false);
-    }
-  };
-
-  // Complex - bütün səhifələr (actions select üçün)
-  const loadAllComplexes = async () => {
-    // MTK-lar yüklənib bitməyibsə və ya data yoxdursa gözlə
-    if (loadingMtks || mtks.length === 0) {
-      return;
-    }
-    
-    setLoadingComplexes(true);
-    try {
-      let page = 1;
-      let lastPage = 1;
-      const all = [];
-
-      do {
-        const res = await complexAPI.getAll({ page });
-        const data = res?.data;
-        const list = data?.data || [];
-        lastPage = data?.last_page || 1;
-
-        all.push(...list);
-        page += 1;
-      } while (page <= lastPage);
-
-      setComplexes(all);
-      
-      // Komplekslər yükləndikdən sonra, seçilmiş MTK-ya uyğun kompleksləri filter et
-      const selectedMtkId = state.mtkId;
-      if (selectedMtkId && all.length > 0) {
-        const filtered = all.filter((c) => {
-          const mtkId = c?.mtk_id ?? c?.bind_mtk?.id ?? null;
-          return String(mtkId || "") === String(selectedMtkId);
-        });
-        
-        // Default olaraq 1-ci kompleks seç
-        if (filtered.length > 0 && !state.complexId) {
-          actions.setComplex(filtered[0].id, filtered[0]);
-        }
-      }
-    } catch (e) {
-      console.error("complex select load error:", e);
-      setComplexes([]);
-    } finally {
-      setLoadingComplexes(false);
-    }
-  };
-
-  // Sequential loading: MTK -> Complex
+  // MTK və Complex məlumatları artıq context-də yüklənib
+  // Yalnız default seçimləri təmin edirik
   useEffect(() => {
-    loadAllMtks();
-  }, []);
-
-  // MTK-lar yükləndikdən sonra komplekslər yüklənir
-  useEffect(() => {
-    if (!loadingMtks && mtks.length > 0) {
-      loadAllComplexes();
+    // MTK-lar yükləndikdən sonra default olaraq 1-ci MTK seç
+    if (!loadingMtks && mtks.length > 0 && !state.mtkId) {
+      actions.setMtk(mtks[0].id, mtks[0]);
     }
-  }, [loadingMtks, mtks.length, state.mtkId]);
+  }, [loadingMtks, mtks.length, state.mtkId, actions]);
+
+  // Komplekslər yükləndikdən sonra, seçilmiş MTK-ya uyğun kompleksləri filter et və default seç
+  useEffect(() => {
+    if (!loadingComplexes && complexes.length > 0 && state.mtkId && !state.complexId) {
+      const filtered = complexes.filter((c) => {
+        const mtkId = c?.mtk_id ?? c?.bind_mtk?.id ?? null;
+        return String(mtkId || "") === String(state.mtkId);
+      });
+      
+      // Default olaraq 1-ci kompleks seç
+      if (filtered.length > 0) {
+        actions.setComplex(filtered[0].id, filtered[0]);
+      }
+    }
+  }, [loadingComplexes, complexes.length, state.mtkId, state.complexId, actions]);
 
   const pageTitleRight = useMemo(() => {
     if (loading) {
@@ -255,10 +186,6 @@ export default function BuildingsPage() {
             search={search}
             onSearchChange={setSearch}
             onCreateClick={openCreate}
-            mtks={mtks}
-            complexes={complexes}
-            loadingMtks={loadingMtks}
-            loadingComplexes={loadingComplexes}
             onFilterClick={() => filters.setFilterOpen(true)}
             hasActiveFilters={hasActiveFilters}
             totalItems={total}

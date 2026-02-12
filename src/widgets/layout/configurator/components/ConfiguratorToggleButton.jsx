@@ -2,7 +2,7 @@ import React from "react";
 import { Cog6ToothIcon } from "@heroicons/react/24/outline";
 import { IconButton } from "@material-tailwind/react";
 import { motion } from "framer-motion";
-import { setOpenConfigurator } from "@/context";
+import { setOpenConfigurator } from "@/store/exports";
 
 export function ConfiguratorToggleButton({ dispatch, openConfigurator, isMobile, sidenavPosition = "left" }) {
   if (isMobile) return null;

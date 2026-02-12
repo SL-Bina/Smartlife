@@ -5,7 +5,7 @@ import { CustomSelect } from "@/components/ui/CustomSelect";
 import { CustomButton } from "@/components/ui/CustomButton";
 import { CustomCard, CardBody } from "@/components/ui/CustomCard";
 import { CustomTypography } from "@/components/ui/CustomTypography";
-import { useManagementEnhanced } from "@/context";
+import { useManagementEnhanced } from "@/store/exports";
 import {
   RectangleStackIcon,
   XMarkIcon,

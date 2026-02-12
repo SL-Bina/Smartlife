@@ -6,7 +6,7 @@
  */
 
 import { useMemo } from "react";
-import { useManagementEnhanced } from "@/context/ManagementContextEnhanced";
+import { useManagementEnhanced } from "@/store/exports";
 
 /**
  * Get complexes filtered by MTK using indexed maps

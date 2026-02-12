@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { CustomDialog, DialogHeader, DialogBody, DialogFooter } from "@/components/ui/CustomDialog";
 import { CustomInput } from "@/components/ui/CustomInput";
 import { CustomTextarea } from "@/components/ui/CustomTextarea";
@@ -6,20 +6,25 @@ import { CustomSelect } from "@/components/ui/CustomSelect";
 import { CustomButton } from "@/components/ui/CustomButton";
 import { CustomCard, CardBody } from "@/components/ui/CustomCard";
 import { CustomTypography } from "@/components/ui/CustomTypography";
-import { useManagementEnhanced } from "@/context";
-import { useMtkColor } from "@/context";
+import { useManagementEnhanced, useMtkColor } from "@/store/exports";
 import {
   BuildingOffice2Icon,
   DocumentTextIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 
-export function BuildingFormModal({ open, mode = "create", onClose, form, onSubmit, complexes = [], mtks = [], loadingMtks = false }) {
+export function BuildingFormModal({ open, mode = "create", onClose, form, onSubmit }) {
   const { state } = useManagementEnhanced();
   const { colorCode, getRgba, defaultColor } = useMtkColor();
   const [saving, setSaving] = useState(false);
-  const [filteredComplexes, setFilteredComplexes] = useState([]);
   const isEdit = mode === "edit";
+  const prevMtkIdRef = useRef(null);
+  
+  // Context-dən MTK və Complex məlumatlarını al
+  const mtks = state.mtks || [];
+  const complexes = state.complexes || [];
+  const loadingMtks = state.loading?.mtks || false;
+  const mtkId = form?.formData?.mtk_id;
 
   const title = isEdit ? "Bina Redaktə et" : "Yeni Bina yarat";
   
@@ -32,53 +37,62 @@ export function BuildingFormModal({ open, mode = "create", onClose, form, onSubm
     { value: "inactive", label: "Qeyri-aktiv" },
   ];
 
-  // Complex-ləri MTK-ya görə filter et
-  useEffect(() => {
-    if (!form?.formData?.mtk_id) {
-      setFilteredComplexes(complexes);
-      // MTK seçilməyibsə kompleks də sıfırlanmalıdır
-      if (form?.formData?.complex_id) {
-        form.updateField("complex_id", null);
-      }
-      return;
+  // Complex-ləri MTK-ya görə filter et (useMemo ilə memoize et)
+  const filteredComplexes = useMemo(() => {
+    if (!mtkId) {
+      return complexes;
     }
 
-    const filtered = complexes.filter((c) => {
-      const id1 = c?.bind_mtk?.id;
-      const id2 = c?.mtk_id;
-      return String(id1 || id2 || "") === String(form.formData.mtk_id);
-    });
+    // Context-dən indexed maps istifadə et
+    const complexIds = state.indexedMaps?.complexIdsByMtkId?.[mtkId] || [];
+    return complexes.filter(c => complexIds.includes(c.id));
+  }, [complexes, mtkId, state.indexedMaps]);
 
-    setFilteredComplexes(filtered);
-
-    // MTK dəyişəndə kompleks seçimini sıfırla
-    if (form.formData.complex_id) {
-      const currentComplex = filtered.find((c) => c.id === form.formData.complex_id);
+  // MTK dəyişəndə kompleks seçimini sıfırla
+  useEffect(() => {
+    if (!form?.updateField) return;
+    
+    const currentMtkId = form?.formData?.mtk_id;
+    const currentComplexId = form?.formData?.complex_id;
+    
+    // MTK dəyişibsə və kompleks seçilibsə, yoxla
+    if (prevMtkIdRef.current !== null && prevMtkIdRef.current !== currentMtkId && currentComplexId) {
+      const currentComplex = filteredComplexes.find((c) => c.id === currentComplexId);
       if (!currentComplex) {
         form.updateField("complex_id", null);
       }
     }
-  }, [complexes, form?.formData?.mtk_id, form]);
+    
+    prevMtkIdRef.current = currentMtkId;
+  }, [mtkId, filteredComplexes, form?.updateField, form?.formData?.complex_id]);
 
   // modal açılarkən default dəyərlər
   useEffect(() => {
     if (!open) return;
-    if (!form) return;
+    if (!form || !form.updateField) return;
+
+    const currentMtkId = form.formData.mtk_id;
+    const currentComplexId = form.formData.complex_id;
 
     // MTK default
-    if (!form.formData.mtk_id && state.mtkId) {
-      form.updateField("mtk_id", state.mtkId);
-    } else if (!form.formData.mtk_id && mtks.length > 0) {
-      form.updateField("mtk_id", mtks[0].id);
+    if (!currentMtkId) {
+      if (state.mtkId) {
+        form.updateField("mtk_id", state.mtkId);
+      } else if (mtks.length > 0) {
+        form.updateField("mtk_id", mtks[0].id);
+      }
     }
 
-    // Complex default
-    if (!form.formData.complex_id && state.complexId) {
-      form.updateField("complex_id", state.complexId);
-    } else if (!form.formData.complex_id && filteredComplexes.length > 0) {
-      form.updateField("complex_id", filteredComplexes[0].id);
+    // Complex default - yalnız filteredComplexes hazır olduqda
+    // Bu effect-i yalnız bir dəfə işləmək üçün filteredComplexes.length-i dependency-dən çıxardıq
+    if (!currentComplexId && filteredComplexes.length > 0) {
+      if (state.complexId && filteredComplexes.some(c => c.id === state.complexId)) {
+        form.updateField("complex_id", state.complexId);
+      } else if (filteredComplexes.length > 0) {
+        form.updateField("complex_id", filteredComplexes[0].id);
+      }
     }
-  }, [open, form, state.mtkId, state.complexId, mtks, filteredComplexes]);
+  }, [open, state.mtkId, state.complexId, mtks.length]);
 
   const nameError = useMemo(() => {
     if (!form?.formData?.name?.trim()) return "Ad mütləqdir";

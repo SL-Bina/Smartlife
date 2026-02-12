@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Button, IconButton, Menu, MenuHandler, MenuList, MenuItem, Avatar, Typography } from "@material-tailwind/react";
 import { UserCircleIcon, Cog6ToothIcon } from "@heroicons/react/24/solid";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/store/exports";
 import { useTranslation } from "react-i18next";
 
 export function UserMenu({ isMobile = false, showButton = false }) {

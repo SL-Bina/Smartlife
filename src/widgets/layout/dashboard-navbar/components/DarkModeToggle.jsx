@@ -1,7 +1,7 @@
 import React from "react";
 import { IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
-import { useMaterialTailwindController, setDarkMode } from "@/context";
+import { useMaterialTailwindController, setDarkMode } from "@/store/exports";
 import { useTranslation } from "react-i18next";
 
 export function DarkModeToggle({ isMobile = false }) {

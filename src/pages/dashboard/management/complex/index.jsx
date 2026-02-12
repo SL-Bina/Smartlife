@@ -18,16 +18,13 @@ import { useComplexFilters } from "./hooks/useComplexFilters";
 
 import complexAPI from "./api";
 import mtkAPI from "../mtk/api"; // mövcud mtk api-ni istifadə edirik
-import { useManagementEnhanced } from "@/context";
+import { useManagementEnhanced } from "@/store/exports";
 import DynamicToast from "@/components/DynamicToast";
 
 export default function ComplexPage() {
   const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
-
-  const [mtks, setMtks] = useState([]);
-  const [loadingMtks, setLoadingMtks] = useState(false);
 
   const [viewOpen, setViewOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
@@ -41,9 +38,11 @@ export default function ComplexPage() {
     setToast({ open: true, type, message, title });
   };
 
-
-
   const { state, actions } = useManagementEnhanced();
+
+  // Redux-dan MTK məlumatlarını al
+  const mtks = state.mtks || [];
+  const loadingMtks = state.loading?.mtks || false;
 
   const filters = useComplexFilters();
 
@@ -70,41 +69,12 @@ export default function ComplexPage() {
     (filters.filters.email && filters.filters.email.trim() !== "") ||
     (filters.filters.phone && filters.filters.phone.trim() !== "");
 
-  // MTK-ları select üçün gətir (bütün səhifələri yığırıq)
-  const loadAllMtks = async () => {
-    setLoadingMtks(true);
-    try {
-      let page = 1;
-      let lastPage = 1;
-      const all = [];
-
-      do {
-        const res = await mtkAPI.getAll({ page });
-        const data = res?.data;
-        const list = data?.data || [];
-        lastPage = data?.last_page || 1;
-
-        all.push(...list);
-        page += 1;
-      } while (page <= lastPage);
-
-      setMtks(all);
-      
-      // MTK-lar yükləndikdən sonra default olaraq 1-ci MTK seç
-      if (all.length > 0 && !state.mtkId) {
-        actions.setMtk(all[0].id, all[0]);
-      }
-    } catch (e) {
-      console.error("mtk select load error:", e);
-      setMtks([]);
-    } finally {
-      setLoadingMtks(false);
-    }
-  };
-
+  // MTK-lar yükləndikdən sonra default olaraq 1-ci MTK seç
   useEffect(() => {
-    loadAllMtks();
-  }, []);
+    if (!loadingMtks && mtks.length > 0 && !state.mtkId) {
+      actions.setMtk(mtks[0].id, mtks[0]);
+    }
+  }, [loadingMtks, mtks.length, state.mtkId, actions]);
 
   const pageTitleRight = useMemo(() => {
     if (loading) {

@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, CardBody, Typography, Button } from "@material-tailwind/react";
-import { useManagementEnhanced } from "@/context";
+import { useManagementEnhanced } from "@/store/exports";
 import { useNavigate } from "react-router-dom";
 import {
   CurrencyDollarIcon,

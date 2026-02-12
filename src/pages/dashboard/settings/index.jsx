@@ -24,7 +24,7 @@ import {
   PhoneIcon,
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
-import { useMaterialTailwindController, setDarkMode, setSidenavType, setSidenavColor } from "@/context";
+import { useMaterialTailwindController, setDarkMode, setSidenavType, setSidenavColor } from "@/store/exports";
 import { useNavigate } from "react-router-dom";
 
 const Settings = () => {

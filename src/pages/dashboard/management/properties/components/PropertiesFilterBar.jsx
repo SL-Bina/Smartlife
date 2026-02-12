@@ -7,7 +7,7 @@
 
 import React from "react";
 import { Card, CardBody, Typography, Select, Option, Input, Button } from "@material-tailwind/react";
-import { useManagementEnhanced } from "@/context/ManagementContextEnhanced";
+import { useManagementEnhanced } from "@/store/exports";
 import { useFilterOptions } from "@/hooks/management/useSelectors";
 
 export function PropertiesFilterBar() {
@@ -172,5 +172,8 @@ export function PropertiesFilterBar() {
     </Card>
   );
 }
+
+
+
 
 

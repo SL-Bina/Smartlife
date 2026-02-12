@@ -1,7 +1,7 @@
 import React from "react";
 import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography } from "@material-tailwind/react";
 import { EyeIcon, XMarkIcon, BuildingOfficeIcon, MapPinIcon, EnvelopeIcon, PhoneIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
-import { useMtkColor } from "@/context";
+import { useMtkColor } from "@/store/exports";
 
 export function BuildingViewModal({ open, onClose, item }) {
   const meta = item?.meta || {};

@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo } from "react";
 import { Button, Input, IconButton } from "@material-tailwind/react";
 import { PlusIcon, FunnelIcon } from "@heroicons/react/24/outline";
-import { useManagementEnhanced } from "@/context";
-import { useMtkColor } from "@/context";
+import { useManagementEnhanced, useMtkColor } from "@/store/exports";
 import AppSelect from "@/components/ui/AppSelect";
 
 const STANDARD_OPTIONS = [10, 25, 50, 75, 100];

@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { Button, IconButton } from "@material-tailwind/react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
-import { useMtkColor } from "@/context";
+import { useMtkColor } from "@/store/exports";
 
 export function ComplexPagination({ page, lastPage, onPageChange, total = 0 }) {
   const { colorCode, getRgba, defaultColor } = useMtkColor();

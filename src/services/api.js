@@ -40,10 +40,17 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    // Don't automatically logout on 401 - let the calling code handle it
+    // This allows errors to be displayed to users instead of redirecting
+    // Only remove token if it's explicitly an authentication error
+    // and we're not on the sign-in page
     if (error.response?.status === 401) {
-      removeCookie(TOKEN_COOKIE_NAME);
-      if (window.location.pathname !== "/auth/sign-in") {
-        window.location.href = "/auth/sign-in";
+      const currentPath = window.location.pathname;
+      // Only remove token if we're already on a protected route
+      // Don't redirect - let the error be handled by the component
+      if (currentPath !== "/auth/sign-in" && !currentPath.includes("/auth/")) {
+        // Token might be invalid, but don't logout immediately
+        // Let the error be displayed first
       }
     }
     return Promise.reject(error);

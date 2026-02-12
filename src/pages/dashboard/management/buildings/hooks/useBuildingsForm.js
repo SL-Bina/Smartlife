@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 const emptyForm = {
   mtk_id: null,
@@ -13,12 +13,17 @@ const emptyForm = {
 export function useBuildingForm() {
   const [formData, setFormData] = useState(emptyForm);
 
-  const resetForm = () => setFormData(emptyForm);
+  const resetForm = useCallback(() => setFormData(emptyForm), []);
 
-  const updateField = (key, value) => setFormData((p) => ({ ...p, [key]: value }));
-  const updateMeta = (key, value) => setFormData((p) => ({ ...p, meta: { ...p.meta, [key]: value } }));
+  const updateField = useCallback((key, value) => {
+    setFormData((p) => ({ ...p, [key]: value }));
+  }, []);
 
-  const setFormFromBuilding = (item) => {
+  const updateMeta = useCallback((key, value) => {
+    setFormData((p) => ({ ...p, meta: { ...p.meta, [key]: value } }));
+  }, []);
+
+  const setFormFromBuilding = useCallback((item) => {
     const complex = item?.complex || null;
     const mtkId = complex?.bind_mtk?.id ?? complex?.mtk_id ?? item?.mtk_id ?? null;
 
@@ -31,7 +36,7 @@ export function useBuildingForm() {
         desc: item?.meta?.desc || "",
       },
     });
-  };
+  }, []);
 
   return { formData, resetForm, updateField, updateMeta, setFormFromBuilding };
 }

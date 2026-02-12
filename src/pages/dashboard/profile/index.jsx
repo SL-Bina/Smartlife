@@ -1,5 +1,5 @@
 import React from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/store/exports";
 import { ProfileHeader, ProfileSidebar, ProfileTabs, ProfileComplexInfo, ProfileAdditionalInfo } from "./components";
 import { useProfileMessages } from "./hooks";
 

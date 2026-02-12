@@ -9,8 +9,8 @@ import {
   ManagementInfo,
 } from "@/widgets/layout";
 import routes from "@/routes";
-import { useMaterialTailwindController, ManagementProviderEnhanced } from "@/context";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/store/hooks/useAuth";
+import { useMaterialTailwindController } from "@/store/hooks/useMaterialTailwind";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import AiChat from "@/widgets/layout/ai-chat";
 import Footer from "@/widgets/layout/footer";
@@ -34,9 +34,10 @@ function ProtectedRoute({ element, allowedRoles, moduleName }) {
   }
 
   const userRole = user.role?.name?.toLowerCase() || (typeof user.role === 'string' ? user.role.toLowerCase() : null);
-  const originalRole = user.role?.name?.toLowerCase();
+  const isRoot = userRole === "root";
 
-  if (originalRole === "root") {
+  // Root role has access to all routes
+  if (isRoot) {
     return element;
   }
 
@@ -64,15 +65,32 @@ const filterRoutesByRole = (routes, user, hasModuleAccess) => {
   const isRoot = originalRole === "root";
   const isResident = originalRole === "resident";
 
-  // User-in modullarını map et (Root üçün bütün modullar)
-  const userModules = isRoot ? [] : (user?.modules || []);
-  // Yalnız `can` array-i boş olmayan modulları götür (icazəsi olan modullar)
-  const userModuleNames = new Set(
-    userModules
-      .filter((m) => m?.can && Array.isArray(m.can) && m.can.length > 0)
-      .map((m) => m?.name?.toLowerCase())
-      .filter(Boolean)
-  );
+  // Build module access map from role_access_modules (preferred) or modules (fallback)
+  const userModuleNames = new Set();
+  
+  if (isRoot) {
+    // Root has access to all modules - don't filter
+  } else {
+    // Check role_access_modules first (more accurate)
+    if (user?.role_access_modules && Array.isArray(user.role_access_modules) && user.role_access_modules.length > 0) {
+      user.role_access_modules.forEach((m) => {
+        if (m.module_name && m.permissions && Array.isArray(m.permissions) && m.permissions.length > 0) {
+          userModuleNames.add(m.module_name.toLowerCase());
+        }
+      });
+    }
+    
+    // Fallback to modules (for backward compatibility)
+    if (userModuleNames.size === 0 && user?.modules && Array.isArray(user.modules)) {
+      user.modules
+        .filter((m) => m?.can && Array.isArray(m.can) && m.can.length > 0)
+        .forEach((m) => {
+          if (m?.name) {
+            userModuleNames.add(m.name.toLowerCase());
+          }
+        });
+    }
+  }
 
   return routes
     .filter((route) => {
@@ -194,9 +212,9 @@ const filterRoutesByRole = (routes, user, hasModuleAccess) => {
 };
 
 export function Dashboard() {
-  const [controller, dispatch] = useMaterialTailwindController();
+  const [controller, uiActions] = useMaterialTailwindController();
   const { sidenavType, sidenavCollapsed, sidenavSize, sidenavPosition } = controller;
-  const { user, hasModuleAccess, refreshUser, isInitialized } = useAuth();
+  const { user, hasModuleAccess, refreshUser, isInitialized, error, clearError } = useAuth();
   const [isDesktop, setIsDesktop] = useState(false);
 
   useDocumentTitle();
@@ -210,15 +228,17 @@ export function Dashboard() {
     return () => window.removeEventListener("resize", checkDesktop);
   }, []);
 
+  // Refresh user data periodically (only if user is logged in and initialized)
   useEffect(() => {
-    if (user) {
+    if (user && isInitialized) {
+      // Refresh every 10 minutes instead of 5 to reduce API calls
       const interval = setInterval(() => {
         refreshUser();
-      }, 5 * 60 * 1000);
+      }, 10 * 60 * 1000);
 
       return () => clearInterval(interval);
     }
-  }, [user?.id, refreshUser]);
+  }, [user?.id, isInitialized, refreshUser]);
 
   const hasToken = typeof document !== 'undefined' && document.cookie.includes('smartlife_token=');
   if (!isInitialized || (hasToken && !user)) {
@@ -236,9 +256,29 @@ export function Dashboard() {
     ? filterRoutesByRole(routes, user, hasModuleAccess)
     : routes.filter((r) => r.layout === "dashboard");
 
+  // Show error message if there's an auth error
+  const showError = error && !user;
+
   return (
-    <ManagementProviderEnhanced>
-      <div className="min-h-screen bg-blue-gray-50/50 dark:bg-black flex flex-col">
+    <div className="min-h-screen bg-blue-gray-50/50 dark:bg-black flex flex-col">
+      {/* Error Banner */}
+      {showError && (
+        <div className="bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800 px-4 py-3">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="text-red-600 dark:text-red-400 font-medium text-sm">
+                ⚠️ {error}
+              </div>
+            </div>
+            <button
+              onClick={clearError}
+              className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium text-sm px-2 py-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
         <Sidenav
           routes={filteredRoutes}
           brandImg={
@@ -306,10 +346,9 @@ export function Dashboard() {
         </motion.div>
         <Configurator />
         <AiChat />
-        <ManagementInfo />
+        {/* <ManagementInfo /> */}
+        <Footer />
       </div>
-      <Footer />
-    </ManagementProviderEnhanced>
   );
 }
 

@@ -2,7 +2,7 @@ import React from "react";
 import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Input, Typography } from "@material-tailwind/react";
 import { FunnelIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import AppSelect from "@/components/ui/AppSelect";
-import { useMtkColor } from "@/context";
+import { useMtkColor } from "@/store/exports";
 
 const statusOptions = [
   { id: "active", name: "Aktiv" },

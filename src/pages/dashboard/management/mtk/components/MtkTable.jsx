@@ -1,11 +1,16 @@
 import React, { useState, useMemo } from "react";
 import { Card, CardBody, Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
 import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
-import { useManagementEnhanced } from "@/context";
+import { useManagement } from "@/store/hooks/useManagement";
+import { useMtkColor } from "@/store/hooks/useMtkColor";
+import { useMaterialTailwindController } from "@/store/hooks/useMaterialTailwind";
 import { MtkTableSkeleton } from "./MtkTableSkeleton";
 
 export function MtkTable({ items = [], loading, onEdit, onDelete, onView, onGoComplex }) {
-  const { state, actions } = useManagementEnhanced();
+  const { state, actions } = useManagement();
+  const [controller] = useMaterialTailwindController();
+  const { sidenavType } = controller;
+  const { colorCode } = useMtkColor();
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const complexCountOf = (x) => {
@@ -14,20 +19,43 @@ export function MtkTable({ items = [], loading, onEdit, onDelete, onView, onGoCo
     return v || "—";
   };
 
-  // Rəng koduna görə kontrast mətn rəngi müəyyən et (ağ və ya qara)
+  const getRgbaColor = (hex, opacity = 1) => {
+    if (!hex) return null;
+    const hexClean = hex.replace("#", "");
+    const r = parseInt(hexClean.substring(0, 2), 16);
+    const g = parseInt(hexClean.substring(2, 4), 16);
+    const b = parseInt(hexClean.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
+
+  const getTableBackground = () => {
+    if (colorCode && sidenavType === "white") {
+      const color1 = getRgbaColor(colorCode, 0.04);
+      const color2 = getRgbaColor(colorCode, 0.02);
+      return {
+        background: `linear-gradient(to bottom, ${color1}, ${color2}, ${color1})`,
+      };
+    }
+    if (colorCode && sidenavType === "dark") {
+      const color1 = getRgbaColor(colorCode, 0.08);
+      const color2 = getRgbaColor(colorCode, 0.05);
+      return {
+        background: `linear-gradient(to bottom, ${color1}, ${color2}, ${color1})`,
+      };
+    }
+    return {};
+  };
+
   const getContrastColor = (hexColor) => {
     if (!hexColor) return "#000000";
     
-    // Hex rəngi RGB-yə çevir
     const hex = hexColor.replace("#", "");
     const r = parseInt(hex.substring(0, 2), 16);
     const g = parseInt(hex.substring(2, 4), 16);
     const b = parseInt(hex.substring(4, 6), 16);
     
-    // Luminance hesabla
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
     
-    // Əgər luminance yüksəkdirsə (açıq rəng), qara mətn istifadə et
     return luminance > 0.5 ? "#000000" : "#FFFFFF";
   };
 
@@ -88,19 +116,55 @@ export function MtkTable({ items = [], loading, onEdit, onDelete, onView, onGoCo
     });
   }, [items, sortConfig]);
 
+  const cardTypes = {
+    dark: colorCode ? "" : "dark:bg-gray-800/50",
+    white: colorCode ? "" : "bg-white/80 dark:bg-gray-800/50",
+    transparent: "",
+  };
+
   return (
-    <Card className="shadow-sm dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+    <Card 
+      className={`
+        rounded-2xl xl:rounded-3xl
+        backdrop-blur-xl backdrop-saturate-150
+        border
+        ${cardTypes[sidenavType] || ""} 
+        ${colorCode ? "" : "border-gray-200/50 dark:border-gray-700/50"}
+        shadow-[0_4px_24px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.2)]
+        dark:shadow-[0_4px_24px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.1)]
+        overflow-hidden
+      `}
+      style={{
+        ...getTableBackground(),
+        borderColor: colorCode ? getRgbaColor(colorCode, 0.15) : undefined,
+      }}
+    >
         <CardBody className="p-0">
           <div className="w-full overflow-x-auto">
             <table className="w-full min-w-[1400px] table-auto">
             <thead>
-              <tr className="bg-blue-gray-50 dark:bg-gray-900/40">
+              <tr className={`
+                ${colorCode ? "" : "bg-gradient-to-b from-gray-50/80 to-gray-100/50 dark:from-gray-900/60 dark:to-gray-800/40"}
+                backdrop-blur-sm
+              `}>
                 <th 
-                  className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className={`p-4 text-left cursor-pointer transition-colors ${
+                    colorCode ? "" : "hover:bg-blue-gray-100 dark:hover:bg-gray-800"
+                  }`}
                   onClick={() => handleSort("id")}
+                  onMouseEnter={(e) => {
+                    if (colorCode) {
+                      e.currentTarget.style.backgroundColor = getRgbaColor(colorCode, 0.08);
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (colorCode) {
+                      e.currentTarget.style.backgroundColor = "";
+                    }
+                  }}
                 >
                   <div className="flex items-center gap-2 justify-center">
-                    <Typography className="text-xs text-center font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    <Typography className="text-xs text-center font-semibold uppercase text-gray-800 dark:text-gray-100">
                       ID
                     </Typography>
                     <div className="flex flex-col">
@@ -122,11 +186,23 @@ export function MtkTable({ items = [], loading, onEdit, onDelete, onView, onGoCo
                   </div>
                 </th>
                 <th 
-                  className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className={`p-4 text-left cursor-pointer transition-colors ${
+                    colorCode ? "" : "hover:bg-blue-gray-100 dark:hover:bg-gray-800"
+                  }`}
                   onClick={() => handleSort("name")}
+                  onMouseEnter={(e) => {
+                    if (colorCode) {
+                      e.currentTarget.style.backgroundColor = getRgbaColor(colorCode, 0.08);
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (colorCode) {
+                      e.currentTarget.style.backgroundColor = "";
+                    }
+                  }}
                 >
                   <div className="flex items-center gap-2 justify-center">
-                    <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    <Typography className="text-xs font-semibold uppercase text-gray-800 dark:text-gray-100">
                       Ad
                     </Typography>
                     <div className="flex flex-col">
@@ -149,11 +225,23 @@ export function MtkTable({ items = [], loading, onEdit, onDelete, onView, onGoCo
                 </th>
 
                 <th 
-                  className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className={`p-4 text-left cursor-pointer transition-colors ${
+                    colorCode ? "" : "hover:bg-blue-gray-100 dark:hover:bg-gray-800"
+                  }`}
                   onClick={() => handleSort("address")}
+                  onMouseEnter={(e) => {
+                    if (colorCode) {
+                      e.currentTarget.style.backgroundColor = getRgbaColor(colorCode, 0.08);
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (colorCode) {
+                      e.currentTarget.style.backgroundColor = "";
+                    }
+                  }}
                 >
                   <div className="flex items-center gap-2 justify-center">
-                    <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    <Typography className="text-xs font-semibold uppercase text-gray-800 dark:text-gray-100">
                       Ünvan
                     </Typography>
                     <div className="flex flex-col">
@@ -176,11 +264,23 @@ export function MtkTable({ items = [], loading, onEdit, onDelete, onView, onGoCo
                 </th>
 
                 <th 
-                  className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className={`p-4 text-left cursor-pointer transition-colors ${
+                    colorCode ? "" : "hover:bg-blue-gray-100 dark:hover:bg-gray-800"
+                  }`}
                   onClick={() => handleSort("status")}
+                  onMouseEnter={(e) => {
+                    if (colorCode) {
+                      e.currentTarget.style.backgroundColor = getRgbaColor(colorCode, 0.08);
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (colorCode) {
+                      e.currentTarget.style.backgroundColor = "";
+                    }
+                  }}
                 >
                   <div className="flex items-center gap-2 justify-center">
-                    <Typography className="text-xs text-center font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    <Typography className="text-xs text-center font-semibold uppercase text-gray-800 dark:text-gray-100">
                       Status
                     </Typography>
                     <div className="flex flex-col">
@@ -203,11 +303,23 @@ export function MtkTable({ items = [], loading, onEdit, onDelete, onView, onGoCo
                 </th>
 
                 <th 
-                  className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className={`p-4 text-left cursor-pointer transition-colors ${
+                    colorCode ? "" : "hover:bg-blue-gray-100 dark:hover:bg-gray-800"
+                  }`}
                   onClick={() => handleSort("email")}
+                  onMouseEnter={(e) => {
+                    if (colorCode) {
+                      e.currentTarget.style.backgroundColor = getRgbaColor(colorCode, 0.08);
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (colorCode) {
+                      e.currentTarget.style.backgroundColor = "";
+                    }
+                  }}
                 >
                   <div className="flex items-center gap-2 justify-center">
-                    <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    <Typography className="text-xs font-semibold uppercase text-gray-800 dark:text-gray-100">
                       Email
                     </Typography>
                     <div className="flex flex-col">
@@ -230,11 +342,23 @@ export function MtkTable({ items = [], loading, onEdit, onDelete, onView, onGoCo
                 </th>
 
                 <th 
-                  className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className={`p-4 text-left cursor-pointer transition-colors ${
+                    colorCode ? "" : "hover:bg-blue-gray-100 dark:hover:bg-gray-800"
+                  }`}
                   onClick={() => handleSort("phone")}
+                  onMouseEnter={(e) => {
+                    if (colorCode) {
+                      e.currentTarget.style.backgroundColor = getRgbaColor(colorCode, 0.08);
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (colorCode) {
+                      e.currentTarget.style.backgroundColor = "";
+                    }
+                  }}
                 >
                   <div className="flex items-center gap-2 justify-center">
-                    <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    <Typography className="text-xs font-semibold uppercase text-gray-800 dark:text-gray-100">
                       Telefon
                     </Typography>
                     <div className="flex flex-col">
@@ -257,11 +381,23 @@ export function MtkTable({ items = [], loading, onEdit, onDelete, onView, onGoCo
                 </th>
 
                 <th 
-                  className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className={`p-4 text-left cursor-pointer transition-colors ${
+                    colorCode ? "" : "hover:bg-blue-gray-100 dark:hover:bg-gray-800"
+                  }`}
                   onClick={() => handleSort("color")}
+                  onMouseEnter={(e) => {
+                    if (colorCode) {
+                      e.currentTarget.style.backgroundColor = getRgbaColor(colorCode, 0.08);
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (colorCode) {
+                      e.currentTarget.style.backgroundColor = "";
+                    }
+                  }}
                 >
                   <div className="flex items-center gap-2 justify-center">
-                    <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    <Typography className="text-xs font-semibold uppercase text-gray-800 dark:text-gray-100">
                       Rəng
                     </Typography>
                     <div className="flex flex-col">
@@ -284,11 +420,23 @@ export function MtkTable({ items = [], loading, onEdit, onDelete, onView, onGoCo
                 </th>
 
                 <th 
-                  className="p-4 text-left cursor-pointer hover:bg-blue-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className={`p-4 text-left cursor-pointer transition-colors ${
+                    colorCode ? "" : "hover:bg-blue-gray-100 dark:hover:bg-gray-800"
+                  }`}
                   onClick={() => handleSort("website")}
+                  onMouseEnter={(e) => {
+                    if (colorCode) {
+                      e.currentTarget.style.backgroundColor = getRgbaColor(colorCode, 0.08);
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (colorCode) {
+                      e.currentTarget.style.backgroundColor = "";
+                    }
+                  }}
                 >
                   <div className="flex items-center gap-2 justify-center">
-                    <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                    <Typography className="text-xs font-semibold uppercase text-gray-800 dark:text-gray-100">
                       Web sayt
                     </Typography>
                     <div className="flex flex-col">
@@ -311,7 +459,7 @@ export function MtkTable({ items = [], loading, onEdit, onDelete, onView, onGoCo
                 </th>
 
                 <th className="p-4  justify-center items-center">
-                  <Typography className="text-xs font-semibold uppercase text-blue-gray-600 dark:text-gray-300">
+                  <Typography className="text-xs font-semibold uppercase text-gray-800 dark:text-gray-100">
                     Əməliyyat
                   </Typography>
                 </th>
@@ -324,7 +472,7 @@ export function MtkTable({ items = [], loading, onEdit, onDelete, onView, onGoCo
               ) : items.length === 0 ? (
                 <tr>
                   <td className="p-6" colSpan={9}>
-                    <Typography className="text-sm text-blue-gray-500 dark:text-gray-300 text-center">
+                    <Typography className="text-sm font-medium text-gray-800 dark:text-gray-100 text-center">
                       Heç nə tapılmadı
                     </Typography>
                   </td>
@@ -335,24 +483,22 @@ export function MtkTable({ items = [], loading, onEdit, onDelete, onView, onGoCo
                     const isSelected = String(state.mtkId || "") === String(x.id);
                     const colorCode = x?.meta?.color_code;
                     
-                    // Rəng kodunu rgba-ya çevir (15% opacity)
                     const getHoverColor = (hex) => {
                       if (!hex) return null;
                       const hexClean = hex.replace("#", "");
                       const r = parseInt(hexClean.substring(0, 2), 16);
                       const g = parseInt(hexClean.substring(2, 4), 16);
                       const b = parseInt(hexClean.substring(4, 6), 16);
-                      return `rgba(${r}, ${g}, ${b}, 0.15)`;
+                      return `rgba(${r}, ${g}, ${b}, 0.06)`;
                     };
                     
-                    // Rəng kodunu rgba-ya çevir (25% opacity)
                     const getSelectedColor = (hex) => {
                       if (!hex) return null;
                       const hexClean = hex.replace("#", "");
                       const r = parseInt(hexClean.substring(0, 2), 16);
                       const g = parseInt(hexClean.substring(2, 4), 16);
                       const b = parseInt(hexClean.substring(4, 6), 16);
-                      return `rgba(${r}, ${g}, ${b}, 0.25)`;
+                      return `rgba(${r}, ${g}, ${b}, 0.12)`;
                     };
 
                     const hoverColor = getHoverColor(colorCode);
@@ -363,9 +509,12 @@ export function MtkTable({ items = [], loading, onEdit, onDelete, onView, onGoCo
                     return (
                       <tr
                         key={x.id}
-                        className={`border-b border-blue-gray-50 dark:border-gray-700 cursor-pointer transition-colors ${
-                          !colorCode && isSelected ? defaultSelected : ""
-                        }`}
+                        className={`
+                          border-b border-gray-200/30 dark:border-gray-700/30 
+                          cursor-pointer transition-all duration-200
+                          ${!colorCode && isSelected ? defaultSelected : ""}
+                          hover:bg-white/40 dark:hover:bg-gray-800/30
+                        `}
                         style={{
                           ...(selectedColor && isSelected && {
                             backgroundColor: selectedColor,
@@ -390,17 +539,17 @@ export function MtkTable({ items = [], loading, onEdit, onDelete, onView, onGoCo
                       >
 
                         <td className="p-4 text-center">
-                          <Typography className="text-base text-blue-gray-500 font-bold dark:text-gray-400">{x.id}</Typography>
+                          <Typography className="text-base text-gray-700 font-bold dark:text-gray-200">{x.id}</Typography>
                         </td>
 
                         <td className="p-4 text-center">
-                          <Typography className="text-sm font-medium text-blue-gray-800 dark:text-white">
+                          <Typography className="text-sm font-semibold text-gray-900 dark:text-white">
                             {x.name}
                           </Typography>
                         </td>
 
                         <td className="p-4 text-center">
-                          <Typography className="text-sm text-blue-gray-700 dark:text-gray-200">
+                          <Typography className="text-sm font-medium text-gray-800 dark:text-gray-100">
                             {x?.meta?.address || "—"}
                           </Typography>
                         </td>
@@ -413,7 +562,7 @@ export function MtkTable({ items = [], loading, onEdit, onDelete, onView, onGoCo
                                   ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
                                   : x.status === "inactive" || x.status === "Inactive"
                                   ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-                                  : "bg-blue-gray-100 text-blue-gray-800 dark:bg-gray-700 dark:text-gray-300"
+                                  : "bg-blue-gray-100 text-blue-gray-900 dark:bg-gray-700 dark:text-gray-100"
                               }`}
                             >
                               {x.status || "—"}

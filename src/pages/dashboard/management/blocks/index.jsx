@@ -15,24 +15,12 @@ import { useBlocksData } from "./hooks/useBlocksData";
 import { useBlocksForm } from "./hooks/useBlocksForm";
 import { useBlocksFilters } from "./hooks/useBlocksFilters";
 
-import mtkAPI from "../mtk/api";
-import complexAPI from "../complex/api";
-import buildingAPI from "../buildings/api";
-
-import { useManagementEnhanced } from "@/context";
+import { useManagementEnhanced } from "@/store/exports";
 import blocksAPI from "./api";
 import DynamicToast from "@/components/DynamicToast";
 
 export default function BlocksPage() {
   const [search, setSearch] = useState("");
-
-  const [mtks, setMtks] = useState([]);
-  const [complexes, setComplexes] = useState([]);
-  const [buildings, setBuildings] = useState([]);
-
-  const [loadingMtks, setLoadingMtks] = useState(false);
-  const [loadingComplexes, setLoadingComplexes] = useState(false);
-  const [loadingBuildings, setLoadingBuildings] = useState(false);
 
   const [viewOpen, setViewOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
@@ -43,6 +31,14 @@ export default function BlocksPage() {
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
 
   const { state, actions } = useManagementEnhanced();
+
+  // Redux-dan məlumatları al
+  const mtks = state.mtks || [];
+  const complexes = state.complexes || [];
+  const buildings = state.buildings || [];
+  const loadingMtks = state.loading?.mtks || false;
+  const loadingComplexes = state.loading?.complexes || false;
+  const loadingBuildings = state.loading?.buildings || false;
 
   const showToast = (type, message, title = "") => {
     setToast({ open: true, type, message, title });
@@ -77,116 +73,38 @@ export default function BlocksPage() {
     (filters.filters.email && filters.filters.email.trim() !== "") ||
     (filters.filters.phone && filters.filters.phone.trim() !== "");
 
-  // MTK - bütün səhifələr
-  const loadAllMtks = async () => {
-    setLoadingMtks(true);
-    try {
-      let page = 1;
-      let lastPage = 1;
-      const all = [];
+  // MTK-lar yükləndikdən sonra default olaraq 1-ci MTK seç
+  useEffect(() => {
+    if (!loadingMtks && mtks.length > 0 && !state.mtkId) {
+      actions.setMtk(mtks[0].id, mtks[0]);
+    }
+  }, [loadingMtks, mtks.length, state.mtkId, actions]);
 
-      do {
-        const res = await mtkAPI.getAll({ page });
-        const data = res?.data;
-        const list = data?.data || [];
-        lastPage = data?.last_page || 1;
-
-        all.push(...list);
-        page += 1;
-      } while (page <= lastPage);
-
-      setMtks(all);
-      
-      // MTK-lar yükləndikdən sonra default olaraq 1-ci MTK seç
-      if (all.length > 0 && !state.mtkId) {
-        actions.setMtk(all[0].id, all[0]);
+  // Complex-lər yükləndikdən sonra default seç
+  useEffect(() => {
+    if (!loadingComplexes && complexes.length > 0 && state.mtkId && !state.complexId) {
+      const filtered = complexes.filter((c) => {
+        const complexMtkId = c?.mtk_id ?? c?.bind_mtk?.id ?? null;
+        return String(complexMtkId || "") === String(state.mtkId);
+      });
+      if (filtered.length > 0) {
+        actions.setComplex(filtered[0].id, filtered[0]);
       }
-    } catch (e) {
-      console.error("mtk select load error:", e);
-      setMtks([]);
-    } finally {
-      setLoadingMtks(false);
     }
-  };
+  }, [loadingComplexes, complexes.length, state.mtkId, state.complexId, actions]);
 
-  // Complex - bütün səhifələr
-  const loadAllComplexes = async () => {
-    if (loadingMtks || mtks.length === 0) {
-      return;
-    }
-    
-    setLoadingComplexes(true);
-    try {
-      let page = 1;
-      let lastPage = 1;
-      const all = [];
-
-      do {
-        const res = await complexAPI.getAll({ page });
-        const data = res?.data;
-        const list = data?.data || [];
-        lastPage = data?.last_page || 1;
-
-        all.push(...list);
-        page += 1;
-      } while (page <= lastPage);
-
-      setComplexes(all);
-    } catch (e) {
-      console.error("complex select load error:", e);
-      setComplexes([]);
-    } finally {
-      setLoadingComplexes(false);
-    }
-  };
-
-  // Buildings - bütün səhifələr
-  const loadAllBuildings = async () => {
-    if (loadingMtks || loadingComplexes || mtks.length === 0 || complexes.length === 0) {
-      return;
-    }
-    
-    setLoadingBuildings(true);
-    try {
-      let page = 1;
-      let lastPage = 1;
-      const all = [];
-
-      do {
-        const res = await buildingAPI.getAll({ page });
-        const data = res?.data;
-        const list = data?.data || [];
-        lastPage = data?.last_page || 1;
-
-        all.push(...list);
-        page += 1;
-      } while (page <= lastPage);
-
-      setBuildings(all);
-    } catch (e) {
-      console.error("buildings select load error:", e);
-      setBuildings([]);
-    } finally {
-      setLoadingBuildings(false);
-    }
-  };
-
-  // Sequential loading: MTK -> Complex -> Building
+  // Buildings yükləndikdən sonra default seç
   useEffect(() => {
-    loadAllMtks();
-  }, []);
-
-  useEffect(() => {
-    if (!loadingMtks && mtks.length > 0) {
-      loadAllComplexes();
+    if (!loadingBuildings && buildings.length > 0 && state.complexId && !state.buildingId) {
+      const filtered = buildings.filter((b) => {
+        const buildingComplexId = b?.complex_id ?? b?.complex?.id ?? null;
+        return String(buildingComplexId || "") === String(state.complexId);
+      });
+      if (filtered.length > 0) {
+        actions.setBuilding(filtered[0].id, filtered[0]);
+      }
     }
-  }, [loadingMtks, mtks.length]);
-
-  useEffect(() => {
-    if (!loadingMtks && !loadingComplexes && complexes.length > 0) {
-      loadAllBuildings();
-    }
-  }, [loadingMtks, loadingComplexes, complexes.length]);
+  }, [loadingBuildings, buildings.length, state.complexId, state.buildingId, actions]);
 
   const openCreate = () => {
     setMode("create");

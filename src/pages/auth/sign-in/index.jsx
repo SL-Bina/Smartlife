@@ -12,7 +12,7 @@ import {
 } from "@material-tailwind/react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/store/exports";
 import { useTranslation } from "react-i18next";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
@@ -45,8 +45,9 @@ export function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
 
+  // Only redirect if user is authenticated and we're on sign-in page
   useEffect(() => {
-    if (isInitialized && isAuthenticated && user) {
+    if (isInitialized && isAuthenticated && user && window.location.pathname === '/auth/sign-in') {
       const userRole = user?.role?.name?.toLowerCase();
       if (userRole === "resident") {
         navigate("/dashboard/resident/home", { replace: true });

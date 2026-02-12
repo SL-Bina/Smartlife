@@ -2,7 +2,7 @@ import React from "react";
 import { XMarkIcon, Cog6ToothIcon } from "@heroicons/react/24/outline";
 import { IconButton, Typography } from "@material-tailwind/react";
 import { useTranslation } from "react-i18next";
-import { setOpenConfigurator } from "@/context";
+import { setOpenConfigurator } from "@/store/exports";
 
 export function ConfiguratorHeader({ dispatch }) {
   const { t } = useTranslation();

@@ -1,7 +1,7 @@
 import React from "react";
 import { Typography } from "@material-tailwind/react";
 import { motion } from "framer-motion";
-import { useMaterialTailwindController } from "@/context";
+import { useMaterialTailwindController } from "@/store/exports";
 
 export function SidenavSection({ title }) {
   const [controller] = useMaterialTailwindController();

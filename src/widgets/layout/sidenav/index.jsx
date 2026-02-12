@@ -1,20 +1,18 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { useMaterialTailwindController, setOpenSidenav } from "@/context";
-import { useMtkColor } from "@/context";
+import { useMaterialTailwindController } from "@/store/hooks/useMaterialTailwind";
+import { useMtkColor } from "@/store/hooks/useMtkColor";
 import { motion, AnimatePresence } from "framer-motion";
 import { SidenavHeader } from "./components/SidenavHeader";
 import { SidenavMenu } from "./components/SidenavMenu";
 
 export function Sidenav({ brandImg, brandName, routes }) {
-  const [controller, dispatch] = useMaterialTailwindController();
+  const [controller, actions] = useMaterialTailwindController();
   const { sidenavType, openSidenav, sidenavCollapsed, sidenavFlatMenu, sidenavExpandAll, sidenavSize, sidenavPosition } = controller;
   
-  // MTK rəng kodunu al (localStorage-dən də oxuyur)
   const { colorCode } = useMtkColor();
   const mtkColorCode = colorCode;
 
-  // Routes artıq dashboard.jsx-də filter olunub, burada sadəcə istifadə edirik
   const filteredRoutes = routes;
 
   const [openMenus, setOpenMenus] = React.useState({});
@@ -22,7 +20,6 @@ export function Sidenav({ brandImg, brandName, routes }) {
   const [isHovered, setIsHovered] = React.useState(false);
   const [isLowHeight, setIsLowHeight] = React.useState(false);
 
-  // Rəng kodunu rgba-ya çevir
   const getRgbaColor = (hex, opacity = 1) => {
     if (!hex) return null;
     const hexClean = hex.replace("#", "");
@@ -32,7 +29,6 @@ export function Sidenav({ brandImg, brandName, routes }) {
     return `rgba(${r}, ${g}, ${b}, ${opacity})`;
   };
 
-  // Sidenav background rəngini müəyyən et
   const getSidenavBackground = () => {
     if (mtkColorCode && sidenavType === "white") {
       const color1 = getRgbaColor(mtkColorCode, 0.1);
@@ -94,7 +90,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="fixed inset-0 bg-black/50 dark:bg-black/70 z-40 xl:hidden backdrop-blur-sm"
-            onClick={() => setOpenSidenav(dispatch, false)}
+            onClick={() => actions.setOpenSidenav(false)}
           />
         )}
       </AnimatePresence>
@@ -123,7 +119,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
         <SidenavHeader brandName={brandName} collapsed={sidenavCollapsed && !isHovered} isLowHeight={isLowHeight} />
 
         <SidenavMenu
-          routes={filteredRoutes}   // ✅ burda artıq filtr olunmuş routes gedir
+          routes={filteredRoutes}
           openMenus={openMenus}
           setOpenMenus={setOpenMenus}
           collapsed={sidenavCollapsed && !isHovered}

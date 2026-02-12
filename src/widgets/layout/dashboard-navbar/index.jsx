@@ -1,7 +1,8 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
 import { Navbar } from "@material-tailwind/react";
-import { useMaterialTailwindController } from "@/context";
+import { useMaterialTailwindController } from "@/store/exports";
+import { useMtkColor } from "@/store/hooks/useMtkColor";
 import { useTranslation } from "react-i18next";
 import { pageTitleKeyMap } from "./utils/pageTitleMap";
 import { MobileNavbar } from "./components/MobileNavbar";
@@ -21,7 +22,9 @@ export function DashboardNavbar() {
     navbarPosition,
     navbarAnimations,
     navbarHoverEffects,
+    sidenavType,
   } = controller;
+  const { colorCode } = useMtkColor();
   const { pathname } = useLocation();
   const { t } = useTranslation();
 
@@ -35,8 +38,36 @@ export function DashboardNavbar() {
       ? t(pageTitleKeyMap[page])
       : page;
 
+  const getRgbaColor = (hex, opacity = 1) => {
+    if (!hex) return null;
+    const hexClean = hex.replace("#", "");
+    const r = parseInt(hexClean.substring(0, 2), 16);
+    const g = parseInt(hexClean.substring(2, 4), 16);
+    const b = parseInt(hexClean.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
+
+  const getNavbarBackground = () => {
+    if (colorCode && sidenavType === "white") {
+      const color1 = getRgbaColor(colorCode, 0.1);
+      const color2 = getRgbaColor(colorCode, 0.05);
+      return {
+        background: `linear-gradient(to bottom, ${color1}, ${color2}, ${color1})`,
+      };
+    }
+    if (colorCode && sidenavType === "dark") {
+      const color1 = getRgbaColor(colorCode, 0.2);
+      const color2 = getRgbaColor(colorCode, 0.15);
+      return {
+        background: `linear-gradient(to bottom, ${color1}, ${color2}, ${color1})`,
+      };
+    }
+    return {};
+  };
+
   // Navbar konfiqurasiyaları - daha görünən və effektiv
   const getNavbarColorClasses = () => {
+    if (colorCode) return ""; // MTK rəngi varsa default gradient-i sil
     const transparency = getNavbarTransparency();
     const colors = {
       default: {
@@ -94,6 +125,7 @@ export function DashboardNavbar() {
 
   const getNavbarBorderClasses = () => {
     if (navbarBorder === "disabled") return "border-0";
+    if (colorCode) return "border-0 sm:border-2"; // MTK rəngi varsa border class-larını sil
     const borderColors = {
       default: "border-0 sm:border-2 border-gray-300/80 dark:border-gray-600/80",
       red: "border-0 sm:border-2 border-red-300/80 dark:border-red-600/80",
@@ -154,6 +186,10 @@ export function DashboardNavbar() {
       className={navbarClasses}
       fullWidth
       blurred={fixedNavbar && navbarBlur === "enabled"}
+      style={{
+        ...getNavbarBackground(),
+        borderColor: colorCode ? getRgbaColor(colorCode, 0.3) : undefined,
+      }}
     >
       <MobileNavbar pageTitle={pageTitle} navbarHoverEffects={navbarHoverEffects} />
       <DesktopNavbar 

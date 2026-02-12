@@ -1,7 +1,7 @@
 import React from "react";
 import { Typography } from "@material-tailwind/react";
 import { BuildingOffice2Icon } from "@heroicons/react/24/outline";
-import { useMtkColor } from "@/context";
+import { useMtkColor } from "@/store/exports";
 
 export function BlocksHeader() {
   const { colorCode, getGradientBackground, getRgba, defaultColor } = useMtkColor();

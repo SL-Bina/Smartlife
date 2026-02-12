@@ -1,9 +1,14 @@
 import React from "react";
 import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography } from "@material-tailwind/react";
 import { EyeIcon, XMarkIcon, BuildingOfficeIcon, MapPinIcon, EnvelopeIcon, PhoneIcon, GlobeAltIcon, PaintBrushIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
+import { useMtkColor } from "@/store/hooks/useMtkColor";
+import { useMaterialTailwindController } from "@/store/hooks/useMaterialTailwind";
 
 export function MtkViewModal({ open, onClose, item }) {
   const meta = item?.meta || {};
+  const [controller] = useMaterialTailwindController();
+  const { sidenavType } = controller;
+  const { colorCode } = useMtkColor();
 
   // Rəng koduna görə kontrast mətn rəngi müəyyən et (ağ və ya qara)
   const getContrastColor = (hexColor) => {
@@ -24,25 +29,68 @@ export function MtkViewModal({ open, onClose, item }) {
 
   if (!open || !item) return null;
 
-  const colorCode = meta.color_code;
-  const headerBgColor = colorCode ? `${colorCode}20` : undefined; // 20% opacity
-  const iconBgColor = colorCode || '#3b82f6'; // Default blue if no color
-  const accentColor = colorCode || '#3b82f6';
+  const itemColorCode = meta.color_code;
+  const activeColorCode = colorCode || itemColorCode;
+  const iconBgColor = activeColorCode || '#3b82f6';
+  const accentColor = activeColorCode || '#3b82f6';
+
+  const getRgbaColor = (hex, opacity = 1) => {
+    if (!hex) return null;
+    const hexClean = hex.replace("#", "");
+    const r = parseInt(hexClean.substring(0, 2), 16);
+    const g = parseInt(hexClean.substring(2, 4), 16);
+    const b = parseInt(hexClean.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
+
+  const getModalBackground = () => {
+    if (activeColorCode && sidenavType === "white") {
+      const color1 = getRgbaColor(activeColorCode, 0.05);
+      const color2 = getRgbaColor(activeColorCode, 0.03);
+      return {
+        background: `linear-gradient(to bottom, ${color1}, ${color2}, ${color1})`,
+      };
+    }
+    if (activeColorCode && sidenavType === "dark") {
+      const color1 = getRgbaColor(activeColorCode, 0.1);
+      const color2 = getRgbaColor(activeColorCode, 0.07);
+      return {
+        background: `linear-gradient(to bottom, ${color1}, ${color2}, ${color1})`,
+      };
+    }
+    return {};
+  };
 
   return (
     <Dialog 
       open={open} 
       handler={onClose} 
       size="lg" 
-      className="dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-2xl"
+      className="
+        rounded-3xl xl:rounded-[2rem]
+        backdrop-blur-2xl backdrop-saturate-150
+        bg-white/80 dark:bg-gray-900/80
+        border border-gray-200/50 dark:border-gray-700/50
+        shadow-[0_8px_32px_rgba(0,0,0,0.12),inset_0_1px_1px_rgba(255,255,255,0.3)]
+        dark:shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.15)]
+      "
       dismiss={{ enabled: false }}
+      style={{
+        ...getModalBackground(),
+        borderColor: activeColorCode ? getRgbaColor(activeColorCode, 0.15) : undefined,
+      }}
     >
       <DialogHeader 
-        className="border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between rounded-t-lg transition-colors"
+        className="
+          border-b border-gray-200/50 dark:border-gray-700/50 
+          pb-4 flex items-center justify-between 
+          rounded-t-3xl xl:rounded-t-[2rem]
+          backdrop-blur-sm
+        "
         style={{
-          background: colorCode 
-            ? `linear-gradient(to right, ${colorCode}20, ${colorCode}15)` 
-            : 'linear-gradient(to right, rgb(239 246 255), rgb(219 234 254))',
+          background: activeColorCode 
+            ? `linear-gradient(to right, ${getRgbaColor(activeColorCode, 0.08)}, ${getRgbaColor(activeColorCode, 0.05)})` 
+            : 'linear-gradient(to right, rgba(239, 246, 255, 0.5), rgba(219, 234, 254, 0.3))',
         }}
       >
         <div className="flex items-center gap-3">
@@ -61,26 +109,26 @@ export function MtkViewModal({ open, onClose, item }) {
         </div>
       </DialogHeader>
 
-      <DialogBody divider className="space-y-6 dark:bg-gray-800 py-6 max-h-[70vh] overflow-y-auto">
+      <DialogBody divider className="space-y-6 py-6 max-h-[70vh] overflow-y-auto bg-transparent">
         {/* Header Section */}
         <div className="flex items-center justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <div 
               className="p-3 rounded-xl"
               style={{ 
-                backgroundColor: colorCode ? `${colorCode}20` : 'rgb(219 234 254)',
+                backgroundColor: activeColorCode ? getRgbaColor(activeColorCode, 0.15) : 'rgb(219 234 254)',
               }}
             >
               <BuildingOfficeIcon 
                 className="h-6 w-6" 
-                style={{ color: colorCode || '#2563eb' }}
+                style={{ color: activeColorCode || '#2563eb' }}
               />
             </div>
             <div>
               <Typography variant="h6" className="font-bold text-gray-900 dark:text-white">
                 {item.name}
               </Typography>
-              <Typography variant="small" className="text-gray-500 dark:text-gray-400">
+              <Typography variant="small" className="text-gray-700 dark:text-gray-200">
                 ID: {item.id}
               </Typography>
             </div>
@@ -100,18 +148,24 @@ export function MtkViewModal({ open, onClose, item }) {
 
         {/* Main Information Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Info icon={<EnvelopeIcon className="h-5 w-5" />} label="Email" value={meta.email} colorCode={colorCode} />
-          <Info icon={<PhoneIcon className="h-5 w-5" />} label="Telefon" value={meta.phone} colorCode={colorCode} />
-          <Info icon={<GlobeAltIcon className="h-5 w-5" />} label="Web sayt" value={meta.website} isLink colorCode={colorCode} />
-          <Info icon={<MapPinIcon className="h-5 w-5" />} label="Koordinatlar" value={meta.lat && meta.lng ? `${meta.lat}, ${meta.lng}` : null} colorCode={colorCode} />
+          <Info icon={<EnvelopeIcon className="h-5 w-5" />} label="Email" value={meta.email} colorCode={activeColorCode} />
+          <Info icon={<PhoneIcon className="h-5 w-5" />} label="Telefon" value={meta.phone} colorCode={activeColorCode} />
+          <Info icon={<GlobeAltIcon className="h-5 w-5" />} label="Web sayt" value={meta.website} isLink colorCode={activeColorCode} />
+          <Info icon={<MapPinIcon className="h-5 w-5" />} label="Koordinatlar" value={meta.lat && meta.lng ? `${meta.lat}, ${meta.lng}` : null} colorCode={activeColorCode} />
         </div>
 
         {/* Color Code */}
         {meta.color_code && (
-          <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-900/50">
+          <div className="
+            rounded-2xl xl:rounded-3xl
+            backdrop-blur-xl backdrop-saturate-150
+            border border-gray-200/50 dark:border-gray-700/50
+            bg-white/60 dark:bg-gray-800/40
+            p-4
+          ">
             <div className="flex items-center gap-3 mb-2">
               <PaintBrushIcon className="h-5 w-5" style={{ color: colorCode || '#4b5563' }} />
-              <Typography variant="small" className="font-semibold text-gray-700 dark:text-gray-300 uppercase">
+              <Typography variant="small" className="font-semibold text-gray-800 dark:text-gray-100 uppercase">
                 Rəng Kodu
               </Typography>
             </div>
@@ -136,7 +190,7 @@ export function MtkViewModal({ open, onClose, item }) {
             label="Ünvan" 
             value={meta.address} 
             fullWidth 
-            colorCode={colorCode}
+            colorCode={activeColorCode}
           />
         )}
 
@@ -147,15 +201,19 @@ export function MtkViewModal({ open, onClose, item }) {
             label="Təsvir" 
             value={meta.desc} 
             fullWidth 
-            colorCode={colorCode}
+            colorCode={activeColorCode}
           />
         )}
       </DialogBody>
 
       <DialogFooter 
-        className="border-t border-gray-200 dark:border-gray-700 dark:bg-gray-800"
+        className="
+          border-t border-gray-200/50 dark:border-gray-700/50
+          bg-transparent
+          rounded-b-3xl xl:rounded-b-[2rem]
+        "
         style={{
-          borderTopColor: colorCode ? `${colorCode}30` : undefined,
+          borderTopColor: activeColorCode ? getRgbaColor(activeColorCode, 0.15) : undefined,
         }}
       >
         <Button 
@@ -164,8 +222,8 @@ export function MtkViewModal({ open, onClose, item }) {
           onClick={onClose} 
           className="dark:text-gray-300 dark:border-gray-600"
           style={{
-            borderColor: colorCode || undefined,
-            color: colorCode || undefined,
+            borderColor: activeColorCode || undefined,
+            color: activeColorCode || undefined,
           }}
         >
           Bağla
@@ -177,20 +235,31 @@ export function MtkViewModal({ open, onClose, item }) {
 
 function Info({ icon, label, value, isLink = false, fullWidth = false, colorCode }) {
   if (!value) return null;
-
-  const iconColor = colorCode || '#4b5563';
+  
+  const { colorCode: mtkColorCode } = useMtkColor();
+  const activeColorCode = mtkColorCode || colorCode;
+  const iconColor = activeColorCode || '#4b5563';
 
   return (
-    <div className={`rounded-xl border border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-900/50 transition-all hover:shadow-md ${fullWidth ? "col-span-1 md:col-span-2" : ""}`}>
+    <div className={`
+      rounded-2xl xl:rounded-3xl
+      backdrop-blur-xl backdrop-saturate-150
+      border border-gray-200/50 dark:border-gray-700/50
+      bg-white/60 dark:bg-gray-800/40
+      p-4 transition-all 
+      hover:shadow-[0_4px_20px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.2)]
+      dark:hover:shadow-[0_4px_20px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1)]
+      ${fullWidth ? "col-span-1 md:col-span-2" : ""}
+    `}>
       <div className="flex items-center gap-2 mb-2">
         <div style={{ color: iconColor }}>
           {icon}
         </div>
-        <Typography variant="small" className="font-semibold text-gray-700 dark:text-gray-300 uppercase">
+        <Typography variant="small" className="font-semibold text-gray-800 dark:text-gray-100 uppercase">
           {label}
         </Typography>
       </div>
-      <div className="text-sm text-gray-900 dark:text-white break-words pl-7">
+      <div className="text-sm font-medium text-gray-900 dark:text-white break-words pl-7">
         {isLink && value ? (
           <a
             href={value.startsWith("http") ? value : `https://${value}`}

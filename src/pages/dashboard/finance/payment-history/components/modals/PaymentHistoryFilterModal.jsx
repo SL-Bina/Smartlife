@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Input, Typography } from "@material-tailwind/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
-// import { buildingsAPI } from "// @/pages/dashboard/management/buildings/api";
 
 export function PaymentHistoryFilterModal({ open, onClose, filters, onFilterChange, onApply, onClear }) {
   const { t } = useTranslation();
@@ -32,8 +31,6 @@ export function PaymentHistoryFilterModal({ open, onClose, filters, onFilterChan
 
   useEffect(() => {
     if (open && filters.building) {
-      // TODO: Fetch blocks when building is selected
-      // For now, using mock data
       setBlocks([
         { id: 1, name: "Blok A" },
         { id: 2, name: "Blok B" },
@@ -47,8 +44,6 @@ export function PaymentHistoryFilterModal({ open, onClose, filters, onFilterChan
 
   useEffect(() => {
     if (open && filters.block) {
-      // TODO: Fetch apartments when block is selected
-      // For now, using mock data
       setApartments([
         { id: 1, name: "Mənzil 1" },
         { id: 2, name: "Mənzil 2" },

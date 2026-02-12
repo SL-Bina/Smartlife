@@ -1,11 +1,12 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import L from "leaflet";
-import { CustomDialog, DialogHeader, DialogBody, DialogFooter } from "@/components/ui/CustomDialog";
+import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography } from "@material-tailwind/react";
+import { useMtkColor } from "@/store/hooks/useMtkColor";
+import { useMaterialTailwindController } from "@/store/hooks/useMaterialTailwind";
 import { CustomInput } from "@/components/ui/CustomInput";
 import { CustomTextarea } from "@/components/ui/CustomTextarea";
 import { CustomSelect } from "@/components/ui/CustomSelect";
-import { CustomButton } from "@/components/ui/CustomButton";
 import { CustomCard, CardBody } from "@/components/ui/CustomCard";
 import { CustomTypography } from "@/components/ui/CustomTypography";
 import AdvancedColorPicker from "@/components/ui/AdvancedColorPicker";
@@ -252,52 +253,66 @@ export function MtkFormModal({ open, mode = "create", onClose, form, onSubmit })
   };
 
   const hasCoordinates = form?.formData?.meta?.lat && form?.formData?.meta?.lng;
-  const colorCode = form?.formData?.meta?.color_code;
-  const iconBgColor = colorCode || '#3b82f6';
+  const formColorCode = form?.formData?.meta?.color_code;
+  const [controller] = useMaterialTailwindController();
+  const { sidenavType } = controller;
+  const { colorCode } = useMtkColor();
+  const activeColorCode = colorCode || formColorCode;
+  const iconBgColor = activeColorCode || '#3b82f6';
+
+  const getRgbaColor = (hex, opacity = 1) => {
+    if (!hex) return null;
+    const hexClean = hex.replace("#", "");
+    const r = parseInt(hexClean.substring(0, 2), 16);
+    const g = parseInt(hexClean.substring(2, 4), 16);
+    const b = parseInt(hexClean.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
 
   return (
     <>
-      <CustomDialog open={!!open} onClose={onClose} size="xl">
+      <Dialog 
+        open={!!open} 
+        handler={onClose} 
+        size="xl"
+        className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl"
+        dismiss={{ enabled: false }}
+      >
         <DialogHeader 
-          className="rounded-t-lg transition-colors"
+          className="border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between rounded-t-lg transition-colors bg-white dark:bg-gray-800"
           style={{
-            background: colorCode 
-              ? `linear-gradient(to right, ${colorCode}20, ${colorCode}15)` 
+            background: activeColorCode 
+              ? `linear-gradient(to right, ${getRgbaColor(activeColorCode, 0.1)}, ${getRgbaColor(activeColorCode, 0.05)})` 
               : undefined,
           }}
         >
-          <div className="flex items-center gap-3 flex-1">
+          <div className="flex items-center gap-3">
             <div 
               className="p-2 rounded-lg"
               style={{ backgroundColor: iconBgColor }}
             >
-              <BuildingOfficeIcon className="h-6 w-6 text-white" />
+              <BuildingOfficeIcon className="h-5 w-5 text-white" />
             </div>
             <div>
-              <CustomTypography variant="h5" className="font-bold">
+              <Typography variant="h5" className="font-bold text-gray-900 dark:text-white">
                 {title}
-              </CustomTypography>
-              <CustomTypography variant="small" className="font-normal">
+              </Typography>
+              <Typography variant="small" className="text-gray-600 dark:text-gray-400">
                 {isEdit ? "MTK məlumatlarını yeniləyin" : "Yeni MTK üçün məlumatları doldurun"}
-              </CustomTypography>
+              </Typography>
             </div>
           </div>
-          <CustomButton
-            variant="text"
-            size="sm"
-            onClick={onClose}
-            className="text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg p-2"
-          >
-            <XMarkIcon className="h-5 w-5" />
-          </CustomButton>
+          <div className="cursor-pointer p-2 rounded-md transition-all hover:bg-gray-200 dark:hover:bg-gray-700" onClick={onClose}>
+            <XMarkIcon className="h-5 w-5 cursor-pointer text-gray-700 dark:text-gray-200" />
+          </div>
         </DialogHeader>
 
-        <DialogBody className="max-h-[75vh] overflow-y-auto">
+        <DialogBody divider className="dark:bg-gray-800 py-6 max-h-[75vh] overflow-y-auto">
           {!form ? (
             <div className="text-center py-8">
-              <CustomTypography variant="body2" className="text-gray-500 dark:text-gray-300">
+              <Typography className="text-gray-700 dark:text-gray-200 font-medium">
                 Form hazır deyil
-              </CustomTypography>
+              </Typography>
             </div>
           ) : (
             <div className="flex flex-col gap-6">
@@ -378,7 +393,7 @@ export function MtkFormModal({ open, mode = "create", onClose, form, onSubmit })
                         <PhotoIcon className="h-5 w-5" />
                         {logoPreview ? "Logo dəyiş" : "Logo yüklə"}
                       </label>
-                      <CustomTypography variant="small" className="text-gray-500 dark:text-gray-400 mt-1">
+                      <CustomTypography variant="small" className="text-gray-700 dark:text-gray-200 mt-1 font-medium">
                         Maksimum 5MB
                       </CustomTypography>
                     </div>
@@ -409,7 +424,7 @@ export function MtkFormModal({ open, mode = "create", onClose, form, onSubmit })
                       <PhotoIcon className="h-5 w-5" />
                       Şəkil yüklə
                     </label>
-                    <CustomTypography variant="small" className="text-gray-500 dark:text-gray-400 block">
+                    <CustomTypography variant="small" className="text-gray-700 dark:text-gray-200 block font-medium">
                       Maksimum 10 şəkil, hər biri 10MB-dan az
                     </CustomTypography>
 
@@ -435,7 +450,7 @@ export function MtkFormModal({ open, mode = "create", onClose, form, onSubmit })
                     ) : (
                       <div className="mt-4 p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center">
                         <PhotoIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                        <CustomTypography variant="small" className="text-gray-500 dark:text-gray-400">
+                        <CustomTypography variant="small" className="text-gray-700 dark:text-gray-200 font-medium">
                           Şəkil yoxdur
                         </CustomTypography>
                       </div>
@@ -517,24 +532,24 @@ export function MtkFormModal({ open, mode = "create", onClose, form, onSubmit })
                       Koordinatlar
                     </CustomTypography>
                     <div className="flex items-center gap-2">
-                      <CustomButton
+                      <Button
                         type="button"
                         variant="outlined"
                         size="sm"
                         color="green"
                         onClick={handleGetCurrentLocation}
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-2 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
                       >
                         <MapIcon className="h-4 w-4" />
                         Cari yer
-                      </CustomButton>
-                      <CustomButton
+                      </Button>
+                      <Button
                         type="button"
                         variant="outlined"
                         size="sm"
                         color="blue"
                         onClick={() => setShowMap(!showMap)}
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-2 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
                       >
                         <MapPinIcon className="h-4 w-4" />
                         {showMap ? "Xəritəni gizlət" : "Xəritəni göstər"}
@@ -543,7 +558,7 @@ export function MtkFormModal({ open, mode = "create", onClose, form, onSubmit })
                         ) : (
                           <ChevronDownIcon className="h-4 w-4" />
                         )}
-                      </CustomButton>
+                      </Button>
                     </div>
                   </div>
 
@@ -611,25 +626,41 @@ export function MtkFormModal({ open, mode = "create", onClose, form, onSubmit })
           )}
         </DialogBody>
 
-        <DialogFooter>
-          <CustomButton
+        <DialogFooter className="flex justify-between gap-2 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pt-4">
+          <Button
             variant="outlined"
-            color="gray"
+            color="blue-gray"
             onClick={onClose}
             disabled={saving}
+            className="text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
           >
             Ləğv et
-          </CustomButton>
-          <CustomButton
-            color="red"
+          </Button>
+          <Button
             onClick={submit}
             disabled={!!errorText || saving}
             loading={saving}
+            className="text-white"
+            style={{
+              backgroundColor: activeColorCode || "#dc2626",
+            }}
+            onMouseEnter={(e) => {
+              if (!saving && !errorText) {
+                e.currentTarget.style.backgroundColor = activeColorCode 
+                  ? getRgbaColor(activeColorCode, 0.9) 
+                  : "#b91c1c";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!saving && !errorText) {
+                e.currentTarget.style.backgroundColor = activeColorCode || "#dc2626";
+              }
+            }}
           >
             {saving ? "Yadda saxlanılır..." : isEdit ? "Yenilə" : "Yarat"}
-          </CustomButton>
+          </Button>
         </DialogFooter>
-      </CustomDialog>
+      </Dialog>
 
       {/* Toast Notification */}
       <DynamicToast
@@ -643,3 +674,4 @@ export function MtkFormModal({ open, mode = "create", onClose, form, onSubmit })
     </>
   );
 }
+

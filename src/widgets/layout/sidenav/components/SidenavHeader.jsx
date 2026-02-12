@@ -3,12 +3,14 @@ import { Link } from "react-router-dom";
 import { IconButton, Typography } from "@material-tailwind/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
-import { useMaterialTailwindController, setOpenSidenav } from "@/context";
+import { useMaterialTailwindController } from "@/store/hooks/useMaterialTailwind";
+import { setOpenSidenav } from "@/store/slices/uiSlice";
+import { useAppDispatch } from "@/store/hooks";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/store/hooks/useAuth";
 
 export function SidenavHeader({ brandName, collapsed = false, isLowHeight = false }) {
-  const [controller, dispatch] = useMaterialTailwindController();
+  const [controller, actions] = useMaterialTailwindController();
   const { sidenavSize } = controller;
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
@@ -61,20 +63,6 @@ export function SidenavHeader({ brandName, collapsed = false, isLowHeight = fals
     month: "long",
     year: "numeric",
   }).format(now);
-
-  // ✅ istəsən buraya real wallpaper şəkli ver:
-  // məsələn: "/images/ios-wallpaper.jpg"
-  const IOS_WALLPAPER_URL = ""; // <- boş qalsa gradient işləyəcək
-
-  const iosWallpaperStyle = IOS_WALLPAPER_URL
-    ? { backgroundImage: `url(${IOS_WALLPAPER_URL})` }
-    : {
-      backgroundImage:
-        "radial-gradient(1200px 500px at 20% 10%, rgba(255,255,255,.25), transparent 60%)," +
-        "radial-gradient(900px 400px at 80% 20%, rgba(255,0,85,.18), transparent 55%)," +
-        "radial-gradient(900px 500px at 50% 90%, rgba(0,150,255,.18), transparent 60%)," +
-        "linear-gradient(135deg, rgba(15,23,42,.95), rgba(17,24,39,.92))",
-    };
 
   // Responsive padding - aşağı hündürlüklü ekranlarda azalt
   const getHeaderPadding = () => {
@@ -155,7 +143,7 @@ export function SidenavHeader({ brandName, collapsed = false, isLowHeight = fals
         )}
       </Link>
 
-      {/* ✅ iOS-style mini "lockscreen clock" container - aşağı hündürlüklü ekranlarda gizlənir */}
+      {/* ✅ iOS 26-style glass clock container - aşağı hündürlüklü ekranlarda gizlənir */}
       {!collapsed && !isLowHeight && (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
@@ -166,50 +154,45 @@ export function SidenavHeader({ brandName, collapsed = false, isLowHeight = fals
           <div
             className="
               relative overflow-hidden
-              rounded-2xl xl:rounded-3xl
-              border border-white/10 dark:border-white/10
-              shadow-[0_8px_25px_rgba(0,0,0,.2)]
+              rounded-3xl xl:rounded-[2rem]
+              backdrop-blur-3xl backdrop-saturate-150
+              bg-gradient-to-br from-white/30 via-white/15 to-white/10
+              dark:from-white/10 dark:via-white/5 dark:to-black/20
+              border border-white/30 dark:border-white/15
+              shadow-[0_8px_32px_rgba(0,0,0,0.08),inset_0_1px_1px_rgba(255,255,255,0.3)]
+              dark:shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.15)]
             "
-            style={iosWallpaperStyle}
           >
-            <div className="absolute inset-0 bg-white/5 dark:bg-black/15" />
+            {/* Glass overlay effect - iOS 26 style */}
+            <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/10 to-transparent dark:from-white/15 dark:via-white/5 dark:to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/3 to-transparent dark:from-black/8 dark:to-transparent" />
+            
+            {/* Inner highlight */}
+            <div className="absolute inset-[1px] rounded-3xl xl:rounded-[2rem] bg-gradient-to-br from-white/20 via-transparent to-transparent dark:from-white/8 dark:to-transparent pointer-events-none" />
+            
+            {/* Subtle reflection */}
+            <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-white/25 to-transparent dark:from-white/10 dark:to-transparent rounded-t-3xl xl:rounded-t-[2rem] pointer-events-none" />
 
-            {/* <div className="absolute left-1/2 top-2 -translate-x-1/2 h-[10px] w-[110px] rounded-full bg-black/25 dark:bg-black/40" /> */}
-
-            <div className={`relative ${isLowHeight ? "px-3 py-2.5 xl:px-4 xl:py-3" : "px-3 py-3 xl:px-4 xl:py-4"}`}>
+            <div className={`relative ${isLowHeight ? "px-3 py-2.5 xl:px-4 xl:py-3" : "px-4 py-3.5 xl:px-5 xl:py-4"}`}>
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <div className={`${isLowHeight ? "text-[9px] xl:text-[10px]" : "text-[10px] xl:text-[11px]"} text-white/80 capitalize truncate`}>
+                  <div className={`${isLowHeight ? "text-[9px] xl:text-[10px]" : "text-[10px] xl:text-[11px]"} text-gray-800/90 dark:text-white/90 capitalize truncate font-medium drop-shadow-[0_1px_2px_rgba(0,0,0,0.1)]`}>
                     {dateText}
                   </div>
 
                   <div className={`${isLowHeight ? "mt-0.5" : "mt-1.5"} flex items-end gap-1.5`}>
-                    <div className={`${isLowHeight ? "text-xl xl:text-2xl" : "text-2xl xl:text-3xl"} font-semibold tracking-tight text-white drop-shadow`}>
+                    <div className={`${isLowHeight ? "text-xl xl:text-2xl" : "text-2xl xl:text-3xl"} font-bold tracking-tight text-gray-900 dark:text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.2)]`}>
                       {hh}:{mm}
                     </div>
-                    <div className={`pb-0.5 ${isLowHeight ? "text-[10px] xl:text-xs" : "text-xs xl:text-sm"} font-semibold text-white/85`}>
+                    <div className={`pb-0.5 ${isLowHeight ? "text-[10px] xl:text-xs" : "text-xs xl:text-sm"} font-semibold text-gray-700/90 dark:text-white/90 drop-shadow-[0_1px_3px_rgba(0,0,0,0.15)]`}>
                       {ss}
                     </div>
                   </div>
-
-                  {/* <div className="mt-2 text-[11px] xl:text-xs text-white/75">
-                    {t("sidebar.liveTime") || "Canlı saat • real-time"}
-                  </div> */}
                 </div>
-
-                {/* <div className="shrink-0">
-                  <div className="rounded-2xl bg-black/25 dark:bg-black/35 px-3 py-2 border border-white/10">
-                    <div className="text-[10px] xl:text-[11px] text-white/80">
-                      {t("sidebar.status") || "Status"}
-                    </div>
-                    <div className="text-xs xl:text-sm font-semibold text-white">
-                      {t("common.active") || "Aktiv"}
-                    </div>
-                  </div>
-                </div> */}
               </div>
 
-              <div className="pointer-events-none absolute -bottom-10 left-1/2 h-24 w-72 -translate-x-1/2 rounded-full bg-white/10 blur-3xl" />
+              {/* Soft glow effect at bottom - iOS 26 style */}
+              <div className="pointer-events-none absolute -bottom-6 left-1/2 h-16 w-56 -translate-x-1/2 rounded-full bg-gradient-to-t from-gray-300/15 via-gray-200/10 to-transparent dark:from-white/8 dark:via-white/5 dark:to-transparent blur-2xl" />
             </div>
           </div>
         </motion.div>
@@ -220,7 +203,7 @@ export function SidenavHeader({ brandName, collapsed = false, isLowHeight = fals
         size="sm"
         ripple={false}
         className="absolute right-2 top-2 xl:right-4 xl:top-4 xl:hidden !p-2 hover:bg-gray-200/70 dark:hover:bg-gray-700/70 rounded-lg xl:rounded-xl transition-all duration-200 hover:scale-110"
-        onClick={() => setOpenSidenav(dispatch, false)}
+        onClick={() => actions.setOpenSidenav(false)}
       >
         <XMarkIcon className="h-4 w-4 xl:h-5 xl:w-5 text-gray-700 dark:text-gray-300" />
       </IconButton>

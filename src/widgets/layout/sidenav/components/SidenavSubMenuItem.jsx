@@ -2,7 +2,7 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import { Typography } from "@material-tailwind/react";
 import { motion } from "framer-motion";
-import { useMaterialTailwindController, setOpenSidenav } from "@/context";
+import { useMaterialTailwindController, setOpenSidenav } from "@/store/exports";
 import { useTranslation } from "react-i18next";
 
 export function SidenavSubMenuItem({ icon, name, path, layout, isParentPath, mtkColorCode = null, isLowHeight = false }) {

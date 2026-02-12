@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { Card, CardBody, Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem, Button } from "@material-tailwind/react";
 import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon, EyeIcon, PencilIcon, TrashIcon, CurrencyDollarIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
-import { useManagementEnhanced, useMtkColor } from "@/context";
+import { useManagementEnhanced, useMtkColor } from "@/store/exports";
 import { PropertiesTableSkeleton } from "./PropertiesTableSkeleton";
 
 export function PropertiesTable({

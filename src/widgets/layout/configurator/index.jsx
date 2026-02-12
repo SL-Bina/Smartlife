@@ -1,6 +1,6 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useMaterialTailwindController, setOpenConfigurator } from "@/context";
+import { useMaterialTailwindController, setOpenConfigurator } from "@/store/exports";
 import { ConfiguratorHeader } from "./components/ConfiguratorHeader";
 import { ConfiguratorToggleButton } from "./components/ConfiguratorToggleButton";
 import { SidenavSection } from "./components/SidenavSection";

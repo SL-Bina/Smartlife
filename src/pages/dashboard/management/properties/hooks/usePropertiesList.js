@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useMemo } from "react";
-import { useManagementEnhanced } from "@/context/ManagementContextEnhanced";
+import { useManagementEnhanced } from "@/store/exports";
 import { useFilteredProperties, useProcessedList } from "@/hooks/management/useFilteredLists";
 import propertiesAPI from "../api";
 
@@ -89,5 +89,8 @@ export function usePropertiesList() {
     refresh,
   };
 }
+
+
+
 
 
