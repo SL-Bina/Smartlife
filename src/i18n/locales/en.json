@@ -286,8 +286,21 @@
       "submit": "Sign In",
       "loading": "Loading...",
       "invalidCredentialsError": "Invalid username or password",
-      "demoUsersTitle": "Demo users:"
-    },
+      "demoUsersTitle": "Demo users:",
+      "login_title": "Sign in",
+      "email_label": "Email",
+      "email_placeholder": "Enter your email",
+      "password_label": "Password",
+      "remember_me": "Remember for 30 days",
+      "qr_login": "Login with QR code",
+      "otp_title": "Verification Code",
+      "otp_message": "Code sent to",
+      "otp_verify": "Verify",
+      "otp_back": "Change number",
+      "qr_title": "Scan QR Code",
+       "qr_back": "Go back"
+  },
+    
     "signUp": {
       "title": "Sign Up",
       "subtitle": "Enter your details to register",

@@ -302,7 +302,20 @@
       "submit": "Daxil ol",
       "loading": "Yüklənir...",
       "invalidCredentialsError": "İstifadəçi adı və ya şifrə yanlışdır",
-      "demoUsersTitle": "Demo istifadəçilər:"
+      "demoUsersTitle": "Demo istifadəçilər:",
+      "login_title": "Giriş",
+      "email_label": "E-poçt",
+      "email_placeholder": "E-poçtunuzu daxil edin",
+      "password_label": "Şifrə",
+      "remember_me": "30 gün yadda saxla",
+      "qr_login": "QR kodla giriş",
+      "otp_title": "Təsdiq kodu",
+      "otp_message": "kod göndərildi",
+      "otp_verify": "Təsdiqlə",
+      "otp_back": "Nömrəni dəyiş",
+      "qr_title": "QR kodu skan edin",
+      "qr_back": "Geri qayıt"
+
     },
     "signUp": {
       "title": "Qeydiyyat",

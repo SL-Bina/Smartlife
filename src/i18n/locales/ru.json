@@ -285,7 +285,20 @@
       "submit": "Войти",
       "loading": "Загрузка...",
       "invalidCredentialsError": "Неверный логин или пароль",
-      "demoUsersTitle": "Демо пользователи:"
+      "demoUsersTitle": "Демо пользователи:", 
+      "login_title": "Войти",
+      "email_label": "Эл. почта",
+      "email_placeholder": "Введите ваш email",
+      "password_label": "Пароль",
+      "remember_me": "Запомнить на 30 дней",
+      "qr_login": "Вход по QR-коду",
+      "otp_title": "Код подтверждения",
+      "otp_message": "код отправлен на",
+      "otp_verify": "Подтвердить",
+      "otp_back": "Изменить номер",
+      "qr_title": "Сканируйте QR-код",
+      "qr_back": "Назад"
+
     },
     "signUp": {
       "title": "Регистрация",

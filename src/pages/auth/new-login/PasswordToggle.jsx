@@ -1,4 +1,3 @@
-// components/auth/PasswordToggle.jsx
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
@@ -10,7 +9,8 @@ export default function PasswordToggle({ label, id, className = '', ...props }) 
             <label htmlFor={id} className="text-sm font-medium text-secondary">
                 {label}
             </label>
-            <div className="relative flex w-[320px] rounded-lg bg-primary shadow-xs ring-1 ring-primary transition-shadow group-focus-within:ring-2 group-focus-within:ring-brand">
+
+            <div className="relative flex w-[320px] rounded-lg bg-primary shadow-xs ring-1 ring-red-500 transition-shadow group-focus-within:ring-2 group-focus-within:ring-brand">
                 <input
                     id={id}
                     type={show ? 'text' : 'password'}
