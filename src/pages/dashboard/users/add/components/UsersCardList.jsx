@@ -1,13 +1,11 @@
 import React from "react";
 import { Card, CardBody, Typography, Chip, Button, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
 import { EllipsisVerticalIcon, UserIcon, EnvelopeIcon, PhoneIcon } from "@heroicons/react/24/outline";
-import { useMtkColor } from "@/store/hooks/useMtkColor";
-
 const DEFAULT_COLOR = "#dc2626";
 
 export function UsersCardList({ items = [], loading, onEdit, onDelete }) {
-  const { colorCode } = useMtkColor();
-  const activeColor = colorCode || DEFAULT_COLOR;
+  const colorCode = null;
+  const activeColor = DEFAULT_COLOR;
 
   const getContrastColor = (hexColor) => {
     if (!hexColor) return "#000000";

@@ -9,7 +9,7 @@ import {
   ExclamationTriangleIcon,
   MapPinIcon,
 } from "@heroicons/react/24/outline";
-import { useMaterialTailwindController, setOpenSidenav, useManagementEnhanced, useMtkColor } from "@/store/exports";
+import { useMaterialTailwindController, setOpenSidenav } from "@/store/exports";
 import { NavbarBreadcrumbs } from "./NavbarBreadcrumbs";
 import { DarkModeToggle } from "./DarkModeToggle";
 import { LanguageSelector } from "./LanguageSelector";
@@ -316,11 +316,11 @@ function WeatherPillCenter() {
 export function DesktopNavbar({ pathParts, pageTitle, fixedNavbar, navbarHoverEffects }) {
   const [controller, dispatch] = useMaterialTailwindController();
   const { openSidenav } = controller;
-  const { mtk } = useManagementEnhanced();
-  const { colorCode } = useMtkColor();
+  const mtk = null;
+  const colorCode = null;
   
   // MTK rəng kodunu al (mtk-dan və ya context-dən)
-  const mtkColorCode = mtk?.meta?.color_code || colorCode;
+  const mtkColorCode = null;
   
   // Rəng kodunu rgba-ya çevir
   const getRgbaColor = (hex, opacity = 1) => {

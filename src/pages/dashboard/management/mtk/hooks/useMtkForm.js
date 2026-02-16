@@ -1,44 +1,89 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
-const emptyForm = {
+const initialFormData = {
   name: "",
-  status: "active",
   meta: {
     lat: "",
     lng: "",
     desc: "",
     address: "",
+    color_code: "#dc2626",
     phone: "",
     email: "",
     website: "",
-    color_code: "",
   },
+  status: "active",
 };
 
 export function useMtkForm() {
-  const [formData, setFormData] = useState(emptyForm);
+  const [formData, setFormData] = useState(initialFormData);
+  const [errors, setErrors] = useState({});
 
-  const resetForm = () => setFormData(emptyForm);
+  const updateField = useCallback((field, value) => {
+    if (field.startsWith("meta.")) {
+      const metaField = field.replace("meta.", "");
+      setFormData((prev) => ({
+        ...prev,
+        meta: {
+          ...prev.meta,
+          [metaField]: value,
+        },
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: value,
+      }));
+    }
+    // Clear error for this field
+    if (errors[field]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  }, [errors]);
 
-  const updateField = (key, value) => setFormData((p) => ({ ...p, [key]: value }));
-  const updateMeta = (key, value) => setFormData((p) => ({ ...p, meta: { ...p.meta, [key]: value } }));
+  const setFormFromMtk = useCallback((mtk) => {
+    if (!mtk) {
+      resetForm();
+      return;
+    }
 
-  const setFormFromMtk = (item) => {
     setFormData({
-      name: item?.name || "",
-      status: item?.status || "active",
+      name: mtk.name || "",
       meta: {
-        lat: item?.meta?.lat || "",
-        lng: item?.meta?.lng || "",
-        desc: item?.meta?.desc || "",
-        address: item?.meta?.address || "",
-        phone: item?.meta?.phone || "",
-        email: item?.meta?.email || "",
-        website: item?.meta?.website || "",
-        color_code: item?.meta?.color_code || "",
+        lat: mtk.meta?.lat || "",
+        lng: mtk.meta?.lng || "",
+        desc: mtk.meta?.desc || "",
+        address: mtk.meta?.address || "",
+        color_code: mtk.meta?.color_code || "#3b82f6",
+        phone: mtk.meta?.phone || "",
+        email: mtk.meta?.email || "",
+        website: mtk.meta?.website || "",
       },
+      status: mtk.status || "active",
     });
-  };
+    setErrors({});
+  }, []);
 
-  return { formData, resetForm, updateField, updateMeta, setFormFromMtk };
+  const resetForm = useCallback(() => {
+    setFormData(initialFormData);
+    setErrors({});
+  }, []);
+
+  const setFormErrors = useCallback((newErrors) => {
+    setErrors(newErrors);
+  }, []);
+
+  return {
+    formData,
+    errors,
+    updateField,
+    setFormFromMtk,
+    resetForm,
+    setFormErrors,
+  };
 }
+

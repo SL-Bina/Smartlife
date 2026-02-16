@@ -1,271 +1,330 @@
-import React, { useMemo, useState, useEffect } from "react";
-import { Card, CardBody, Spinner, Typography } from "@material-tailwind/react";
-
-import { BlocksHeader } from "./components/BlocksHeader";
-import { BlocksActions } from "./components/BlocksActions";
-import { BlocksTable } from "./components/BlocksTable";
-import { BlocksPagination } from "./components/BlocksPagination";
-
-import { BlocksViewModal } from "./components/modals/BlocksViewModal";
-import { BlocksFormModal } from "./components/modals/BlocksFormModal";
-import { BlocksDeleteModal } from "./components/modals/BlocksDeleteModal";
-import { BlocksFilterModal } from "./components/modals/BlocksFilterModal";
-
-import { useBlocksData } from "./hooks/useBlocksData";
-import { useBlocksForm } from "./hooks/useBlocksForm";
-import { useBlocksFilters } from "./hooks/useBlocksFilters";
-
-import { useManagementEnhanced } from "@/store/exports";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { loadMtkById } from "@/store/slices/mtkSlice";
+import { loadComplexById } from "@/store/slices/complexSlice";
+import { loadBuildingById } from "@/store/slices/buildingSlice";
+import { setSelectedBlock, loadBlocks, loadBlockById } from "@/store/slices/blockSlice";
+import { BlockHeader } from "./components/BlockHeader";
+import { BlockActions } from "./components/BlockActions";
+import { BlockTable } from "./components/BlockTable";
+import { BlockPagination } from "./components/BlockPagination";
+import { BlockFormModal } from "./components/modals/BlockFormModal";
+import { BlockSearchModal } from "./components/modals/BlockSearchModal";
+import { useBlockForm } from "./hooks/useBlockForm";
+import { useBlockData } from "./hooks/useBlockData";
 import blocksAPI from "./api";
 import DynamicToast from "@/components/DynamicToast";
 
 export default function BlocksPage() {
-  const [search, setSearch] = useState("");
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const [searchParams] = useSearchParams();
+  
+  // URL parametrlərindən gələn ID-lər
+  const mtkIdFromUrl = searchParams.get("mtk_id");
+  const complexIdFromUrl = searchParams.get("complex_id");
+  const buildingIdFromUrl = searchParams.get("building_id");
 
-  const [viewOpen, setViewOpen] = useState(false);
+  // State - URL-dən ilk dəyərləri götür
+  const [mtkId, setMtkId] = useState(() => {
+    if (mtkIdFromUrl) {
+      const id = parseInt(mtkIdFromUrl, 10);
+      return !isNaN(id) ? id : null;
+    }
+    return null;
+  });
+  const [complexId, setComplexId] = useState(() => {
+    if (complexIdFromUrl) {
+      const id = parseInt(complexIdFromUrl, 10);
+      return !isNaN(id) ? id : null;
+    }
+    return null;
+  });
+  const [buildingId, setBuildingId] = useState(() => {
+    if (buildingIdFromUrl) {
+      const id = parseInt(buildingIdFromUrl, 10);
+      return !isNaN(id) ? id : null;
+    }
+    return null;
+  });
+  // Redux-dan selected Block ID götür
+  const selectedBlockId = useAppSelector((state) => state.block.selectedBlockId);
+  const selectedBlock = useAppSelector((state) => state.block.selectedBlock);
+
+  const [search, setSearch] = useState({});
   const [formOpen, setFormOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [mode, setMode] = useState("create");
-  const [selected, setSelected] = useState(null);
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
 
-  const { state, actions } = useManagementEnhanced();
+  const form = useBlockForm();
+  const { items, loading, page, lastPage, total, itemsPerPage, setItemsPerPage, goToPage, refresh } = useBlockData({
+    search,
+    complexId,
+    buildingId,
+    mtkId,
+  });
 
-  // Redux-dan məlumatları al
-  const mtks = state.mtks || [];
-  const complexes = state.complexes || [];
-  const buildings = state.buildings || [];
-  const loadingMtks = state.loading?.mtks || false;
-  const loadingComplexes = state.loading?.complexes || false;
-  const loadingBuildings = state.loading?.buildings || false;
+  // Load Blocks to Redux on mount
+  useEffect(() => {
+    dispatch(loadBlocks({ page: 1, per_page: 1000 }));
+  }, [dispatch]);
+
+  // Load selected Block if ID exists but Block data doesn't
+  useEffect(() => {
+    if (selectedBlockId && !selectedBlock) {
+      dispatch(loadBlockById(selectedBlockId));
+    }
+  }, [dispatch, selectedBlockId, selectedBlock]);
+
+  // URL parametrlərindən gələn ID-ləri yüklə və state-i yenilə
+  useEffect(() => {
+    if (mtkIdFromUrl) {
+      const id = parseInt(mtkIdFromUrl, 10);
+      if (!isNaN(id)) {
+        setMtkId(id);
+        dispatch(loadMtkById(id));
+      }
+    } else {
+      setMtkId(null);
+    }
+  }, [mtkIdFromUrl, dispatch]);
+
+  useEffect(() => {
+    if (complexIdFromUrl) {
+      const id = parseInt(complexIdFromUrl, 10);
+      if (!isNaN(id)) {
+        setComplexId(id);
+        dispatch(loadComplexById(id));
+      }
+    } else {
+      setComplexId(null);
+    }
+  }, [complexIdFromUrl, dispatch]);
+
+  useEffect(() => {
+    if (buildingIdFromUrl) {
+      const id = parseInt(buildingIdFromUrl, 10);
+      if (!isNaN(id)) {
+        setBuildingId(id);
+        dispatch(loadBuildingById(id));
+      }
+    } else {
+      setBuildingId(null);
+    }
+  }, [buildingIdFromUrl, dispatch]);
 
   const showToast = (type, message, title = "") => {
     setToast({ open: true, type, message, title });
   };
 
-  const filters = useBlocksFilters();
-
-  // Blocks data yalnız MTK, Complex və Buildings yükləndikdən sonra yüklənir
-  // Amma əgər scope artıq seçilibsə, dərhal yüklə
-  const shouldLoadBlocksData = !loadingMtks && !loadingComplexes && !loadingBuildings && 
-    (mtks.length > 0 || state.mtkId) && 
-    (complexes.length > 0 || state.complexId) && 
-    (buildings.length > 0 || state.buildingId);
-  
-  const { items, loading, page, lastPage, total, itemsPerPage, setItemsPerPage, goToPage, refresh } = useBlocksData({
-    search,
-    mtkId: state.mtkId,
-    complexId: state.complexId,
-    buildingId: state.buildingId,
-    enabled: shouldLoadBlocksData,
-    filterStatus: filters.filters.status,
-    filterAddress: filters.filters.address,
-    filterEmail: filters.filters.email,
-    filterPhone: filters.filters.phone
-  });
-
-  const form = useBlocksForm();
-
-  const hasActiveFilters = 
-    (filters.filters.status && filters.filters.status !== "") ||
-    (filters.filters.address && filters.filters.address.trim() !== "") ||
-    (filters.filters.email && filters.filters.email.trim() !== "") ||
-    (filters.filters.phone && filters.filters.phone.trim() !== "");
-
-  // MTK-lar yükləndikdən sonra default olaraq 1-ci MTK seç
-  useEffect(() => {
-    if (!loadingMtks && mtks.length > 0 && !state.mtkId) {
-      actions.setMtk(mtks[0].id, mtks[0]);
-    }
-  }, [loadingMtks, mtks.length, state.mtkId, actions]);
-
-  // Complex-lər yükləndikdən sonra default seç
-  useEffect(() => {
-    if (!loadingComplexes && complexes.length > 0 && state.mtkId && !state.complexId) {
-      const filtered = complexes.filter((c) => {
-        const complexMtkId = c?.mtk_id ?? c?.bind_mtk?.id ?? null;
-        return String(complexMtkId || "") === String(state.mtkId);
-      });
-      if (filtered.length > 0) {
-        actions.setComplex(filtered[0].id, filtered[0]);
-      }
-    }
-  }, [loadingComplexes, complexes.length, state.mtkId, state.complexId, actions]);
-
-  // Buildings yükləndikdən sonra default seç
-  useEffect(() => {
-    if (!loadingBuildings && buildings.length > 0 && state.complexId && !state.buildingId) {
-      const filtered = buildings.filter((b) => {
-        const buildingComplexId = b?.complex_id ?? b?.complex?.id ?? null;
-        return String(buildingComplexId || "") === String(state.complexId);
-      });
-      if (filtered.length > 0) {
-        actions.setBuilding(filtered[0].id, filtered[0]);
-      }
-    }
-  }, [loadingBuildings, buildings.length, state.complexId, state.buildingId, actions]);
-
-  const openCreate = () => {
-    setMode("create");
-    setSelected(null);
+  const handleCreate = () => {
     form.resetForm();
-
-    // scope-dan default building
-    if (state.buildingId) form.updateField("building_id", state.buildingId);
-
+    setMode("create");
     setFormOpen(true);
   };
 
-  const openEdit = (x) => {
+  const handleEdit = (block) => {
+    form.setFormFromBlock(block);
     setMode("edit");
-    setSelected(x);
-    form.setFormFromBlock(x);
     setFormOpen(true);
   };
 
-  const openView = (x) => {
-    setSelected(x);
-    setViewOpen(true);
+  const handleSelect = (item) => {
+    dispatch(setSelectedBlock({ id: item.id, block: item }));
+    showToast("success", `"${item.name}" Blok seçildi`, "Uğurlu");
   };
 
-  const openDelete = (x) => {
-    setSelected(x);
-    setDeleteOpen(true);
-  };
+  const handleDelete = async (block) => {
+    if (!window.confirm(`"${block.name}" blokunu silmək istədiyinizə əminsiniz?`)) {
+      return;
+    }
 
-  const submitForm = async (payload) => {
     try {
-      if (mode === "edit" && selected?.id) {
-        await blocksAPI.update(selected.id, payload);
+      await blocksAPI.delete(block.id);
+      showToast("success", "Blok uğurla silindi", "Uğurlu");
+      refresh();
+    } catch (error) {
+      const errorMessage = error?.message || "Blok silinərkən xəta baş verdi";
+      showToast("error", errorMessage, "Xəta");
+    }
+  };
+
+  const submitForm = async (formData) => {
+    try {
+      if (mode === "edit") {
+        const blockId = form.formData.id || items.find((item) => item.name === formData.name)?.id;
+        if (!blockId) {
+          throw new Error("Blok ID tapılmadı");
+        }
+        await blocksAPI.update(blockId, formData);
         showToast("success", "Blok uğurla yeniləndi", "Uğurlu");
       } else {
-        await blocksAPI.create(payload);
-        showToast("success", "Blok uğurla yaradıldı", "Uğurlu");
+        await blocksAPI.add(formData);
+        showToast("success", "Blok uğurla əlavə edildi", "Uğurlu");
       }
-      await refresh();
-      setFormOpen(false);
-    } catch (e) {
-      console.error(e);
-      const errorMessage = e?.response?.data?.message || e?.message || "Xəta baş verdi";
+      refresh();
+    } catch (error) {
+      const errorMessage = error?.message || "Blok yadda saxlanarkən xəta baş verdi";
       showToast("error", errorMessage, "Xəta");
-      throw e;
+      throw error;
     }
   };
 
-  const confirmDelete = async (x) => {
-    try {
-      await blocksAPI.delete(x.id);
-      showToast("success", "Blok uğurla silindi", "Uğurlu");
-      await refresh();
-      setDeleteOpen(false);
-    } catch (e) {
-      console.error(e);
-      const errorMessage = e?.response?.data?.message || e?.message || "Xəta baş verdi";
-      showToast("error", errorMessage, "Xəta");
-      throw e;
+  const handleNameSearchChange = (value) => {
+    setSearch((prev) => ({
+      ...prev,
+      name: value || undefined,
+    }));
+  };
+
+  const handleApplyNameSearch = (value) => {
+    setSearch((prev) => ({
+      ...prev,
+      name: value || undefined,
+    }));
+  };
+
+  const handleStatusChange = (value) => {
+    setSearch((prev) => ({
+      ...prev,
+      status: value || undefined,
+    }));
+  };
+
+  const handleMtkChange = (value) => {
+    const id = value ? parseInt(value, 10) : null;
+    setMtkId(id);
+    // MTK dəyişəndə Complex və Building-i təmizlə
+    setComplexId(null);
+    setBuildingId(null);
+    // URL-i yenilə
+    if (id) {
+      navigate(`/dashboard/management/blocks?mtk_id=${id}`, { replace: true });
+    } else {
+      navigate("/dashboard/management/blocks", { replace: true });
     }
   };
 
-  const handleFilterApply = () => {
-    filters.setFilterOpen(false);
-    refresh();
+  const handleComplexChange = (value) => {
+    const id = value ? parseInt(value, 10) : null;
+    setComplexId(id);
+    // Complex dəyişəndə Building-i təmizlə
+    setBuildingId(null);
+    // URL-i yenilə - mtk_id varsa onu da saxla
+    const params = new URLSearchParams();
+    if (mtkId) {
+      params.set("mtk_id", mtkId);
+    }
+    if (id) {
+      params.set("complex_id", id);
+    }
+    const newUrl = params.toString() ? `/dashboard/management/blocks?${params.toString()}` : "/dashboard/management/blocks";
+    navigate(newUrl, { replace: true });
   };
 
-  const handleFilterClear = () => {
-    filters.clearFilters();
-    refresh();
+  const handleBuildingChange = (value) => {
+    const id = value ? parseInt(value, 10) : null;
+    setBuildingId(id);
+    // URL-i yenilə - mtk_id və complex_id varsa onları da saxla
+    const params = new URLSearchParams();
+    if (mtkId) {
+      params.set("mtk_id", mtkId);
+    }
+    if (complexId) {
+      params.set("complex_id", complexId);
+    }
+    if (id) {
+      params.set("building_id", id);
+    }
+    const newUrl = params.toString() ? `/dashboard/management/blocks?${params.toString()}` : "/dashboard/management/blocks";
+    navigate(newUrl, { replace: true });
+  };
+
+  const handleRemoveFilter = (key) => {
+    setSearch((prev) => {
+      const newSearch = { ...prev };
+      delete newSearch[key];
+      return newSearch;
+    });
   };
 
   return (
-    <div className="py-4">
-      <div className="flex items-start justify-between gap-3">
-        <BlocksHeader />
-      </div>
+    <div className="space-y-6">
+      <BlockHeader />
 
-      <Card className="shadow-lg dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-        <CardBody className="flex flex-col gap-6 p-6">
-          <BlocksActions
-            search={search}
-            onSearchChange={setSearch}
-            onCreateClick={openCreate}
-            mtks={mtks}
-            complexes={complexes}
-            buildings={buildings}
-            loadingMtks={loadingMtks}
-            loadingComplexes={loadingComplexes}
-            loadingBuildings={loadingBuildings}
-            onFilterClick={() => filters.setFilterOpen(true)}
-            hasActiveFilters={hasActiveFilters}
-            totalItems={total}
-            itemsPerPage={itemsPerPage}
-            onItemsPerPageChange={setItemsPerPage}
-          />
+      <BlockActions
+        search={search}
+        mtkId={mtkId}
+        complexId={complexId}
+        buildingId={buildingId}
+        onCreateClick={handleCreate}
+        onSearchClick={() => setSearchModalOpen(true)}
+        onNameSearchChange={handleNameSearchChange}
+        onApplyNameSearch={handleApplyNameSearch}
+        onStatusChange={handleStatusChange}
+        onMtkChange={handleMtkChange}
+        onComplexChange={handleComplexChange}
+        onBuildingChange={handleBuildingChange}
+        onRemoveFilter={handleRemoveFilter}
+        totalItems={total}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={setItemsPerPage}
+      />
 
-          <BlocksTable
-            items={items}
-            loading={loading}
-            onView={openView}
-            onEdit={openEdit}
-            onDelete={openDelete}
-          />
+      <BlockTable
+        items={items}
+        loading={loading}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onSelect={handleSelect}
+        selectedBlockId={selectedBlockId}
+      />
 
-          {!loading && items.length === 0 ? (
-            <Typography className="text-sm text-blue-gray-500 dark:text-gray-300 text-center py-4">
-              Blok siyahısı boşdur
-            </Typography>
-          ) : null}
+      <BlockPagination
+        page={page}
+        lastPage={lastPage}
+        total={total}
+        onPageChange={goToPage}
+      />
 
-          {!loading && items.length > 0 && (
-            <div className="pt-2">
-              <BlocksPagination page={page} lastPage={lastPage} onPageChange={goToPage} total={total} />
-            </div>
-          )}
-        </CardBody>
-      </Card>
-
-      {/* Modals */}
-      <BlocksViewModal open={viewOpen} onClose={() => setViewOpen(false)} item={selected} />
-
-      <BlocksFormModal
+      <BlockFormModal
         open={formOpen}
         mode={mode}
-        onClose={() => setFormOpen(false)}
+        onClose={() => {
+          setFormOpen(false);
+          form.resetForm();
+        }}
         form={form}
         onSubmit={submitForm}
-        complexes={complexes}
-        buildings={buildings}
-        mtks={mtks}
-        loadingMtks={loadingMtks}
-        loadingComplexes={loadingComplexes}
-        loadingBuildings={loadingBuildings}
+        complexId={complexId}
+        buildingId={buildingId}
+        mtkId={mtkId}
       />
 
-      <BlocksDeleteModal
-        open={deleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        item={selected}
-        onConfirm={confirmDelete}
+      <BlockSearchModal
+        open={searchModalOpen}
+        onClose={() => setSearchModalOpen(false)}
+        onSearch={(searchParams) => {
+          // Keep name and status from current search, merge with advanced search params
+          setSearch((prev) => ({
+            ...(prev.name && { name: prev.name }),
+            ...(prev.status && { status: prev.status }),
+            ...searchParams,
+          }));
+        }}
+        currentSearch={search}
       />
 
-      <BlocksFilterModal
-        open={filters.filterOpen}
-        onClose={() => filters.setFilterOpen(false)}
-        filters={filters.filters}
-        onFilterChange={filters.setFilter}
-        onApply={handleFilterApply}
-        onClear={handleFilterClear}
-      />
-
-      {/* Toast Notification */}
       <DynamicToast
         open={toast.open}
         type={toast.type}
-        title={toast.title}
         message={toast.message}
+        title={toast.title}
         onClose={() => setToast({ ...toast, open: false })}
-        duration={3000}
       />
     </div>
   );
 }
+

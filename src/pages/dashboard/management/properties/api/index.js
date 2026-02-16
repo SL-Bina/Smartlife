@@ -4,7 +4,7 @@ export const propertiesAPI = {
   getAll: async (params = {}) => {
     try {
       const response = await api.get("/module/properties/list", { params });
-      return response.data;
+      return response;
     } catch (error) {
       throw error.response?.data || error.message;
     }
@@ -13,79 +13,47 @@ export const propertiesAPI = {
   getById: async (id) => {
     try {
       const response = await api.get(`/module/properties/${id}`);
-      return response.data;
+      return response;
     } catch (error) {
       throw error.response?.data || error.message;
     }
   },
 
-  create: async (data) => {
+  add: async (propertyData) => {
     try {
-      const cleanedData = {
-        mtk_id: Number(data.mtk_id) || null,
-        complex_id: Number(data.complex_id) || null,
-        building_id: Number(data.building_id) || null,
-        block_id: Number(data.block_id) || null,
-        name: data.name || "",
-        meta: {
-          apartment_number: data.meta?.apartment_number ? Number(data.meta.apartment_number) : null,
-          floor: data.meta?.floor ? Number(data.meta.floor) : null,
-          area: data.meta?.area ? Number(data.meta.area) : null,
-        },
-        property_type: Number(data.property_type) || 1,
-        status: data.status || "active",
-      };
-
-      const response = await api.put("/module/properties/add", cleanedData);
-      return response.data;
+      const response = await api.put("/module/properties/add", propertyData);
+      return response;
     } catch (error) {
-      if (error.response?.status === 400 || error.response?.status === 422) {
-        const errorData = error.response.data;
-        if (errorData?.errors) {
-          const firstError = Object.values(errorData.errors)[0];
-          throw {
-            message: Array.isArray(firstError) ? firstError[0] : firstError,
-            errors: errorData.errors,
-            ...errorData,
-          };
+      const errorData = error.response?.data;
+      if (errorData?.errors) {
+        let errorMessage = "";
+        try {
+          const errors = Object.values(errorData.errors).flat().join(", ");
+          errorMessage = errors || errorData.message || "Validation error";
+        } catch (e) {
+          errorMessage = errorData.message || "Validation error";
         }
-        throw errorData;
+        throw new Error(errorMessage);
       }
       throw error.response?.data || error.message;
     }
   },
 
-  update: async (id, data) => {
+  update: async (id, propertyData) => {
     try {
-      const cleanedData = {
-        mtk_id: Number(data.mtk_id) || null,
-        complex_id: Number(data.complex_id) || null,
-        building_id: Number(data.building_id) || null,
-        block_id: Number(data.block_id) || null,
-        name: data.name || "",
-        meta: {
-          apartment_number: data.meta?.apartment_number ? Number(data.meta.apartment_number) : null,
-          floor: data.meta?.floor ? Number(data.meta.floor) : null,
-          area: data.meta?.area ? Number(data.meta.area) : null,
-        },
-        property_type: Number(data.property_type) || 1,
-        status: data.status || "active",
-      };
-
-      const response = await api.patch(`/module/properties/${id}`, cleanedData);
-      return response.data;
+      const response = await api.patch(`/module/properties/${id}`, propertyData);
+      return response;
     } catch (error) {
-      if (error.response?.status === 400 || error.response?.status === 422) {
-        const errorData = error.response.data;
-        if (errorData?.errors) {
-          const firstError = Object.values(errorData.errors)[0];
-          throw {
-            message: Array.isArray(firstError) ? firstError[0] : firstError,
-            errors: errorData.errors,
-            ...errorData,
-          };
+      const errorData = error.response?.data;
+      if (errorData?.errors) {
+        let errorMessage = "";
+        try {
+          const errors = Object.values(errorData.errors).flat().join(", ");
+          errorMessage = errors || errorData.message || "Validation error";
+        } catch (e) {
+          errorMessage = errorData.message || "Validation error";
         }
-        throw errorData;
+        throw new Error(errorMessage);
       }
       throw error.response?.data || error.message;
     }
@@ -94,7 +62,54 @@ export const propertiesAPI = {
   delete: async (id) => {
     try {
       const response = await api.delete(`/module/properties/${id}`);
-      return response.data;
+      return response;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  search: async (params = {}) => {
+    try {
+      // Format array params with brackets notation
+      const formattedParams = { ...params };
+      
+      // Build URLSearchParams manually to ensure array format
+      const searchParams = new URLSearchParams();
+      Object.keys(formattedParams).forEach((key) => {
+        if ((key === 'mtk_ids' || key === 'complex_ids' || key === 'building_ids' || key === 'block_ids') && Array.isArray(formattedParams[key])) {
+          formattedParams[key].forEach((id) => {
+            searchParams.append(`${key}[]`, String(id));
+          });
+        } else if (formattedParams[key] !== null && formattedParams[key] !== undefined && formattedParams[key] !== '') {
+          searchParams.append(key, String(formattedParams[key]));
+        }
+      });
+      
+      const response = await api.get(`/search/module/property?${searchParams.toString()}`);
+      return response;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  getTypes: async (params = {}) => {
+    try {
+      const response = await api.get("/module/properties/type/list", { params });
+      return response?.data?.data?.data || [];
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  getSearchData: async (type, ids = []) => {
+    try {
+      const searchParams = new URLSearchParams();
+      searchParams.append("type", type);
+      ids.forEach((id) => {
+        searchParams.append("ids[]", String(id));
+      });
+      const response = await api.get(`/module/json/property/search-data?${searchParams.toString()}`);
+      return response?.data?.data || [];
     } catch (error) {
       throw error.response?.data || error.message;
     }
@@ -102,3 +117,4 @@ export const propertiesAPI = {
 };
 
 export default propertiesAPI;
+

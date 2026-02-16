@@ -1,6 +1,5 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
-import { useMtkColor } from "@/store/exports";
 import { SidenavSection } from "./SidenavSection";
 import { SidenavMenuItem } from "./SidenavMenuItem";
 
@@ -8,8 +7,8 @@ export function SidenavMenu({ routes, openMenus, setOpenMenus, collapsed = false
   const location = useLocation();
   
   // MTK rəng kodunu al (localStorage-dən də oxuyur)
-  const { colorCode } = useMtkColor();
-  const mtkColorCode = colorCode;
+  const colorCode = null;
+  const mtkColorCode = null;
 
   React.useEffect(() => {
     if (expandAll) {

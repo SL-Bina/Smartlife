@@ -4,11 +4,8 @@ import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { useMtkColor } from "@/store/exports";
 
 export function MtkPagination({ page, lastPage, onPageChange, total = 0 }) {
-  const { colorCode, getRgba, defaultColor } = useMtkColor();
-  
-  // Default göz yormayan qırmızı ton
-  const defaultRed = "#dc2626";
-  const activeColor = colorCode || defaultRed;
+  const { colorCode, getRgba } = useMtkColor();
+  const activeColor = colorCode || "#dc2626";
   
   if (!lastPage || lastPage <= 1) {
     return (
@@ -24,30 +21,24 @@ export function MtkPagination({ page, lastPage, onPageChange, total = 0 }) {
   const canPrev = page > 1;
   const canNext = page < lastPage;
 
-  // Generate page numbers to show
   const pageNumbers = useMemo(() => {
     const pages = [];
     const maxVisible = 5;
     
     if (lastPage <= maxVisible) {
-      // Show all pages if total pages is less than max visible
       for (let i = 1; i <= lastPage; i++) {
         pages.push(i);
       }
     } else {
-      // Show pages around current page
       if (page <= 3) {
-        // Near the start
         for (let i = 1; i <= 5; i++) {
           pages.push(i);
         }
       } else if (page >= lastPage - 2) {
-        // Near the end
         for (let i = lastPage - 4; i <= lastPage; i++) {
           pages.push(i);
         }
       } else {
-        // In the middle
         for (let i = page - 2; i <= page + 2; i++) {
           pages.push(i);
         }
@@ -92,9 +83,7 @@ export function MtkPagination({ page, lastPage, onPageChange, total = 0 }) {
               } : {}}
               onMouseEnter={(e) => {
                 if (num !== page) {
-                  e.currentTarget.style.backgroundColor = colorCode 
-                    ? getRgba(0.1) 
-                    : "rgba(220, 38, 38, 0.1)";
+                  e.currentTarget.style.backgroundColor = getRgba(0.1);
                 }
               }}
               onMouseLeave={(e) => {
@@ -104,7 +93,7 @@ export function MtkPagination({ page, lastPage, onPageChange, total = 0 }) {
               }}
             >
               {num}
-        </Button>
+            </Button>
           ))}
         </div>
 
@@ -121,3 +110,4 @@ export function MtkPagination({ page, lastPage, onPageChange, total = 0 }) {
     </div>
   );
 }
+

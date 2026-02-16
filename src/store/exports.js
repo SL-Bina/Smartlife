@@ -1,6 +1,5 @@
-export { useManagement as useManagementEnhanced } from "./hooks/useManagement";
-export { useMtkColor } from "./hooks/useMtkColor";
 export { colorUtils as colorUtilsEnhanced } from "./hooks/colorUtils";
+export { useMtkColor } from "./hooks/useMtkColor";
 
 export { useAuth } from "./hooks/useAuth";
 export { useMaterialTailwindController } from "./hooks/useMaterialTailwind";

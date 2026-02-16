@@ -1,28 +1,34 @@
 import React from "react";
-import { Typography } from "@material-tailwind/react";
-import { BuildingOfficeIcon } from "@heroicons/react/24/outline";
+import { Typography, Button, IconButton } from "@material-tailwind/react";
+import { BuildingOfficeIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useMtkColor } from "@/store/exports";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { clearSelectedMtk } from "@/store/slices/mtkSlice";
 
 export function MtkHeader() {
-  const { colorCode, getGradientBackground, getRgba, defaultColor } = useMtkColor();
-  
-  // Default göz yormayan qırmızı ton (#dc2626 - red-600)
-  const defaultRed = "#dc2626";
-  const activeColor = colorCode || defaultRed;
+  const dispatch = useAppDispatch();
+  const { colorCode, getRgba, getActiveGradient } = useMtkColor();
+  const selectedMtk = useAppSelector((state) => state.mtk.selectedMtk);
+  const selectedMtkId = useAppSelector((state) => state.mtk.selectedMtkId);
+
+  const handleClearSelection = (e) => {
+    e.stopPropagation();
+    dispatch(clearSelectedMtk());
+  };
   
   // Gradient background
   const gradientStyle = colorCode 
-    ? getGradientBackground("to right", 0.9, 0.7)
+    ? { background: getActiveGradient(0.9, 0.7) }
     : {
-        background: "linear-gradient(to right, #dc2626, #b91c1c, #dc2626)",
+        background: `linear-gradient(to right, ${getRgba("#dc2626", 0.9)}, ${getRgba("#dc2626", 0.7)}, ${getRgba("#dc2626", 0.9)})`,
       };
   
   // Border rəngi
-  const borderColor = getRgba(0.3) || "rgba(220, 38, 38, 0.3)";
+  const borderColor = getRgba(0.3);
   
   return (
     <div 
-      className="relative w-full overflow-hidden rounded-xl shadow-lg p-6 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800"
+      className="relative w-full overflow-hidden rounded-xl shadow-lg p-6 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 mt-4"
       style={{
         ...gradientStyle,
         border: `1px solid ${borderColor}`,
@@ -39,7 +45,7 @@ export function MtkHeader() {
           <div 
             className="w-14 h-14 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/30 dark:border-gray-600/30"
             style={{
-              backgroundColor: getRgba(0.2) || "rgba(255, 255, 255, 0.2)",
+              backgroundColor: getRgba(0.2),
             }}
           >
             <BuildingOfficeIcon className="h-8 w-8 text-white" />
@@ -47,15 +53,25 @@ export function MtkHeader() {
         </div>
         
         <div className="flex-1">
-          <Typography 
-            variant="h4" 
-            className="text-white font-bold mb-1 flex items-center gap-2"
-          >
-            MTK İdarəetməsi
-      </Typography>
-          <Typography className="text-white/90 dark:text-gray-300 text-sm font-medium">
-        MTK siyahısı, yarat / edit / sil və kompleksə keçid
-      </Typography>
+          <div className="flex items-center justify-between">
+            <div>
+              <Typography 
+                variant="h4" 
+                className="text-white font-bold mb-1 flex items-center gap-2"
+              >
+                MTK İdarəetməsi
+                {selectedMtk && (
+                  <span className="text-sm font-normal text-white/80">
+                    ({selectedMtk.name})
+                  </span>
+                )}
+              </Typography>
+              <Typography className="text-white/90 dark:text-gray-300 text-sm font-medium">
+                MTK siyahısı, yarat / redaktə et / sil / seç
+              </Typography>
+            </div>
+            
+          </div>
         </div>
       </div>
       
@@ -64,3 +80,4 @@ export function MtkHeader() {
     </div>
   );
 }
+

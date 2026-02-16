@@ -7,7 +7,7 @@ import { Provider } from "react-redux";
 import { store } from "@/store";
 import { ReduxInitializer } from "@/components/ReduxInitializer";
 import "@/styles/tailwind.css";
-import "leaflet/dist/leaflet.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 import "./i18n/i18n";
 
 ReactDOM.createRoot(document.getElementById("root")).render(

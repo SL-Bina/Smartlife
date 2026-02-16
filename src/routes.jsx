@@ -28,15 +28,11 @@ import { Home, Notifications, KPI, ApplicationsListPage, ApplicationsEvaluationP
 import { SignIn } from "@/pages/auth";
 import Profile from "./pages/dashboard/profile";
 import Settings from "./pages/dashboard/settings";
-import MTK from "./pages/dashboard/management/mtk";
-import ComplexPage from "./pages/dashboard/management/complex";
-import ResidentsPage from "./pages/dashboard/management/residents";
+import MtkPage from "./pages/dashboard/management/mtk";
+import ComplexesPage from "./pages/dashboard/management/complexes";
 import BuildingsPage from "./pages/dashboard/management/buildings";
-import PropertiesPage from "./pages/dashboard/management/properties";
 import BlocksPage from "./pages/dashboard/management/blocks";
-import ApartmentGroupsPage from "./pages/dashboard/management/apartment-groups";
-// import BuildingServiceFeePage from "./pages/dashboard/management/building-service-fee";
-import PropertyServiceFeePage from "./pages/dashboard/management/service-fee";
+import PropertiesPage from "./pages/dashboard/management/properties";
 import InvoicesPage from "./pages/dashboard/finance/invoices";
 import PaymentHistoryPage from "./pages/dashboard/finance/payment-history";
 import ReportsPage from "./pages/dashboard/finance/reports";
@@ -211,27 +207,27 @@ export const routes = [
       {
         icon: <BuildingOfficeIcon {...icon} />,
         name: "sidebar.buildingManagement",
-        moduleName: "manage",
-        moduleId: 2,
+        moduleName: "management",
+        moduleId: 3,
         children: [
           {
-            icon: <TableCellsIcon {...icon} />,
+            icon: <BuildingOfficeIcon {...icon} />,
             name: "sidebar.mtk",
             path: "/management/mtk",
-            element: <MTK />,
+            element: <MtkPage />,
             moduleName: "mtk",
             moduleId: 3,
           },
           {
-            icon: <BuildingOfficeIcon {...icon} />,
+            icon: <BuildingOffice2Icon {...icon} />,
             name: "sidebar.complexes",
-            path: "/management/complex",
-            element: <ComplexPage />,
+            path: "/management/complexes",
+            element: <ComplexesPage />,
             moduleName: "complex",
             moduleId: 4,
           },
           {
-            icon: <BuildingOffice2Icon {...icon} />,
+            icon: <HomeModernIcon {...icon} />,
             name: "sidebar.buildings",
             path: "/management/buildings",
             element: <BuildingsPage />,
@@ -247,48 +243,13 @@ export const routes = [
             moduleId: 6,
           },
           {
-            icon: <HomeModernIcon {...icon} />,
+            icon: <HomeIcon {...icon} />,
             name: "sidebar.properties",
             path: "/management/properties",
             element: <PropertiesPage />,
             moduleName: "property",
             moduleId: 7,
           },
-          {
-            icon: <BuildingOfficeIcon {...icon} />,
-            name: "sidebar.propertyServiceFee",
-            path: "/management/service-fee/:id",
-            element: <PropertyServiceFeePage />,
-            hideInSidenav: true,
-            moduleName: "property_service",
-            moduleId: 15,
-          },
-          {
-            icon: <UsersIcon {...icon} />,
-            name: "sidebar.residents",
-            path: "/management/residents",
-            element: <ResidentsPage />,
-            moduleName: "resident",
-            moduleId: 8,
-          },
-
-          // {
-          //   icon: <HomeModernIcon {...icon} />,
-          //   name: "sidebar.apartmentGroups",
-          //   path: "/management/apartment-groups",
-          //   element: <ApartmentGroupsPage />,
-          //   allowedRoles: ["admin", "manager", "operator"],
-          //   moduleName: "resident-group",
-          //   moduleId: 9,
-          // },
-          // {
-          //   icon: <BuildingOfficeIcon {...icon} />,
-          //   name: "sidebar.buildingServiceFee",
-          //   path: "/management/building-service-fee",
-          //   element: <BuildingServiceFeePage />,
-          //   hideInSidenav: true,
-          //   allowedRoles: ["admin", "manager", "operator"],
-          // },
         ],
       },
       {

@@ -1,283 +1,212 @@
-import React, { useMemo, useState } from "react";
-import { Card, CardBody, Spinner, Typography } from "@material-tailwind/react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMtkColor } from "@/store/hooks/useMtkColor";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useMaterialTailwindController } from "@/store/hooks/useMaterialTailwind";
-
+import { setSelectedMtk, loadMtks, loadMtkById } from "@/store/slices/mtkSlice";
 import { MtkHeader } from "./components/MtkHeader";
 import { MtkActions } from "./components/MtkActions";
 import { MtkTable } from "./components/MtkTable";
-import { MtkCardList } from "./components/MtkCardList";
 import { MtkPagination } from "./components/MtkPagination";
-
-import { MtkViewModal } from "./components/modals/MtkViewModal";
 import { MtkFormModal } from "./components/modals/MtkFormModal";
-import { MtkDeleteModal } from "./components/modals/MtkDeleteModal";
-
-import { useMtkData } from "./hooks/useMtkData";
+import { MtkSearchModal } from "./components/modals/MtkSearchModal";
 import { useMtkForm } from "./hooks/useMtkForm";
-import { useMtkFilters } from "./hooks/useMtkFilters";
-import { MtkFilterModal } from "./components/modals/MtkFilterModal";
+import { useMtkData } from "./hooks/useMtkData";
 import mtkAPI from "./api";
 import DynamicToast from "@/components/DynamicToast";
 
 export default function MtkPage() {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const [controller] = useMaterialTailwindController();
   const { sidenavType } = controller;
-  const { colorCode } = useMtkColor();
 
-  const [search, setSearch] = useState("");
+  const selectedMtkId = useAppSelector((state) => state.mtk.selectedMtkId);
+  const selectedMtk = useAppSelector((state) => state.mtk.selectedMtk);
 
-  const [viewOpen, setViewOpen] = useState(false);
+  const [search, setSearch] = useState({});
   const [formOpen, setFormOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-
-  const [mode, setMode] = useState("create"); 
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [mode, setMode] = useState("create");
   const [selected, setSelected] = useState(null);
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
+
+  const form = useMtkForm();
+  const { items, loading, page, lastPage, total, itemsPerPage, setItemsPerPage, goToPage, refresh } = useMtkData({ search });
+
+  const handleNameSearchChange = (value) => {
+    // Bu funksiya artıq istifadə olunmur, amma uyğunluq üçün saxlanılır
+  };
+
+  const handleApplyNameSearch = (value) => {
+    setSearch((prev) => ({
+      ...prev,
+      name: value && value.trim() ? value.trim() : undefined,
+    }));
+  };
+
+  const handleStatusChange = (value) => {
+    setSearch((prev) => ({
+      ...prev,
+      status: value || undefined,
+    }));
+  };
+
+  const handleRemoveFilter = (filterKey) => {
+    setSearch((prev) => {
+      const newSearch = { ...prev };
+      delete newSearch[filterKey];
+      // Boş olanları sil
+      Object.keys(newSearch).forEach((key) => {
+        if (!newSearch[key] || (typeof newSearch[key] === 'string' && !newSearch[key].trim())) {
+          delete newSearch[key];
+        }
+      });
+      return newSearch;
+    });
+  };
+
+  // Load MTKs to Redux on mount
+  useEffect(() => {
+    dispatch(loadMtks({ page: 1, per_page: 1000 }));
+  }, [dispatch]);
+
+  // Load selected MTK if ID exists but MTK data doesn't
+  useEffect(() => {
+    if (selectedMtkId && !selectedMtk) {
+      dispatch(loadMtkById(selectedMtkId));
+    }
+  }, [dispatch, selectedMtkId, selectedMtk]);
 
   const showToast = (type, message, title = "") => {
     setToast({ open: true, type, message, title });
   };
 
-  const filters = useMtkFilters();
-  const { items, loading, page, lastPage, total, itemsPerPage, setItemsPerPage, goToPage, refresh } = useMtkData({ 
-    search,
-    filterStatus: filters.filters.status,
-    filterAddress: filters.filters.address,
-    filterEmail: filters.filters.email,
-    filterPhone: filters.filters.phone,
-    filterWebsite: filters.filters.website,
-    filterColor: filters.filters.color
-  });
-  const form = useMtkForm();
-
-  const hasActiveFilters = 
-    (filters.filters.status && filters.filters.status !== "") ||
-    (filters.filters.address && filters.filters.address.trim() !== "") ||
-    (filters.filters.email && filters.filters.email.trim() !== "") ||
-    (filters.filters.phone && filters.filters.phone.trim() !== "") ||
-    (filters.filters.website && filters.filters.website.trim() !== "") ||
-    (filters.filters.color && filters.filters.color.trim() !== "");
-
-  const handleFilterApply = () => {
-    filters.applyFilters();
-    refresh();
-  };
-
-  const handleFilterClear = () => {
-    filters.clearFilters();
-    refresh();
-  };
-
-  const pageTitleRight = useMemo(() => {
-    if (loading) {
-      return (
-        <div className="flex items-center gap-2 text-xs text-blue-gray-400 dark:text-gray-400">
-          <Spinner className="h-4 w-4" />
-          Yüklənir...
-        </div>
-      );
-    }
-    return <div className="text-xs text-blue-gray-400 dark:text-gray-400">Cəm: {total}</div>;
-  }, [loading, total]);
-
-  const openCreate = () => {
+  const handleCreate = () => {
+    form.resetForm();
     setMode("create");
     setSelected(null);
-    form.resetForm();
     setFormOpen(true);
   };
 
-  const openEdit = (x) => {
+  const handleEdit = (item) => {
+    form.setFormFromMtk(item);
     setMode("edit");
-    setSelected(x);
-    form.setFormFromMtk(x);
+    setSelected(item);
     setFormOpen(true);
   };
 
-  const openView = (x) => {
-    setSelected(x);
-    setViewOpen(true);
+  const handleSelect = (item) => {
+    dispatch(setSelectedMtk({ id: item.id, mtk: item }));
+    showToast("success", `"${item.name}" MTK seçildi`, "Uğurlu");
   };
 
-  const openDelete = (x) => {
-    setSelected(x);
-    setDeleteOpen(true);
-  };
-
-  const submitForm = async (payload) => {
-    try {
-      if (mode === "edit" && selected?.id) {
-        await mtkAPI.update(selected.id, payload);
-        showToast("success", "MTK uğurla yeniləndi", "Uğurlu");
-      } else {
-        await mtkAPI.create(payload);
-        showToast("success", "MTK uğurla yaradıldı", "Uğurlu");
-      }
-      await refresh();
-      setFormOpen(false);
-    } catch (e) {
-      console.error(e);
-      const errorMessage = e?.response?.data?.message || e?.message || "Xəta baş verdi";
-      showToast("error", errorMessage, "Xəta");
-      throw e;
+  const handleDelete = async (item) => {
+    if (!window.confirm(`"${item.name}" MTK-nı silmək istədiyinizə əminsiniz?`)) {
+      return;
     }
-  };
 
-  const confirmDelete = async (x) => {
     try {
-      await mtkAPI.delete(x.id);
+      await mtkAPI.delete(item.id);
       showToast("success", "MTK uğurla silindi", "Uğurlu");
-      await refresh();
-      setDeleteOpen(false);
-    } catch (e) {
-      console.error(e);
-      const errorMessage = e?.response?.data?.message || e?.message || "Xəta baş verdi";
-      showToast("error", errorMessage, "Xəta");
-      throw e;
+      refresh();
+      // Reload MTKs in Redux
+      dispatch(loadMtks({ page: 1, per_page: 1000 }));
+    } catch (error) {
+      showToast("error", error.message || "Xəta baş verdi", "Xəta");
     }
   };
 
-  const getRgbaColor = (hex, opacity = 1) => {
-    if (!hex) return null;
-    const hexClean = hex.replace("#", "");
-    const r = parseInt(hexClean.substring(0, 2), 16);
-    const g = parseInt(hexClean.substring(2, 4), 16);
-    const b = parseInt(hexClean.substring(4, 6), 16);
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-  };
-
-  const getCardBackground = () => {
-    if (colorCode && sidenavType === "white") {
-      const color1 = getRgbaColor(colorCode, 0.05);
-      const color2 = getRgbaColor(colorCode, 0.03);
-      return {
-        background: `linear-gradient(to bottom, ${color1}, ${color2}, ${color1})`,
-      };
+  const submitForm = async (formData) => {
+    try {
+      if (mode === "create") {
+        const response = await mtkAPI.add(formData);
+        showToast("success", "MTK uğurla əlavə edildi", "Uğurlu");
+        // Reload MTKs in Redux
+        dispatch(loadMtks({ page: 1, per_page: 1000 }));
+      } else {
+        await mtkAPI.update(selected.id, formData);
+        showToast("success", "MTK uğurla yeniləndi", "Uğurlu");
+        // Reload MTKs in Redux and update selected if it's the same
+        dispatch(loadMtks({ page: 1, per_page: 1000 }));
+        if (selectedMtkId === selected.id) {
+          dispatch(loadMtkById(selected.id));
+        }
+      }
+      refresh();
+      form.resetForm();
+    } catch (error) {
+      throw error;
     }
-    if (colorCode && sidenavType === "dark") {
-      const color1 = getRgbaColor(colorCode, 0.1);
-      const color2 = getRgbaColor(colorCode, 0.07);
-      return {
-        background: `linear-gradient(to bottom, ${color1}, ${color2}, ${color1})`,
-      };
-    }
-    return {};
-  };
-
-  const cardTypes = {
-    dark: colorCode ? "" : "dark:bg-gray-800/50",
-    white: colorCode ? "" : "bg-white/80 dark:bg-gray-800/50",
-    transparent: "",
   };
 
   return (
-    <div className="py-4">
-      <div className="flex items-start justify-between gap-3 mb-6">
-        <MtkHeader />
-      </div>
+    <div className="space-y-6">
+      <MtkHeader />
 
-      <Card 
-        className={`
-          rounded-3xl xl:rounded-[2rem]
-          backdrop-blur-2xl backdrop-saturate-150
-          border
-          ${cardTypes[sidenavType] || ""} 
-          ${colorCode ? "" : "border-gray-200/50 dark:border-gray-700/50"}
-          shadow-[0_8px_32px_rgba(0,0,0,0.08),inset_0_1px_1px_rgba(255,255,255,0.3)]
-          dark:shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_1px_rgba(255,255,255,0.15)]
-        `}
-        style={{
-          ...getCardBackground(),
-          borderColor: colorCode ? getRgbaColor(colorCode, 0.15) : undefined,
-        }}
-      >
-        <CardBody className="flex flex-col gap-6 p-6">
-          <MtkActions
-            search={search}
-            onSearchChange={setSearch}
-            onCreateClick={openCreate}
-            onFilterClick={() => filters.setFilterOpen(true)}
-            hasActiveFilters={hasActiveFilters}
-            totalItems={total}
-            itemsPerPage={itemsPerPage}
-            onItemsPerPageChange={setItemsPerPage}
-          />
-
-          <div className="hidden lg:block">
-            <MtkTable
-              items={items}
-              loading={loading}
-              onView={openView}
-              onEdit={openEdit}
-              onDelete={openDelete}
-              onGoComplex={() => navigate("/dashboard/management/complex")}
-            />
-          </div>
-
-          <div className="lg:hidden">
-            <MtkCardList
-              items={items}
-              loading={loading}
-              onView={openView}
-              onEdit={openEdit}
-              onDelete={openDelete}
-              onGoComplex={() => navigate("/dashboard/management/complex")}
-            />
-          </div>
-
-          {!loading && items.length > 0 && (
-            <div className="pt-2 border-t border-gray-200/50 dark:border-gray-700/50">
-              <MtkPagination page={page} lastPage={lastPage} total={total} onPageChange={goToPage} />
-          </div>
-          )}
-
-          {!loading && items.length === 0 && !search ? (
-            <div className="text-center py-12">
-              <Typography className="text-sm font-medium text-gray-800 dark:text-gray-100">
-                MTK siyahısı boşdur
-              </Typography>
-            </div>
-          ) : null}
-        </CardBody>
-      </Card>
-
-      <MtkFilterModal
-        open={filters.filterOpen}
-        onClose={() => filters.setFilterOpen(false)}
-        filters={filters.filters}
-        onFilterChange={filters.updateFilter}
-        onApply={handleFilterApply}
-        onClear={handleFilterClear}
+      <MtkActions
+        search={search}
+        onCreateClick={handleCreate}
+        onSearchClick={() => setSearchModalOpen(true)}
+        onNameSearchChange={handleNameSearchChange}
+        onApplyNameSearch={handleApplyNameSearch}
+        onStatusChange={handleStatusChange}
+        onRemoveFilter={handleRemoveFilter}
+        totalItems={total}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={setItemsPerPage}
       />
 
-      <MtkViewModal open={viewOpen} onClose={() => setViewOpen(false)} item={selected} />
+      <MtkTable
+        items={items}
+        loading={loading}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onSelect={handleSelect}
+        selectedMtkId={selectedMtkId}
+      />
+
+      {lastPage > 1 && (
+        <MtkPagination
+          page={page}
+          lastPage={lastPage}
+          onPageChange={goToPage}
+          total={total}
+        />
+      )}
 
       <MtkFormModal
         open={formOpen}
         mode={mode}
-        onClose={() => setFormOpen(false)}
+        onClose={() => {
+          setFormOpen(false);
+          form.resetForm();
+        }}
         form={form}
         onSubmit={submitForm}
       />
 
-      <MtkDeleteModal
-        open={deleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        item={selected}
-        onConfirm={confirmDelete}
+      <MtkSearchModal
+        open={searchModalOpen}
+        onClose={() => setSearchModalOpen(false)}
+        onSearch={(searchParams) => {
+          // Keep name and status from current search, merge with advanced search params
+          setSearch((prev) => ({
+            ...(prev.name && { name: prev.name }),
+            ...(prev.status && { status: prev.status }),
+            ...searchParams,
+          }));
+        }}
+        currentSearch={search}
       />
 
       <DynamicToast
         open={toast.open}
         type={toast.type}
-        title={toast.title}
         message={toast.message}
+        title={toast.title}
         onClose={() => setToast({ ...toast, open: false })}
-        duration={3000}
       />
     </div>
   );
 }
+

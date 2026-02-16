@@ -2,7 +2,6 @@ import React, { useState, useMemo } from "react";
 import { Card, CardBody, Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
 import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import { useMaterialTailwindController } from "@/store/hooks/useMaterialTailwind";
-import { useMtkColor } from "@/store/hooks/useMtkColor";
 import { UsersTableSkeleton } from "./UsersTableSkeleton";
 
 const DEFAULT_COLOR = "#dc2626";
@@ -10,8 +9,8 @@ const DEFAULT_COLOR = "#dc2626";
 export function UsersTable({ items = [], loading, onEdit, onDelete }) {
   const [controller] = useMaterialTailwindController();
   const { sidenavType } = controller;
-  const { colorCode } = useMtkColor();
-  const activeColor = colorCode || DEFAULT_COLOR;
+  const colorCode = null;
+  const activeColor = DEFAULT_COLOR;
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const getRgbaColor = (hex, opacity = 1) => {

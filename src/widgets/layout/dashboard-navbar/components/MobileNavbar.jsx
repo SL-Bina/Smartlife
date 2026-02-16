@@ -1,7 +1,7 @@
 import React from "react";
 import { IconButton, Typography } from "@material-tailwind/react";
 import { Bars3Icon, BuildingOfficeIcon } from "@heroicons/react/24/solid";
-import { useMaterialTailwindController, setOpenSidenav, useManagementEnhanced, useMtkColor } from "@/store/exports";
+import { useMaterialTailwindController, setOpenSidenav } from "@/store/exports";
 import { DarkModeToggle } from "./DarkModeToggle";
 import { LanguageSelector } from "./LanguageSelector";
 import { NotificationsMenu } from "./NotificationsMenu";
@@ -10,11 +10,11 @@ import { UserMenu } from "./UserMenu";
 export function MobileNavbar({ pageTitle, navbarHoverEffects }) {
   const [controller, dispatch] = useMaterialTailwindController();
   const { openSidenav } = controller;
-  const { mtk } = useManagementEnhanced();
-  const { colorCode } = useMtkColor();
+  const mtk = null;
+  const colorCode = null;
   
   // MTK rəng kodunu al (mtk-dan və ya context-dən)
-  const mtkColorCode = mtk?.meta?.color_code || colorCode;
+  const mtkColorCode = null;
   
   // Rəng kodunu rgba-ya çevir
   const getRgbaColor = (hex, opacity = 1) => {

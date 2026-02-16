@@ -1,24 +1,20 @@
 import React from "react";
 import { Typography } from "@material-tailwind/react";
 import { UserPlusIcon } from "@heroicons/react/24/outline";
-import { useMtkColor } from "@/store/exports";
-
 export function UserAddHeader() {
-  const { colorCode, getGradientBackground, getRgba, defaultColor } = useMtkColor();
+  const colorCode = null;
   
   // Default göz yormayan qırmızı ton (#dc2626 - red-600)
   const defaultRed = "#dc2626";
-  const activeColor = colorCode || defaultRed;
+  const activeColor = defaultRed;
   
   // Gradient background
-  const gradientStyle = colorCode 
-    ? getGradientBackground("to right", 0.9, 0.7)
-    : {
-        background: "linear-gradient(to right, #dc2626, #b91c1c, #dc2626)",
-      };
+  const gradientStyle = {
+    background: "linear-gradient(to right, #dc2626, #b91c1c, #dc2626)",
+  };
   
   // Border rəngi
-  const borderColor = getRgba(0.3) || "rgba(220, 38, 38, 0.3)";
+  const borderColor = "rgba(220, 38, 38, 0.3)";
   
   return (
     <div 

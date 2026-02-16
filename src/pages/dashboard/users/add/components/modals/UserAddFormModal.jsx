@@ -18,7 +18,6 @@ import {
   CheckIcon,
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
-import { useMtkColor } from "@/store/hooks/useMtkColor";
 import { useMaterialTailwindController } from "@/store/hooks/useMaterialTailwind";
 
 export function UserAddFormModal({ open, mode = "create", onClose, form, onSubmit, lookups }) {
@@ -122,7 +121,12 @@ export function UserAddFormModal({ open, mode = "create", onClose, form, onSubmi
 
   const [controller] = useMaterialTailwindController();
   const { sidenavType } = controller;
-  const { colorCode, getRgba } = useMtkColor();
+  const colorCode = null;
+  
+  const getRgba = (opacity = 1) => {
+    const r = 220; const g = 38; const b = 38;
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
   const activeColorCode = colorCode || "#dc2626";
 
   const getRgbaColor = (hex, opacity = 1) => {

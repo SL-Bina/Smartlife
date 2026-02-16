@@ -62,7 +62,7 @@ export default function DynamicToast({
 
 
     return (
-        <div className="pointer-events-none fixed top-3 left-1/2 z-[9999] -translate-x-1/2">
+        <div className="pointer-events-none fixed top-3 left-1/2 z-[999999999999] -translate-x-1/2 ">
             <div
                 className={[
                     "pointer-events-auto",

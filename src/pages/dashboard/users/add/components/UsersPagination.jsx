@@ -1,13 +1,16 @@
 import React, { useMemo } from "react";
 import { Button, IconButton } from "@material-tailwind/react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
-import { useMtkColor } from "@/store/hooks/useMtkColor";
-
 const DEFAULT_COLOR = "#dc2626";
 
 export function UsersPagination({ page, lastPage, onPageChange, total = 0 }) {
-  const { colorCode, getRgba } = useMtkColor();
-  const activeColor = colorCode || DEFAULT_COLOR;
+  const colorCode = null;
+  const activeColor = DEFAULT_COLOR;
+  
+  const getRgba = (opacity = 1) => {
+    const r = 220; const g = 38; const b = 38;
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
   
   
   if (!lastPage || lastPage <= 1) {

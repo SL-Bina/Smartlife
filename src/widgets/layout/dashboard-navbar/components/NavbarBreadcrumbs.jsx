@@ -16,9 +16,6 @@ export function NavbarBreadcrumbs({ pathParts, fixedNavbar, navbarHoverEffects }
     if (pageTitleKeyMap[segment]) {
       return t(pageTitleKeyMap[segment]);
     }
-    if (segment === "management") {
-      return t("sidebar.buildingManagement");
-    }
     return segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " ");
   };
 

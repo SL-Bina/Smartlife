@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Input, Typography, IconButton } from "@material-tailwind/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
-// import { buildingsAPI } from "// @/pages/dashboard/management/buildings/api";
 
 export function InvoicesFilterModal({ open, onClose, filters, onFilterChange, onApply, onClear }) {
   const { t } = useTranslation();

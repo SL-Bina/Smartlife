@@ -2,7 +2,6 @@ import React from "react";
 import { useLocation } from "react-router-dom";
 import { Navbar } from "@material-tailwind/react";
 import { useMaterialTailwindController } from "@/store/exports";
-import { useMtkColor } from "@/store/hooks/useMtkColor";
 import { useTranslation } from "react-i18next";
 import { pageTitleKeyMap } from "./utils/pageTitleMap";
 import { MobileNavbar } from "./components/MobileNavbar";
@@ -24,7 +23,7 @@ export function DashboardNavbar() {
     navbarHoverEffects,
     sidenavType,
   } = controller;
-  const { colorCode } = useMtkColor();
+  const colorCode = null;
   const { pathname } = useLocation();
   const { t } = useTranslation();
 

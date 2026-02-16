@@ -1,7 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { useMaterialTailwindController } from "@/store/hooks/useMaterialTailwind";
-import { useMtkColor } from "@/store/hooks/useMtkColor";
 import { motion, AnimatePresence } from "framer-motion";
 import { SidenavHeader } from "./components/SidenavHeader";
 import { SidenavMenu } from "./components/SidenavMenu";
@@ -10,8 +9,8 @@ export function Sidenav({ brandImg, brandName, routes }) {
   const [controller, actions] = useMaterialTailwindController();
   const { sidenavType, openSidenav, sidenavCollapsed, sidenavFlatMenu, sidenavExpandAll, sidenavSize, sidenavPosition } = controller;
   
-  const { colorCode } = useMtkColor();
-  const mtkColorCode = colorCode;
+  const colorCode = null;
+  const mtkColorCode = null;
 
   const filteredRoutes = routes;
 

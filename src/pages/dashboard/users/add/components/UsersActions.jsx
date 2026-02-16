@@ -1,7 +1,6 @@
 import React, { useMemo } from "react";
 import { Button, Input } from "@material-tailwind/react";
 import { PlusIcon } from "@heroicons/react/24/outline";
-import { useMtkColor } from "@/store/hooks/useMtkColor";
 import AppSelect from "@/components/ui/AppSelect";
 
 const STANDARD_OPTIONS = [10, 25, 50, 75, 100];
@@ -14,11 +13,11 @@ export function UsersActions({
   itemsPerPage = 10,
   onItemsPerPageChange
 }) {
-  const { colorCode } = useMtkColor();
+  const colorCode = null;
   
   // Default göz yormayan qırmızı ton
   const defaultRed = "#dc2626";
-  const activeColor = colorCode || defaultRed;
+  const activeColor = defaultRed;
   const itemsPerPageOptions = useMemo(() => {
     if (totalItems < 25) {
       return null;

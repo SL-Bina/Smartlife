@@ -7,6 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
+      "react-map-gl/maplibre": path.resolve(__dirname, "node_modules/react-map-gl/dist/esm/exports-maplibre.js"),
     },
   },
   optimizeDeps: {

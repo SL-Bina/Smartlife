@@ -1,10 +1,10 @@
 import api from "@/services/api";
 
-export const buildingAPI = {
+export const buildingsAPI = {
   getAll: async (params = {}) => {
     try {
       const response = await api.get("/module/buildings/list", { params });
-      return response.data;
+      return response;
     } catch (error) {
       throw error.response?.data || error.message;
     }
@@ -13,67 +13,47 @@ export const buildingAPI = {
   getById: async (id) => {
     try {
       const response = await api.get(`/module/buildings/${id}`);
-      return response.data;
+      return response;
     } catch (error) {
       throw error.response?.data || error.message;
     }
   },
 
-  create: async (data) => {
+  add: async (buildingData) => {
     try {
-      const cleanedData = {
-        complex_id: data?.complex_id ?? null,
-        name: data?.name || "",
-        meta: {
-          desc: data?.meta?.desc || "",
-        },
-        status: data?.status || "active",
-      };
-
-      const response = await api.put("/module/buildings/add", cleanedData);
-      return response.data;
+      const response = await api.put("/module/buildings/add", buildingData);
+      return response;
     } catch (error) {
-      if (error.response?.status === 400 || error.response?.status === 422) {
-        const errorData = error.response.data;
-        if (errorData?.errors) {
-          const firstError = Object.values(errorData.errors)[0];
-          throw {
-            message: Array.isArray(firstError) ? firstError[0] : firstError,
-            errors: errorData.errors,
-            ...errorData,
-          };
+      const errorData = error.response?.data;
+      if (errorData?.errors) {
+        let errorMessage = "";
+        try {
+          const errors = Object.values(errorData.errors).flat().join(", ");
+          errorMessage = errors || errorData.message || "Validation error";
+        } catch (e) {
+          errorMessage = errorData.message || "Validation error";
         }
-        throw errorData;
+        throw new Error(errorMessage);
       }
       throw error.response?.data || error.message;
     }
   },
 
-  update: async (id, data) => {
+  update: async (id, buildingData) => {
     try {
-      const cleanedData = {
-        complex_id: data?.complex_id ?? null,
-        name: data?.name || "",
-        meta: {
-          desc: data?.meta?.desc || "",
-        },
-        status: data?.status || "active",
-      };
-
-      const response = await api.patch(`/module/buildings/${id}`, cleanedData);
-      return response.data;
+      const response = await api.patch(`/module/buildings/${id}`, buildingData);
+      return response;
     } catch (error) {
-      if (error.response?.status === 400 || error.response?.status === 422) {
-        const errorData = error.response.data;
-        if (errorData?.errors) {
-          const firstError = Object.values(errorData.errors)[0];
-          throw {
-            message: Array.isArray(firstError) ? firstError[0] : firstError,
-            errors: errorData.errors,
-            ...errorData,
-          };
+      const errorData = error.response?.data;
+      if (errorData?.errors) {
+        let errorMessage = "";
+        try {
+          const errors = Object.values(errorData.errors).flat().join(", ");
+          errorMessage = errors || errorData.message || "Validation error";
+        } catch (e) {
+          errorMessage = errorData.message || "Validation error";
         }
-        throw errorData;
+        throw new Error(errorMessage);
       }
       throw error.response?.data || error.message;
     }
@@ -82,11 +62,36 @@ export const buildingAPI = {
   delete: async (id) => {
     try {
       const response = await api.delete(`/module/buildings/${id}`);
-      return response.data;
+      return response;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  search: async (params = {}) => {
+    try {
+      // Format complex_ids as array with brackets notation
+      const formattedParams = { ...params };
+      
+      // Build URLSearchParams manually to ensure complex_ids[] format
+      const searchParams = new URLSearchParams();
+      Object.keys(formattedParams).forEach((key) => {
+        if (key === 'complex_ids' && Array.isArray(formattedParams[key])) {
+          formattedParams[key].forEach((id) => {
+            searchParams.append(`${key}[]`, String(id));
+          });
+        } else if (formattedParams[key] !== null && formattedParams[key] !== undefined && formattedParams[key] !== '') {
+          searchParams.append(key, String(formattedParams[key]));
+        }
+      });
+      
+      const response = await api.get(`/search/module/building?${searchParams.toString()}`);
+      return response;
     } catch (error) {
       throw error.response?.data || error.message;
     }
   },
 };
 
-export default buildingAPI;
+export default buildingsAPI;
+

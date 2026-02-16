@@ -6,7 +6,6 @@ import {
   Sidenav,
   DashboardNavbar,
   Configurator,
-  ManagementInfo,
 } from "@/widgets/layout";
 import routes from "@/routes";
 import { useAuth } from "@/store/hooks/useAuth";
@@ -385,7 +384,17 @@ export function Dashboard() {
                   pages.map((page) => {
                     if (page.children && page.children.length > 0) {
                       return page.children.map(({ path, element, allowedRoles, moduleName }) => {
-                        const routePath = path.startsWith("/") ? path.substring(1) : path;
+                        // Path-i düzgün formatla - /dashboard prefix-i olmadan, amma / ilə başlamalıdır
+                        let routePath = path;
+                        if (routePath.startsWith("/dashboard/")) {
+                          routePath = routePath.replace("/dashboard", "");
+                        } else if (!routePath.startsWith("/")) {
+                          routePath = `/${routePath}`;
+                        }
+                        // /dashboard altında olduğumuz üçün path-dən /dashboard-ı çıxarırıq
+                        if (routePath === "/") {
+                          routePath = "";
+                        }
                         return (
                           <Route
                             key={path}
@@ -395,7 +404,17 @@ export function Dashboard() {
                         );
                       });
                     } else {
-                      const routePath = page.path.startsWith("/") ? page.path.substring(1) : page.path;
+                      // Path-i düzgün formatla - /dashboard prefix-i olmadan, amma / ilə başlamalıdır
+                      let routePath = page.path;
+                      if (routePath.startsWith("/dashboard/")) {
+                        routePath = routePath.replace("/dashboard", "");
+                      } else if (!routePath.startsWith("/")) {
+                        routePath = `/${routePath}`;
+                      }
+                      // /dashboard altında olduğumuz üçün path-dən /dashboard-ı çıxarırıq
+                      if (routePath === "/") {
+                        routePath = "";
+                      }
                       return (
                         <Route
                           key={page.path}

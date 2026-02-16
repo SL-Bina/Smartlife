@@ -2,7 +2,6 @@ import React, { useState, useMemo } from "react";
 import { Card, CardBody, Spinner, Typography } from "@material-tailwind/react";
 import { useNavigate } from "react-router-dom";
 import { useMaterialTailwindController } from "@/store/hooks/useMaterialTailwind";
-import { useMtkColor } from "@/store/hooks/useMtkColor";
 
 const DEFAULT_COLOR = "#dc2626";
 
@@ -27,7 +26,17 @@ export default function UserAddPage() {
   const [controller] = useMaterialTailwindController();
   const { sidenavType } = controller;
   const { user, hasModuleAccess } = useAuth();
-  const { colorCode, getRgba, getGradientBackground } = useMtkColor();
+  const colorCode = null;
+  
+  const getRgba = (opacity = 1) => {
+    const r = 220; const g = 38; const b = 38;
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
+  const getGradientBackground = (direction = "to bottom", opacity1 = 0.1, opacity2 = 0.05) => {
+    const color1 = getRgba(opacity1);
+    const color2 = getRgba(opacity2);
+    return `linear-gradient(${direction}, ${color1}, ${color2}, ${color1})`;
+  };
 
   const [formOpen, setFormOpen] = useState(false);
   const [mode, setMode] = useState("create");

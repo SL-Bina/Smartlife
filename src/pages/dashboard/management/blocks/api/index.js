@@ -4,7 +4,7 @@ export const blocksAPI = {
   getAll: async (params = {}) => {
     try {
       const response = await api.get("/module/blocks/list", { params });
-      return response.data;
+      return response;
     } catch (error) {
       throw error.response?.data || error.message;
     }
@@ -13,94 +13,48 @@ export const blocksAPI = {
   getById: async (id) => {
     try {
       const response = await api.get(`/module/blocks/${id}`);
-      return response.data;
+      return response;
     } catch (error) {
       throw error.response?.data || error.message;
     }
   },
 
-  create: async (data) => {
+  add: async (blockData) => {
     try {
-      const totalFloor = data?.meta?.total_floor ?? data?.meta?.totalFloor ?? data?.total_floor;
-      const totalApartment = data?.meta?.total_apartment ?? data?.meta?.totalApartment ?? data?.total_apartment;
-
-      const cleanedData = {
-        complex_id: data.complex_id ?? data.complex?.id ?? null,
-        building_id: data.building_id ?? data.building?.id ?? null,
-        name: data.name || "",
-        meta: {
-          total_floor: totalFloor !== undefined && totalFloor !== null && totalFloor !== "" ? Number(totalFloor) : null,
-          total_apartment:
-            totalApartment !== undefined && totalApartment !== null && totalApartment !== "" ? Number(totalApartment) : null,
-        },
-      };
-
-      const response = await api.put("/module/blocks/add", cleanedData);
-      return response.data;
+      const response = await api.put("/module/blocks/add", blockData);
+      return response;
     } catch (error) {
-      // MTK/Buildings-dəki kimi 400/422 validasiya xətalarını yığ
-      if (error.response?.status === 400 || error.response?.status === 422) {
-        const errorData = error.response.data;
-
-        let allErrors = [];
-        if (errorData?.errors) {
-          Object.keys(errorData.errors).forEach((key) => {
-            const fieldErrors = errorData.errors[key];
-            if (Array.isArray(fieldErrors)) {
-              fieldErrors.forEach((err) => allErrors.push(`${key}: ${err}`));
-            } else {
-              allErrors.push(`${key}: ${fieldErrors}`);
-            }
-          });
+      const errorData = error.response?.data;
+      if (errorData?.errors) {
+        let errorMessage = "";
+        try {
+          const errors = Object.values(errorData.errors).flat().join(", ");
+          errorMessage = errors || errorData.message || "Validation error";
+        } catch (e) {
+          errorMessage = errorData.message || "Validation error";
         }
-
-        throw {
-          message: errorData.message || "Validation Error",
-          errors: errorData.errors,
-          allErrors,
-          ...errorData,
-        };
+        throw new Error(errorMessage);
       }
-
-      console.error("Blocks Create Error:", error);
       throw error.response?.data || error.message;
     }
   },
 
-  update: async (id, data) => {
+  update: async (id, blockData) => {
     try {
-      const totalFloor = data?.meta?.total_floor ?? data?.meta?.totalFloor ?? data?.total_floor;
-      const totalApartment = data?.meta?.total_apartment ?? data?.meta?.totalApartment ?? data?.total_apartment;
-
-      const cleanedData = {
-        complex_id: data.complex_id ?? data.complex?.id ?? null,
-        building_id: data.building_id ?? data.building?.id ?? null,
-        name: data.name || "",
-        meta: {
-          total_floor: totalFloor !== undefined && totalFloor !== null && totalFloor !== "" ? Number(totalFloor) : null,
-          total_apartment:
-            totalApartment !== undefined && totalApartment !== null && totalApartment !== "" ? Number(totalApartment) : null,
-        },
-      };
-
-      const response = await api.patch(`/module/blocks/${id}`, cleanedData);
-      return response.data;
+      const response = await api.patch(`/module/blocks/${id}`, blockData);
+      return response;
     } catch (error) {
-      if (error.response?.status === 400 || error.response?.status === 422) {
-        const errorData = error.response.data;
-
-        if (errorData?.errors) {
-          const firstError = Object.values(errorData.errors)[0];
-          throw {
-            message: Array.isArray(firstError) ? firstError[0] : firstError,
-            errors: errorData.errors,
-            ...errorData,
-          };
+      const errorData = error.response?.data;
+      if (errorData?.errors) {
+        let errorMessage = "";
+        try {
+          const errors = Object.values(errorData.errors).flat().join(", ");
+          errorMessage = errors || errorData.message || "Validation error";
+        } catch (e) {
+          errorMessage = errorData.message || "Validation error";
         }
-
-        throw errorData;
+        throw new Error(errorMessage);
       }
-
       throw error.response?.data || error.message;
     }
   },
@@ -108,7 +62,31 @@ export const blocksAPI = {
   delete: async (id) => {
     try {
       const response = await api.delete(`/module/blocks/${id}`);
-      return response.data;
+      return response;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  search: async (params = {}) => {
+    try {
+      // Format complex_ids and building_ids as arrays with brackets notation
+      const formattedParams = { ...params };
+      
+      // Build URLSearchParams manually to ensure array format
+      const searchParams = new URLSearchParams();
+      Object.keys(formattedParams).forEach((key) => {
+        if ((key === 'complex_ids' || key === 'building_ids') && Array.isArray(formattedParams[key])) {
+          formattedParams[key].forEach((id) => {
+            searchParams.append(`${key}[]`, String(id));
+          });
+        } else if (formattedParams[key] !== null && formattedParams[key] !== undefined && formattedParams[key] !== '') {
+          searchParams.append(key, String(formattedParams[key]));
+        }
+      });
+      
+      const response = await api.get(`/search/module/block?${searchParams.toString()}`);
+      return response;
     } catch (error) {
       throw error.response?.data || error.message;
     }
@@ -116,3 +94,4 @@ export const blocksAPI = {
 };
 
 export default blocksAPI;
+

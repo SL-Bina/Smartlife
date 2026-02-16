@@ -1,258 +1,315 @@
-import React, { useMemo, useState, useEffect } from "react";
-import { Card, CardBody, Spinner, Typography } from "@material-tailwind/react";
-
-import { BuildingsHeader } from "./components/BuildingsHeader";
-import { BuildingsActions } from "./components/BuildingsActions";
-import { BuildingsTable } from "./components/BuildingsTable";
-import { BuildingsPagination } from "./components/BuildingsPagination";
-
-import { BuildingViewModal } from "./components/modals/BuildingsViewModal";
-import { BuildingFormModal } from "./components/modals/BuildingsFormModal";
-import { BuildingDeleteModal } from "./components/modals/BuildingsDeleteModal";
-import { BuildingsFilterModal } from "./components/modals/BuildingsFilterModal";
-
-import { useBuildingsData } from "./hooks/useBuildingsData";
-import { useBuildingForm } from "./hooks/useBuildingsForm";
-import { useBuildingsFilters } from "./hooks/useBuildingsFilters";
-
-import { useManagementEnhanced } from "@/store/exports";
-import buildingAPI from "./api";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { loadMtkById } from "@/store/slices/mtkSlice";
+import { loadComplexById } from "@/store/slices/complexSlice";
+import { setSelectedComplex } from "@/store/slices/complexSlice";
+import { setSelectedBuilding, loadBuildings, loadBuildingById } from "@/store/slices/buildingSlice";
+import { BuildingHeader } from "./components/BuildingHeader";
+import { BuildingActions } from "./components/BuildingActions";
+import { BuildingTable } from "./components/BuildingTable";
+import { BuildingPagination } from "./components/BuildingPagination";
+import { BuildingFormModal } from "./components/modals/BuildingFormModal";
+import { BuildingSearchModal } from "./components/modals/BuildingSearchModal";
+import { useBuildingForm } from "./hooks/useBuildingForm";
+import { useBuildingData } from "./hooks/useBuildingData";
+import buildingsAPI from "./api";
 import DynamicToast from "@/components/DynamicToast";
 
 export default function BuildingsPage() {
-  const [search, setSearch] = useState("");
-
-  const [viewOpen, setViewOpen] = useState(false);
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const [searchParams] = useSearchParams();
+  
+  // URL-dən complex_id və mtk_id götür
+  const urlComplexId = searchParams.get("complex_id");
+  const urlMtkId = searchParams.get("mtk_id");
+  
+  // Redux-dan selected MTK və Complex ID götür
+  const selectedMtkId = useAppSelector((state) => state.mtk.selectedMtkId);
+  const selectedMtk = useAppSelector((state) => state.mtk.selectedMtk);
+  const selectedComplexId = useAppSelector((state) => state.complex.selectedComplexId);
+  const selectedComplex = useAppSelector((state) => state.complex.selectedComplex);
+  const selectedBuildingId = useAppSelector((state) => state.building.selectedBuildingId);
+  const selectedBuilding = useAppSelector((state) => state.building.selectedBuilding);
+  
+  // MTK və Complex ID-ni təyin et: URL-dən gələn, yoxsa Redux-dan
+  const [mtkId, setMtkId] = useState(() => {
+    if (urlMtkId) {
+      const id = parseInt(urlMtkId, 10);
+      return !isNaN(id) ? id : selectedMtkId;
+    }
+    return selectedMtkId;
+  });
+  const [complexId, setComplexId] = useState(() => {
+    if (urlComplexId) {
+      const id = parseInt(urlComplexId, 10);
+      return !isNaN(id) ? id : selectedComplexId;
+    }
+    return selectedComplexId;
+  });
+  
+  const [search, setSearch] = useState({});
   const [formOpen, setFormOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [mode, setMode] = useState("create");
   const [selected, setSelected] = useState(null);
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
 
-  const { state, actions } = useManagementEnhanced();
-  
-  // Context-dən MTK və Complex məlumatlarını al
-  const mtks = state.mtks || [];
-  const complexes = state.complexes || [];
-  const loadingMtks = state.loading?.mtks || false;
-  const loadingComplexes = state.loading?.complexes || false;
+  const form = useBuildingForm();
+  const { items, loading, page, lastPage, total, itemsPerPage, setItemsPerPage, goToPage, refresh } = useBuildingData({ search, complexId, mtkId });
+
+  // Redux-da selected MTK ID yoxdursa, sorğu göndər
+  useEffect(() => {
+    if (selectedMtkId && !selectedMtk) {
+      dispatch(loadMtkById(selectedMtkId));
+    }
+  }, [dispatch, selectedMtkId, selectedMtk]);
+
+  // Load Buildings to Redux on mount
+  useEffect(() => {
+    dispatch(loadBuildings({ page: 1, per_page: 1000 }));
+  }, [dispatch]);
+
+  // Redux-da selected Complex ID yoxdursa, sorğu göndər
+  useEffect(() => {
+    if (selectedComplexId && !selectedComplex) {
+      dispatch(loadComplexById(selectedComplexId));
+    }
+  }, [dispatch, selectedComplexId, selectedComplex]);
+
+  // Load selected Building if ID exists but Building data doesn't
+  useEffect(() => {
+    if (selectedBuildingId && !selectedBuilding) {
+      dispatch(loadBuildingById(selectedBuildingId));
+    }
+  }, [dispatch, selectedBuildingId, selectedBuilding]);
+
+  // URL-dən mtk_id gələndə
+  useEffect(() => {
+    if (urlMtkId) {
+      const id = parseInt(urlMtkId, 10);
+      if (!isNaN(id)) {
+        setMtkId(id);
+        dispatch(loadMtkById(id));
+      }
+    } else if (selectedMtkId) {
+      setMtkId(selectedMtkId);
+    } else {
+      setMtkId(null);
+    }
+  }, [urlMtkId, selectedMtkId, dispatch]);
+
+  // URL-dən complex_id gələndə və ya Redux-da selected Complex ID dəyişəndə
+  useEffect(() => {
+    if (urlComplexId) {
+      const id = parseInt(urlComplexId, 10);
+      if (!isNaN(id)) {
+        setComplexId(id);
+        dispatch(loadComplexById(id));
+      }
+    } else if (selectedComplexId) {
+      setComplexId(selectedComplexId);
+    } else {
+      setComplexId(null);
+    }
+  }, [urlComplexId, selectedComplexId, dispatch]);
+
+  const handleNameSearchChange = (value) => {
+    // Bu funksiya artıq istifadə olunmur, amma uyğunluq üçün saxlanılır
+  };
+
+  const handleApplyNameSearch = (value) => {
+    setSearch((prev) => ({
+      ...prev,
+      name: value && value.trim() ? value.trim() : undefined,
+    }));
+  };
+
+  const handleStatusChange = (value) => {
+    setSearch((prev) => ({
+      ...prev,
+      status: value || undefined,
+    }));
+  };
+
+  const handleMtkChange = (value) => {
+    if (value) {
+      const id = parseInt(value, 10);
+      setMtkId(id);
+      // MTK dəyişəndə Complex-i təmizlə
+      setComplexId(null);
+      navigate(`/dashboard/management/buildings?mtk_id=${id}`, { replace: true });
+    } else {
+      setMtkId(null);
+      setComplexId(null);
+      navigate("/dashboard/management/buildings", { replace: true });
+    }
+  };
+
+  const handleComplexChange = (value) => {
+    if (value) {
+      const complexIdNum = parseInt(value, 10);
+      setComplexId(complexIdNum);
+      // Complex-i Redux-a yaz
+      const complex = complexes.find(c => c.id === complexIdNum);
+      if (complex) {
+        dispatch(setSelectedComplex({ id: complexIdNum, complex }));
+      }
+      navigate(`/dashboard/management/buildings?complex_id=${value}`, { replace: true });
+    } else {
+      setComplexId(null);
+      dispatch(setSelectedComplex({ id: null, complex: null }));
+      navigate("/dashboard/management/buildings", { replace: true });
+    }
+  };
+
+  const handleRemoveFilter = (filterKey) => {
+    setSearch((prev) => {
+      const newSearch = { ...prev };
+      delete newSearch[filterKey];
+      Object.keys(newSearch).forEach((key) => {
+        if (!newSearch[key] || (typeof newSearch[key] === 'string' && !newSearch[key].trim())) {
+          delete newSearch[key];
+        }
+      });
+      return newSearch;
+    });
+  };
 
   const showToast = (type, message, title = "") => {
     setToast({ open: true, type, message, title });
   };
 
-  const filters = useBuildingsFilters();
-
-  // Buildings data yalnız MTK və Complex yükləndikdən sonra yüklənir
-  // Context-dən məlumatlar artıq yüklənib, yalnız loading state-i yoxlayırıq
-  const shouldLoadBuildingsData = !loadingMtks && !loadingComplexes;
-  
-  const { items, loading, page, lastPage, total, itemsPerPage, setItemsPerPage, goToPage, refresh } = useBuildingsData({
-    search,
-    mtkId: state.mtkId,
-    complexId: state.complexId,
-    enabled: shouldLoadBuildingsData,
-    filterStatus: filters.filters.status,
-    filterAddress: filters.filters.address,
-    filterEmail: filters.filters.email,
-    filterPhone: filters.filters.phone
-  });
-
-  const form = useBuildingForm();
-
-  const hasActiveFilters = 
-    (filters.filters.status && filters.filters.status !== "") ||
-    (filters.filters.address && filters.filters.address.trim() !== "") ||
-    (filters.filters.email && filters.filters.email.trim() !== "") ||
-    (filters.filters.phone && filters.filters.phone.trim() !== "");
-
-  // MTK və Complex məlumatları artıq context-də yüklənib
-  // Yalnız default seçimləri təmin edirik
-  useEffect(() => {
-    // MTK-lar yükləndikdən sonra default olaraq 1-ci MTK seç
-    if (!loadingMtks && mtks.length > 0 && !state.mtkId) {
-      actions.setMtk(mtks[0].id, mtks[0]);
+  const handleCreate = () => {
+    form.resetForm();
+    // Əgər Complex ID varsa, form-a əlavə et
+    if (complexId) {
+      form.updateField("complex_id", complexId);
     }
-  }, [loadingMtks, mtks.length, state.mtkId, actions]);
-
-  // Komplekslər yükləndikdən sonra, seçilmiş MTK-ya uyğun kompleksləri filter et və default seç
-  useEffect(() => {
-    if (!loadingComplexes && complexes.length > 0 && state.mtkId && !state.complexId) {
-      const filtered = complexes.filter((c) => {
-        const mtkId = c?.mtk_id ?? c?.bind_mtk?.id ?? null;
-        return String(mtkId || "") === String(state.mtkId);
-      });
-      
-      // Default olaraq 1-ci kompleks seç
-      if (filtered.length > 0) {
-        actions.setComplex(filtered[0].id, filtered[0]);
-      }
-    }
-  }, [loadingComplexes, complexes.length, state.mtkId, state.complexId, actions]);
-
-  const pageTitleRight = useMemo(() => {
-    if (loading) {
-      return (
-        <div className="flex items-center gap-2 text-xs text-blue-gray-400 dark:text-gray-400">
-          <Spinner className="h-4 w-4" />
-          Yüklənir...
-        </div>
-      );
-    }
-    return <div className="text-xs text-blue-gray-400 dark:text-gray-400">Cəm: {items.length}</div>;
-  }, [loading, items.length]);
-
-  const openCreate = () => {
     setMode("create");
     setSelected(null);
-    form.resetForm();
-
-    // scope-dan default complex
-    if (state.complexId) form.updateField("complex_id", state.complexId);
-
     setFormOpen(true);
   };
 
-  const openEdit = (x) => {
+  const handleEdit = (item) => {
+    form.setFormFromBuilding(item);
     setMode("edit");
-    setSelected(x);
-    form.setFormFromBuilding(x);
+    setSelected(item);
     setFormOpen(true);
   };
 
-  const openView = (x) => {
-    setSelected(x);
-    setViewOpen(true);
+  const handleSelect = (item) => {
+    dispatch(setSelectedBuilding({ id: item.id, building: item }));
+    showToast("success", `"${item.name}" Bina seçildi`, "Uğurlu");
   };
 
-  const openDelete = (x) => {
-    setSelected(x);
-    setDeleteOpen(true);
-  };
-
-  const submitForm = async (payload) => {
-    try {
-      if (mode === "edit" && selected?.id) {
-        await buildingAPI.update(selected.id, payload);
-        showToast("success", "Bina uğurla yeniləndi", "Uğurlu");
-      } else {
-        await buildingAPI.create(payload);
-        showToast("success", "Bina uğurla yaradıldı", "Uğurlu");
-      }
-      await refresh();
-      setFormOpen(false);
-    } catch (e) {
-      console.error(e);
-      const errorMessage = e?.response?.data?.message || e?.message || "Xəta baş verdi";
-      showToast("error", errorMessage, "Xəta");
-      throw e;
+  const handleDelete = async (item) => {
+    if (!window.confirm(`"${item.name}" Binasını silmək istədiyinizə əminsiniz?`)) {
+      return;
     }
-  };
 
-  const confirmDelete = async (x) => {
     try {
-      await buildingAPI.delete(x.id);
+      await buildingsAPI.delete(item.id);
       showToast("success", "Bina uğurla silindi", "Uğurlu");
-      await refresh();
-      setDeleteOpen(false);
-    } catch (e) {
-      console.error(e);
-      const errorMessage = e?.response?.data?.message || e?.message || "Xəta baş verdi";
-      showToast("error", errorMessage, "Xəta");
-      throw e;
+      refresh();
+    } catch (error) {
+      showToast("error", error.message || "Xəta baş verdi", "Xəta");
     }
   };
 
-  const handleFilterApply = () => {
-    filters.setFilterOpen(false);
-    refresh();
+  const submitForm = async (formData) => {
+    try {
+      if (mode === "create") {
+        await buildingsAPI.add(formData);
+        showToast("success", "Bina uğurla əlavə edildi", "Uğurlu");
+      } else {
+        await buildingsAPI.update(selected.id, formData);
+        showToast("success", "Bina uğurla yeniləndi", "Uğurlu");
+      }
+      refresh();
+      form.resetForm();
+    } catch (error) {
+      throw error;
+    }
   };
 
-  const handleFilterClear = () => {
-    filters.clearFilters();
-    refresh();
-  };
+  const complexes = useAppSelector((state) => state.complex.complexes);
 
   return (
-    <div className="py-4">
-      <div className="flex items-start justify-between gap-3">
-        <BuildingsHeader />
-      </div>
+    <div className="space-y-6">
+      <BuildingHeader />
 
-      <Card className="shadow-lg dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-        <CardBody className="flex flex-col gap-6 p-6">
-          <BuildingsActions
-            search={search}
-            onSearchChange={setSearch}
-            onCreateClick={openCreate}
-            onFilterClick={() => filters.setFilterOpen(true)}
-            hasActiveFilters={hasActiveFilters}
-            totalItems={total}
-            itemsPerPage={itemsPerPage}
-            onItemsPerPageChange={setItemsPerPage}
-          />
+      <BuildingActions
+        search={search}
+        mtkId={mtkId}
+        complexId={complexId}
+        onCreateClick={handleCreate}
+        onSearchClick={() => setSearchModalOpen(true)}
+        onNameSearchChange={handleNameSearchChange}
+        onApplyNameSearch={handleApplyNameSearch}
+        onStatusChange={handleStatusChange}
+        onMtkChange={handleMtkChange}
+        onComplexChange={handleComplexChange}
+        onRemoveFilter={handleRemoveFilter}
+        totalItems={total}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={setItemsPerPage}
+      />
 
-          <BuildingsTable
-            items={items}
-            loading={loading}
-            onView={openView}
-            onEdit={openEdit}
-            onDelete={openDelete}
-          />
+      <BuildingTable
+        items={items}
+        loading={loading}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onSelect={handleSelect}
+        selectedBuildingId={selectedBuildingId}
+      />
 
-          {!loading && items.length === 0 ? (
-            <Typography className="text-sm text-blue-gray-500 dark:text-gray-300 text-center py-4">
-              Bina siyahısı boşdur
-            </Typography>
-          ) : null}
-
-          {!loading && items.length > 0 && (
-            <div className="pt-2">
-              <BuildingsPagination page={page} lastPage={lastPage} onPageChange={goToPage} total={total} />
-            </div>
-          )}
-        </CardBody>
-      </Card>
-
-      <BuildingViewModal open={viewOpen} onClose={() => setViewOpen(false)} item={selected} />
+      {lastPage > 1 && (
+        <BuildingPagination
+          page={page}
+          lastPage={lastPage}
+          onPageChange={goToPage}
+          total={total}
+        />
+      )}
 
       <BuildingFormModal
         open={formOpen}
         mode={mode}
-        onClose={() => setFormOpen(false)}
+        onClose={() => {
+          setFormOpen(false);
+          form.resetForm();
+        }}
         form={form}
         onSubmit={submitForm}
-        complexes={complexes}
-        mtks={mtks}
-        loadingMtks={loadingMtks}
+        complexId={complexId}
+        mtkId={mtkId}
       />
 
-      <BuildingDeleteModal
-        open={deleteOpen}
-        onClose={() => setDeleteOpen(false)}
-        item={selected}
-        onConfirm={confirmDelete}
+      <BuildingSearchModal
+        open={searchModalOpen}
+        onClose={() => setSearchModalOpen(false)}
+        onSearch={(searchParams) => {
+          // Keep name and status from current search, merge with advanced search params
+          setSearch((prev) => ({
+            ...(prev.name && { name: prev.name }),
+            ...(prev.status && { status: prev.status }),
+            ...searchParams,
+          }));
+        }}
+        currentSearch={search}
       />
 
-      <BuildingsFilterModal
-        open={filters.filterOpen}
-        onClose={() => filters.setFilterOpen(false)}
-        filters={filters.filters}
-        onFilterChange={filters.setFilter}
-        onApply={handleFilterApply}
-        onClear={handleFilterClear}
-      />
-
-      {/* Toast Notification */}
       <DynamicToast
         open={toast.open}
         type={toast.type}
-        title={toast.title}
         message={toast.message}
+        title={toast.title}
         onClose={() => setToast({ ...toast, open: false })}
-        duration={3000}
       />
     </div>
   );
 }
+
