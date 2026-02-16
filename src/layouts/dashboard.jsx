@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/solid";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   Sidenav,
@@ -14,6 +14,8 @@ import { useMaterialTailwindController } from "@/store/hooks/useMaterialTailwind
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import AiChat from "@/widgets/layout/ai-chat";
 import Footer from "@/widgets/layout/footer";
+import { NotFound } from "@/pages/404";
+import "./dashboard.css";
 
 function ProtectedRoute({ element, allowedRoles, moduleName }) {
   const { user, isInitialized, hasModuleAccess } = useAuth();
@@ -58,7 +60,7 @@ function ProtectedRoute({ element, allowedRoles, moduleName }) {
   return element;
 }
 
-const filterRoutesByRole = (routes, user, hasModuleAccess) => {
+export const filterRoutesByRole = (routes, user, hasModuleAccess) => {
   let userRole = user?.role?.name?.toLowerCase() || (typeof user?.role === 'string' ? user.role.toLowerCase() : null);
 
   const originalRole = user?.role?.name?.toLowerCase();
@@ -216,6 +218,8 @@ export function Dashboard() {
   const { sidenavType, sidenavCollapsed, sidenavSize, sidenavPosition } = controller;
   const { user, hasModuleAccess, refreshUser, isInitialized, error, clearError } = useAuth();
   const [isDesktop, setIsDesktop] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const bgRef = useRef(null);
 
   useDocumentTitle();
 
@@ -227,6 +231,64 @@ export function Dashboard() {
     window.addEventListener("resize", checkDesktop);
     return () => window.removeEventListener("resize", checkDesktop);
   }, []);
+
+  // Check dark mode
+  useEffect(() => {
+    const checkDarkMode = () => {
+      const isDark = document.documentElement.classList.contains('dark') || 
+                    window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setIsDarkMode(isDark);
+    };
+    
+    checkDarkMode();
+    
+    // Watch for dark mode changes
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+    
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaQuery.addEventListener('change', checkDarkMode);
+    
+    return () => {
+      observer.disconnect();
+      mediaQuery.removeEventListener('change', checkDarkMode);
+    };
+  }, []);
+
+  // Parallax effect on mouse move
+  useEffect(() => {
+    if (!isDarkMode || !bgRef.current) return;
+
+    const handleMouseMove = (e) => {
+      const { clientX, clientY } = e;
+      const { innerWidth, innerHeight } = window;
+      
+      // Daha güclü parallax effekti
+      const x = (clientX / innerWidth - 0.5) * 40;
+      const y = (clientY / innerHeight - 0.5) * 40;
+      
+      if (bgRef.current) {
+        bgRef.current.style.transform = `translate(${x}px, ${y}px) scale(1.1)`;
+      }
+    };
+
+    const handleMouseLeave = () => {
+      if (bgRef.current) {
+        bgRef.current.style.transform = 'translate(0, 0) scale(1)';
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseleave', handleMouseLeave);
+    
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, [isDarkMode]);
 
   // Refresh user data periodically (only if user is logged in and initialized)
   useEffect(() => {
@@ -260,10 +322,20 @@ export function Dashboard() {
   const showError = error && !user;
 
   return (
-    <div className="min-h-screen bg-blue-gray-50/50 dark:bg-black flex flex-col">
+    <div className="min-h-screen bg-blue-gray-50/50 dark:bg-gray-900 flex flex-col relative">
+      {/* Parallax Space Background for Dark Mode */}
+      {isDarkMode && (
+        <div 
+          ref={bgRef}
+          className="dashboard-dark-bg parallax-active"
+        >
+          <div className="nebula"></div>
+        </div>
+      )}
+      
       {/* Error Banner */}
       {showError && (
-        <div className="bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800 px-4 py-3">
+        <div className="bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800 px-4 py-3 relative z-10">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="text-red-600 dark:text-red-400 font-medium text-sm">
@@ -279,12 +351,14 @@ export function Dashboard() {
           </div>
         </div>
       )}
-        <Sidenav
-          routes={filteredRoutes}
-          brandImg={
-            sidenavType === "dark" ? "/Site_Logo/white_big.png" : "/Site_Logo/color_big.png"
-          }
-        />
+        <div className="relative z-10">
+          <Sidenav
+            routes={filteredRoutes}
+            brandImg={
+              sidenavType === "dark" ? "/Site_Logo/white_big.png" : "/Site_Logo/color_big.png"
+            }
+          />
+        </div>
         <motion.div
           initial={false}
           animate={{
@@ -300,7 +374,7 @@ export function Dashboard() {
             stiffness: 300,
             damping: 30,
           }}
-          className="p-4"
+          className="p-4 relative z-10 dashboard-content"
         >
           <DashboardNavbar />
           <div className="mb-8">
@@ -334,20 +408,17 @@ export function Dashboard() {
               )}
               <Route
                 path="*"
-                element={
-                  <Navigate
-                    to={user?.role?.name?.toLowerCase() === "resident" ? "/dashboard/resident/home" : "/dashboard/home"}
-                    replace
-                  />
-                }
+                element={<NotFound />}
               />
             </Routes>
           </div>
         </motion.div>
-        <Configurator />
-        <AiChat />
-        {/* <ManagementInfo /> */}
-        <Footer />
+        <div className="relative z-10">
+          <Configurator />
+          <AiChat />
+          {/* <ManagementInfo /> */}
+          <Footer />
+        </div>
       </div>
   );
 }

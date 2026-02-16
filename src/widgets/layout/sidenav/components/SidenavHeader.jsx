@@ -16,7 +16,6 @@ export function SidenavHeader({ brandName, collapsed = false, isLowHeight = fals
   const { user } = useAuth();
   const [isMobile, setIsMobile] = React.useState(false);
 
-  // ✅ realtime clock
   const [now, setNow] = React.useState(() => new Date());
 
   React.useEffect(() => {
@@ -24,7 +23,6 @@ export function SidenavHeader({ brandName, collapsed = false, isLowHeight = fals
     return () => clearInterval(id);
   }, []);
 
-  // Size-based classes
   const getTextSize = (small, medium, large) => {
     if (sidenavSize === "small") return small;
     if (sidenavSize === "large") return large;
@@ -50,7 +48,6 @@ export function SidenavHeader({ brandName, collapsed = false, isLowHeight = fals
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // ---- Date/Time formatting (AZ default) ----
   const locale = i18n?.language || "az-AZ";
 
   const hh = String(now.getHours()).padStart(2, "0");
@@ -64,7 +61,6 @@ export function SidenavHeader({ brandName, collapsed = false, isLowHeight = fals
     year: "numeric",
   }).format(now);
 
-  // Responsive padding - aşağı hündürlüklü ekranlarda azalt
   const getHeaderPadding = () => {
     if (collapsed) return "px-2 py-2 xl:px-2 xl:py-3";
     if (isLowHeight) return "px-3 py-2 xl:px-4 xl:py-3";
@@ -143,7 +139,6 @@ export function SidenavHeader({ brandName, collapsed = false, isLowHeight = fals
         )}
       </Link>
 
-      {/* ✅ iOS 26-style glass clock container - aşağı hündürlüklü ekranlarda gizlənir */}
       {!collapsed && !isLowHeight && (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
@@ -163,14 +158,11 @@ export function SidenavHeader({ brandName, collapsed = false, isLowHeight = fals
               dark:shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.15)]
             "
           >
-            {/* Glass overlay effect - iOS 26 style */}
             <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/10 to-transparent dark:from-white/15 dark:via-white/5 dark:to-transparent" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/3 to-transparent dark:from-black/8 dark:to-transparent" />
             
-            {/* Inner highlight */}
             <div className="absolute inset-[1px] rounded-3xl xl:rounded-[2rem] bg-gradient-to-br from-white/20 via-transparent to-transparent dark:from-white/8 dark:to-transparent pointer-events-none" />
             
-            {/* Subtle reflection */}
             <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-white/25 to-transparent dark:from-white/10 dark:to-transparent rounded-t-3xl xl:rounded-t-[2rem] pointer-events-none" />
 
             <div className={`relative ${isLowHeight ? "px-3 py-2.5 xl:px-4 xl:py-3" : "px-4 py-3.5 xl:px-5 xl:py-4"}`}>
@@ -191,7 +183,6 @@ export function SidenavHeader({ brandName, collapsed = false, isLowHeight = fals
                 </div>
               </div>
 
-              {/* Soft glow effect at bottom - iOS 26 style */}
               <div className="pointer-events-none absolute -bottom-6 left-1/2 h-16 w-56 -translate-x-1/2 rounded-full bg-gradient-to-t from-gray-300/15 via-gray-200/10 to-transparent dark:from-white/8 dark:via-white/5 dark:to-transparent blur-2xl" />
             </div>
           </div>

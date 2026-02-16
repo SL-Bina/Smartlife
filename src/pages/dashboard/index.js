@@ -20,3 +20,4 @@ export { default as QueriesListPage } from "@/pages/dashboard/queries/list";
 export { default as ReceptionPage } from "@/pages/dashboard/reception";
 export { default as ServicesPage } from "@/pages/dashboard/services";
 export { default as ElectronicDocumentsPage } from "@/pages/dashboard/e-documents";
+export { default as UserAddPage } from "@/pages/dashboard/users/add";
