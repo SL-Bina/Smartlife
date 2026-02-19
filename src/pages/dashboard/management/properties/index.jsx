@@ -4,10 +4,10 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { loadMtkById } from "@/store/slices/mtkSlice";
 import { loadComplexById } from "@/store/slices/complexSlice";
 import { loadBuildingById } from "@/store/slices/buildingSlice";
-import { loadBlockById } from "@/store/slices/blockSlice";
+import { loadBlockById, setSelectedBlock } from "@/store/slices/blockSlice";
 import { setSelectedProperty, loadProperties, loadPropertyById } from "@/store/slices/propertySlice";
 import { PropertyHeader } from "./components/PropertyHeader";
-import { PropertyActions } from "./components/PropertyActions";
+import { ManagementActions, ENTITY_LEVELS } from "@/components/management/ManagementActions";
 import { PropertyTable } from "./components/PropertyTable";
 import { PropertyPagination } from "./components/PropertyPagination";
 import { PropertyFormModal } from "./components/modals/PropertyFormModal";
@@ -202,13 +202,6 @@ export default function PropertiesPage() {
     }
   };
 
-  const handleNameSearchChange = (value) => {
-    setSearch((prev) => ({
-      ...prev,
-      name: value || undefined,
-    }));
-  };
-
   const handleApplyNameSearch = (value) => {
     setSearch((prev) => ({
       ...prev,
@@ -223,78 +216,78 @@ export default function PropertiesPage() {
     }));
   };
 
-  const handleMtkChange = (value) => {
-    const id = value ? parseInt(value, 10) : null;
-    setMtkId(id);
-    // MTK dəyişəndə digərləri təmizlə
-    setComplexId(null);
-    setBuildingId(null);
-    setBlockId(null);
-    // URL-i yenilə
-    if (id) {
-      navigate(`/dashboard/management/properties?mtk_id=${id}`, { replace: true });
-    } else {
-      navigate("/dashboard/management/properties", { replace: true });
-    }
-  };
+  // Filter change handler for ManagementActions
+  const handleFilterChange = async (filterType, value, filtersToReset = []) => {
+    // Reset child filters
+    filtersToReset.forEach((filter) => {
+      switch (filter) {
+        case "complex":
+          setComplexId(null);
+          break;
+        case "building":
+          setBuildingId(null);
+          break;
+        case "block":
+          setBlockId(null);
+          dispatch(setSelectedBlock({ id: null, block: null }));
+          break;
+      }
+    });
 
-  const handleComplexChange = (value) => {
-    const id = value ? parseInt(value, 10) : null;
-    setComplexId(id);
-    // Complex dəyişəndə digərləri təmizlə
-    setBuildingId(null);
-    setBlockId(null);
-    // URL-i yenilə - mtk_id varsa onu da saxla
+    // Build URL params
     const params = new URLSearchParams();
-    if (mtkId) {
-      params.set("mtk_id", mtkId);
+    
+    switch (filterType) {
+      case "mtk":
+        if (value) {
+          setMtkId(value);
+          params.set("mtk_id", value);
+          dispatch(loadMtkById(value));
+        } else {
+          setMtkId(null);
+        }
+        break;
+      case "complex":
+        if (mtkId) params.set("mtk_id", mtkId);
+        if (value) {
+          setComplexId(value);
+          params.set("complex_id", value);
+          dispatch(loadComplexById(value));
+        } else {
+          setComplexId(null);
+        }
+        break;
+      case "building":
+        if (mtkId) params.set("mtk_id", mtkId);
+        if (complexId) params.set("complex_id", complexId);
+        if (value) {
+          setBuildingId(value);
+          params.set("building_id", value);
+          dispatch(loadBuildingById(value));
+        } else {
+          setBuildingId(null);
+        }
+        break;
+      case "block":
+        if (mtkId) params.set("mtk_id", mtkId);
+        if (complexId) params.set("complex_id", complexId);
+        if (buildingId) params.set("building_id", buildingId);
+        if (value) {
+          setBlockId(value);
+          params.set("block_id", value);
+          const result = await dispatch(loadBlockById(value));
+          if (result.payload) {
+            dispatch(setSelectedBlock({ id: value, block: result.payload }));
+          }
+        } else {
+          setBlockId(null);
+          dispatch(setSelectedBlock({ id: null, block: null }));
+        }
+        break;
     }
-    if (id) {
-      params.set("complex_id", id);
-    }
-    const newUrl = params.toString() ? `/dashboard/management/properties?${params.toString()}` : "/dashboard/management/properties";
-    navigate(newUrl, { replace: true });
-  };
 
-  const handleBuildingChange = (value) => {
-    const id = value ? parseInt(value, 10) : null;
-    setBuildingId(id);
-    // Building dəyişəndə Block-u təmizlə
-    setBlockId(null);
-    // URL-i yenilə - mtk_id və complex_id varsa onları da saxla
-    const params = new URLSearchParams();
-    if (mtkId) {
-      params.set("mtk_id", mtkId);
-    }
-    if (complexId) {
-      params.set("complex_id", complexId);
-    }
-    if (id) {
-      params.set("building_id", id);
-    }
-    const newUrl = params.toString() ? `/dashboard/management/properties?${params.toString()}` : "/dashboard/management/properties";
-    navigate(newUrl, { replace: true });
-  };
-
-  const handleBlockChange = (value) => {
-    const id = value ? parseInt(value, 10) : null;
-    setBlockId(id);
-    // URL-i yenilə - bütün parametrləri saxla
-    const params = new URLSearchParams();
-    if (mtkId) {
-      params.set("mtk_id", mtkId);
-    }
-    if (complexId) {
-      params.set("complex_id", complexId);
-    }
-    if (buildingId) {
-      params.set("building_id", buildingId);
-    }
-    if (id) {
-      params.set("block_id", id);
-    }
-    const newUrl = params.toString() ? `/dashboard/management/properties?${params.toString()}` : "/dashboard/management/properties";
-    navigate(newUrl, { replace: true });
+    const queryString = params.toString();
+    navigate(`/dashboard/management/properties${queryString ? `?${queryString}` : ""}`, { replace: true });
   };
 
   const handleRemoveFilter = (key) => {
@@ -309,21 +302,15 @@ export default function PropertiesPage() {
     <div className="space-y-6">
       <PropertyHeader />
 
-      <PropertyActions
+      <ManagementActions
+        entityLevel={ENTITY_LEVELS.PROPERTY}
         search={search}
-        mtkId={mtkId}
-        complexId={complexId}
-        buildingId={buildingId}
-        blockId={blockId}
+        filterValues={{ mtkId, complexId, buildingId, blockId }}
+        onFilterChange={handleFilterChange}
         onCreateClick={handleCreate}
         onSearchClick={() => setSearchModalOpen(true)}
-        onNameSearchChange={handleNameSearchChange}
         onApplyNameSearch={handleApplyNameSearch}
         onStatusChange={handleStatusChange}
-        onMtkChange={handleMtkChange}
-        onComplexChange={handleComplexChange}
-        onBuildingChange={handleBuildingChange}
-        onBlockChange={handleBlockChange}
         onRemoveFilter={handleRemoveFilter}
         totalItems={total}
         itemsPerPage={itemsPerPage}

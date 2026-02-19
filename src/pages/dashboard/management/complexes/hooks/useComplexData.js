@@ -17,7 +17,6 @@ export function useComplexData({ search = {}, mtkId = null } = {}) {
       const params = {
         page,
         per_page: itemsPerPage,
-        ...(mtkId && { mtk_id: mtkId }),
       };
 
       // Separate name and status from other search params
@@ -31,6 +30,11 @@ export function useComplexData({ search = {}, mtkId = null } = {}) {
         params.status = status.trim();
       }
 
+      // Add mtk_id if it exists (for both getAll and search endpoints)
+      if (mtkId) {
+        params.mtk_id = mtkId;
+      }
+
       // Check if there are any advanced search parameters
       const hasAdvancedSearch = Object.keys(advancedSearch).length > 0;
 
@@ -39,8 +43,8 @@ export function useComplexData({ search = {}, mtkId = null } = {}) {
         // Merge advanced search params
         Object.assign(params, advancedSearch);
         response = await complexesAPI.search(params);
-      } else if (name || status) {
-        // If only name or status, use search endpoint
+      } else if (name || status || mtkId) {
+        // If name, status, or mtkId exists, use search endpoint
         response = await complexesAPI.search(params);
       } else {
         // No filters, use getAll

@@ -76,11 +76,16 @@ export const propertiesAPI = {
       // Build URLSearchParams manually to ensure array format
       const searchParams = new URLSearchParams();
       Object.keys(formattedParams).forEach((key) => {
+        // Array parameters: mtk_ids[], complex_ids[], building_ids[], block_ids[]
         if ((key === 'mtk_ids' || key === 'complex_ids' || key === 'building_ids' || key === 'block_ids') && Array.isArray(formattedParams[key])) {
           formattedParams[key].forEach((id) => {
-            searchParams.append(`${key}[]`, String(id));
+            if (id !== null && id !== undefined && id !== '') {
+              searchParams.append(`${key}[]`, String(id));
+            }
           });
-        } else if (formattedParams[key] !== null && formattedParams[key] !== undefined && formattedParams[key] !== '') {
+        } 
+        // Single value parameters: name, property_type, area, floor, apartment_number, status
+        else if (formattedParams[key] !== null && formattedParams[key] !== undefined && formattedParams[key] !== '') {
           searchParams.append(key, String(formattedParams[key]));
         }
       });

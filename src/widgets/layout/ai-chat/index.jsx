@@ -13,7 +13,6 @@ import {
 } from "@heroicons/react/24/outline";
 import { AiChatToggleButton } from "./components/AiChatToggleButton";
 
-// Cookie utility funksiyaları
 const getCookie = (name) => {
   try {
     const value = `; ${document.cookie}`;
@@ -40,7 +39,6 @@ const setCookie = (name, value, days = 365) => {
 const CHAT_HISTORY_COOKIE = "smartchat_history";
 const ACTIVE_CHAT_COOKIE = "smartchat_active";
 
-// Chat tarixçəsini cookie-dən yüklə
 const loadChatHistory = () => {
   try {
     const saved = getCookie(CHAT_HISTORY_COOKIE);
@@ -53,7 +51,6 @@ const loadChatHistory = () => {
   return null;
 };
 
-// Chat tarixçəsini cookie-yə yadda saxla
 const saveChatHistory = (chats) => {
   try {
     const data = JSON.stringify(chats);
@@ -63,12 +60,10 @@ const saveChatHistory = (chats) => {
   }
 };
 
-// Aktiv chat ID-ni cookie-dən yüklə
 const loadActiveChatId = () => {
   return getCookie(ACTIVE_CHAT_COOKIE) || "support";
 };
 
-// Aktiv chat ID-ni cookie-yə yadda saxla
 const saveActiveChatId = (chatId) => {
   setCookie(ACTIVE_CHAT_COOKIE, chatId, 365);
 };
@@ -77,10 +72,8 @@ export function AiChat({ sidenavPosition = "left" }) {
   const [openChat, setOpenChat] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(false);
 
-  // visual viewport (iOS keyboard fix)
   const [vv, setVv] = React.useState({ height: null, offsetTop: 0 });
 
-  // panel ref -> wheel/touch block üçün
   const panelRef = React.useRef(null);
 
   React.useEffect(() => {
@@ -107,8 +100,6 @@ export function AiChat({ sidenavPosition = "left" }) {
     };
   }, [openChat, isMobile]);
 
-  // ---------- Conversations (history) ----------
-  // Default chat-lər
   const getDefaultChats = () => [
     {
       id: "support",
@@ -116,14 +107,13 @@ export function AiChat({ sidenavPosition = "left" }) {
       subtitle: "Son mesaj: SmartLife platforması haqqında kömək",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      messages: [{ 
-        role: "assistant", 
-        content: "Salam! 👋 Mən SmartChat - SmartLife platformasının AI köməkçisiyəm. Sizə platformanın bütün funksionallığı haqqında kömək edə bilərəm.\n\nSmartLife platformasında:\n🏢 MTK, Complex, Buildings, Blocks, Properties idarəetməsi\n💰 Maliyyə modulu (invoices, payments, reports)\n🔔 Bildirişlər və müraciətlər\n📊 Dashboard və hesabatlar\n⚙️ Xidmətlər və cihazlar\n\nNə ilə kömək edə bilərəm? 😊" 
+      messages: [{
+        role: "assistant",
+        content: "Salam! 👋 Mən SmartChat - SmartLife platformasının AI köməkçisiyəm. Sizə platformanın bütün funksionallığı haqqında kömək edə bilərəm.\n\nSmartLife platformasında:\n🏢 MTK, Complex, Buildings, Blocks, Properties idarəetməsi\n💰 Maliyyə modulu (invoices, payments, reports)\n🔔 Bildirişlər və müraciətlər\n📊 Dashboard və hesabatlar\n⚙️ Xidmətlər və cihazlar\n\nNə ilə kömək edə bilərəm? 😊"
       }],
     },
   ];
 
-  // Chat tarixçəsini yüklə (cookie-dən və ya default)
   const [chats, setChats] = React.useState(() => {
     const saved = loadChatHistory();
     if (saved && saved.length > 0) {
@@ -136,20 +126,16 @@ export function AiChat({ sidenavPosition = "left" }) {
     return loadActiveChatId();
   });
 
-  // Chat tarixçəsini cookie-yə yadda saxla
   React.useEffect(() => {
     saveChatHistory(chats);
   }, [chats]);
 
-  // Aktiv chat ID-ni cookie-yə yadda saxla
   React.useEffect(() => {
     saveActiveChatId(activeChatId);
   }, [activeChatId]);
 
-  // mobile view state: "list" | "chat"
   const [mobileView, setMobileView] = React.useState("list");
 
-  // composer
   const [text, setText] = React.useState("");
   const [sending, setSending] = React.useState(false);
   const [error, setError] = React.useState(null);
@@ -158,7 +144,6 @@ export function AiChat({ sidenavPosition = "left" }) {
   const inputRef = React.useRef(null);
   const fileRef = React.useRef(null);
 
-  // page scroll restore üçün
   const scrollYRef = React.useRef(0);
 
   const activeChat = React.useMemo(
@@ -166,10 +151,8 @@ export function AiChat({ sidenavPosition = "left" }) {
     [chats, activeChatId]
   );
 
-  // ✅ 1) BODY SCROLL LOCK (desktop + mobile)
   React.useEffect(() => {
     if (!openChat) {
-      // unlock
       document.body.style.position = "";
       document.body.style.top = "";
       document.body.style.left = "";
@@ -184,7 +167,6 @@ export function AiChat({ sidenavPosition = "left" }) {
       return;
     }
 
-    // lock
     scrollYRef.current = window.scrollY || window.pageYOffset || 0;
 
     document.documentElement.style.height = "100%";
@@ -213,15 +195,13 @@ export function AiChat({ sidenavPosition = "left" }) {
     };
   }, [openChat]);
 
-  // ✅ 2) CAPTURE LEVEL: wheel/touchmove blokla (panel daxilində scroll icazəlidir)
   React.useEffect(() => {
     if (!openChat) return;
 
     const isInsidePanel = (target) => {
       const p = panelRef.current;
       if (!p) return false;
-      
-      // Element və ya onun valideynləri panelin içindədirsə
+
       let el = target;
       while (el && el !== document.body) {
         if (el === p || p.contains(el)) return true;
@@ -231,61 +211,54 @@ export function AiChat({ sidenavPosition = "left" }) {
     };
 
     const isScrollable = (target) => {
-      // Element scrollable-dırsa (overflow-y: auto/scroll)
       const el = target;
       const style = window.getComputedStyle(el);
-      const isScrollable = 
-        style.overflowY === 'auto' || 
+      const isScrollable =
+        style.overflowY === 'auto' ||
         style.overflowY === 'scroll' ||
         style.overflow === 'auto' ||
         style.overflow === 'scroll';
-      
+
       if (isScrollable && el.scrollHeight > el.clientHeight) {
         return true;
       }
-      
-      // Valideyn element scrollable-dırsa
+
       let parent = el.parentElement;
       while (parent && parent !== document.body) {
         const parentStyle = window.getComputedStyle(parent);
-        const parentScrollable = 
-          parentStyle.overflowY === 'auto' || 
+        const parentScrollable =
+          parentStyle.overflowY === 'auto' ||
           parentStyle.overflowY === 'scroll' ||
           parentStyle.overflow === 'auto' ||
           parentStyle.overflow === 'scroll';
-        
+
         if (parentScrollable && parent.scrollHeight > parent.clientHeight) {
           return true;
         }
         parent = parent.parentElement;
       }
-      
+
       return false;
     };
 
     const onWheel = (e) => {
-      // Panelin içində və scrollable elementdədirsə, scroll-a icazə ver
       if (isInsidePanel(e.target) && isScrollable(e.target)) {
         return;
       }
-      // Panelin çölündə body scroll olmasın
       if (!isInsidePanel(e.target)) {
         e.preventDefault();
       }
     };
 
     const onTouchMove = (e) => {
-      // Panelin içində və scrollable elementdədirsə, scroll-a icazə ver
       if (isInsidePanel(e.target) && isScrollable(e.target)) {
         return;
       }
-      // Panelin çölündə body scroll olmasın
       if (!isInsidePanel(e.target)) {
         e.preventDefault();
       }
     };
 
-    // capture + passive:false mütləqdir
     window.addEventListener("wheel", onWheel, { passive: false, capture: true });
     window.addEventListener("touchmove", onTouchMove, { passive: false, capture: true });
 
@@ -302,7 +275,6 @@ export function AiChat({ sidenavPosition = "left" }) {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // open -> mobile default list, desktop default chat
   React.useEffect(() => {
     if (!openChat) return;
     setError(null);
@@ -310,7 +282,6 @@ export function AiChat({ sidenavPosition = "left" }) {
     else setMobileView("chat");
   }, [openChat, isMobile]);
 
-  // scroll to bottom (chat view)
   React.useEffect(() => {
     if (!openChat) return;
     if (isMobile && mobileView !== "chat") return;
@@ -319,7 +290,6 @@ export function AiChat({ sidenavPosition = "left" }) {
     el.scrollTop = el.scrollHeight;
   }, [openChat, isMobile, mobileView, activeChatId, activeChat?.messages?.length, sending]);
 
-  // always focus input when in chat view
   React.useEffect(() => {
     if (!openChat) return;
     if (isMobile && mobileView !== "chat") return;
@@ -333,153 +303,18 @@ export function AiChat({ sidenavPosition = "left" }) {
     setText("");
   };
 
-  /**
-   * Groq API integration
-   * Groq API-yə sorğu atır və AI cavabını qaytarır
-   */
   const callAI = async (nextMessages, newFiles = []) => {
     try {
-      // Groq API key-i environment variable-dan götür
       const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
-      
+
       if (!GROQ_API_KEY) {
         throw new Error("Groq API key tapılmadı. Zəhmət olmasa VITE_GROQ_API_KEY environment variable-ını təyin edin.");
       }
 
-      // Groq API endpoint
       const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
-      // AI System Prompt - SmartLife platforması üçün (sadə, real həyatdan nümunələrlə)
-      const systemPrompt = `Sən SmartLife platformasının AI köməkçisidir. SmartLife - müasir, gözoxşayan dizaynı olan, istifadəsi asan property/real estate idarəetmə platformasıdır.
+      const systemPrompt = `Sən SmartLife platformasının AI köməkçisidir. SmartLife - müasir, gözoxşayan dizaynı olan, istifadəsi asan property/real estate idarəetmə platformasıdır.`;
 
-🎯 SƏNİN ROLUN:
-Sən mehriban, köməkçi və dostluqla danışan AI köməkçisidir. İstifadəçilərə SmartLife platformasını real həyatdan nümunələrlə, sadə və anlaşıqlı şəkildə izah edirsən. Texniki detallar vermə, sadəcə saytın nə işlətdiyini, necə istifadə olunduğunu real həyatdan nümunələrlə izah et.
-
-📋 ƏSAS QAYDALAR:
-1. ✅ YALNIZ SmartLife platforması ilə bağlı suallara cavab ver
-2. ✅ Platformanın bütün modulları, funksionallığı, istifadəsi haqqında ətraflı məlumat ver
-3. ❌ Kənar mövzular haqqında (siyasət, din, başqa platformalar, ümumi məlumatlar) danışma
-4. ✅ Əgər sual SmartLife ilə bağlı deyilsə, mehriban və hörmətlə bildir: "Bağışlayın, mən yalnız SmartLife platforması ilə bağlı kömək edə bilərəm. SmartLife haqqında nə bilmək istəyirsiniz?"
-5. ✅ Azərbaycan və ya Türk dillərində cavab ver (istifadəçinin dilinə uyğun)
-6. ✅ Həmişə mehriban, dostluqla və köməkçi ol
-7. ✅ Platformanın funksionallığı haqqında dəqiq məlumat ver
-8. ✅ İstifadəçiyə addım-addım təlimatlar ver
-
-🏢 SMARTLIFE PLATFORMASI - DƏRİN MƏLUMAT:
-
-📊 1. DASHBOARD (Əsas Səhifə):
-- Statistika kartları (Statistics Cards)
-- Resident statistikaları
-- Application status chart (Müraciət statusu qrafiki)
-- Department stats chart (Şöbə statistikaları)
-- Employee performance chart (İşçi performansı)
-- Payment dynamics chart (Ödəniş dinamikası)
-- KPI göstəriciləri
-- Complex Dashboard (Kompleks dashboard)
-
-💰 2. FINANCE MODULU (Maliyyə İdarəetməsi):
-Təsəvvür et ki, bir kooperativin maliyyəçisisən. Əvvəl hər şeyi kağız üzərində, Excel-də idarə edirdin - çətin, vaxt aparan, səhvə yol verən. 
-
-SmartLife-də isə hər şey avtomatikdir! Məsələn, bir sakin ödəniş edəndə, sistem dərhal qeydə alır, hesab-faktura yaradır, borcunu yeniləyir. Borclu mənzilləri bir kliklə görə bilirsən - hansı sakin nə qədər borcludur, nə vaxt ödəyib, hamısı gözəl cədvəllərdə göstərilir. 
-
-Hesabatlar isə tam gözəl - rəngli qrafiklər, statistikalar. Məsələn, "Bu ay nə qədər gəlir gəlib?" sualına cavabı dərhal görürsən, hətta hansı mənzillərdən gəlir gəlib, onu da görə bilirsən.
-
-🏗️ 3. MANAGEMENT MODULU (İdarəetmə):
-
-SmartLife-də hər şey məntiqi bir qaydada təşkil olunub - necə ki, real həyatda: əvvəl kooperativ (MTK), sonra kompleks, sonra bina, sonra blok, sonra mənzil.
-
-3.1. MTK (Mənzil Tikinti Kooperativi):
-Məsələn, "Yeni Həyat" kooperativi var. Platformada bu kooperativi yaradırsan, onun məlumatlarını daxil edirsən - ünvan, telefon, email. Hər kooperativin öz rəngi var - məsələn, "Yeni Həyat" mavi rəngdə, "Şəhər" yaşıl rəngdə. Bu rəng bütün səhifələrdə görünür - gözəl, müasir görünüş!
-
-3.2. Complex (Kompleks):
-Bir kooperativin altında bir neçə kompleks ola bilər. Məsələn, "Yeni Həyat" kooperativinin "Park Kompleks" və "Göl Kompleks" adlı iki kompleksi var. Platformada bunları asanlıqla idarə edə bilirsən.
-
-3.3. Buildings (Binalar):
-Kompleksin altında binalar var. Məsələn, "Park Kompleks"də 5 bina var - A binası, B binası və s. Hər binanın öz məlumatları var.
-
-3.4. Blocks (Bloklar):
-Binanın altında bloklar var. Məsələn, A binasında 3 blok var - 1-ci blok, 2-ci blok, 3-cü blok.
-
-3.5. Properties (Mənzillər):
-Blokun altında mənzillər var. Məsələn, 1-ci blokda 20 mənzil var - 1, 2, 3, 4... və s. Platformada mənzilləri mərtəbə görünüşündə də görə bilirsən - tam real həyatda olduğu kimi! Hər mənzilin sahibi, statusu, borcu və s. məlumatları var.
-
-3.6. Residents (Sakinlər):
-Hər mənzilin sahibi var. Platformada sakinlərin məlumatlarını idarə edə bilirsən - ad, soyad, telefon, email və s.
-
-3.7. Service Fee (Xidmət haqqı):
-Hər mənzil üçün xidmət haqqı təyin edə bilirsən - məsələn, lift xidməti, təmizlik xidməti və s.
-
-🔔 4. NOTIFICATIONS (Bildirişlər):
-Məsələn, kooperativdə təmizlik günü var. Platformadan bütün sakinlərə bildiriş göndərə bilirsən - SMS və ya platforma daxilində. Bütün göndərilən bildirişlər arxivdə saxlanılır - necə ki, email-də köhnə mesajlar saxlanır.
-
-📝 5. APPLICATIONS (Müraciətlər):
-Sakinlər platformadan müraciət edə bilir - məsələn, "Lift işləmir", "Su problemi var" və s. Sən bu müraciətləri görürsən, qiymətləndirirsən, həll edirsən. Hamısı gözəl cədvəllərdə, statuslarla göstərilir.
-
-❓ 6. QUERIES (Sorğular):
-Sakinlər sual verə bilir, sən cavab verə bilirsən. Tam real həyatda olduğu kimi - sakin soruşur, sən cavab verirsən.
-
-📱 7. DEVICES (Cihazlar):
-Kompleksdə olan cihazları idarə edə bilirsən - məsələn, lift, generator və s.
-
-⚙️ 8. SERVICES (Xidmətlər):
-Kompleksdə olan xidmətləri idarə edə bilirsən - məsələn, təmizlik, təhlükəsizlik və s.
-
-📄 9. ELECTRONIC DOCUMENTS (Elektron Sənədlər):
-Bütün sənədləri elektron şəkildə saxlayırsan - məsələn, müqavilələr, hesab-fakturalar və s. Kağız qarışıqlığı yoxdur!
-
-🏢 10. RECEPTION (Qəbul):
-Qəbulda gələn ziyarətçiləri qeydə ala bilirsən - tam real həyatda olduğu kimi.
-
-🔐 11. PERMISSIONS (İcazələr):
-Hər istifadəçinin öz rolu var - admin hər şeyi görür, manager idarə edir, operator işləyir, sakin yalnız öz məlumatlarını görür. Hər kəs öz işini görür!
-
-👤 12. PROFILE (Profil):
-Öz profilini idarə edə bilirsən - şifrə dəyişdirmə, məlumat yeniləmə və s.
-
-🎨 PLATFORMANIN XÜSUSİYYƏTLƏRİ:
-
-1. **Gözoxşayan Dizayn:**
-   SmartLife platforması tam müasir görünüşə malikdir - rəngli, gözəl, istifadəsi asan. Hər kooperativin öz rəngi var və bu rəng bütün səhifələrdə görünür - tam şəxsi görünüş! Məsələn, "Yeni Həyat" kooperativini seçəndə, bütün səhifələr mavi rəngdə olur - gözəl!
-
-2. **Məntiqi Struktur:**
-   Platformada hər şey real həyatda olduğu kimi təşkil olunub - əvvəl kooperativ, sonra kompleks, sonra bina, sonra blok, sonra mənzil. Hər şey bir-birinə bağlıdır, məntiqlidir.
-
-3. **Asan İstifadə:**
-   Platforma istifadəsi çox asandır - hər şey aydındır, izah olunur. Məsələn, mənzil axtarmaq istəyəndə, sadəcə filtrləri seçirsən və dərhal tapırsan. Axtarış çox sürətlidir - bir saniyədə nəticə gəlir!
-
-4. **Mobil Uyğunluq:**
-   Platforma həm kompüterdə, həm də telefonunda işləyir - tam mobil uyğundur! Telefondan da rahatlıqla idarə edə bilirsən.
-
-5. **Təhlükəsizlik:**
-   Hər istifadəçinin öz rolu var - admin hər şeyi görür, sakin yalnız öz məlumatlarını görür. Təhlükəsizlik çox yüksəkdir.
-
-6. **Avtomatik İşlər:**
-   Çox şey avtomatikdir - məsələn, ödəniş edəndə sistem dərhal qeydə alır, borcunu yeniləyir. Əl ilə heç nə yazmaq lazım deyil!
-
-7. **Gözəl Görünüş:**
-   Platforma tam müasir dizayna malikdir - rəngli, animasiyalı, gözəl. İstifadə etmək zövqlüdür!
-
-💬 DANIŞMA TƏRZİN:
-- Həmişə mehriban, dostluqla və sadə danış
-- "Siz", "Sizin" kimi hörmətli ünvanlardan istifadə et
-- Real həyatdan nümunələr gətirərək izah et
-- Texniki detallar vermə - sadəcə saytın nə işlətdiyini, necə istifadə olunduğunu izah et
-- Platformanın gözoxşayan dizaynı, müasir görünüşü haqqında danış
-- Məsələn, "Məsələn", "Təsəvvür et ki", "Necə ki, real həyatda" kimi ifadələrdən istifadə et
-- Emoji-lərdən məqsədəuyğun istifadə et (lakin həddən artıq yox)
-- İstifadəçiyə kömək etməyə hazır olduğunu göstər
-- Mürəkkəb məsələləri sadə, anlaşıqlı şəkildə izah et
-
-❌ NƏ ETMƏMƏLİSƏN:
-- Texniki detallar vermə (kod, API, texniki terminlər)
-- Kənar mövzular haqqında danışma
-- Siyasət, din, başqa platformalar haqqında məlumat vermə
-- Qaba, qeyri-hörmətli cavablar vermə
-- Çox uzun, mürəkkəb izahlar vermə
-
-Yadda saxla: Sən SmartLife platformasının mehriban, köməkçi AI-sısan. Platformanı real həyatdan nümunələrlə, sadə və anlaşıqlı şəkildə izah edirsən. Platformanın gözoxşayan dizaynı, müasir görünüşü, istifadəsi asan olması haqqında danışırsan.`;
-
-      // Mesajları Groq formatına çevir (attachments-i nəzərə al)
       const messages = [
         { role: "system", content: systemPrompt },
         ...nextMessages.map((msg) => {
@@ -488,7 +323,6 @@ Yadda saxla: Sən SmartLife platformasının mehriban, köməkçi AI-sısan. Pla
             content: msg.content || "",
           };
 
-          // Əgər attachments varsa, onları content-ə daxil et
           if (msg.attachments && msg.attachments.length > 0) {
             const attachmentsInfo = msg.attachments
               .map((a) => `[Fayl: ${a.name} (${a.mime})]`)
@@ -500,7 +334,6 @@ Yadda saxla: Sən SmartLife platformasının mehriban, köməkçi AI-sısan. Pla
         }),
       ];
 
-      // Groq API-yə sorğu at
       const response = await fetch(GROQ_API_URL, {
         method: "POST",
         headers: {
@@ -508,7 +341,7 @@ Yadda saxla: Sən SmartLife platformasının mehriban, köməkçi AI-sısan. Pla
           Authorization: `Bearer ${GROQ_API_KEY}`,
         },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile", // Yeni model (llama-3.1-70b-versatile-ın davamçısı)
+          model: "llama-3.3-70b-versatile",
           messages: messages,
           temperature: 0.7,
           max_tokens: 2048,
@@ -520,16 +353,15 @@ Yadda saxla: Sən SmartLife platformasının mehriban, köməkçi AI-sısan. Pla
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.error?.message || 
+          errorData.error?.message ||
           `Groq API xətası: ${response.status} ${response.statusText}`
         );
       }
 
       const data = await response.json();
-      
-      // Groq API response struktur: { choices: [{ message: { content: "..." } }] }
+
       const assistantMessage = data.choices?.[0]?.message?.content;
-      
+
       if (!assistantMessage) {
         throw new Error("AI-dan cavab alınmadı");
       }
@@ -546,19 +378,17 @@ Yadda saxla: Sən SmartLife platformasının mehriban, köməkçi AI-sısan. Pla
       prev.map((c) =>
         c.id === activeChatId
           ? {
-              ...c,
-              messages: nextMessages,
-              subtitle: `Son mesaj: ${
-                nextMessages[nextMessages.length - 1]?.content?.slice(0, 30) || ""
+            ...c,
+            messages: nextMessages,
+            subtitle: `Son mesaj: ${nextMessages[nextMessages.length - 1]?.content?.slice(0, 30) || ""
               }…`,
-              updatedAt: new Date().toISOString(),
-            }
+            updatedAt: new Date().toISOString(),
+          }
           : c
       )
     );
   };
 
-  // Yeni chat yarat
   const createNewChat = () => {
     const newChatId = `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const newChat = {
@@ -567,31 +397,28 @@ Yadda saxla: Sən SmartLife platformasının mehriban, köməkçi AI-sısan. Pla
       subtitle: "Yeni söhbət başladı",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      messages: [{ 
-        role: "assistant", 
-        content: "Salam! 👋 Mən SmartChat - SmartLife platformasının AI köməkçisiyəm. Sizə platformanın bütün funksionallığı haqqında kömək edə bilərəm.\n\nNə ilə kömək edə bilərəm? 😊" 
+      messages: [{
+        role: "assistant",
+        content: "Salam! 👋 Mən SmartChat - SmartLife platformasının AI köməkçisiyəm. Sizə platformanın bütün funksionallığı haqqında kömək edə bilərəm.\n\nNə ilə kömək edə bilərəm? 😊"
       }],
     };
-    
+
     setChats((prev) => [newChat, ...prev]);
     setActiveChatId(newChatId);
     if (isMobile) setMobileView("chat");
   };
 
-  // Chat sil
   const deleteChat = (chatId) => {
     if (chats.length <= 1) {
-      // Son chat-i silmək olmaz, yeni default chat yarat
       const defaultChats = getDefaultChats();
       setChats(defaultChats);
       setActiveChatId(defaultChats[0].id);
       return;
     }
-    
+
     setChats((prev) => {
       const filtered = prev.filter((c) => c.id !== chatId);
       if (activeChatId === chatId) {
-        // Silinən chat aktivdirsə, ilk chat-ə keç
         setActiveChatId(filtered[0]?.id || "support");
       }
       return filtered;
@@ -640,7 +467,6 @@ Yadda saxla: Sən SmartLife platformasının mehriban, köməkçi AI-sısan. Pla
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // eyni faylı təkrar seçmək üçün
     e.target.value = "";
 
     const url = URL.createObjectURL(file);
@@ -704,7 +530,6 @@ Yadda saxla: Sən SmartLife platformasının mehriban, köməkçi AI-sısan. Pla
       <AnimatePresence>
         {openChat && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -716,7 +541,6 @@ Yadda saxla: Sən SmartLife platformasının mehriban, köməkçi AI-sısan. Pla
               }}
             />
 
-            {/* Panel */}
             <motion.aside
               ref={panelRef}
               initial={
@@ -737,9 +561,8 @@ Yadda saxla: Sən SmartLife platformasının mehriban, köməkçi AI-sısan. Pla
                 overscroll-contain backdrop-blur-sm
                 ${isMobile
                   ? "inset-0 w-full h-full"
-                  : `inset-y-0 ${
-                      sidenavPosition === "right" ? "left-0 border-r" : "right-0 border-l"
-                    } w-[720px]`
+                  : `inset-y-0 ${sidenavPosition === "right" ? "left-0 border-r" : "right-0 border-l"
+                  } w-[720px]`
                 }
               `}
               style={{
@@ -749,7 +572,6 @@ Yadda saxla: Sən SmartLife platformasının mehriban, köməkçi AI-sısan. Pla
                 transform: isMobile && vv.offsetTop ? `translateY(${vv.offsetTop}px)` : undefined,
               }}
             >
-              {/* HEADER */}
               <div className="relative px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-gradient-to-r from-red-50 via-red-50 to-red-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
                 <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 via-red-500/5 to-red-500/5 dark:from-red-500/10 dark:via-red-500/10 dark:to-red-500/10" />
                 <div className="relative flex items-center gap-3">
@@ -808,15 +630,12 @@ Yadda saxla: Sən SmartLife platformasının mehriban, köməkçi AI-sısan. Pla
                 </IconButton>
               </div>
 
-              {/* BODY */}
               <div className="flex-1 min-h-0 overflow-hidden bg-gradient-to-b from-gray-50/80 via-white to-gray-50/80 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
-                {/* DESKTOP: split layout */}
                 {!isMobile && (
                   <div className="h-full min-h-0 grid grid-cols-[260px_1fr]" style={{ maxHeight: "100%" }}>
-                    {/* LEFT: history */}
                     <div
                       className="border-r border-gray-200 dark:border-gray-800 p-4 overflow-y-auto custom-sidenav-scrollbar overscroll-contain bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm"
-                      style={{ 
+                      style={{
                         WebkitOverflowScrolling: "touch",
                         overflowY: "auto",
                         overscrollBehavior: "contain",
@@ -854,10 +673,9 @@ Yadda saxla: Sən SmartLife platformasının mehriban, köməkçi AI-sısan. Pla
                               whileTap={{ scale: 0.98 }}
                               className={`
                                 relative w-full rounded-2xl border transition-all duration-200 group
-                                ${
-                                  active
-                                    ? "bg-gradient-to-br from-red-600 to-red-700 text-white border-red-500 shadow-lg shadow-red-500/30"
-                                    : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 hover:border-red-300 dark:hover:border-red-700 hover:shadow-md"
+                                ${active
+                                  ? "bg-gradient-to-br from-red-600 to-red-700 text-white border-red-500 shadow-lg shadow-red-500/30"
+                                  : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 hover:border-red-300 dark:hover:border-red-700 hover:shadow-md"
                                 }
                               `}
                             >
@@ -885,11 +703,10 @@ Yadda saxla: Sən SmartLife platformasının mehriban, köməkçi AI-sısan. Pla
                                     e.stopPropagation();
                                     deleteChat(c.id);
                                   }}
-                                  className={`absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg ${
-                                    active
-                                      ? "text-white/80 hover:bg-white/20"
-                                      : "text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                  }`}
+                                  className={`absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg ${active
+                                    ? "text-white/80 hover:bg-white/20"
+                                    : "text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                    }`}
                                   title="Chat-i sil"
                                 >
                                   <XMarkIcon className="h-4 w-4" />
@@ -901,7 +718,6 @@ Yadda saxla: Sən SmartLife platformasının mehriban, köməkçi AI-sısan. Pla
                       </div>
                     </div>
 
-                    {/* RIGHT: chat */}
                     <ChatView
                       listRef={listRef}
                       inputRef={inputRef}
@@ -919,7 +735,6 @@ Yadda saxla: Sən SmartLife platformasının mehriban, köməkçi AI-sısan. Pla
                   </div>
                 )}
 
-                {/* MOBILE: list OR chat */}
                 {isMobile && (
                   <AnimatePresence mode="wait">
                     {mobileView === "list" ? (
@@ -930,7 +745,7 @@ Yadda saxla: Sən SmartLife platformasının mehriban, köməkçi AI-sısan. Pla
                         exit={{ opacity: 0, x: 10 }}
                         transition={{ duration: 0.15 }}
                         className="h-full p-4 overflow-y-auto custom-sidenav-scrollbar overscroll-contain"
-                        style={{ 
+                        style={{
                           WebkitOverflowScrolling: "touch",
                           overflowY: "auto",
                           overscrollBehavior: "contain",
@@ -968,10 +783,9 @@ Yadda saxla: Sən SmartLife platformasının mehriban, köməkçi AI-sısan. Pla
                                 whileTap={{ scale: 0.98 }}
                                 className={`
                                   relative w-full rounded-2xl border transition-all duration-200 group
-                                  ${
-                                    active
-                                      ? "bg-gradient-to-br from-blue-600 to-indigo-600 text-white border-blue-500 shadow-lg shadow-blue-500/30"
-                                      : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-md"
+                                  ${active
+                                    ? "bg-gradient-to-br from-blue-600 to-indigo-600 text-white border-blue-500 shadow-lg shadow-blue-500/30"
+                                    : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-md"
                                   }
                                 `}
                               >
@@ -1001,11 +815,10 @@ Yadda saxla: Sən SmartLife platformasının mehriban, köməkçi AI-sısan. Pla
                                       e.stopPropagation();
                                       deleteChat(c.id);
                                     }}
-                                    className={`absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg ${
-                                      active
-                                        ? "text-white/80 hover:bg-white/20"
-                                        : "text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                    }`}
+                                    className={`absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg ${active
+                                      ? "text-white/80 hover:bg-white/20"
+                                      : "text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                      }`}
                                     title="Chat-i sil"
                                   >
                                     <XMarkIcon className="h-4 w-4" />
@@ -1060,7 +873,6 @@ Yadda saxla: Sən SmartLife platformasının mehriban, köməkçi AI-sısan. Pla
   );
 }
 
-/* -------------------- Chat View (messages + composer) -------------------- */
 function ChatView({
   listRef,
   inputRef,
@@ -1078,14 +890,12 @@ function ChatView({
 }) {
   return (
     <div className="h-full flex flex-col" style={{ minHeight: 0, maxHeight: "100%" }}>
-      {/* Messages */}
       <div className="flex-1 overflow-hidden" style={{ minHeight: 0, maxHeight: "100%" }}>
         <div
           ref={listRef}
-          className={`h-full w-full overflow-y-auto custom-sidenav-scrollbar overscroll-contain ${
-            compact ? "px-4 py-4" : "px-6 py-6"
-          } space-y-3`}
-          style={{ 
+          className={`h-full w-full overflow-y-auto custom-sidenav-scrollbar overscroll-contain ${compact ? "px-4 py-4" : "px-6 py-6"
+            } space-y-3`}
+          style={{
             WebkitOverflowScrolling: "touch",
             overflowY: "auto",
             overflowX: "hidden",
@@ -1113,7 +923,6 @@ function ChatView({
         </div>
       </div>
 
-      {/* Error */}
       {error && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -1128,7 +937,6 @@ function ChatView({
         </motion.div>
       )}
 
-      {/* Composer */}
       <div
         className={`
           ${compact ? "px-4" : "px-6"}
@@ -1196,7 +1004,6 @@ function ChatView({
   );
 }
 
-/* -------------------- Bubble -------------------- */
 function ChatBubble({ role, text, attachments = [] }) {
   const isUser = role === "user";
 
@@ -1208,13 +1015,11 @@ function ChatBubble({ role, text, attachments = [] }) {
       className={`flex ${isUser ? "justify-end" : "justify-start"}`}
     >
       <div
-        className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm shadow-lg border ${
-          isUser
-            ? "bg-gradient-to-br from-red-600 to-red-700 text-white border-red-500 shadow-red-500/30"
-            : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 shadow-gray-200/50 dark:shadow-gray-900/50"
-        }`}
+        className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm shadow-lg border ${isUser
+          ? "bg-gradient-to-br from-red-600 to-red-700 text-white border-red-500 shadow-red-500/30"
+          : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700 shadow-gray-200/50 dark:shadow-gray-900/50"
+          }`}
       >
-        {/* attachments */}
         {attachments.length > 0 && (
           <div className="space-y-2 mb-2">
             {attachments.map((a, i) => {
@@ -1237,9 +1042,8 @@ function ChatBubble({ role, text, attachments = [] }) {
                       loading="lazy"
                     />
                     {a.name && (
-                      <div className={`px-3 py-1.5 text-[11px] bg-black/20 backdrop-blur-sm ${
-                        isUser ? "text-white/90" : "text-gray-700 dark:text-gray-300 bg-white/80 dark:bg-gray-800/80"
-                      }`}>
+                      <div className={`px-3 py-1.5 text-[11px] bg-black/20 backdrop-blur-sm ${isUser ? "text-white/90" : "text-gray-700 dark:text-gray-300 bg-white/80 dark:bg-gray-800/80"
+                        }`}>
                         {a.name}
                       </div>
                     )}
@@ -1247,7 +1051,6 @@ function ChatBubble({ role, text, attachments = [] }) {
                 );
               }
 
-              // non-image file
               return (
                 <motion.a
                   key={i}
@@ -1256,11 +1059,10 @@ function ChatBubble({ role, text, attachments = [] }) {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   whileHover={{ scale: 1.02 }}
-                  className={`block rounded-xl px-4 py-3 border transition-all shadow-sm hover:shadow-md ${
-                    isUser
-                      ? "border-white/30 bg-white/15 text-white hover:bg-white/20"
-                      : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
-                  }`}
+                  className={`block rounded-xl px-4 py-3 border transition-all shadow-sm hover:shadow-md ${isUser
+                    ? "border-white/30 bg-white/15 text-white hover:bg-white/20"
+                    : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}
                 >
                   <div className="flex items-center gap-2">
                     <PaperClipIcon className={`h-4 w-4 ${isUser ? "text-white/80" : "text-gray-500 dark:text-gray-400"}`} />
@@ -1277,7 +1079,6 @@ function ChatBubble({ role, text, attachments = [] }) {
           </div>
         )}
 
-        {/* text */}
         {text ? (
           <div className={`whitespace-pre-wrap leading-relaxed ${isUser ? "text-white" : "text-gray-900 dark:text-gray-100"}`}>
             {text}

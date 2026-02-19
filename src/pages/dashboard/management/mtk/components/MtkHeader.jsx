@@ -16,19 +16,17 @@ export function MtkHeader() {
     dispatch(clearSelectedMtk());
   };
   
-  // Gradient background
   const gradientStyle = colorCode 
     ? { background: getActiveGradient(0.9, 0.7) }
     : {
         background: `linear-gradient(to right, ${getRgba("#dc2626", 0.9)}, ${getRgba("#dc2626", 0.7)}, ${getRgba("#dc2626", 0.9)})`,
       };
   
-  // Border rəngi
   const borderColor = getRgba(0.3);
   
   return (
     <div 
-      className="relative w-full overflow-hidden rounded-xl shadow-lg p-6 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 mt-4"
+      className="relative w-full overflow-hidden rounded-xl shadow-lg p-3 sm:p-4 md:p-5 lg:p-6 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 mt-4 sm:mt-3 md:mt-4"
       style={{
         ...gradientStyle,
         border: `1px solid ${borderColor}`,
@@ -40,43 +38,42 @@ export function MtkHeader() {
         }}></div>
       </div>
       
-      <div className="relative flex items-center gap-4">
+      <div className="relative flex items-center gap-2 sm:gap-3 md:gap-4">
         <div className="flex-shrink-0">
           <div 
-            className="w-14 h-14 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/30 dark:border-gray-600/30"
+            className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-lg sm:rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/30 dark:border-gray-600/30"
             style={{
               backgroundColor: getRgba(0.2),
             }}
           >
-            <BuildingOfficeIcon className="h-8 w-8 text-white" />
+            <BuildingOfficeIcon className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-white" />
           </div>
         </div>
         
-        <div className="flex-1">
-          <div className="flex items-center justify-between">
-            <div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex-1 min-w-0">
               <Typography 
                 variant="h4" 
-                className="text-white font-bold mb-1 flex items-center gap-2"
+                className="text-white font-bold mb-0.5 sm:mb-1 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-base sm:text-lg md:text-xl lg:text-2xl"
               >
-                MTK İdarəetməsi
+                <span className="whitespace-nowrap">MTK İdarəetməsi</span>
                 {selectedMtk && (
-                  <span className="text-sm font-normal text-white/80">
+                  <span className="text-xs sm:text-sm font-normal text-white/80 truncate sm:whitespace-normal">
                     ({selectedMtk.name})
                   </span>
                 )}
               </Typography>
-              <Typography className="text-white/90 dark:text-gray-300 text-sm font-medium">
+              <Typography className="text-white/90 dark:text-gray-300 text-xs sm:text-sm font-medium truncate sm:whitespace-normal">
                 MTK siyahısı, yarat / redaktə et / sil / seç
               </Typography>
             </div>
-            
           </div>
         </div>
       </div>
       
-      <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16"></div>
-      <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full -ml-12 -mb-12"></div>
+      <div className="absolute top-0 right-0 w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 bg-white/5 rounded-full -mr-10 sm:-mr-12 md:-mr-16 -mt-10 sm:-mt-12 md:-mt-16"></div>
+      <div className="absolute bottom-0 left-0 w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-white/5 rounded-full -ml-8 sm:-ml-10 md:-ml-12 -mb-8 sm:-mb-10 md:-mb-12"></div>
     </div>
   );
 }

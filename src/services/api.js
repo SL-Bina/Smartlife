@@ -61,7 +61,7 @@ export const authAPI = {
   login: async (identifier, password) => {
     try {
       const response = await api.post("/auth/login", {
-        email: identifier, 
+        login: identifier, 
         password,
       });
       return response.data;

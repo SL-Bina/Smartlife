@@ -4,7 +4,7 @@ import { Map, Marker } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { CustomInput } from "@/components/ui/CustomInput";
 import { CustomSelect } from "@/components/ui/CustomSelect";
-import { BuildingOffice2Icon, XMarkIcon, MapPinIcon } from "@heroicons/react/24/outline";
+import { BuildingOffice2Icon, XMarkIcon, MapPinIcon, PhotoIcon } from "@heroicons/react/24/outline";
 import DynamicToast from "@/components/DynamicToast";
 import complexLookupsAPI from "../../api/lookups";
 
@@ -28,10 +28,119 @@ export function ComplexFormModal({ open, mode = "create", onClose, form, onSubmi
   const [mtks, setMtks] = useState([]);
   const [modules, setModules] = useState([]);
   const [loadingLookups, setLoadingLookups] = useState(false);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [imagePreviews, setImagePreviews] = useState([]);
 
   const showToast = (type, message, title = "") => {
     setToast({ open: true, type, message, title });
   };
+
+  // Convert file to base64
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  // Handle logo upload
+  const handleLogoChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showToast("error", "Yalnız şəkil faylları qəbul edilir", "Xəta");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      showToast("error", "Şəkil ölçüsü 5MB-dan böyük ola bilməz", "Xəta");
+      return;
+    }
+
+    try {
+      const base64 = await fileToBase64(file);
+      form?.updateField("meta.logo", base64);
+      setLogoPreview(base64);
+      showToast("success", "Logo uğurla yükləndi", "Uğurlu");
+    } catch (error) {
+      showToast("error", "Logo yüklənərkən xəta baş verdi", "Xəta");
+    }
+  };
+
+  // Handle multiple images upload
+  const handleImageChange = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    const validFiles = [];
+    const errors = [];
+
+    for (const file of files) {
+      if (!file.type.startsWith('image/')) {
+        errors.push(`${file.name}: Yalnız şəkil faylları qəbul edilir`);
+        continue;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        errors.push(`${file.name}: Şəkil ölçüsü 5MB-dan böyük ola bilməz`);
+        continue;
+      }
+
+      validFiles.push(file);
+    }
+
+    if (errors.length > 0) {
+      showToast("error", errors.join(", "), "Xəta");
+    }
+
+    if (validFiles.length === 0) return;
+
+    try {
+      const base64Promises = validFiles.map(file => fileToBase64(file));
+      const base64Images = await Promise.all(base64Promises);
+      
+      const currentImages = form?.formData?.meta?.images || [];
+      const newImages = [...currentImages, ...base64Images];
+      
+      form?.updateField("meta.images", newImages);
+      setImagePreviews(newImages);
+      showToast("success", `${validFiles.length} şəkil uğurla yükləndi`, "Uğurlu");
+    } catch (error) {
+      showToast("error", "Şəkillər yüklənərkən xəta baş verdi", "Xəta");
+    }
+  };
+
+  // Remove logo
+  const handleRemoveLogo = () => {
+    form?.updateField("meta.logo", "");
+    setLogoPreview(null);
+  };
+
+  // Remove image by index
+  const handleRemoveImage = (index) => {
+    const currentImages = form?.formData?.meta?.images || [];
+    const newImages = currentImages.filter((_, i) => i !== index);
+    form?.updateField("meta.images", newImages);
+    setImagePreviews(newImages);
+  };
+
+  // Load previews when form data changes
+  useEffect(() => {
+    if (form?.formData?.meta?.logo) {
+      setLogoPreview(form.formData.meta.logo);
+    } else {
+      setLogoPreview(null);
+    }
+
+    if (form?.formData?.meta?.images && Array.isArray(form.formData.meta.images)) {
+      setImagePreviews(form.formData.meta.images);
+    } else {
+      setImagePreviews([]);
+    }
+  }, [form?.formData?.meta?.logo, form?.formData?.meta?.images]);
 
   const isEdit = mode === "edit";
   const title = isEdit ? "Complex Redaktə et" : "Yeni Complex Əlavə Et";
@@ -62,12 +171,15 @@ export function ComplexFormModal({ open, mode = "create", onClose, form, onSubmi
     }
   }, [open]);
 
-  // Set mtk_id from prop if provided
+  // Set mtk_id from prop if provided (only for create mode)
   useEffect(() => {
-    if (open && mtkId && !form?.formData?.mtk_id) {
-      form?.updateField("mtk_id", mtkId);
+    if (open && !isEdit && mtkId && form?.updateField) {
+      const currentMtkId = form?.formData?.mtk_id;
+      if (!currentMtkId || currentMtkId !== mtkId) {
+        form.updateField("mtk_id", mtkId);
+      }
     }
-  }, [open, mtkId, form]);
+  }, [open, isEdit, mtkId, form?.formData?.mtk_id]);
 
   const errorText = useMemo(() => {
     if (!form?.formData?.name?.trim()) return "Ad mütləqdir";
@@ -514,6 +626,121 @@ export function ComplexFormModal({ open, mode = "create", onClose, form, onSubmi
               )}
             </div>
 
+            {/* Logo və Şəkil */}
+            <div>
+              <Typography variant="h6" className="text-gray-900 dark:text-white mb-4 font-semibold flex items-center gap-2">
+                <div className="w-1 h-6 rounded-full" style={{ backgroundColor: ACTIVE_COLOR }}></div>
+                Logo və Şəkil
+              </Typography>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Logo */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Logo
+                  </label>
+                  {logoPreview ? (
+                    <div className="relative">
+                      <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
+                        <img
+                          src={logoPreview}
+                          alt="Logo"
+                          className="w-full h-40 object-contain"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleRemoveLogo}
+                        className="mt-2 w-full py-2 px-4 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors"
+                      >
+                        Sil
+                      </button>
+                      <label className="mt-2 block">
+                        <span className="block w-full py-2 px-4 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium text-center cursor-pointer transition-colors">
+                          Dəyişdir
+                        </span>
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={handleLogoChange}
+                        />
+                      </label>
+                    </div>
+                  ) : (
+                    <label className="block">
+                      <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 transition-colors bg-gray-50 dark:bg-gray-800">
+                        <PhotoIcon className="h-10 w-10 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Logo yüklə
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          PNG, JPG, GIF (MAX. 5MB)
+                        </p>
+                      </div>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleLogoChange}
+                      />
+                    </label>
+                  )}
+                </div>
+
+                {/* Şəkillər */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Şəkillər
+                  </label>
+                  
+                  {imagePreviews.length > 0 && (
+                    <div className="mb-3">
+                      <div className="grid grid-cols-3 gap-2">
+                        {imagePreviews.map((image, index) => (
+                          <div key={index} className="relative">
+                            <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden aspect-square">
+                              <img
+                                src={image}
+                                alt={`Şəkil ${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveImage(index)}
+                              className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-lg"
+                            >
+                              <XMarkIcon className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  <label className="block">
+                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 transition-colors bg-gray-50 dark:bg-gray-800">
+                      <PhotoIcon className="h-10 w-10 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Şəkillər yüklə
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Birdən çox seçə bilərsiniz (MAX. 5MB hər biri)
+                      </p>
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImageChange}
+                    />
+                  </label>
+                </div>
+              </div>
+            </div>
+
             {/* Əlavə Məlumatlar */}
             <div>
               <Typography variant="h6" className="text-gray-900 dark:text-white mb-4 font-semibold flex items-center gap-2">
@@ -524,8 +751,7 @@ export function ComplexFormModal({ open, mode = "create", onClose, form, onSubmi
                 label="Təsvir"
                 value={form?.formData?.meta?.desc || ""}
                 onChange={(e) => form?.updateField("meta.desc", e.target.value)}
-                multiline
-                rows={3}
+                textarea
               />
 
               <CustomInput

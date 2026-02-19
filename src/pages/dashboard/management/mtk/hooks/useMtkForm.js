@@ -11,6 +11,8 @@ const initialFormData = {
     phone: "",
     email: "",
     website: "",
+    logo: "",
+    images: [],
   },
   status: "active",
 };
@@ -62,6 +64,8 @@ export function useMtkForm() {
         phone: mtk.meta?.phone || "",
         email: mtk.meta?.email || "",
         website: mtk.meta?.website || "",
+        logo: mtk.meta?.logo || "",
+        images: Array.isArray(mtk.meta?.images) ? mtk.meta.images : (mtk.meta?.image ? [mtk.meta.image] : []),
       },
       status: mtk.status || "active",
     });

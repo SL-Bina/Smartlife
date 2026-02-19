@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useMaterialTailwindController } from "@/store/hooks/useMaterialTailwind";
 import { setSelectedMtk, loadMtks, loadMtkById } from "@/store/slices/mtkSlice";
 import { MtkHeader } from "./components/MtkHeader";
-import { MtkActions } from "./components/MtkActions";
+import { ManagementActions, ENTITY_LEVELS } from "@/components/management/ManagementActions";
 import { MtkTable } from "./components/MtkTable";
 import { MtkPagination } from "./components/MtkPagination";
 import { MtkFormModal } from "./components/modals/MtkFormModal";
@@ -143,11 +143,11 @@ export default function MtkPage() {
     <div className="space-y-6">
       <MtkHeader />
 
-      <MtkActions
+      <ManagementActions
+        entityLevel={ENTITY_LEVELS.MTK}
         search={search}
         onCreateClick={handleCreate}
         onSearchClick={() => setSearchModalOpen(true)}
-        onNameSearchChange={handleNameSearchChange}
         onApplyNameSearch={handleApplyNameSearch}
         onStatusChange={handleStatusChange}
         onRemoveFilter={handleRemoveFilter}

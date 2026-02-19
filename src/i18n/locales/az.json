@@ -74,7 +74,8 @@
     "electronicDocuments": "Elektron sənədlər",
     "buildingManagement": "idarə etmə",
     "permissions": "Hüquqlar",
-    "profile": "Profil"
+    "profile": "Profil",
+    "users":"İstifadəçilər"
   },
   "buttons": {
     "clear": "Təmizlə",
@@ -2619,6 +2620,51 @@
     "securitySettings": "Təhlükəsizlik Parametrləri",
     "securityDescription": "Şifrə dəyişdirmək üçün Profil səhifəsinə keçin",
     "goToProfile": "Profili Dəyişdir"
+  },
+  "users": {
+    "add": {
+      "title": "Yeni İstifadəçi Əlavə Et",
+      "editTitle": "İstifadəçi Redaktə et",
+      "subtitle": "Yeni istifadəçi üçün məlumatları doldurun",
+      "basicInfo": "Əsas Məlumatlar",
+      "name": "Ad Soyad",
+      "username": "İstifadəçi adı",
+      "email": "E-mail",
+      "phone": "Telefon",
+      "birthday": "Doğum tarixi",
+      "personalCode": "Şəxsi kod",
+      "password": "Şifrə",
+      "passwordConfirmation": "Şifrə təsdiqi",
+      "roleAndType": "Rol və Tip",
+      "role": "Rol",
+      "selectRole": "Rol seçin",
+      "type": "Tip",
+      "selectType": "Tip seçin",
+      "typeUser": "İstifadəçi",
+      "typeOrganization": "Təşkilat",
+      "modules": "Modullar",
+      "mtk": "MTK",
+      "complex": "Kompleks",
+      "permissions": "İcazələr",
+      "profilePhoto": "Profil şəkli",
+      "selectPhoto": "Şəkil seç",
+      "changePhoto": "Şəkil dəyiş",
+      "maxSize": "Maksimum 5MB",
+      "save": "Yadda saxla",
+      "formNotReady": "Form hazır deyil",
+      "errors": {
+        "nameRequired": "Ad mütləqdir",
+        "usernameRequired": "İstifadəçi adı mütləqdir",
+        "emailRequired": "E-mail mütləqdir",
+        "phoneRequired": "Telefon mütləqdir",
+        "passwordRequired": "Şifrə mütləqdir",
+        "passwordsMismatch": "Şifrələr uyğun gəlmir",
+        "roleRequired": "Rol seçilməlidir",
+        "photoSizeError": "Şəkil ölçüsü 5MB-dan böyük ola bilməz",
+        "error": "Xəta",
+        "errorOccurred": "Xəta baş verdi"
+      }
+    }
   },
   "configurator": {
     "title": "Dashboard Konfiquratoru",

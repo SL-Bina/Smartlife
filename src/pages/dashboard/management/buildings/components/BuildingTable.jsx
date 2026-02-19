@@ -1,7 +1,9 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
-import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon, PencilIcon, TrashIcon, RectangleStackIcon } from "@heroicons/react/24/outline";
+import { Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem, Tooltip, Card, CardBody } from "@material-tailwind/react";
+import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon, PencilIcon, TrashIcon, RectangleStackIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+
+const DEFAULT_COLOR = "#9333ea"; // Purple for buildings
 
 export function BuildingTable({ items = [], loading, onEdit, onDelete, onSelect, selectedBuildingId }) {
   const navigate = useNavigate();
@@ -73,14 +75,29 @@ export function BuildingTable({ items = [], loading, onEdit, onDelete, onSelect,
     );
   }
 
+  const getRgbaColor = (hex, opacity = 1) => {
+    if (!hex) return null;
+    const hexClean = hex.replace("#", "");
+    const r = parseInt(hexClean.substring(0, 2), 16);
+    const g = parseInt(hexClean.substring(2, 4), 16);
+    const b = parseInt(hexClean.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
+
   return (
-    <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg border border-white/20 dark:border-gray-700/50 overflow-hidden">
-      <div className="overflow-x-auto">
+    <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg border border-white/20 dark:border-gray-700/50 relative z-0">
+      {/* Desktop Table View */}
+      <div className="hidden lg:block overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="bg-gray-50/80 dark:bg-gray-900/50 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">
+              <th className="px-4 xl:px-6 py-3 xl:py-4 text-left">
+                <Typography variant="small" className="font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider text-xs">
+                  Seç
+                </Typography>
+              </th>
               <th
-                className="px-6 py-4 text-left cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/70 transition-colors"
+                className="px-4 xl:px-6 py-3 xl:py-4 text-left cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/70 transition-colors"
                 onClick={() => handleSort("id")}
               >
                 <div className="flex items-center gap-2">
@@ -101,18 +118,18 @@ export function BuildingTable({ items = [], loading, onEdit, onDelete, onSelect,
                   <SortIcon columnKey="name" />
                 </div>
               </th>
-              <th className="px-6 py-4 text-left">
+              <th className="px-4 xl:px-6 py-3 xl:py-4 text-left">
                 <Typography variant="small" className="font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider text-xs">
                   Complex
                 </Typography>
               </th>
-              <th className="px-6 py-4 text-left">
+              <th className="px-4 xl:px-6 py-3 xl:py-4 text-left">
                 <Typography variant="small" className="font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider text-xs">
                   Təsvir
                 </Typography>
               </th>
               <th
-                className="px-6 py-4 text-left cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/70 transition-colors"
+                className="px-4 xl:px-6 py-3 xl:py-4 text-left cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/70 transition-colors"
                 onClick={() => handleSort("status")}
               >
                 <div className="flex items-center gap-2">
@@ -122,7 +139,7 @@ export function BuildingTable({ items = [], loading, onEdit, onDelete, onSelect,
                   <SortIcon columnKey="status" />
                 </div>
               </th>
-              <th className="px-6 py-4 text-left">
+              <th className="px-4 xl:px-6 py-3 xl:py-4 text-left">
                 <Typography variant="small" className="font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider text-xs">
                   Əməliyyatlar
                 </Typography>
@@ -131,52 +148,93 @@ export function BuildingTable({ items = [], loading, onEdit, onDelete, onSelect,
           </thead>
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
             {sortedItems.map((item, index) => {
+              const itemColorCode = item.meta?.color_code || DEFAULT_COLOR;
+              const hoverColor = getRgbaColor(itemColorCode, 0.08);
+              const isSelected = selectedBuildingId === item.id;
+              
               return (
                 <tr
                   key={item.id ?? `building-${index}`}
-                  className="transition-all duration-200 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                  className="transition-all duration-200 cursor-pointer"
                   onClick={() => onSelect?.(item)}
+                  onMouseEnter={(e) => {
+                    if (hoverColor && !isSelected) {
+                      e.currentTarget.style.backgroundColor = hoverColor;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.backgroundColor = '';
+                    } else {
+                      e.currentTarget.style.backgroundColor = getRgbaColor(itemColorCode, 0.15);
+                    }
+                  }}
                   style={{
-                    ...(selectedBuildingId === item.id ? { 
-                      backgroundColor: 'rgba(147, 51, 234, 0.15)', // Purple for buildings
+                    ...(isSelected && itemColorCode ? { 
+                      backgroundColor: getRgbaColor(itemColorCode, 0.15),
                     } : {}),
                   }}
                 >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold font-mono bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                  <td className="px-4 xl:px-6 py-3 xl:py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center justify-center">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelect?.(item);
+                        }}
+                        className={`w-5 h-5 xl:w-6 xl:h-6 rounded-full flex items-center justify-center transition-all ${
+                          isSelected
+                            ? "bg-purple-600 dark:bg-purple-500 shadow-md"
+                            : "bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
+                        }`}
+                      >
+                        {isSelected && (
+                          <CheckCircleIcon className="h-3 w-3 xl:h-4 xl:w-4 text-white" />
+                        )}
+                      </button>
+                    </div>
+                  </td>
+                  <td className="px-4 xl:px-6 py-3 xl:py-4 whitespace-nowrap">
+                    <span
+                      className="inline-flex items-center px-2 xl:px-2.5 py-0.5 xl:py-1 rounded-md text-xs font-semibold font-mono"
+                      style={{
+                        backgroundColor: item.meta?.color_code ? getRgbaColor(item.meta.color_code, 0.1) : 'rgba(0, 0, 0, 0.05)',
+                        color: item.meta?.color_code || '#6b7280',
+                      }}
+                    >
                       #{item.id ?? "—"}
                     </span>
                   </td>
-                  <td className="px-6 py-4">
-                    <Typography variant="small" className="font-semibold text-gray-900 dark:text-gray-100">
+                  <td className="px-4 xl:px-6 py-3 xl:py-4">
+                    <Typography variant="small" className="font-semibold text-gray-900 dark:text-gray-100 text-xs xl:text-sm">
                       {item.name ?? "—"}
                     </Typography>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 xl:px-6 py-3 xl:py-4">
                     {item.complex ? (
-                      <Typography variant="small" className="text-gray-700 dark:text-gray-300">
+                      <Typography variant="small" className="text-gray-700 dark:text-gray-300 text-xs xl:text-sm">
                         {item.complex.name || `Complex #${item.complex.id}`}
                       </Typography>
                     ) : (
-                      <Typography variant="small" className="text-gray-400 dark:text-gray-500">
+                      <Typography variant="small" className="text-gray-400 dark:text-gray-500 text-xs xl:text-sm">
                         —
                       </Typography>
                     )}
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 xl:px-6 py-3 xl:py-4">
                     {item.meta?.desc ? (
-                      <Typography variant="small" className="text-gray-700 dark:text-gray-300 line-clamp-2 max-w-[300px]">
+                      <Typography variant="small" className="text-gray-700 dark:text-gray-300 line-clamp-2 max-w-[200px] xl:max-w-[300px] text-xs xl:text-sm">
                         {item.meta.desc}
                       </Typography>
                     ) : (
-                      <Typography variant="small" className="text-gray-400 dark:text-gray-500">
+                      <Typography variant="small" className="text-gray-400 dark:text-gray-500 text-xs xl:text-sm">
                         —
                       </Typography>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 xl:px-6 py-3 xl:py-4 whitespace-nowrap">
                     <span
-                      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+                      className={`inline-flex items-center px-2 xl:px-2.5 py-0.5 xl:py-1 rounded-full text-xs font-semibold ${
                         item.status === "active"
                           ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                           : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
@@ -185,18 +243,28 @@ export function BuildingTable({ items = [], loading, onEdit, onDelete, onSelect,
                       {item.status === "active" ? "Aktiv" : "Qeyri-aktiv"}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                    <Menu>
+                  <td className="px-4 xl:px-6 py-3 xl:py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                    <Menu placement="bottom-end">
                       <MenuHandler>
                         <IconButton 
                           variant="text" 
                           size="sm" 
                           className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                         >
-                          <EllipsisVerticalIcon className="h-5 w-5" />
+                          <EllipsisVerticalIcon className="h-4 w-4 xl:h-5 xl:w-5" />
                         </IconButton>
                       </MenuHandler>
-                      <MenuList className="min-w-[160px]">
+                      <MenuList className="min-w-[160px] !z-[9999]">
+                        <MenuItem 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelect?.(item);
+                          }} 
+                          className="flex items-center gap-2"
+                        >
+                          <CheckCircleIcon className="h-4 w-4" />
+                          Seç
+                        </MenuItem>
                         <MenuItem 
                           onClick={(e) => {
                             e.stopPropagation();
@@ -235,6 +303,157 @@ export function BuildingTable({ items = [], loading, onEdit, onDelete, onSelect,
             })}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile/Tablet Card View */}
+      <div className="lg:hidden space-y-3 p-3 sm:p-4">
+        {sortedItems.map((item, index) => {
+          const itemColorCode = item.meta?.color_code || DEFAULT_COLOR;
+          const isSelected = selectedBuildingId === item.id;
+          
+          return (
+            <Card
+              key={item.id ?? `building-${index}`}
+              className={`transition-all duration-200 cursor-pointer ${
+                isSelected ? "ring-2 ring-offset-2" : ""
+              }`}
+              onClick={() => onSelect?.(item)}
+              style={{
+                ...(isSelected && itemColorCode ? { 
+                  backgroundColor: getRgbaColor(itemColorCode, 0.15),
+                  ringColor: itemColorCode,
+                } : {}),
+              }}
+            >
+              <CardBody className="p-4 sm:p-5">
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelect?.(item);
+                      }}
+                      className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center transition-all flex-shrink-0 ${
+                        isSelected
+                          ? "bg-purple-600 dark:bg-purple-500 shadow-md"
+                          : "bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
+                      }`}
+                    >
+                      {isSelected && (
+                        <CheckCircleIcon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                      )}
+                    </button>
+                    {item.meta?.color_code && (
+                      <div
+                        className="w-3 h-3 rounded-full border-2 border-white dark:border-gray-800 shadow-sm flex-shrink-0"
+                        style={{ backgroundColor: item.meta.color_code }}
+                      />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <Typography variant="small" className="font-semibold text-gray-900 dark:text-gray-100 text-sm sm:text-base">
+                        {item.name ?? "—"}
+                      </Typography>
+                      {item.meta?.desc && (
+                        <Typography variant="small" className="text-gray-500 dark:text-gray-400 text-xs mt-0.5 line-clamp-1">
+                          {item.meta.desc}
+                        </Typography>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                    <span
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${
+                        item.status === "active"
+                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                          : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                      }`}
+                    >
+                      {item.status === "active" ? "Aktiv" : "Qeyri-aktiv"}
+                    </span>
+                    <Menu placement="bottom-end">
+                      <MenuHandler>
+                        <IconButton 
+                          variant="text" 
+                          size="sm" 
+                          className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        >
+                          <EllipsisVerticalIcon className="h-5 w-5" />
+                        </IconButton>
+                      </MenuHandler>
+                      <MenuList className="min-w-[160px] !z-[9999]">
+                        <MenuItem 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSelect?.(item);
+                          }} 
+                          className="flex items-center gap-2"
+                        >
+                          <CheckCircleIcon className="h-4 w-4" />
+                          Seç
+                        </MenuItem>
+                        <MenuItem 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit?.(item);
+                          }} 
+                          className="flex items-center gap-2"
+                        >
+                          <PencilIcon className="h-4 w-4" />
+                          Redaktə et
+                        </MenuItem>
+                        <MenuItem 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/dashboard/management/blocks?building_id=${item.id}`);
+                          }} 
+                          className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400"
+                        >
+                          <RectangleStackIcon className="h-4 w-4" />
+                          Bloklara keç
+                        </MenuItem>
+                        <MenuItem 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete?.(item);
+                          }} 
+                          className="flex items-center gap-2 text-red-600 dark:text-red-400"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                          Sil
+                        </MenuItem>
+                      </MenuList>
+                    </Menu>
+                  </div>
+                </div>
+
+                <div className="space-y-2 sm:space-y-2.5">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold font-mono flex-shrink-0"
+                      style={{
+                        backgroundColor: item.meta?.color_code ? getRgbaColor(item.meta.color_code, 0.1) : 'rgba(0, 0, 0, 0.05)',
+                        color: item.meta?.color_code || '#6b7280',
+                      }}
+                    >
+                      ID: #{item.id ?? "—"}
+                    </span>
+                    {item.complex && (
+                      <Typography variant="small" className="text-gray-700 dark:text-gray-300 text-xs sm:text-sm">
+                        Complex: {item.complex.name || `#${item.complex.id}`}
+                      </Typography>
+                    )}
+                  </div>
+
+                  {item.meta?.desc && (
+                    <Typography variant="small" className="text-gray-700 dark:text-gray-300 text-xs sm:text-sm line-clamp-2">
+                      {item.meta.desc}
+                    </Typography>
+                  )}
+                </div>
+              </CardBody>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );

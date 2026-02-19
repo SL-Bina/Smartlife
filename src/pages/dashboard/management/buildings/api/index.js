@@ -76,11 +76,16 @@ export const buildingsAPI = {
       // Build URLSearchParams manually to ensure complex_ids[] format
       const searchParams = new URLSearchParams();
       Object.keys(formattedParams).forEach((key) => {
-        if (key === 'complex_ids' && Array.isArray(formattedParams[key])) {
+        // Array parameter: complex_ids[]
+        if (key === 'complex_ids' && Array.isArray(formattedParams[key]) && formattedParams[key].length > 0) {
           formattedParams[key].forEach((id) => {
-            searchParams.append(`${key}[]`, String(id));
+            if (id !== null && id !== undefined && id !== '') {
+              searchParams.append(`${key}[]`, String(id));
+            }
           });
-        } else if (formattedParams[key] !== null && formattedParams[key] !== undefined && formattedParams[key] !== '') {
+        } 
+        // Single value parameters: name, status
+        else if (formattedParams[key] !== null && formattedParams[key] !== undefined && formattedParams[key] !== '') {
           searchParams.append(key, String(formattedParams[key]));
         }
       });

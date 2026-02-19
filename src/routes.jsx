@@ -33,6 +33,7 @@ import ComplexesPage from "./pages/dashboard/management/complexes";
 import BuildingsPage from "./pages/dashboard/management/buildings";
 import BlocksPage from "./pages/dashboard/management/blocks";
 import PropertiesPage from "./pages/dashboard/management/properties";
+import ResidentsPage from "./pages/dashboard/management/residents";
 import InvoicesPage from "./pages/dashboard/finance/invoices";
 import PaymentHistoryPage from "./pages/dashboard/finance/payment-history";
 import ReportsPage from "./pages/dashboard/finance/reports";
@@ -249,6 +250,14 @@ export const routes = [
             element: <PropertiesPage />,
             moduleName: "property",
             moduleId: 7,
+          },
+          {
+            icon: <UsersIcon {...icon} />,
+            name: "sidebar.residents",
+            path: "/management/residents",
+            element: <ResidentsPage />,
+            moduleName: "resident",
+            moduleId: 8,
           },
         ],
       },

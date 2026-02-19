@@ -215,10 +215,12 @@ export function PropertyActions({
     ];
   }, [buildingId, filteredBlocks, blocks]);
 
-  const displayMtkId = mtkId || selectedMtkId;
-  const displayComplexId = complexId || selectedComplexId;
-  const displayBuildingId = buildingId || selectedBuildingId;
-  const displayBlockId = blockId || selectedBlockId;
+  // Cookie'den gelen değerler öncelikli (refresh'te kaybolmaz), yoksa URL'den gelen değerler
+  // null veya undefined kontrolü yapıyoruz
+  const displayMtkId = selectedMtkId !== null && selectedMtkId !== undefined ? selectedMtkId : (mtkId || null);
+  const displayComplexId = selectedComplexId !== null && selectedComplexId !== undefined ? selectedComplexId : (complexId || null);
+  const displayBuildingId = selectedBuildingId !== null && selectedBuildingId !== undefined ? selectedBuildingId : (buildingId || null);
+  const displayBlockId = selectedBlockId !== null && selectedBlockId !== undefined ? selectedBlockId : (blockId || null);
   
   const itemsPerPageOptions = useMemo(() => {
     if (totalItems < 25) {
@@ -254,10 +256,11 @@ export function PropertyActions({
   }, [totalItems]);
 
   return (
-    <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-6 space-y-5">
-      {/* Mobile Layout */}
-      <div className="flex flex-col gap-4 md:hidden">
-        <div className="flex gap-3">
+    <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-3 sm:p-4 md:p-5 lg:p-6 relative z-10 overflow-visible">
+      {/* Mobile Layout (< 768px) */}
+      <div className="flex flex-col gap-3 sm:gap-4 md:hidden">
+        {/* Search and Status Row */}
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <Input
             label="Axtarış (ada görə)"
             value={localName}
@@ -267,12 +270,12 @@ export function PropertyActions({
             className="flex-1 !bg-white/90 dark:!bg-gray-900/90"
             labelProps={{ className: "dark:text-gray-300" }}
           />
-          <div className="w-[140px]">
+          <div className="w-full sm:w-[140px] flex-shrink-0 relative z-20 overflow-visible">
             <Select
               label="Status"
               value={search?.status || ""}
               onChange={(value) => onStatusChange?.(value)}
-              className="!bg-white/90 dark:!bg-gray-900/90"
+              className="!bg-white/90 dark:!bg-gray-900/90 [&>div>div]:!z-[9999]"
               labelProps={{ className: "dark:text-gray-300" }}
             >
               {statusOptions.map((opt) => (
@@ -284,7 +287,9 @@ export function PropertyActions({
           </div>
         </div>
 
-        <div className="w-full">
+        {/* MTK, Complex, Building and Block Selects - grouped with less gap */}
+        <div className="flex flex-col gap-2">
+          <div className="w-full relative z-20 overflow-visible">
           <Select
             label="MTK"
             value={displayMtkId ? String(displayMtkId) : ""}
@@ -296,7 +301,7 @@ export function PropertyActions({
                 onBlockChange?.("");
               }
             }}
-            className="!bg-white/90 dark:!bg-gray-900/90"
+              className="!bg-white/90 dark:!bg-gray-900/90 [&>div>div]:!z-[9999]"
             labelProps={{ className: "dark:text-gray-300" }}
           >
             {mtkOptions.map((opt) => (
@@ -307,7 +312,7 @@ export function PropertyActions({
           </Select>
         </div>
 
-        <div className="w-full">
+          <div className="w-full relative z-20 overflow-visible">
           <Select
             label="Complex"
             value={displayComplexId ? String(displayComplexId) : ""}
@@ -318,7 +323,7 @@ export function PropertyActions({
                 onBlockChange?.("");
               }
             }}
-            className="!bg-white/90 dark:!bg-gray-900/90"
+              className="!bg-white/90 dark:!bg-gray-900/90 [&>div>div]:!z-[9999]"
             labelProps={{ className: "dark:text-gray-300" }}
             disabled={loadingComplexes || (displayMtkId && filteredComplexes.length === 0)}
           >
@@ -330,7 +335,7 @@ export function PropertyActions({
           </Select>
         </div>
 
-        <div className="w-full">
+          <div className="w-full relative z-20 overflow-visible">
           <Select
             label="Building"
             value={displayBuildingId ? String(displayBuildingId) : ""}
@@ -340,7 +345,7 @@ export function PropertyActions({
                 onBlockChange?.("");
               }
             }}
-            className="!bg-white/90 dark:!bg-gray-900/90"
+              className="!bg-white/90 dark:!bg-gray-900/90 [&>div>div]:!z-[9999]"
             labelProps={{ className: "dark:text-gray-300" }}
             disabled={loadingBuildings || (displayComplexId && filteredBuildings.length === 0)}
           >
@@ -352,12 +357,12 @@ export function PropertyActions({
           </Select>
         </div>
 
-        <div className="w-full">
+          <div className="w-full relative z-20 overflow-visible">
           <Select
             label="Block"
             value={displayBlockId ? String(displayBlockId) : ""}
             onChange={(value) => onBlockChange?.(value)}
-            className="!bg-white/90 dark:!bg-gray-900/90"
+              className="!bg-white/90 dark:!bg-gray-900/90 [&>div>div]:!z-[9999]"
             labelProps={{ className: "dark:text-gray-300" }}
             disabled={loadingBlocks || (displayBuildingId && filteredBlocks.length === 0)}
           >
@@ -367,6 +372,7 @@ export function PropertyActions({
               </Option>
             ))}
           </Select>
+          </div>
         </div>
 
         {itemsPerPageOptions && (
@@ -398,31 +404,34 @@ export function PropertyActions({
           </div>
         )}
 
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <Button
+            type="button"
             onClick={onSearchClick}
-            className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md hover:shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all"
-            size="md"
+            className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md hover:shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all flex items-center justify-center"
+            size="sm"
           >
-            <MagnifyingGlassIcon className="h-5 w-5 mr-2" />
-            Ətraflı axtarış
+            <MagnifyingGlassIcon className="h-4 w-4 mr-2 flex-shrink-0" />
+            <span className="text-sm">Ətraflı axtarış</span>
           </Button>
           <Button
+            type="button"
             onClick={onCreateClick}
-            className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white shadow-md hover:shadow-lg hover:from-green-600 hover:to-green-700 transition-all"
-            size="md"
+            className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white shadow-md hover:shadow-lg hover:from-green-600 hover:to-green-700 transition-all flex items-center justify-center"
+            size="sm"
           >
-            <PlusIcon className="h-5 w-5 mr-2" />
-            Mənzil əlavə et
+            <PlusIcon className="h-4 w-4 mr-2 flex-shrink-0" />
+            <span className="text-sm">Mənzil əlavə et</span>
           </Button>
         </div>
       </div>
 
-      {/* Desktop Layout */}
-      <div className="hidden md:block">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div className="flex flex-col lg:flex-row gap-3 flex-1 min-w-0">
-            <div className="w-full lg:w-[280px] xl:w-[320px] flex-shrink-0">
+      {/* Tablet & Desktop Layout (>= 768px) */}
+      <div className="hidden md:flex flex-col gap-3 lg:gap-4">
+        {/* First Row: Search, Status, Filters */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 lg:gap-4">
+          <div className="flex flex-col md:flex-row gap-3 flex-1 min-w-0">
+            <div className="w-full md:w-[250px] lg:w-[300px] xl:w-[350px] flex-shrink-0">
               <Input
                 label="Axtarış (ada görə)"
                 value={localName}
@@ -433,12 +442,12 @@ export function PropertyActions({
                 labelProps={{ className: "dark:text-gray-300" }}
               />
             </div>
-            <div className="w-full lg:w-[140px] flex-shrink-0">
+            <div className="w-full md:w-[150px] lg:w-[160px] xl:w-[180px] flex-shrink-0 relative z-20 overflow-visible">
               <Select
                 label="Status"
                 value={search?.status || ""}
                 onChange={(value) => onStatusChange?.(value)}
-                className="!bg-white/90 dark:!bg-gray-900/90"
+                className="!bg-white/90 dark:!bg-gray-900/90 [&>div>div]:!z-[9999]"
                 labelProps={{ className: "dark:text-gray-300" }}
               >
                 {statusOptions.map((opt) => (
@@ -448,90 +457,9 @@ export function PropertyActions({
                 ))}
               </Select>
             </div>
-            <div className="w-full lg:w-[140px] flex-shrink-0">
-              <Select
-                label="MTK"
-                value={displayMtkId ? String(displayMtkId) : ""}
-                onChange={(value) => {
-                  onMtkChange?.(value);
-                  if (value) {
-                    onComplexChange?.("");
-                    onBuildingChange?.("");
-                    onBlockChange?.("");
-                  }
-                }}
-                className="!bg-white/90 dark:!bg-gray-900/90"
-                labelProps={{ className: "dark:text-gray-300" }}
-              >
-                {mtkOptions.map((opt) => (
-                  <Option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </Option>
-                ))}
-              </Select>
-            </div>
-            <div className="w-full lg:w-[140px] flex-shrink-0">
-              <Select
-                label="Complex"
-                value={displayComplexId ? String(displayComplexId) : ""}
-                onChange={(value) => {
-                  onComplexChange?.(value);
-                  if (value) {
-                    onBuildingChange?.("");
-                    onBlockChange?.("");
-                  }
-                }}
-                className="!bg-white/90 dark:!bg-gray-900/90"
-                labelProps={{ className: "dark:text-gray-300" }}
-                disabled={loadingComplexes || (displayMtkId && filteredComplexes.length === 0)}
-              >
-                {complexOptions.map((opt) => (
-                  <Option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </Option>
-                ))}
-              </Select>
-            </div>
-            <div className="w-full lg:w-[140px] flex-shrink-0">
-              <Select
-                label="Building"
-                value={displayBuildingId ? String(displayBuildingId) : ""}
-                onChange={(value) => {
-                  onBuildingChange?.(value);
-                  if (value) {
-                    onBlockChange?.("");
-                  }
-                }}
-                className="!bg-white/90 dark:!bg-gray-900/90"
-                labelProps={{ className: "dark:text-gray-300" }}
-                disabled={loadingBuildings || (displayComplexId && filteredBuildings.length === 0)}
-              >
-                {buildingOptions.map((opt) => (
-                  <Option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </Option>
-                ))}
-              </Select>
-            </div>
-            <div className="w-full lg:w-[140px] flex-shrink-0">
-              <Select
-                label="Block"
-                value={displayBlockId ? String(displayBlockId) : ""}
-                onChange={(value) => onBlockChange?.(value)}
-                className="!bg-white/90 dark:!bg-gray-900/90"
-                labelProps={{ className: "dark:text-gray-300" }}
-                disabled={loadingBlocks || (displayBuildingId && filteredBlocks.length === 0)}
-              >
-                {blockOptions.map((opt) => (
-                  <Option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </Option>
-                ))}
-              </Select>
-            </div>
             {activeFilters.length > 0 && (
-              <div className="flex items-center gap-2 flex-wrap flex-1 min-w-0 lg:ml-4">
-                <Typography variant="small" className="text-gray-700 dark:text-gray-300 font-semibold whitespace-nowrap">
+              <div className="flex items-center gap-2 flex-wrap flex-1 min-w-0 md:ml-2 lg:ml-4">
+                <Typography variant="small" className="text-gray-700 dark:text-gray-300 font-semibold whitespace-nowrap hidden lg:block">
                   Aktiv filtrlər:
                 </Typography>
                 {activeFilters.map((filter) => (
@@ -547,9 +475,10 @@ export function PropertyActions({
             )}
           </div>
 
+          {/* Right Section: Action Buttons */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 lg:flex-shrink-0">
             {itemsPerPageOptions && (
-              <div className="w-full sm:w-[150px] flex-shrink-0">
+              <div className="w-full sm:w-[140px] lg:w-[150px] flex-shrink-0">
                 <AppSelect
                   items={itemsPerPageOptions}
                   value={itemsPerPage}
@@ -561,22 +490,109 @@ export function PropertyActions({
             )}
 
             <Button
+              type="button"
               onClick={onSearchClick}
-              className="bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-md hover:shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all whitespace-nowrap"
+              className="bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-md hover:shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all whitespace-nowrap w-full sm:w-auto px-4"
               size="md"
             >
-              <MagnifyingGlassIcon className="h-5 w-5 mr-2" />
-              Ətraflı axtarış
+              <MagnifyingGlassIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
+              <span className="text-sm sm:text-base">Ətraflı axtarış</span>
             </Button>
 
             <Button
+              type="button"
               onClick={onCreateClick}
-              className="bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center text-white shadow-md hover:shadow-lg hover:from-green-600 hover:to-green-700 transition-all whitespace-nowrap"
+              className="bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center text-white shadow-md hover:shadow-lg hover:from-green-600 hover:to-green-700 transition-all whitespace-nowrap w-full sm:w-auto px-4"
               size="md"
             >
-              <PlusIcon className="h-5 w-5 mr-2" />
-              Mənzil əlavə et
+              <PlusIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
+              <span className="text-sm sm:text-base">Mənzil əlavə et</span>
             </Button>
+          </div>
+        </div>
+
+        {/* Second Row: MTK, Complex, Building and Block Selects */}
+        <div className="flex flex-col md:flex-row gap-4 md:gap-4 lg:gap-8">
+          <div className="w-full md:w-[160px] lg:w-[170px] xl:w-[180px] flex-shrink-0 relative z-20 overflow-visible">
+              <Select
+                label="MTK"
+                value={displayMtkId ? String(displayMtkId) : ""}
+                onChange={(value) => {
+                  onMtkChange?.(value);
+                  if (value) {
+                    onComplexChange?.("");
+                    onBuildingChange?.("");
+                    onBlockChange?.("");
+                  }
+                }}
+              className="!bg-white/90 dark:!bg-gray-900/90 [&>div>div]:!z-[9999]"
+                labelProps={{ className: "dark:text-gray-300" }}
+              >
+                {mtkOptions.map((opt) => (
+                  <Option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </Option>
+                ))}
+              </Select>
+            </div>
+          <div className="w-full md:w-[160px] lg:w-[170px] xl:w-[180px] flex-shrink-0 relative z-20 overflow-visible">
+              <Select
+                label="Complex"
+                value={displayComplexId ? String(displayComplexId) : ""}
+                onChange={(value) => {
+                  onComplexChange?.(value);
+                  if (value) {
+                    onBuildingChange?.("");
+                    onBlockChange?.("");
+                  }
+                }}
+              className="!bg-white/90 dark:!bg-gray-900/90 [&>div>div]:!z-[9999]"
+                labelProps={{ className: "dark:text-gray-300" }}
+                disabled={loadingComplexes || (displayMtkId && filteredComplexes.length === 0)}
+              >
+                {complexOptions.map((opt) => (
+                  <Option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </Option>
+                ))}
+              </Select>
+            </div>
+          <div className="w-full md:w-[160px] lg:w-[170px] xl:w-[180px] flex-shrink-0 relative z-20 overflow-visible">
+              <Select
+                label="Building"
+                value={displayBuildingId ? String(displayBuildingId) : ""}
+                onChange={(value) => {
+                  onBuildingChange?.(value);
+                  if (value) {
+                    onBlockChange?.("");
+                  }
+                }}
+              className="!bg-white/90 dark:!bg-gray-900/90 [&>div>div]:!z-[9999]"
+                labelProps={{ className: "dark:text-gray-300" }}
+                disabled={loadingBuildings || (displayComplexId && filteredBuildings.length === 0)}
+              >
+                {buildingOptions.map((opt) => (
+                  <Option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </Option>
+                ))}
+              </Select>
+            </div>
+          <div className="w-full md:w-[160px] lg:w-[170px] xl:w-[180px] flex-shrink-0 relative z-20 overflow-visible">
+              <Select
+                label="Block"
+                value={displayBlockId ? String(displayBlockId) : ""}
+                onChange={(value) => onBlockChange?.(value)}
+              className="!bg-white/90 dark:!bg-gray-900/90 [&>div>div]:!z-[9999]"
+                labelProps={{ className: "dark:text-gray-300" }}
+                disabled={loadingBlocks || (displayBuildingId && filteredBlocks.length === 0)}
+              >
+                {blockOptions.map((opt) => (
+                  <Option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </Option>
+                ))}
+              </Select>
           </div>
         </div>
       </div>

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography, MapPinIcon } from "@material-tailwind/react";
+import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography } from "@material-tailwind/react";
 import { Map, Marker } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { MagnifyingGlassIcon, XMarkIcon, FunnelIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, XMarkIcon, FunnelIcon, MapPinIcon } from "@heroicons/react/24/outline";
 import { CustomInput } from "@/components/ui/CustomInput";
 
 const ACTIVE_COLOR = "#3b82f6"; // Blue for complexes

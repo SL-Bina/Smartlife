@@ -107,10 +107,11 @@ export function MtkActions({
   }, [totalItems]);
 
   return (
-    <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-6 space-y-5">
-      {/* Mobile Layout */}
-      <div className="flex flex-col gap-4 md:hidden">
-        <div className="flex gap-3">
+    <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-3 sm:p-4 md:p-5 lg:p-6 relative z-10 overflow-visible">
+      {/* Mobile Layout (< 768px) */}
+      <div className="flex flex-col gap-3 sm:gap-4 md:hidden">
+        {/* Search and Status Row */}
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <Input
             label="Axtarış (ada görə)"
             value={localName}
@@ -120,12 +121,12 @@ export function MtkActions({
             className="flex-1 !bg-white/90 dark:!bg-gray-900/90"
             labelProps={{ className: "dark:text-gray-300" }}
           />
-          <div className="w-[140px]">
+          <div className="w-full sm:w-[140px] flex-shrink-0 relative z-20 overflow-visible">
             <Select
               label="Status"
               value={search?.status || ""}
               onChange={(value) => onStatusChange?.(value)}
-              className="!bg-white/90 dark:!bg-gray-900/90"
+              className="!bg-white/90 dark:!bg-gray-900/90 [&>div>div]:!z-[9999]"
               labelProps={{ className: "dark:text-gray-300" }}
             >
               {statusOptions.map((opt) => (
@@ -137,6 +138,7 @@ export function MtkActions({
           </div>
         </div>
 
+        {/* Items Per Page */}
         {itemsPerPageOptions && (
           <AppSelect
             items={itemsPerPageOptions}
@@ -147,6 +149,7 @@ export function MtkActions({
           />
         )}
 
+        {/* Active Filters */}
         {activeFilters.length > 0 && (
           <div className="flex flex-col gap-2">
             <Typography variant="small" className="text-gray-700 dark:text-gray-300 font-semibold">
@@ -158,7 +161,7 @@ export function MtkActions({
                   key={filter.key}
                   value={`${filter.label}: ${filter.value}`}
                   onClose={() => onRemoveFilter?.(filter.key)}
-                  className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-md hover:shadow-lg transition-shadow"
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-md hover:shadow-lg transition-shadow text-xs sm:text-sm"
                   size="sm"
                 />
               ))}
@@ -166,128 +169,135 @@ export function MtkActions({
           </div>
         )}
 
+        {/* Action Buttons */}
         <div className="flex flex-col gap-2">
           {selectedMtkId && (
             <Button
+              type="button"
               onClick={handleClearSelection}
-              className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white shadow-md hover:shadow-lg hover:from-red-600 hover:to-red-700 transition-all"
-              size="md"
+              className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white shadow-md hover:shadow-lg hover:from-red-600 hover:to-red-700 transition-all flex items-center justify-center"
+              size="sm"
             >
-              <XMarkIcon className="h-5 w-5 mr-2" />
-              Seçimi ləğv et
+              <XMarkIcon className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span className="text-sm">Seçimi ləğv et</span>
             </Button>
           )}
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Button
+              type="button"
               onClick={onSearchClick}
-              className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md hover:shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all"
-              size="md"
+              className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md hover:shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all flex items-center justify-center"
+              size="sm"
             >
-              <MagnifyingGlassIcon className="h-5 w-5 mr-2" />
-              Ətraflı axtarış
+              <MagnifyingGlassIcon className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span className="text-sm">Ətraflı axtarış</span>
             </Button>
             <Button
+              type="button"
               onClick={onCreateClick}
-              className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white shadow-md hover:shadow-lg hover:from-green-600 hover:to-green-700 transition-all"
-              size="md"
+              className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white shadow-md hover:shadow-lg hover:from-green-600 hover:to-green-700 transition-all flex items-center justify-center"
+              size="sm"
             >
-              <PlusIcon className="h-5 w-5 mr-2" />
-              MTK əlavə et
+              <PlusIcon className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span className="text-sm">MTK əlavə et</span>
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Desktop Layout */}
-      <div className="hidden md:block">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div className="flex flex-col lg:flex-row gap-3 flex-1 min-w-0">
-            <div className="w-full lg:w-[300px] xl:w-[350px] flex-shrink-0">
-              <Input
-                label="Axtarış (ada görə)"
-                value={localName}
-                onChange={(e) => handleNameInputChange(e.target.value)}
-                onKeyDown={handleNameInputKeyDown}
-                onBlur={handleNameInputBlur}
-                className="!bg-white/90 dark:!bg-gray-900/90"
-                labelProps={{ className: "dark:text-gray-300" }}
+      {/* Tablet & Desktop Layout (>= 768px) */}
+      <div className="hidden md:flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 lg:gap-4">
+        {/* Left Section: Search, Status, Filters */}
+        <div className="flex flex-col md:flex-row gap-3 flex-1 min-w-0">
+          <div className="w-full md:w-[250px] lg:w-[300px] xl:w-[350px] flex-shrink-0">
+            <Input
+              label="Axtarış (ada görə)"
+              value={localName}
+              onChange={(e) => handleNameInputChange(e.target.value)}
+              onKeyDown={handleNameInputKeyDown}
+              onBlur={handleNameInputBlur}
+              className="!bg-white/90 dark:!bg-gray-900/90"
+              labelProps={{ className: "dark:text-gray-300" }}
+            />
+          </div>
+          <div className="w-full md:w-[150px] lg:w-[160px] xl:w-[180px] flex-shrink-0 relative z-20 overflow-visible">
+            <Select
+              label="Status"
+              value={search?.status || ""}
+              onChange={(value) => onStatusChange?.(value)}
+              className="!bg-white/90 dark:!bg-gray-900/90 [&>div>div]:!z-[9999]"
+              labelProps={{ className: "dark:text-gray-300" }}
+            >
+              {statusOptions.map((opt) => (
+                <Option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </Option>
+              ))}
+            </Select>
+          </div>
+          {activeFilters.length > 0 && (
+            <div className="flex items-center gap-2 flex-wrap flex-1 min-w-0 md:ml-2 lg:ml-4">
+              <Typography variant="small" className="text-gray-700 dark:text-gray-300 font-semibold whitespace-nowrap hidden lg:block">
+                Aktiv filtrlər:
+              </Typography>
+              {activeFilters.map((filter) => (
+                <Chip
+                  key={filter.key}
+                  value={`${filter.label}: ${filter.value}`}
+                  onClose={() => onRemoveFilter?.(filter.key)}
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-md hover:shadow-lg transition-shadow"
+                  size="sm"
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Right Section: Action Buttons */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 lg:flex-shrink-0">
+          {selectedMtkId && (
+            <Button
+              type="button"
+              onClick={handleClearSelection}
+              className="bg-gradient-to-r from-red-500 to-red-600 flex items-center justify-center text-white shadow-md hover:shadow-lg hover:from-red-600 hover:to-red-700 transition-all whitespace-nowrap w-full sm:w-auto px-4"
+              size="md"
+            >
+              <XMarkIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
+              <span className="text-sm sm:text-base">Seçimi ləğv et</span>
+            </Button>
+          )}
+
+          {itemsPerPageOptions && (
+            <div className="w-full sm:w-[140px] lg:w-[150px] flex-shrink-0">
+              <AppSelect
+                items={itemsPerPageOptions}
+                value={itemsPerPage}
+                onChange={(value) => onItemsPerPageChange?.(value)}
+                placeholder="Göstəriləcək say"
+                allowAll={false}
               />
             </div>
-            <div className="w-full lg:w-[160px] flex-shrink-0">
-              <Select
-                label="Status"
-                value={search?.status || ""}
-                onChange={(value) => onStatusChange?.(value)}
-                className="!bg-white/90 dark:!bg-gray-900/90"
-                labelProps={{ className: "dark:text-gray-300" }}
-              >
-                {statusOptions.map((opt) => (
-                  <Option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </Option>
-                ))}
-              </Select>
-            </div>
-            {activeFilters.length > 0 && (
-              <div className="flex items-center gap-2 flex-wrap flex-1 min-w-0 lg:ml-4">
-                <Typography variant="small" className="text-gray-700 dark:text-gray-300 font-semibold whitespace-nowrap">
-                  Aktiv filtrlər:
-                </Typography>
-                {activeFilters.map((filter) => (
-                  <Chip
-                    key={filter.key}
-                    value={`${filter.label}: ${filter.value}`}
-                    onClose={() => onRemoveFilter?.(filter.key)}
-                    className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-md hover:shadow-lg transition-shadow"
-                    size="sm"
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+          )}
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 lg:flex-shrink-0">
-            {selectedMtkId && (
-              <Button
-                onClick={handleClearSelection}
-                className="bg-gradient-to-r from-red-500 to-red-600 flex items-center justify-center text-white shadow-md hover:shadow-lg hover:from-red-600 hover:to-red-700 transition-all whitespace-nowrap"
-                size="md"
-              >
-                <XMarkIcon className="h-5 w-5 mr-2" />
-                Seçimi ləğv et
-              </Button>
-            )}
+          <Button
+            type="button"
+            onClick={onSearchClick}
+            className="bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-md hover:shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all whitespace-nowrap w-full sm:w-auto px-4"
+            size="md"
+          >
+            <MagnifyingGlassIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
+            <span className="text-sm sm:text-base">Ətraflı axtarış</span>
+          </Button>
 
-            {itemsPerPageOptions && (
-              <div className="w-full sm:w-[150px] flex-shrink-0">
-                <AppSelect
-                  items={itemsPerPageOptions}
-                  value={itemsPerPage}
-                  onChange={(value) => onItemsPerPageChange?.(value)}
-                  placeholder="Göstəriləcək say"
-                  allowAll={false}
-                />
-              </div>
-            )}
-
-            <Button
-              onClick={onSearchClick}
-              className="bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-md hover:shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all whitespace-nowrap"
-              size="md"
-            >
-              <MagnifyingGlassIcon className="h-5 w-5 mr-2" />
-              Ətraflı axtarış
-            </Button>
-
-            <Button
-              onClick={onCreateClick}
-              className="bg-gradient-to-r from-green-500 flex items-center justify-center to-green-600 text-white shadow-md hover:shadow-lg hover:from-green-600 hover:to-green-700 transition-all whitespace-nowrap"
-              size="md"
-            >
-              <PlusIcon className="h-5 w-5 mr-2" />
-              MTK əlavə et
-            </Button>
-          </div>
+          <Button
+            type="button"
+            onClick={onCreateClick}
+            className="bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center text-white shadow-md hover:shadow-lg hover:from-green-600 hover:to-green-700 transition-all whitespace-nowrap w-full sm:w-auto px-4"
+            size="md"
+          >
+            <PlusIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
+            <span className="text-sm sm:text-base">MTK əlavə et</span>
+          </Button>
         </div>
       </div>
     </div>

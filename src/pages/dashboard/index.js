@@ -10,6 +10,7 @@ export { default as MtkPage } from "@/pages/dashboard/management/mtk";
 export { default as ComplexesPage } from "@/pages/dashboard/management/complexes";
 export { default as BuildingsPage } from "@/pages/dashboard/management/buildings";
 export { default as BlocksPage } from "@/pages/dashboard/management/blocks";
+export { default as ResidentsPage } from "@/pages/dashboard/management/residents";
 export { default as SendNotificationPage } from "@/pages/dashboard/notifications/send";
 export { default as NotificationArchivePage } from "@/pages/dashboard/notifications/archive";
 export { default as SentSMSPage } from "@/pages/dashboard/notifications/sent-sms";

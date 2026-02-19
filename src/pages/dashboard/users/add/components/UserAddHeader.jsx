@@ -1,6 +1,12 @@
 import React from "react";
 import { Typography } from "@material-tailwind/react";
 import { UserPlusIcon } from "@heroicons/react/24/outline";
+
+// Helper function to get white rgba color
+const getRgba = (opacity = 1) => {
+  return `rgba(255, 255, 255, ${opacity})`;
+};
+
 export function UserAddHeader() {
   const colorCode = null;
   

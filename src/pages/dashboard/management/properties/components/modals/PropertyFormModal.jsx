@@ -120,30 +120,42 @@ export function PropertyFormModal({ open, mode = "create", onClose, form, onSubm
     }
   }, [open, form?.formData?.building_id, form]);
 
-  // Set IDs from props if provided
+  // Set IDs from props if provided (only for create mode)
   useEffect(() => {
-    if (open && mtkId && !form?.formData?.mtk_id) {
-      form?.updateField("mtk_id", mtkId);
+    if (open && !isEdit && mtkId && form?.updateField) {
+      const currentMtkId = form?.formData?.mtk_id;
+      if (!currentMtkId || currentMtkId !== mtkId) {
+        form.updateField("mtk_id", mtkId);
+      }
     }
-  }, [open, mtkId, form]);
+  }, [open, isEdit, mtkId, form?.formData?.mtk_id]);
 
   useEffect(() => {
-    if (open && complexId && !form?.formData?.complex_id) {
-      form?.updateField("complex_id", complexId);
+    if (open && !isEdit && complexId && form?.updateField) {
+      const currentComplexId = form?.formData?.complex_id;
+      if (!currentComplexId || currentComplexId !== complexId) {
+        form.updateField("complex_id", complexId);
+      }
     }
-  }, [open, complexId, form]);
+  }, [open, isEdit, complexId, form?.formData?.complex_id]);
 
   useEffect(() => {
-    if (open && buildingId && !form?.formData?.building_id) {
-      form?.updateField("building_id", buildingId);
+    if (open && !isEdit && buildingId && form?.updateField) {
+      const currentBuildingId = form?.formData?.building_id;
+      if (!currentBuildingId || currentBuildingId !== buildingId) {
+        form.updateField("building_id", buildingId);
+      }
     }
-  }, [open, buildingId, form]);
+  }, [open, isEdit, buildingId, form?.formData?.building_id]);
 
   useEffect(() => {
-    if (open && blockId && !form?.formData?.block_id) {
-      form?.updateField("block_id", blockId);
+    if (open && !isEdit && blockId && form?.updateField) {
+      const currentBlockId = form?.formData?.block_id;
+      if (!currentBlockId || currentBlockId !== blockId) {
+        form.updateField("block_id", blockId);
+      }
     }
-  }, [open, blockId, form]);
+  }, [open, isEdit, blockId, form?.formData?.block_id]);
 
   const errorText = useMemo(() => {
     if (!form?.formData?.name?.trim()) return "Ad mütləqdir";

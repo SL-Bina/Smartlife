@@ -12,7 +12,6 @@ const mtkAPI = {
 
   search: async (searchParams = {}) => {
     try {
-      // Build URLSearchParams to ensure proper formatting
       const urlParams = new URLSearchParams();
       Object.keys(searchParams).forEach((key) => {
         if (searchParams[key] !== null && searchParams[key] !== undefined && searchParams[key] !== '') {
@@ -37,12 +36,11 @@ const mtkAPI = {
 
   add: async (mtkData) => {
     try {
-      const response = await api.put("/mtk/add", mtkData);
+      const response = await api.put("/module/mtk/add", mtkData);
       return response;
     } catch (error) {
       const errorData = error.response?.data;
       if (errorData?.errors) {
-        // Flatten validation errors
         let errorMessage = "";
         try {
           const errors = Object.values(errorData.errors).flat().join(", ");
@@ -58,12 +56,11 @@ const mtkAPI = {
 
   update: async (id, mtkData) => {
     try {
-      const response = await api.patch(`/mtk/${id}`, mtkData);
+      const response = await api.patch(`/module/mtk/${id}`, mtkData);
       return response;
     } catch (error) {
       const errorData = error.response?.data;
       if (errorData?.errors) {
-        // Flatten validation errors
         let errorMessage = "";
         try {
           const errors = Object.values(errorData.errors).flat().join(", ");
@@ -79,7 +76,7 @@ const mtkAPI = {
 
   delete: async (id) => {
     try {
-      const response = await api.delete(`/mtk/${id}`);
+      const response = await api.delete(`/module/mtk/${id}`);
       return response;
     } catch (error) {
       throw error.response?.data || error.message;

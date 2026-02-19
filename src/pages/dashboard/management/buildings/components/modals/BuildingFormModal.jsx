@@ -48,12 +48,16 @@ export function BuildingFormModal({ open, mode = "create", onClose, form, onSubm
     }
   }, [open, mtkId]);
 
-  // Set complex_id from prop if provided
+  // Set complex_id from prop if provided (only for create mode)
   useEffect(() => {
-    if (open && complexId && !form?.formData?.complex_id) {
-      form?.updateField("complex_id", complexId);
+    if (open && !isEdit && complexId && form?.updateField) {
+      // Modal açıldıqda və create mode-dadırsa, complex_id-ni set et
+      const currentComplexId = form?.formData?.complex_id;
+      if (!currentComplexId || currentComplexId !== complexId) {
+        form.updateField("complex_id", complexId);
+      }
     }
-  }, [open, complexId, form]);
+  }, [open, isEdit, complexId, form?.formData?.complex_id]);
 
   const errorText = useMemo(() => {
     if (!form?.formData?.name?.trim()) return "Ad mütləqdir";

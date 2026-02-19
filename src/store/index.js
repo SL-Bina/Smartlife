@@ -6,6 +6,7 @@ import complexReducer from './slices/complexSlice';
 import buildingReducer from './slices/buildingSlice';
 import blockReducer from './slices/blockSlice';
 import propertyReducer from './slices/propertySlice';
+import residentReducer from './slices/residentSlice';
 
 export const store = configureStore({
   reducer: {
@@ -16,6 +17,7 @@ export const store = configureStore({
     building: buildingReducer,
     block: blockReducer,
     property: propertyReducer,
+    resident: residentReducer,
   },
 });
 
