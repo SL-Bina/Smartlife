@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography, Input, Select, Option, Checkbox } from "@material-tailwind/react";
 import DynamicToast from "@/components/DynamicToast";
+import MultiSelect from "@/components/MultiSelect";
 import {
   UserIcon,
   EnvelopeIcon,
@@ -24,6 +25,21 @@ export function UserAddFormModal({ open, mode = "create", onClose, form, onSubmi
   const showToast = (type, message, title = "") => {
     setToast({ open: true, type, message, title });
   };
+
+  const handleMultiSelect = (field, value) => {
+    const current = form.formData[field] || [];
+
+    if (current.includes(Number(value))) {
+      form.updateField(
+        field,
+        current.filter(v => v !== Number(value))
+      );
+    } else {
+      form.updateField(field, [...current, Number(value)]);
+    }
+  };
+
+
 
   const isEdit = mode === "edit";
   const title = isEdit ? t("users.add.editTitle") : t("users.add.title");
@@ -119,16 +135,16 @@ export function UserAddFormModal({ open, mode = "create", onClose, form, onSubmi
 
   return (
     <>
-      <Dialog 
-        open={!!open} 
-        handler={onClose} 
+      <Dialog
+        open={!!open}
+        handler={onClose}
         size="xl"
         className="dark:bg-gray-800"
         dismiss={{ enabled: false }}
         style={{ zIndex: 9999 }}
       >
         <div style={{ zIndex: 9999 }}>
-          <DialogHeader 
+          <DialogHeader
             className="border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700"
           >
             <div className="flex items-center gap-3">
@@ -152,359 +168,396 @@ export function UserAddFormModal({ open, mode = "create", onClose, form, onSubmi
             </button>
           </DialogHeader>
 
-          <DialogBody divider className="dark:bg-gray-800 py-6 max-h-[75vh] overflow-y-auto bg-white dark:bg-gray-800">
-          {!form ? (
-            <div className="text-center py-8">
-              <Typography className="text-gray-700 dark:text-gray-200 font-medium">
-                {t("users.add.formNotReady")}
-              </Typography>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-6">
-              {/* Basic Information */}
-              <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <Typography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold flex items-center gap-2">
-                  <UserIcon className="h-5 w-5 text-blue-500" />
-                  {t("users.add.basicInfo") || "Əsas Məlumatlar"}
+          <DialogBody divider className="dark:bg-gray-800 py-6 max-h-[75vh] overflow-y-auto bg-white ">
+            {!form ? (
+              <div className="text-center py-8">
+                <Typography className="text-gray-700 dark:text-gray-200 font-medium">
+                  {t("users.add.formNotReady")}
                 </Typography>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-6">
+                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                  <Typography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold flex items-center gap-2">
+                    <UserIcon className="h-5 w-5 text-blue-500" />
+                    {t("users.add.basicInfo") || "Əsas Məlumatlar"}
+                  </Typography>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Input
+                        label={t("users.add.name") || "Ad Soyad"}
+                        value={form.formData.name || ""}
+                        onChange={(e) => form.updateField("name", e.target.value)}
+                        className="!bg-white dark:!bg-gray-800"
+                        labelProps={{ className: "dark:text-gray-300" }}
+                        error={!form.formData.name?.trim()}
+                      />
+                      {!form.formData.name?.trim() && (
+                        <Typography variant="small" className="text-red-500 mt-1">
+                          {t("users.add.errors.nameRequired")}
+                        </Typography>
+                      )}
+                    </div>
+
+                    <div>
+                      <Input
+                        label={t("users.add.username") || "İstifadəçi adı"}
+                        value={form.formData.username || ""}
+                        onChange={(e) => form.updateField("username", e.target.value)}
+                        className="!bg-white dark:!bg-gray-800"
+                        labelProps={{ className: "dark:text-gray-300" }}
+                        error={!form.formData.username?.trim()}
+                      />
+                      {!form.formData.username?.trim() && (
+                        <Typography variant="small" className="text-red-500 mt-1">
+                          {t("users.add.errors.usernameRequired")}
+                        </Typography>
+                      )}
+                    </div>
+
+                    <div>
+                      <Input
+                        label={t("users.add.email") || "E-mail"}
+                        type="email"
+                        value={form.formData.email || ""}
+                        onChange={(e) => form.updateField("email", e.target.value)}
+                        className="!bg-white dark:!bg-gray-800"
+                        labelProps={{ className: "dark:text-gray-300" }}
+                        error={!form.formData.email?.trim()}
+                      />
+                      {!form.formData.email?.trim() && (
+                        <Typography variant="small" className="text-red-500 mt-1">
+                          {t("users.add.errors.emailRequired")}
+                        </Typography>
+                      )}
+                    </div>
+
+                    <div>
+                      <Input
+                        label={t("users.add.phone") || "Telefon"}
+                        type="tel"
+                        value={form.formData.phone || ""}
+                        onChange={(e) => form.updateField("phone", e.target.value)}
+                        className="!bg-white dark:!bg-gray-800"
+                        labelProps={{ className: "dark:text-gray-300" }}
+                        error={!form.formData.phone?.trim()}
+                      />
+                      {!form.formData.phone?.trim() && (
+                        <Typography variant="small" className="text-red-500 mt-1">
+                          {t("users.add.errors.phoneRequired")}
+                        </Typography>
+                      )}
+                    </div>
+
                     <Input
-                      label={t("users.add.name") || "Ad Soyad"} 
-                      value={form.formData.name || ""}
-                      onChange={(e) => form.updateField("name", e.target.value)}
+                      label={t("users.add.birthday") || "Doğum tarixi"}
+                      type="date"
+                      value={form.formData.birthday || ""}
+                      onChange={(e) => form.updateField("birthday", e.target.value)}
                       className="!bg-white dark:!bg-gray-800"
                       labelProps={{ className: "dark:text-gray-300" }}
-                      error={!form.formData.name?.trim()}
                     />
-                    {!form.formData.name?.trim() && (
-                      <Typography variant="small" className="text-red-500 mt-1">
-                        {t("users.add.errors.nameRequired")}
-                      </Typography>
-                    )}
-                  </div>
 
-                  <div>
                     <Input
-                      label={t("users.add.username") || "İstifadəçi adı"}
-                      value={form.formData.username || ""}
-                      onChange={(e) => form.updateField("username", e.target.value)}
+                      label={t("users.add.personalCode") || "Şəxsi kod"}
+                      value={form.formData.personal_code || ""}
+                      onChange={(e) => form.updateField("personal_code", e.target.value)}
                       className="!bg-white dark:!bg-gray-800"
                       labelProps={{ className: "dark:text-gray-300" }}
-                      error={!form.formData.username?.trim()}
                     />
-                    {!form.formData.username?.trim() && (
-                      <Typography variant="small" className="text-red-500 mt-1">
-                        {t("users.add.errors.usernameRequired")}
-                      </Typography>
-                    )}
                   </div>
+                </div>
 
-                  <div>
-                    <Input
-                      label={t("users.add.email") || "E-mail"}
-                      type="email"
-                      value={form.formData.email || ""}
-                      onChange={(e) => form.updateField("email", e.target.value)}
-                      className="!bg-white dark:!bg-gray-800"
-                      labelProps={{ className: "dark:text-gray-300" }}
-                      error={!form.formData.email?.trim()}
-                    />
-                    {!form.formData.email?.trim() && (
-                      <Typography variant="small" className="text-red-500 mt-1">
-                        {t("users.add.errors.emailRequired")}
-                      </Typography>
-                    )}
+                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                  <Typography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold flex items-center gap-2">
+                    <KeyIcon className="h-5 w-5 text-blue-500" />
+                    {t("users.add.password") || "Şifrə"}
+                  </Typography>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Input
+                        label={t("users.add.password") || "Şifrə"}
+                        type="password"
+                        value={form.formData.password || ""}
+                        onChange={(e) => form.updateField("password", e.target.value)}
+                        className="!bg-white dark:!bg-gray-800"
+                        labelProps={{ className: "dark:text-gray-300" }}
+                        error={!form.formData.password?.trim()}
+                      />
+                      {!form.formData.password?.trim() && (
+                        <Typography variant="small" className="text-red-500 mt-1">
+                          {t("users.add.errors.passwordRequired")}
+                        </Typography>
+                      )}
+                    </div>
+
+                    <div>
+                      <Input
+                        label={t("users.add.passwordConfirmation") || "Şifrə təsdiqi"}
+                        type="password"
+                        value={form.formData.password_confirmation || ""}
+                        onChange={(e) => form.updateField("password_confirmation", e.target.value)}
+                        className="!bg-white dark:!bg-gray-800"
+                        labelProps={{ className: "dark:text-gray-300" }}
+                        error={form.formData.password !== form.formData.password_confirmation}
+                      />
+                      {form.formData.password !== form.formData.password_confirmation && (
+                        <Typography variant="small" className="text-red-500 mt-1">
+                          {t("users.add.errors.passwordsMismatch")}
+                        </Typography>
+                      )}
+                    </div>
                   </div>
+                </div>
 
-                  <div>
-                    <Input
-                      label={t("users.add.phone") || "Telefon"}
-                      type="tel"
-                      value={form.formData.phone || ""}
-                      onChange={(e) => form.updateField("phone", e.target.value)}
-                      className="!bg-white dark:!bg-gray-800"
-                      labelProps={{ className: "dark:text-gray-300" }}
-                      error={!form.formData.phone?.trim()}
-                    />
-                    {!form.formData.phone?.trim() && (
-                      <Typography variant="small" className="text-red-500 mt-1">
-                        {t("users.add.errors.phoneRequired")}
-                      </Typography>
-                    )}
+                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                  <Typography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold flex items-center gap-2">
+                    <UserIcon className="h-5 w-5 text-blue-500" />
+                    {t("users.add.roleAndType") || "Rol və Tip"}
+                  </Typography>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="relative z-[10000]">
+                      <Select
+                        label={t("users.add.role") || "Rol"}
+                        value={form.formData.role_id?.toString() || ""}
+                        onChange={(value) => form.updateField("role_id", value ? Number(value) : "")}
+                        className="!bg-white dark:!bg-gray-800 [&>div>div]:!z-[10001]"
+                        labelProps={{ className: "dark:text-gray-300" }}
+                        menuProps={{ className: "!z-[10001]" }}
+                        error={!form.formData.role_id}
+                      >
+                        {lookups.roles.map((role) => (
+                          <Option key={role.id} value={role.id.toString()}>
+                            {role.name}
+                          </Option>
+                        ))}
+                      </Select>
+                      {!form.formData.role_id && (
+                        <Typography variant="small" className="text-red-500 mt-1">
+                          {t("users.add.errors.roleRequired")}
+                        </Typography>
+                      )}
+                    </div>
+
+                    <div className="relative z-[10000]">
+                      <Select
+                        label={t("users.add.type") || "Tip"}
+                        value={form.formData.type?.toString() || "1"}
+                        onChange={(value) => form.updateField("type", value ? Number(value) : 1)}
+                        className="!bg-white dark:!bg-gray-800 [&>div>div]:!z-[10001]"
+                        labelProps={{ className: "dark:text-gray-300" }}
+                        menuProps={{ className: "!z-[10001]" }}
+                      >
+                        {typeOptions.map((opt) => (
+                          <Option key={opt.value} value={opt.value.toString()}>
+                            {opt.label}
+                          </Option>
+                        ))}
+                      </Select>
+                    </div>
                   </div>
+                </div>
 
-                  <Input
-                    label={t("users.add.birthday") || "Doğum tarixi"}
-                    type="date"
-                    value={form.formData.birthday || ""}
-                    onChange={(e) => form.updateField("birthday", e.target.value)}
-                    className="!bg-white dark:!bg-gray-800"
-                    labelProps={{ className: "dark:text-gray-300" }}
+                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                  <Typography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold">
+                    {t("users.add.modules") || "Modullar"}
+                  </Typography>
+                  {/* <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-48 overflow-y-auto p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                    {lookups.modules.map((module) => {
+                      const moduleId = module.module?.id || module.id;
+                      const moduleName = module.module?.name || module.name;
+                      return (
+                        <label
+                          key={moduleId}
+                          className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                        >
+                          <Checkbox
+                            checked={isChecked("modules", moduleId)}
+                            onChange={(e) => handleArrayChange("modules", moduleId, e.target.checked)}
+                            className="h-4 w-4"
+                            color="blue"
+                          />
+                          <span className="text-sm text-gray-700 dark:text-gray-300">{moduleName}</span>
+                        </label>
+                      );
+                    })}
+                  </div> */}
+                  <MultiSelect
+                    label="Modullar"
+                    options={lookups.modules.map(m => ({
+                      id: m.module?.id || m.id,
+                      name: m.module?.name || m.name
+                    }))}
+                    value={form.formData.modules || []}
+                    onChange={(val) => form.updateField("modules", val)}
                   />
 
-                  <Input
-                    label={t("users.add.personalCode") || "Şəxsi kod"}
-                    value={form.formData.personal_code || ""}
-                    onChange={(e) => form.updateField("personal_code", e.target.value)}
-                    className="!bg-white dark:!bg-gray-800"
-                    labelProps={{ className: "dark:text-gray-300" }}
+
+
+                </div>
+
+                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                  <Typography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold">
+                    {t("users.add.mtk") || "MTK"}
+                  </Typography>
+                  {/* <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-48 overflow-y-auto p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                    {lookups.mtks.map((mtk) => {
+                      const mtkId = mtk.id;
+                      const mtkName = mtk.name || mtk.title;
+                      return (
+                        <label
+                          key={mtkId}
+                          className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                        >
+                          <Checkbox
+                            checked={isChecked("mtk", mtkId)}
+                            onChange={(e) => handleArrayChange("mtk", mtkId, e.target.checked)}
+                            className="h-4 w-4"
+                            color="blue"
+                          />
+                          <span className="text-sm text-gray-700 dark:text-gray-300">{mtkName}</span>
+                        </label>
+                      );
+                    })}
+                      
+                  </div> */}
+                  <MultiSelect
+                    label="MTK"
+                    options={lookups.mtks}
+                    value={form.formData.mtk || []}
+                    onChange={(val) => form.updateField("mtk", val)}
                   />
+
+
+
+
                 </div>
-              </div>
 
-              {/* Password */}
-              <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <Typography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold flex items-center gap-2">
-                  <KeyIcon className="h-5 w-5 text-blue-500" />
-                  {t("users.add.password") || "Şifrə"}
-                </Typography>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <Input
-                      label={t("users.add.password") || "Şifrə"}
-                      type="password"
-                      value={form.formData.password || ""}
-                      onChange={(e) => form.updateField("password", e.target.value)}
-                      className="!bg-white dark:!bg-gray-800"
-                      labelProps={{ className: "dark:text-gray-300" }}
-                      error={!form.formData.password?.trim()}
-                    />
-                    {!form.formData.password?.trim() && (
-                      <Typography variant="small" className="text-red-500 mt-1">
-                        {t("users.add.errors.passwordRequired")}
-                      </Typography>
-                    )}
-                  </div>
+                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                  <Typography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold">
+                    {t("users.add.complex") || "Kompleks"}
+                  </Typography>
+                  {/* <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-48 overflow-y-auto p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                    {lookups.complexes.map((complex) => {
+                      const complexId = complex.id;
+                      const complexName = complex.name || complex.title;
+                      return (
+                        <label
+                          key={complexId}
+                          className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                        >
+                          <Checkbox
+                            checked={isChecked("complex", complexId)}
+                            onChange={(e) => handleArrayChange("complex", complexId, e.target.checked)}
+                            className="h-4 w-4"
+                            color="blue"
+                          />
+                          <span className="text-sm text-gray-700 dark:text-gray-300">{complexName}</span>
+                        </label>
+                      );
+                    })}
+                  </div> */}
+                  <MultiSelect
+                    label="Kompleks"
+                    options={lookups.complexes}
+                    value={form.formData.complex || []}
+                    onChange={(val) => form.updateField("complex", val)}
+                  />
 
-                  <div>
-                    <Input
-                      label={t("users.add.passwordConfirmation") || "Şifrə təsdiqi"}
-                      type="password"
-                      value={form.formData.password_confirmation || ""}
-                      onChange={(e) => form.updateField("password_confirmation", e.target.value)}
-                      className="!bg-white dark:!bg-gray-800"
-                      labelProps={{ className: "dark:text-gray-300" }}
-                      error={form.formData.password !== form.formData.password_confirmation}
-                    />
-                    {form.formData.password !== form.formData.password_confirmation && (
-                      <Typography variant="small" className="text-red-500 mt-1">
-                        {t("users.add.errors.passwordsMismatch")}
-                      </Typography>
-                    )}
-                  </div>
+
+
+
                 </div>
-              </div>
 
-              {/* Role and Type */}
-              <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <Typography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold flex items-center gap-2">
-                  <UserIcon className="h-5 w-5 text-blue-500" />
-                  {t("users.add.roleAndType") || "Rol və Tip"}
-                </Typography>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="relative z-[10000]">
-                    <Select
-                      label={t("users.add.role") || "Rol"}
-                      value={form.formData.role_id?.toString() || ""}
-                      onChange={(value) => form.updateField("role_id", value ? Number(value) : "")}
-                      className="!bg-white dark:!bg-gray-800 [&>div>div]:!z-[10001]"
-                      labelProps={{ className: "dark:text-gray-300" }}
-                      menuProps={{ className: "!z-[10001]" }}
-                      error={!form.formData.role_id}
-                    >
-                      {lookups.roles.map((role) => (
-                        <Option key={role.id} value={role.id.toString()}>
-                          {role.name}
-                        </Option>
-                      ))}
-                    </Select>
-                    {!form.formData.role_id && (
-                      <Typography variant="small" className="text-red-500 mt-1">
-                        {t("users.add.errors.roleRequired")}
-                      </Typography>
-                    )}
-                  </div>
-
-                  <div className="relative z-[10000]">
-                    <Select
-                      label={t("users.add.type") || "Tip"}
-                      value={form.formData.type?.toString() || "1"}
-                      onChange={(value) => form.updateField("type", value ? Number(value) : 1)}
-                      className="!bg-white dark:!bg-gray-800 [&>div>div]:!z-[10001]"
-                      labelProps={{ className: "dark:text-gray-300" }}
-                      menuProps={{ className: "!z-[10001]" }}
-                    >
-                      {typeOptions.map((opt) => (
-                        <Option key={opt.value} value={opt.value.toString()}>
-                          {opt.label}
-                        </Option>
-                      ))}
-                    </Select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Modules */}
-              <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <Typography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold">
-                  {t("users.add.modules") || "Modullar"}
-                </Typography>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-48 overflow-y-auto p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                  {lookups.modules.map((module) => {
-                    const moduleId = module.module?.id || module.id;
-                    const moduleName = module.module?.name || module.name;
-                    return (
+                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                  <Typography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold">
+                    {t("users.add.permissions") || "İcazələr"}
+                  </Typography>
+                  {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-48 overflow-y-auto p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                    {lookups.permissions.map((permission) => (
                       <label
-                        key={moduleId}
+                        key={permission.id}
                         className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
                       >
                         <Checkbox
-                          checked={isChecked("modules", moduleId)}
-                          onChange={(e) => handleArrayChange("modules", moduleId, e.target.checked)}
+                          checked={isChecked("permissions", permission.id)}
+                          onChange={(e) => handleArrayChange("permissions", permission.id, e.target.checked)}
                           className="h-4 w-4"
                           color="blue"
                         />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{moduleName}</span>
+                        <span className="text-sm text-gray-700 dark:text-gray-300">
+                          {permission.module_name} - {permission.name}
+                        </span>
                       </label>
-                    );
-                  })}
-                </div>
-              </div>
+                    ))}
+                  </div> */}
+                  <MultiSelect
+                    label="İcazələr"
+                    options={lookups.permissions.map(p => ({
+                      id: p.id,
+                      name: `${p.module_name} - ${p.name}`
+                    }))}
+                    value={form.formData.permissions || []}
+                    onChange={(val) => form.updateField("permissions", val)}
+                  />
 
-              {/* MTK */}
-              <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <Typography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold">
-                  {t("users.add.mtk") || "MTK"}
-                </Typography>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-48 overflow-y-auto p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                  {lookups.mtks.map((mtk) => {
-                    const mtkId = mtk.id;
-                    const mtkName = mtk.name || mtk.title;
-                    return (
-                      <label
-                        key={mtkId}
-                        className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
-                      >
-                        <Checkbox
-                          checked={isChecked("mtk", mtkId)}
-                          onChange={(e) => handleArrayChange("mtk", mtkId, e.target.checked)}
-                          className="h-4 w-4"
-                          color="blue"
+
+
+                </div>
+
+                <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                  <Typography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold flex items-center gap-2">
+                    <PhotoIcon className="h-5 w-5 text-blue-500" />
+                    {t("users.add.profilePhoto") || "Profil şəkli"}
+                  </Typography>
+                  <div className="flex items-center gap-4">
+                    {profilePhotoPreview ? (
+                      <div className="relative">
+                        <img
+                          src={profilePhotoPreview}
+                          alt="Preview"
+                          className="w-24 h-24 rounded-lg object-cover border-2 border-gray-300 dark:border-gray-600 shadow-md"
                         />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{mtkName}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Complex */}
-              <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <Typography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold">
-                  {t("users.add.complex") || "Kompleks"}
-                </Typography>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-48 overflow-y-auto p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                  {lookups.complexes.map((complex) => {
-                    const complexId = complex.id;
-                    const complexName = complex.name || complex.title;
-                    return (
-                      <label
-                        key={complexId}
-                        className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
-                      >
-                        <Checkbox
-                          checked={isChecked("complex", complexId)}
-                          onChange={(e) => handleArrayChange("complex", complexId, e.target.checked)}
-                          className="h-4 w-4"
-                          color="blue"
-                        />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{complexName}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Permissions */}
-              <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <Typography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold">
-                  {t("users.add.permissions") || "İcazələr"}
-                </Typography>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-48 overflow-y-auto p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                  {lookups.permissions.map((permission) => (
-                    <label
-                      key={permission.id}
-                      className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
-                    >
-                      <Checkbox
-                        checked={isChecked("permissions", permission.id)}
-                        onChange={(e) => handleArrayChange("permissions", permission.id, e.target.checked)}
-                        className="h-4 w-4"
-                        color="blue"
+                        <button
+                          type="button"
+                          onClick={handleRemovePhoto}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors shadow-lg"
+                        >
+                          <XMarkIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="w-24 h-24 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center bg-gray-50 dark:bg-gray-800">
+                        <PhotoIcon className="w-8 h-8 text-gray-400" />
+                      </div>
+                    )}
+                    <div>
+                      <input
+                        ref={photoInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoUpload}
+                        className="hidden"
+                        id="photo-upload"
                       />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">
-                        {permission.module_name} - {permission.name}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Profile Photo */}
-              <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <Typography variant="h6" className="mb-4 text-gray-900 dark:text-white font-semibold flex items-center gap-2">
-                  <PhotoIcon className="h-5 w-5 text-blue-500" />
-                  {t("users.add.profilePhoto") || "Profil şəkli"}
-                </Typography>
-                <div className="flex items-center gap-4">
-                  {profilePhotoPreview ? (
-                    <div className="relative">
-                      <img
-                        src={profilePhotoPreview}
-                        alt="Preview"
-                        className="w-24 h-24 rounded-lg object-cover border-2 border-gray-300 dark:border-gray-600 shadow-md"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleRemovePhoto}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors shadow-lg"
+                      <label
+                        htmlFor="photo-upload"
+                        className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
                       >
-                        <XMarkIcon className="h-4 w-4" />
-                      </button>
+                        <PhotoIcon className="h-5 w-5" />
+                        {profilePhotoPreview ? t("users.add.changePhoto") || "Şəkil dəyiş" : t("users.add.selectPhoto") || "Şəkil seç"}
+                      </label>
+                      <Typography variant="small" className="text-gray-600 dark:text-gray-400 mt-2 block">
+                        {t("users.add.maxSize")}
+                      </Typography>
                     </div>
-                  ) : (
-                    <div className="w-24 h-24 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center bg-gray-50 dark:bg-gray-800">
-                      <PhotoIcon className="w-8 h-8 text-gray-400" />
-                    </div>
-                  )}
-                  <div>
-                    <input
-                      ref={photoInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoUpload}
-                      className="hidden"
-                      id="photo-upload"
-                    />
-                    <label
-                      htmlFor="photo-upload"
-                      className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
-                    >
-                      <PhotoIcon className="h-5 w-5" />
-                      {profilePhotoPreview ? t("users.add.changePhoto") || "Şəkil dəyiş" : t("users.add.selectPhoto") || "Şəkil seç"}
-                    </label>
-                    <Typography variant="small" className="text-gray-600 dark:text-gray-400 mt-2 block">
-                      {t("users.add.maxSize")}
-                    </Typography>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
           </DialogBody>
 
-          <DialogFooter className="flex justify-end gap-2 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pt-4 bg-white dark:bg-gray-800">
+          <DialogFooter className="flex justify-end gap-2 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pt-4 bg-white">
             <Button
               variant="outlined"
               color="blue-gray"

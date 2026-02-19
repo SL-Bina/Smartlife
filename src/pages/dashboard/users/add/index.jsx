@@ -27,7 +27,7 @@ export default function UserAddPage() {
   const { sidenavType } = controller;
   const { user, hasModuleAccess } = useAuth();
   const colorCode = null;
-  
+
   const getRgba = (opacity = 1) => {
     const r = 220; const g = 38; const b = 38;
     return `rgba(${r}, ${g}, ${b}, ${opacity})`;
@@ -60,19 +60,21 @@ export default function UserAddPage() {
 
     const filteredRoutes = filterRoutesByRole(routes, user, hasModuleAccess);
     
+
+
     // Find first visible page
     for (const route of filteredRoutes) {
       if (route.layout === "dashboard" && route.pages && route.pages.length > 0) {
         for (const page of route.pages) {
           // Skip if page is hidden in sidenav
           if (page.hideInSidenav) continue;
-          
+
           // If page has children, get first visible child
           if (page.children && page.children.length > 0) {
             const firstVisibleChild = page.children.find(child => !child.hideInSidenav);
             if (firstVisibleChild && firstVisibleChild.path) {
-              const childPath = firstVisibleChild.path.startsWith('/') 
-                ? firstVisibleChild.path 
+              const childPath = firstVisibleChild.path.startsWith('/')
+                ? firstVisibleChild.path
                 : '/' + firstVisibleChild.path;
               if (childPath.startsWith('/dashboard')) {
                 return childPath;
@@ -80,11 +82,11 @@ export default function UserAddPage() {
               return `/dashboard${childPath}`;
             }
           }
-          
+
           // If page has direct path, use it
           if (page.path) {
-            const pagePath = page.path.startsWith('/') 
-              ? page.path 
+            const pagePath = page.path.startsWith('/')
+              ? page.path
               : '/' + page.path;
             if (pagePath.startsWith('/dashboard')) {
               return pagePath;
@@ -94,7 +96,7 @@ export default function UserAddPage() {
         }
       }
     }
-    
+
     // Fallback to default home
     const userRole =
       user?.role?.name?.toLowerCase() ||
@@ -104,6 +106,28 @@ export default function UserAddPage() {
     }
     return "/dashboard/home";
   };
+
+  const mapUserToForm = (user) => ({
+      name: user?.name || "",
+      username: user?.username || "",
+      email: user?.email || "",
+      phone: user?.phone || "",
+      birthday: user?.birthday || "",
+      personal_code: user?.personal_code || "",
+      role_id: user?.role?.id || "",
+      type: user?.type || 1,
+      is_user: user?.is_user || 1,
+
+      modules: user?.modules?.map(x => x.id) || [],
+      mtk: user?.mtk?.map(x => x.id) || [],
+      complex: user?.complex?.map(x => x.id) || [],
+      apartments: user?.apartments?.map(x => x.id) || [],
+      permissions: user?.permissions?.map(x => x.id) || [],
+
+      profile_photo: null, // şəkil editdə boş qalır
+      password: "",
+      password_confirmation: "",
+    });
 
   const openCreate = () => {
     setMode("create");
@@ -115,7 +139,9 @@ export default function UserAddPage() {
   const openEdit = (x) => {
     setMode("edit");
     setSelected(x);
-    // TODO: Set form data from user
+
+    form.setFormData(mapUserToForm(x)); // 🔥 əsas hissə
+
     setFormOpen(true);
   };
 
@@ -195,7 +221,7 @@ export default function UserAddPage() {
         <UserAddHeader />
       </div>
 
-      <Card 
+      <Card
         className={`
           rounded-3xl xl:rounded-[2rem]
           backdrop-blur-2xl backdrop-saturate-150
