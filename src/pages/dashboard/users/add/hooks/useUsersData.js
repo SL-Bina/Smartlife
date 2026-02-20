@@ -3,7 +3,7 @@ import usersAPI from "../api";
 
 const mapUser = (x) => {
   return {
-    id: x?.id || x?.user_id || null,
+    id: x?.id || x?.user_id || x?.user_data?.id || null,
     name: x?.name || x?.user_data?.name || x?.full_name || "",
     username: x?.username || x?.user_data?.username || "",
     email: x?.email || x?.user_data?.email || "",

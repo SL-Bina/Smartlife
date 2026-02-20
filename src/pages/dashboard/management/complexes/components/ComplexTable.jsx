@@ -1,11 +1,11 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem, Tooltip, Card, CardBody } from "@material-tailwind/react";
-import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon, PencilIcon, TrashIcon, GlobeAltIcon, MapPinIcon, EnvelopeIcon, PhoneIcon, BuildingOffice2Icon, HomeModernIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon, PencilIcon, TrashIcon, GlobeAltIcon, MapPinIcon, EnvelopeIcon, PhoneIcon, BuildingOffice2Icon, HomeModernIcon, CheckCircleIcon, EyeIcon } from "@heroicons/react/24/outline";
 
 const DEFAULT_COLOR = "#dc2626";
 
-export function ComplexTable({ items = [], loading, onEdit, onDelete, onGoToBuildings, onSelect, selectedComplexId }) {
+export function ComplexTable({ items = [], loading, onView, onEdit, onDelete, onGoToBuildings, onSelect, selectedComplexId }) {
   const navigate = useNavigate();
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
@@ -344,6 +344,18 @@ export function ComplexTable({ items = [], loading, onEdit, onDelete, onGoToBuil
                         </IconButton>
                       </MenuHandler>
                       <MenuList className="min-w-[160px] !z-[9999]">
+                        {onView && (
+                          <MenuItem 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onView?.(item);
+                            }} 
+                            className="flex items-center gap-2"
+                          >
+                            <EyeIcon className="h-4 w-4" />
+                            Bax
+                          </MenuItem>
+                        )}
                         <MenuItem 
                           onClick={(e) => {
                             e.stopPropagation();
@@ -471,6 +483,18 @@ export function ComplexTable({ items = [], loading, onEdit, onDelete, onGoToBuil
                         </IconButton>
                       </MenuHandler>
                       <MenuList className="min-w-[160px] !z-[9999]">
+                        {onView && (
+                          <MenuItem 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onView?.(item);
+                            }} 
+                            className="flex items-center gap-2"
+                          >
+                            <EyeIcon className="h-4 w-4" />
+                            Bax
+                          </MenuItem>
+                        )}
                         <MenuItem 
                           onClick={(e) => {
                             e.stopPropagation();

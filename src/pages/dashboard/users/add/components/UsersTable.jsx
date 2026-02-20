@@ -1,12 +1,12 @@
 import React, { useState, useMemo } from "react";
 import { Card, CardBody, Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
-import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
+import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon, EyeIcon } from "@heroicons/react/24/outline";
 import { useMaterialTailwindController } from "@/store/hooks/useMaterialTailwind";
 import { UsersTableSkeleton } from "./UsersTableSkeleton";
 
 const DEFAULT_COLOR = "#dc2626";
 
-export function UsersTable({ items = [], loading, onEdit, onDelete }) {
+export function UsersTable({ items = [], loading, onView, onEdit, onDelete }) {
   const [controller] = useMaterialTailwindController();
   const { sidenavType } = controller;
   const colorCode = null;
@@ -393,6 +393,15 @@ export function UsersTable({ items = [], loading, onEdit, onDelete }) {
                           </IconButton>
                         </MenuHandler>
                         <MenuList className="dark:bg-gray-800 dark:border-gray-700">
+                          {onView && (
+                            <MenuItem 
+                              onClick={() => onView?.(item)}
+                              className="dark:text-gray-300 dark:hover:bg-gray-700 flex items-center gap-2"
+                            >
+                              <EyeIcon className="h-4 w-4" />
+                              Bax
+                            </MenuItem>
+                          )}
                           <MenuItem 
                             onClick={() => onEdit?.(item)}
                             className="dark:text-gray-300 dark:hover:bg-gray-700"

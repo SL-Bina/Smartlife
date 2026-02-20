@@ -3,7 +3,6 @@ import { createPortal } from "react-dom";
 import { ChevronDownIcon, MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import api from "@/services/api";
 
-// Debounce hook
 function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
@@ -30,15 +29,12 @@ export function AsyncSearchSelect({
   disabled = false,
   className = "",
   labelClassName = "",
-  // API config
-  endpoint, // e.g., "/module/mtk/list"
-  searchParams = {}, // Additional params like { mtk_id: 5 }
-  // Data mapping
-  labelKey = "name", // Which field to use as label
-  valueKey = "id", // Which field to use as value
-  // Selected item display
-  selectedLabel = null, // If value is selected but not in options, show this label
-  perPage = 20, // Items per page for pagination
+  endpoint, 
+  searchParams = {},
+  labelKey = "name", 
+  valueKey = "id", 
+  selectedLabel = null,
+  perPage = 20,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -57,7 +53,6 @@ export function AsyncSearchSelect({
 
   const debouncedSearch = useDebounce(searchTerm, 300);
 
-  // Calculate dropdown position
   const updateDropdownPosition = () => {
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
@@ -69,7 +64,6 @@ export function AsyncSearchSelect({
     }
   };
 
-  // Memoize searchParams key to track changes
   const searchParamsKey = JSON.stringify(searchParams);
   const searchParamsRef = useRef(searchParams);
   
@@ -77,12 +71,10 @@ export function AsyncSearchSelect({
     searchParamsRef.current = searchParams;
   }, [searchParamsKey]);
 
-  // Parse API response: { success: true, data: { data: [...], last_page: X, current_page: X } }
   const parseResponse = useCallback((response) => {
     let data = [];
     let lastPage = 1;
     
-    // Format: { success: true, data: { data: [...], last_page: X } }
     if (response.data?.success && response.data?.data) {
       const responseData = response.data.data;
       if (Array.isArray(responseData.data)) {
@@ -103,7 +95,6 @@ export function AsyncSearchSelect({
     return { data, lastPage };
   }, []);
 
-  // Load more pages (for infinite scroll)
   const loadMoreData = useCallback(async (search, pageNum) => {
     if (!endpoint || loadingMore) return;
     
@@ -133,7 +124,6 @@ export function AsyncSearchSelect({
     }
   }, [endpoint, perPage, loadingMore, parseResponse]);
 
-  // Load more when scrolling to bottom
   const handleListScroll = useCallback((e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.target;
     if (scrollHeight - scrollTop <= clientHeight + 50 && hasMore && !loadingMore && !loading) {
@@ -141,7 +131,6 @@ export function AsyncSearchSelect({
     }
   }, [hasMore, loadingMore, loading, page, debouncedSearch, loadMoreData]);
 
-  // Fetch on search term change or when dropdown opens (reset to page 1)
   useEffect(() => {
     if (isOpen && endpoint) {
       setPage(1);
@@ -179,7 +168,6 @@ export function AsyncSearchSelect({
     }
   }, [debouncedSearch, isOpen, endpoint, perPage, searchParamsKey, parseResponse]);
 
-  // Handle click outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -203,7 +191,6 @@ export function AsyncSearchSelect({
       document.addEventListener("mousedown", handleClickOutside);
       window.addEventListener("scroll", handleScroll, true);
       updateDropdownPosition();
-      // Focus search input when dropdown opens
       setTimeout(() => searchInputRef.current?.focus(), 50);
     }
 
@@ -213,7 +200,6 @@ export function AsyncSearchSelect({
     };
   }, [isOpen]);
 
-  // Find selected option label
   const getSelectedLabel = () => {
     if (!value) return null;
     if (!Array.isArray(options)) return selectedLabel;
@@ -261,7 +247,6 @@ export function AsyncSearchSelect({
         zIndex: 99999,
       }}
     >
-      {/* Search Input */}
       <div className="p-2 border-b border-gray-200 dark:border-gray-700">
         <div className="relative">
           <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -277,13 +262,11 @@ export function AsyncSearchSelect({
         </div>
       </div>
       
-      {/* Options List */}
       <div 
         ref={listRef}
         className="max-h-52 overflow-y-auto"
         onScroll={handleListScroll}
       >
-        {/* Hamısı option */}
         <button
           type="button"
           onClick={() => handleSelect({ [valueKey]: "", [labelKey]: "Hamısı" })}

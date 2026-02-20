@@ -14,6 +14,8 @@ import { useBuildingForm } from "./hooks/useBuildingForm";
 import { useBuildingData } from "./hooks/useBuildingData";
 import buildingsAPI from "./api";
 import DynamicToast from "@/components/DynamicToast";
+import { ViewModal } from "@/components/management/ViewModal";
+import { DeleteConfirmModal } from "@/components/management/DeleteConfirmModal";
 
 export default function BuildingsPage() {
   const navigate = useNavigate();
@@ -73,6 +75,12 @@ export default function BuildingsPage() {
   }, [urlComplexId, selectedComplexId]);
   const [formOpen, setFormOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [viewLoading, setViewLoading] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+  const [itemToView, setItemToView] = useState(null);
   const [mode, setMode] = useState("create");
   const [selected, setSelected] = useState(null);
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
@@ -289,6 +297,30 @@ export default function BuildingsPage() {
     setFormOpen(true);
   };
 
+  const handleView = async (item) => {
+    if (!item?.id) {
+      showToast("error", "Bina ID tapılmadı", "Xəta");
+      return;
+    }
+
+    setViewLoading(true);
+    setViewModalOpen(true);
+    try {
+      const response = await buildingsAPI.getById(item.id);
+      // API returns { data: { success, message, data } } or { success, message, data }
+      const apiData = response?.data?.data || response?.data || response;
+      setItemToView(apiData);
+    } catch (error) {
+      console.error("Error loading Building details:", error);
+      const errorMessage = error?.message || error?.response?.data?.message || "Bina məlumatları yüklənərkən xəta baş verdi";
+      showToast("error", errorMessage, "Xəta");
+      setViewModalOpen(false);
+      setItemToView(null);
+    } finally {
+      setViewLoading(false);
+    }
+  };
+
   const handleEdit = (item) => {
     form.setFormFromBuilding(item);
     setMode("edit");
@@ -301,17 +333,25 @@ export default function BuildingsPage() {
     showToast("success", `"${item.name}" Bina seçildi`, "Uğurlu");
   };
 
-  const handleDelete = async (item) => {
-    if (!window.confirm(`"${item.name}" Binasını silmək istədiyinizə əminsiniz?`)) {
-      return;
-    }
+  const handleDelete = (item) => {
+    setItemToDelete(item);
+    setDeleteModalOpen(true);
+  };
 
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+    
+    setDeleteLoading(true);
     try {
-      await buildingsAPI.delete(item.id);
+      await buildingsAPI.delete(itemToDelete.id);
       showToast("success", "Bina uğurla silindi", "Uğurlu");
       refresh();
+      setDeleteModalOpen(false);
+      setItemToDelete(null);
     } catch (error) {
       showToast("error", error.message || "Xəta baş verdi", "Xəta");
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -353,6 +393,7 @@ export default function BuildingsPage() {
       <BuildingTable
         items={items}
         loading={loading}
+        onView={handleView}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onSelect={handleSelect}
@@ -393,6 +434,58 @@ export default function BuildingsPage() {
           }));
         }}
         currentSearch={search}
+      />
+
+      <ViewModal
+        open={viewModalOpen}
+        onClose={() => {
+          setViewModalOpen(false);
+          setItemToView(null);
+        }}
+        title="Bina Məlumatları"
+        item={itemToView}
+        entityName="bina"
+        loading={viewLoading}
+        fields={[
+          { key: "name", label: "Ad", icon: BuildingOfficeIcon },
+          { 
+            key: "complex.name", 
+            label: "Complex",
+            icon: BuildingOfficeIcon,
+            getValue: (item) => item?.complex?.name
+          },
+          { 
+            key: "complex.id", 
+            label: "Complex ID",
+            icon: BuildingOfficeIcon,
+            getValue: (item) => item?.complex?.id
+          },
+          { 
+            key: "meta.desc", 
+            label: "Təsvir",
+            icon: InformationCircleIcon,
+            fullWidth: true,
+            getValue: (item) => item?.meta?.desc
+          },
+          { 
+            key: "status", 
+            label: "Status",
+            icon: CheckCircleIcon
+          },
+        ]}
+      />
+
+      <DeleteConfirmModal
+        open={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false);
+          setItemToDelete(null);
+        }}
+        onConfirm={confirmDelete}
+        title="Binayı Sil"
+        itemName={itemToDelete ? `"${itemToDelete.name}"` : ""}
+        entityName="bina"
+        loading={deleteLoading}
       />
 
       <DynamicToast

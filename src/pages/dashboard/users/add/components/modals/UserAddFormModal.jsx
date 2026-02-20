@@ -15,6 +15,21 @@ import {
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
+const mapAccessToForm = (accessModules = []) => {
+  const modules = [];
+  const permissions = [];
+
+  accessModules.forEach((m) => {
+    if (m.module_id) modules.push(m.module_id);
+    if (m.permissions?.length) {
+      m.permissions.forEach(p => permissions.push(p.id));
+    }
+  });
+
+  return { modules, permissions };
+};
+
+
 export function UserAddFormModal({ open, mode = "create", onClose, form, onSubmit, lookups }) {
   const { t } = useTranslation();
   const [saving, setSaving] = useState(false);
@@ -26,18 +41,16 @@ export function UserAddFormModal({ open, mode = "create", onClose, form, onSubmi
     setToast({ open: true, type, message, title });
   };
 
-  const handleMultiSelect = (field, value) => {
-    const current = form.formData[field] || [];
 
-    if (current.includes(Number(value))) {
-      form.updateField(
-        field,
-        current.filter(v => v !== Number(value))
-      );
-    } else {
-      form.updateField(field, [...current, Number(value)]);
+
+  useEffect(() => {
+    if (mode === "edit" && form?.formData?.role_access_modules) {
+      const parsed = mapAccessToForm(form.formData.role_access_modules);
+
+      form.updateField("modules", parsed.modules);
+      form.updateField("permissions", parsed.permissions);
     }
-  };
+  }, [mode, form?.formData?.role_access_modules]);
 
 
 
@@ -129,6 +142,47 @@ export function UserAddFormModal({ open, mode = "create", onClose, form, onSubmi
       setSaving(false);
     }
   };
+
+  const normalizeIds = (arr) => {
+    if (!Array.isArray(arr)) return [];
+    return arr.map(item => typeof item === "object" ? item.id : item);
+  };
+
+  useEffect(() => {
+    if (mode !== "edit" || !form?.formData) return;
+
+    form.setFormData(prev => ({
+      ...prev,
+      modules: normalizeIds(prev.modules),
+      permissions: normalizeIds(prev.permissions),
+      mtk: normalizeIds(prev.mtk),
+      complex: normalizeIds(prev.complex),
+    }));
+  }, [mode]);
+
+  useEffect(() => {
+    if (mode !== "edit") return;
+
+    const access = form?.formData?.role_access_modules;
+    if (!access) return;
+
+    const modules = [];
+    const permissions = [];
+
+    access.forEach(m => {
+      if (m.module_id) modules.push(m.module_id);
+      if (m.permissions) {
+        m.permissions.forEach(p => permissions.push(p.id));
+      }
+    });
+
+    form.setFormData(prev => ({
+      ...prev,
+      modules,
+      permissions
+    }));
+  }, [mode]);
+
 
 
   if (!open) return null;

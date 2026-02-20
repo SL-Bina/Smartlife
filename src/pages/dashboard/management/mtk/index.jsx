@@ -13,6 +13,9 @@ import { useMtkForm } from "./hooks/useMtkForm";
 import { useMtkData } from "./hooks/useMtkData";
 import mtkAPI from "./api";
 import DynamicToast from "@/components/DynamicToast";
+import { ViewModal } from "@/components/management/ViewModal";
+import { DeleteConfirmModal } from "@/components/management/DeleteConfirmModal";
+import { BuildingOfficeIcon, MapPinIcon, PhoneIcon, EnvelopeIcon, GlobeAltIcon, InformationCircleIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 
 export default function MtkPage() {
   const navigate = useNavigate();
@@ -26,6 +29,12 @@ export default function MtkPage() {
   const [search, setSearch] = useState({});
   const [formOpen, setFormOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [viewLoading, setViewLoading] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+  const [itemToView, setItemToView] = useState(null);
   const [mode, setMode] = useState("create");
   const [selected, setSelected] = useState(null);
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
@@ -88,6 +97,30 @@ export default function MtkPage() {
     setFormOpen(true);
   };
 
+  const handleView = async (item) => {
+    if (!item?.id) {
+      showToast("error", "MTK ID tapılmadı", "Xəta");
+      return;
+    }
+
+    setViewLoading(true);
+    setViewModalOpen(true);
+    try {
+      const response = await mtkAPI.getById(item.id);
+      // API returns { data: { success, message, data } } or { success, message, data }
+      const apiData = response?.data?.data || response?.data || response;
+      setItemToView(apiData);
+    } catch (error) {
+      console.error("Error loading MTK details:", error);
+      const errorMessage = error?.message || error?.response?.data?.message || "MTK məlumatları yüklənərkən xəta baş verdi";
+      showToast("error", errorMessage, "Xəta");
+      setViewModalOpen(false);
+      setItemToView(null);
+    } finally {
+      setViewLoading(false);
+    }
+  };
+
   const handleEdit = (item) => {
     form.setFormFromMtk(item);
     setMode("edit");
@@ -100,19 +133,27 @@ export default function MtkPage() {
     showToast("success", `"${item.name}" MTK seçildi`, "Uğurlu");
   };
 
-  const handleDelete = async (item) => {
-    if (!window.confirm(`"${item.name}" MTK-nı silmək istədiyinizə əminsiniz?`)) {
-      return;
-    }
+  const handleDelete = (item) => {
+    setItemToDelete(item);
+    setDeleteModalOpen(true);
+  };
 
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+    
+    setDeleteLoading(true);
     try {
-      await mtkAPI.delete(item.id);
+      await mtkAPI.delete(itemToDelete.id);
       showToast("success", "MTK uğurla silindi", "Uğurlu");
       refresh();
       // Reload MTKs in Redux
       dispatch(loadMtks({ page: 1, per_page: 1000 }));
+      setDeleteModalOpen(false);
+      setItemToDelete(null);
     } catch (error) {
       showToast("error", error.message || "Xəta baş verdi", "Xəta");
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -159,6 +200,7 @@ export default function MtkPage() {
       <MtkTable
         items={items}
         loading={loading}
+        onView={handleView}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onSelect={handleSelect}
@@ -197,6 +239,102 @@ export default function MtkPage() {
           }));
         }}
         currentSearch={search}
+      />
+
+      <ViewModal
+        open={viewModalOpen}
+        onClose={() => {
+          setViewModalOpen(false);
+          setItemToView(null);
+        }}
+        title="MTK Məlumatları"
+        item={itemToView}
+        entityName="MTK"
+        loading={viewLoading}
+        fields={[
+          { key: "name", label: "Ad", icon: BuildingOfficeIcon },
+          { 
+            key: "meta.desc", 
+            label: "Təsvir",
+            icon: InformationCircleIcon,
+            fullWidth: true,
+            getValue: (item) => item?.meta?.desc
+          },
+          { 
+            key: "meta.address", 
+            label: "Ünvan",
+            icon: MapPinIcon,
+            fullWidth: true,
+            getValue: (item) => item?.meta?.address
+          },
+          { 
+            key: "meta.phone", 
+            label: "Telefon",
+            icon: PhoneIcon,
+            getValue: (item) => item?.meta?.phone
+          },
+          { 
+            key: "meta.email", 
+            label: "E-mail",
+            icon: EnvelopeIcon,
+            getValue: (item) => item?.meta?.email
+          },
+          { 
+            key: "meta.website", 
+            label: "Website",
+            icon: GlobeAltIcon,
+            fullWidth: true,
+            getValue: (item) => item?.meta?.website
+          },
+          { 
+            key: "meta.lat", 
+            label: "Enlik (Lat)",
+            icon: MapPinIcon,
+            getValue: (item) => item?.meta?.lat
+          },
+          { 
+            key: "meta.lng", 
+            label: "Uzunluq (Lng)",
+            icon: MapPinIcon,
+            getValue: (item) => item?.meta?.lng
+          },
+          { 
+            key: "meta.color_code", 
+            label: "Rəng kodu",
+            icon: InformationCircleIcon,
+            getValue: (item) => item?.meta?.color_code,
+            format: (value) => {
+              if (!value) return "-";
+              return (
+                <div className="flex items-center gap-2">
+                  <span>{value}</span>
+                  <div 
+                    className="w-6 h-6 rounded border border-gray-300 dark:border-gray-600" 
+                    style={{ backgroundColor: value }}
+                  />
+                </div>
+              );
+            }
+          },
+          { 
+            key: "status", 
+            label: "Status",
+            icon: CheckCircleIcon
+          },
+        ]}
+      />
+
+      <DeleteConfirmModal
+        open={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false);
+          setItemToDelete(null);
+        }}
+        onConfirm={confirmDelete}
+        title="MTK-nı Sil"
+        itemName={itemToDelete ? `"${itemToDelete.name}"` : ""}
+        entityName="MTK"
+        loading={deleteLoading}
       />
 
       <DynamicToast

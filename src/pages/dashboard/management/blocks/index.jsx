@@ -15,6 +15,8 @@ import { useBlockForm } from "./hooks/useBlockForm";
 import { useBlockData } from "./hooks/useBlockData";
 import blocksAPI from "./api";
 import DynamicToast from "@/components/DynamicToast";
+import { ViewModal } from "@/components/management/ViewModal";
+import { DeleteConfirmModal } from "@/components/management/DeleteConfirmModal";
 
 export default function BlocksPage() {
   const navigate = useNavigate();
@@ -83,6 +85,12 @@ export default function BlocksPage() {
   }, [urlMtkId, urlComplexId, urlBuildingId]);
   const [formOpen, setFormOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [viewLoading, setViewLoading] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+  const [itemToView, setItemToView] = useState(null);
   const [mode, setMode] = useState("create");
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
 
@@ -287,18 +295,50 @@ export default function BlocksPage() {
     showToast("success", `"${item.name}" Blok seçildi`, "Uğurlu");
   };
 
-  const handleDelete = async (block) => {
-    if (!window.confirm(`"${block.name}" blokunu silmək istədiyinizə əminsiniz?`)) {
+  const handleView = async (item) => {
+    if (!item?.id) {
+      showToast("error", "Blok ID tapılmadı", "Xəta");
       return;
     }
 
+    setViewLoading(true);
+    setViewModalOpen(true);
     try {
-      await blocksAPI.delete(block.id);
+      const response = await blocksAPI.getById(item.id);
+      // API returns { data: { success, message, data } } or { success, message, data }
+      const apiData = response?.data?.data || response?.data || response;
+      setItemToView(apiData);
+    } catch (error) {
+      console.error("Error loading Block details:", error);
+      const errorMessage = error?.message || error?.response?.data?.message || "Blok məlumatları yüklənərkən xəta baş verdi";
+      showToast("error", errorMessage, "Xəta");
+      setViewModalOpen(false);
+      setItemToView(null);
+    } finally {
+      setViewLoading(false);
+    }
+  };
+
+  const handleDelete = (block) => {
+    setItemToDelete(block);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+    
+    setDeleteLoading(true);
+    try {
+      await blocksAPI.delete(itemToDelete.id);
       showToast("success", "Blok uğurla silindi", "Uğurlu");
       refresh();
+      setDeleteModalOpen(false);
+      setItemToDelete(null);
     } catch (error) {
       const errorMessage = error?.message || "Blok silinərkən xəta baş verdi";
       showToast("error", errorMessage, "Xəta");
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -439,6 +479,7 @@ export default function BlocksPage() {
       <BlockTable
         items={items}
         loading={loading}
+        onView={handleView}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onSelect={handleSelect}
@@ -478,6 +519,75 @@ export default function BlocksPage() {
           }));
         }}
         currentSearch={search}
+      />
+
+      <ViewModal
+        open={viewModalOpen}
+        onClose={() => {
+          setViewModalOpen(false);
+          setItemToView(null);
+        }}
+        title="Blok Məlumatları"
+        item={itemToView}
+        entityName="blok"
+        loading={viewLoading}
+        fields={[
+          { key: "name", label: "Ad", icon: BuildingOfficeIcon },
+          { 
+            key: "building.name", 
+            label: "Bina",
+            icon: BuildingOfficeIcon,
+            getValue: (item) => item?.building?.name
+          },
+          { 
+            key: "building.id", 
+            label: "Bina ID",
+            icon: BuildingOfficeIcon,
+            getValue: (item) => item?.building?.id
+          },
+          { 
+            key: "complex.name", 
+            label: "Complex",
+            icon: BuildingOfficeIcon,
+            getValue: (item) => item?.complex?.name
+          },
+          { 
+            key: "complex.id", 
+            label: "Complex ID",
+            icon: BuildingOfficeIcon,
+            getValue: (item) => item?.complex?.id
+          },
+          { 
+            key: "meta.total_floor", 
+            label: "Ümumi mərtəbə sayı",
+            icon: InformationCircleIcon,
+            getValue: (item) => item?.meta?.total_floor
+          },
+          { 
+            key: "meta.total_apartment", 
+            label: "Ümumi mənzil sayı",
+            icon: InformationCircleIcon,
+            getValue: (item) => item?.meta?.total_apartment
+          },
+          { 
+            key: "status", 
+            label: "Status",
+            icon: CheckCircleIcon
+          },
+        ]}
+      />
+
+      <DeleteConfirmModal
+        open={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false);
+          setItemToDelete(null);
+        }}
+        onConfirm={confirmDelete}
+        title="Bloku Sil"
+        itemName={itemToDelete ? `"${itemToDelete.name}"` : ""}
+        entityName="blok"
+        loading={deleteLoading}
       />
 
       <DynamicToast

@@ -17,6 +17,21 @@ import { usePropertyForm } from "./hooks/usePropertyForm";
 import { usePropertyData } from "./hooks/usePropertyData";
 import propertiesAPI from "./api";
 import DynamicToast from "@/components/DynamicToast";
+import { ViewModal } from "@/components/management/ViewModal";
+import { DeleteConfirmModal } from "@/components/management/DeleteConfirmModal";
+import { 
+  HomeIcon, 
+  IdentificationIcon, 
+  BuildingOfficeIcon, 
+  InformationCircleIcon, 
+  CheckCircleIcon,
+  MapPinIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  GlobeAltIcon,
+  Square3Stack3DIcon,
+  BuildingOffice2Icon
+} from "@heroicons/react/24/outline";
 
 export default function PropertiesPage() {
   const navigate = useNavigate();
@@ -66,6 +81,11 @@ export default function PropertiesPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [serviceFeeModalOpen, setServiceFeeModalOpen] = useState(false);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+  const [itemToView, setItemToView] = useState(null);
   const [selected, setSelected] = useState(null);
   const [mode, setMode] = useState("create");
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
@@ -161,18 +181,31 @@ export default function PropertiesPage() {
     showToast("success", `"${item.name || item.apartment_number || `Mənzil #${item.id}`}" Mənzil seçildi`, "Uğurlu");
   };
 
-  const handleDelete = async (property) => {
-    if (!window.confirm(`"${property.name}" mənzilini silmək istədiyinizə əminsiniz?`)) {
-      return;
-    }
+  const handleView = (item) => {
+    setItemToView(item);
+    setViewModalOpen(true);
+  };
 
+  const handleDelete = (property) => {
+    setItemToDelete(property);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+    
+    setDeleteLoading(true);
     try {
-      await propertiesAPI.delete(property.id);
+      await propertiesAPI.delete(itemToDelete.id);
       showToast("success", "Mənzil uğurla silindi", "Uğurlu");
       refresh();
+      setDeleteModalOpen(false);
+      setItemToDelete(null);
     } catch (error) {
       const errorMessage = error?.message || "Mənzil silinərkən xəta baş verdi";
       showToast("error", errorMessage, "Xəta");
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -320,6 +353,7 @@ export default function PropertiesPage() {
       <PropertyTable
         items={items}
         loading={loading}
+        onView={handleView}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onServiceFee={handleServiceFee}
@@ -371,6 +405,143 @@ export default function PropertiesPage() {
           setServiceFeeModalOpen(false);
           setSelected(null);
         }}
+      />
+
+      <ViewModal
+        open={viewModalOpen}
+        onClose={() => {
+          setViewModalOpen(false);
+          setItemToView(null);
+        }}
+        title="Mənzil Məlumatları"
+        item={itemToView}
+        entityName="mənzil"
+        fields={[
+          { key: "name", label: "Ad", icon: HomeIcon },
+          { 
+            key: "meta.apartment_number", 
+            label: "Mənzil Nömrəsi", 
+            icon: IdentificationIcon,
+            getValue: (item) => item.meta?.apartment_number || item.apartment_number
+          },
+          { 
+            key: "meta.area", 
+            label: "Sahə (m²)", 
+            icon: Square3Stack3DIcon,
+            getValue: (item) => item.meta?.area ? `${item.meta.area} m²` : null
+          },
+          { 
+            key: "meta.floor", 
+            label: "Mərtəbə", 
+            icon: BuildingOffice2Icon,
+            getValue: (item) => item.meta?.floor || null
+          },
+          { 
+            key: "sub_data.block.name", 
+            label: "Blok",
+            icon: BuildingOfficeIcon,
+            getValue: (item) => item.sub_data?.block?.name || item.bind_block?.name
+          },
+          { 
+            key: "sub_data.building.name", 
+            label: "Bina",
+            icon: BuildingOfficeIcon,
+            getValue: (item) => item.sub_data?.building?.name || item.bind_building?.name
+          },
+          { 
+            key: "sub_data.complex.name", 
+            label: "Complex",
+            icon: BuildingOfficeIcon,
+            getValue: (item) => item.sub_data?.complex?.name || item.bind_complex?.name
+          },
+          { 
+            key: "sub_data.mtk.name", 
+            label: "MTK",
+            icon: BuildingOfficeIcon,
+            getValue: (item) => item.sub_data?.mtk?.name || item.bind_mtk?.name
+          },
+          { 
+            key: "sub_data.mtk.meta.address", 
+            label: "MTK Ünvanı",
+            icon: MapPinIcon,
+            fullWidth: true,
+            getValue: (item) => item.sub_data?.mtk?.meta?.address || item.bind_mtk?.meta?.address
+          },
+          { 
+            key: "sub_data.mtk.meta.phone", 
+            label: "MTK Telefon",
+            icon: PhoneIcon,
+            getValue: (item) => item.sub_data?.mtk?.meta?.phone || item.bind_mtk?.meta?.phone
+          },
+          { 
+            key: "sub_data.mtk.meta.email", 
+            label: "MTK E-mail",
+            icon: EnvelopeIcon,
+            getValue: (item) => item.sub_data?.mtk?.meta?.email || item.bind_mtk?.meta?.email
+          },
+          { 
+            key: "sub_data.mtk.meta.website", 
+            label: "MTK Website",
+            icon: GlobeAltIcon,
+            getValue: (item) => item.sub_data?.mtk?.meta?.website || item.bind_mtk?.meta?.website
+          },
+          { 
+            key: "sub_data.complex.meta.address", 
+            label: "Complex Ünvanı",
+            icon: MapPinIcon,
+            fullWidth: true,
+            getValue: (item) => item.sub_data?.complex?.meta?.address || item.bind_complex?.meta?.address
+          },
+          { 
+            key: "sub_data.complex.meta.phone", 
+            label: "Complex Telefon",
+            icon: PhoneIcon,
+            getValue: (item) => item.sub_data?.complex?.meta?.phone || item.bind_complex?.meta?.phone
+          },
+          { 
+            key: "sub_data.complex.meta.email", 
+            label: "Complex E-mail",
+            icon: EnvelopeIcon,
+            getValue: (item) => item.sub_data?.complex?.meta?.email || item.bind_complex?.meta?.email
+          },
+          { 
+            key: "sub_data.building.meta.desc", 
+            label: "Bina Təsviri",
+            icon: InformationCircleIcon,
+            fullWidth: true,
+            getValue: (item) => item.sub_data?.building?.meta?.desc || item.bind_building?.meta?.desc
+          },
+          { 
+            key: "sub_data.block.meta.total_floor", 
+            label: "Blok Ümumi Mərtəbə",
+            icon: BuildingOffice2Icon,
+            getValue: (item) => item.sub_data?.block?.meta?.total_floor || null
+          },
+          { 
+            key: "sub_data.block.meta.total_apartment", 
+            label: "Blok Ümumi Mənzil Sayı",
+            icon: HomeIcon,
+            getValue: (item) => item.sub_data?.block?.meta?.total_apartment || null
+          },
+          { 
+            key: "status", 
+            label: "Status",
+            icon: CheckCircleIcon
+          },
+        ]}
+      />
+
+      <DeleteConfirmModal
+        open={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false);
+          setItemToDelete(null);
+        }}
+        onConfirm={confirmDelete}
+        title="Mənzili Sil"
+        itemName={itemToDelete ? `"${itemToDelete.name}"` : ""}
+        entityName="mənzil"
+        loading={deleteLoading}
       />
 
       <DynamicToast

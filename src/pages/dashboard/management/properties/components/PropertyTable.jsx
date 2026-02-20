@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
-import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon, PencilIcon, TrashIcon, CurrencyDollarIcon } from "@heroicons/react/24/outline";
+import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon, PencilIcon, TrashIcon, CurrencyDollarIcon, EyeIcon } from "@heroicons/react/24/outline";
 
-export function PropertyTable({ items = [], loading, onEdit, onDelete, onServiceFee, onSelect, selectedPropertyId }) {
+export function PropertyTable({ items = [], loading, onView, onEdit, onDelete, onServiceFee, onSelect, selectedPropertyId }) {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const handleSort = (key) => {
@@ -275,6 +275,18 @@ export function PropertyTable({ items = [], loading, onEdit, onDelete, onService
                         </IconButton>
                       </MenuHandler>
                       <MenuList className="min-w-[160px]">
+                        {onView && (
+                          <MenuItem 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onView?.(item);
+                            }} 
+                            className="flex items-center gap-2"
+                          >
+                            <EyeIcon className="h-4 w-4" />
+                            Bax
+                          </MenuItem>
+                        )}
                         <MenuItem 
                           onClick={(e) => {
                             e.stopPropagation();

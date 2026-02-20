@@ -1,13 +1,13 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardBody, Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem, Tooltip, Button } from "@material-tailwind/react";
-import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon, PencilIcon, TrashIcon, CheckCircleIcon, GlobeAltIcon, MapPinIcon, EnvelopeIcon, PhoneIcon, BuildingOffice2Icon } from "@heroicons/react/24/outline";
+import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon, PencilIcon, TrashIcon, CheckCircleIcon, GlobeAltIcon, MapPinIcon, EnvelopeIcon, PhoneIcon, BuildingOffice2Icon, EyeIcon } from "@heroicons/react/24/outline";
 import { useMaterialTailwindController } from "@/store/hooks/useMaterialTailwind";
 import { useMtkColor } from "@/store/exports";
 
 const DEFAULT_COLOR = "#dc2626";
 
-export function MtkTable({ items = [], loading, onEdit, onDelete, onSelect, selectedMtkId }) {
+export function MtkTable({ items = [], loading, onView, onEdit, onDelete, onSelect, selectedMtkId }) {
   const navigate = useNavigate();
   const [controller] = useMaterialTailwindController();
   const { sidenavType } = controller;
@@ -323,6 +323,18 @@ export function MtkTable({ items = [], loading, onEdit, onDelete, onSelect, sele
                         </IconButton>
                       </MenuHandler>
                       <MenuList className="min-w-[160px] !z-[9999]">
+                        {onView && (
+                          <MenuItem 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onView?.(item);
+                            }} 
+                            className="flex items-center gap-2"
+                          >
+                            <EyeIcon className="h-4 w-4" />
+                            Bax
+                          </MenuItem>
+                        )}
                         <MenuItem 
                           onClick={(e) => {
                             e.stopPropagation();
@@ -452,6 +464,18 @@ export function MtkTable({ items = [], loading, onEdit, onDelete, onSelect, sele
                         </IconButton>
                       </MenuHandler>
                       <MenuList className="min-w-[160px] !z-[9999]">
+                        {onView && (
+                          <MenuItem 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onView?.(item);
+                            }} 
+                            className="flex items-center gap-2"
+                          >
+                            <EyeIcon className="h-4 w-4" />
+                            Bax
+                          </MenuItem>
+                        )}
                         <MenuItem 
                           onClick={(e) => {
                             e.stopPropagation();

@@ -1,11 +1,11 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem, Tooltip, Card, CardBody } from "@material-tailwind/react";
-import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon, PencilIcon, TrashIcon, RectangleStackIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon, PencilIcon, TrashIcon, RectangleStackIcon, CheckCircleIcon, EyeIcon } from "@heroicons/react/24/outline";
 
 const DEFAULT_COLOR = "#9333ea"; // Purple for buildings
 
-export function BuildingTable({ items = [], loading, onEdit, onDelete, onSelect, selectedBuildingId }) {
+export function BuildingTable({ items = [], loading, onView, onEdit, onDelete, onSelect, selectedBuildingId }) {
   const navigate = useNavigate();
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
@@ -255,6 +255,18 @@ export function BuildingTable({ items = [], loading, onEdit, onDelete, onSelect,
                         </IconButton>
                       </MenuHandler>
                       <MenuList className="min-w-[160px] !z-[9999]">
+                        {onView && (
+                          <MenuItem 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onView?.(item);
+                            }} 
+                            className="flex items-center gap-2"
+                          >
+                            <EyeIcon className="h-4 w-4" />
+                            Bax
+                          </MenuItem>
+                        )}
                         <MenuItem 
                           onClick={(e) => {
                             e.stopPropagation();
@@ -381,6 +393,18 @@ export function BuildingTable({ items = [], loading, onEdit, onDelete, onSelect,
                         </IconButton>
                       </MenuHandler>
                       <MenuList className="min-w-[160px] !z-[9999]">
+                        {onView && (
+                          <MenuItem 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onView?.(item);
+                            }} 
+                            className="flex items-center gap-2"
+                          >
+                            <EyeIcon className="h-4 w-4" />
+                            Bax
+                          </MenuItem>
+                        )}
                         <MenuItem 
                           onClick={(e) => {
                             e.stopPropagation();

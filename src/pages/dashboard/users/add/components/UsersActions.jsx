@@ -1,13 +1,14 @@
 import React, { useMemo } from "react";
 import { Button, Input } from "@material-tailwind/react";
-import { PlusIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import AppSelect from "@/components/ui/AppSelect";
 
 const STANDARD_OPTIONS = [10, 25, 50, 75, 100];
 
 export function UsersActions({ 
   search, 
-  onSearchChange, 
+  onSearchChange,
+  onSearchClick,
   onCreateClick, 
   totalItems = 0,
   itemsPerPage = 10,
@@ -63,15 +64,26 @@ export function UsersActions({
           labelProps={{ className: "dark:text-gray-300" }}
         />
 
-        <Button
-          onClick={onCreateClick}
-          variant="outlined"
-          className="w-full border-green-700 text-green-700 hover:bg-green-700 hover:text-white hover:shadow-lg flex items-center justify-center gap-2"
-          size="md"
-        >
-          <PlusIcon className="h-5 w-5" />
-          İstifadəçi əlavə et
-        </Button>
+        <div className="flex flex-col gap-2">
+          <Button
+            onClick={onSearchClick}
+            variant="outlined"
+            className="w-full border-blue-700 text-blue-700 hover:bg-blue-700 hover:text-white hover:shadow-lg flex items-center justify-center gap-2"
+            size="md"
+          >
+            <MagnifyingGlassIcon className="h-5 w-5" />
+            Ətraflı axtarış
+          </Button>
+          <Button
+            onClick={onCreateClick}
+            variant="outlined"
+            className="w-full border-green-700 text-green-700 hover:bg-green-700 hover:text-white hover:shadow-lg flex items-center justify-center gap-2"
+            size="md"
+          >
+            <PlusIcon className="h-5 w-5" />
+            İstifadəçi əlavə et
+          </Button>
+        </div>
 
         {itemsPerPageOptions && (
           <AppSelect
@@ -110,6 +122,16 @@ export function UsersActions({
               />
             </div>
           )}
+
+          <Button
+            onClick={onSearchClick}
+            variant="outlined"
+            className="flex items-center justify-center gap-2 border-blue-700 text-blue-700 hover:bg-blue-700 hover:text-white hover:shadow-lg transition-all whitespace-nowrap"
+            size="md"
+          >
+            <MagnifyingGlassIcon className="h-5 w-5" />
+            <span>Ətraflı axtarış</span>
+          </Button>
 
           <Button
             onClick={onCreateClick}

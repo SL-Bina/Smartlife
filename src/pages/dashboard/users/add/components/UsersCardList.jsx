@@ -1,9 +1,9 @@
 import React from "react";
 import { Card, CardBody, Typography, Chip, Button, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
-import { EllipsisVerticalIcon, UserIcon, EnvelopeIcon, PhoneIcon } from "@heroicons/react/24/outline";
+import { EllipsisVerticalIcon, UserIcon, EnvelopeIcon, PhoneIcon, EyeIcon } from "@heroicons/react/24/outline";
 const DEFAULT_COLOR = "#dc2626";
 
-export function UsersCardList({ items = [], loading, onEdit, onDelete }) {
+export function UsersCardList({ items = [], loading, onView, onEdit, onDelete }) {
   const colorCode = null;
   const activeColor = DEFAULT_COLOR;
 
@@ -90,6 +90,15 @@ export function UsersCardList({ items = [], loading, onEdit, onDelete }) {
                   </IconButton>
                 </MenuHandler>
                 <MenuList className="dark:bg-gray-800 dark:border-gray-700">
+                  {onView && (
+                    <MenuItem 
+                      onClick={() => onView?.(item)}
+                      className="dark:text-gray-300 dark:hover:bg-gray-700 flex items-center gap-2"
+                    >
+                      <EyeIcon className="h-4 w-4" />
+                      Bax
+                    </MenuItem>
+                  )}
                   <MenuItem 
                     onClick={() => onEdit?.(item)}
                     className="dark:text-gray-300 dark:hover:bg-gray-700"

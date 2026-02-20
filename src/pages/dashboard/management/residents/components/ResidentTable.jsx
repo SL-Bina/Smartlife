@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { Card, CardBody, Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem, Tooltip, Button } from "@material-tailwind/react";
-import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon, PencilIcon, TrashIcon, CheckCircleIcon, UserIcon, EnvelopeIcon, PhoneIcon } from "@heroicons/react/24/outline";
+import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon, PencilIcon, TrashIcon, CheckCircleIcon, UserIcon, EnvelopeIcon, PhoneIcon, EyeIcon } from "@heroicons/react/24/outline";
 
-export function ResidentTable({ items = [], loading, onEdit, onDelete, onSelect, selectedResidentId }) {
+export function ResidentTable({ items = [], loading, onView, onEdit, onDelete, onSelect, selectedResidentId }) {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const handleSort = (key) => {
@@ -179,6 +179,12 @@ export function ResidentTable({ items = [], loading, onEdit, onDelete, onSelect,
                       </IconButton>
                     </MenuHandler>
                     <MenuList>
+                      {onView && (
+                        <MenuItem onClick={() => onView(item)} className="flex items-center">
+                          <EyeIcon className="h-4 w-4 mr-2" />
+                          Bax
+                        </MenuItem>
+                      )}
                       {onSelect && (
                         <MenuItem onClick={() => onSelect(item)}>
                           <CheckCircleIcon className="h-4 w-4 mr-2" />
@@ -227,6 +233,12 @@ export function ResidentTable({ items = [], loading, onEdit, onDelete, onSelect,
                     </IconButton>
                   </MenuHandler>
                   <MenuList>
+                    {onView && (
+                      <MenuItem onClick={() => onView(item)}>
+                        <EyeIcon className="h-4 w-4 mr-2" />
+                        Bax
+                      </MenuItem>
+                    )}
                     {onSelect && (
                       <MenuItem onClick={() => onSelect(item)}>
                         <CheckCircleIcon className="h-4 w-4 mr-2" />

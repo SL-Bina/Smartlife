@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { setSelectedResident, loadResidents } from "@/store/slices/residentSlice";
+import { setSelectedResident, loadResidents, loadResidentById } from "@/store/slices/residentSlice";
 import { loadMtks, setSelectedMtk, loadMtkById } from "@/store/slices/mtkSlice";
 import { loadComplexes, setSelectedComplex, loadComplexById } from "@/store/slices/complexSlice";
 import { loadBuildings, setSelectedBuilding, loadBuildingById } from "@/store/slices/buildingSlice";
@@ -17,6 +17,9 @@ import { useResidentForm } from "./hooks/useResidentForm";
 import { useResidentData } from "./hooks/useResidentData";
 import residentsAPI from "./api";
 import DynamicToast from "@/components/DynamicToast";
+import { ViewModal } from "@/components/management/ViewModal";
+import { DeleteConfirmModal } from "@/components/management/DeleteConfirmModal";
+import { UserIcon, EnvelopeIcon, PhoneIcon, IdentificationIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 
 export default function ResidentsPage() {
   const navigate = useNavigate();
@@ -94,6 +97,11 @@ export default function ResidentsPage() {
   const [search, setSearch] = useState({});
   const [formOpen, setFormOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+  const [itemToView, setItemToView] = useState(null);
   const [mode, setMode] = useState("create");
   const [selected, setSelected] = useState(null);
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
@@ -279,7 +287,7 @@ export default function ResidentsPage() {
   // Load selected Resident if ID exists but Resident data doesn't
   useEffect(() => {
     if (selectedResidentId && !selectedResident) {
-      dispatch(residentsAPI.getById(selectedResidentId));
+      dispatch(loadResidentById(selectedResidentId));
     }
   }, [dispatch, selectedResidentId, selectedResident]);
 
@@ -294,6 +302,11 @@ export default function ResidentsPage() {
     setFormOpen(true);
   };
 
+  const handleView = (item) => {
+    setItemToView(item);
+    setViewModalOpen(true);
+  };
+
   const handleEdit = (item) => {
     form.setFormFromResident(item);
     setMode("edit");
@@ -301,17 +314,25 @@ export default function ResidentsPage() {
     setFormOpen(true);
   };
 
-  const handleDelete = async (item) => {
-    if (!window.confirm(`"${item.name} ${item.surname}" Sakini silmək istədiyinizə əminsiniz?`)) {
-      return;
-    }
+  const handleDelete = (item) => {
+    setItemToDelete(item);
+    setDeleteModalOpen(true);
+  };
 
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+    
+    setDeleteLoading(true);
     try {
-      await residentsAPI.delete(item.id);
+      await residentsAPI.delete(itemToDelete.id);
       showToast("success", "Sakin uğurla silindi", "Uğurlu");
       refresh();
+      setDeleteModalOpen(false);
+      setItemToDelete(null);
     } catch (error) {
       showToast("error", error.message || "Xəta baş verdi", "Xəta");
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -364,6 +385,7 @@ export default function ResidentsPage() {
       <ResidentTable
         items={items}
         loading={loading}
+        onView={handleView}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onSelect={handleSelect}
@@ -404,6 +426,53 @@ export default function ResidentsPage() {
           }));
         }}
         currentSearch={search}
+      />
+
+      <ViewModal
+        open={viewModalOpen}
+        onClose={() => {
+          setViewModalOpen(false);
+          setItemToView(null);
+        }}
+        title="Sakin Məlumatları"
+        item={itemToView}
+        entityName="sakin"
+        fields={[
+          { key: "name", label: "Ad", icon: UserIcon },
+          { key: "surname", label: "Soyad", icon: UserIcon },
+          { key: "email", label: "E-mail", icon: EnvelopeIcon },
+          { key: "phone", label: "Telefon", icon: PhoneIcon },
+          { 
+            key: "gender", 
+            label: "Cins",
+            icon: UserIcon,
+            format: (value) => value === "male" ? "Kişi" : value === "female" ? "Qadın" : value || "-"
+          },
+          { 
+            key: "type", 
+            label: "Tip",
+            icon: IdentificationIcon,
+            format: (value) => value === "owner" ? "Sahib" : value === "tenant" ? "Kirayəçi" : value || "-"
+          },
+          { 
+            key: "status", 
+            label: "Status",
+            icon: CheckCircleIcon
+          },
+        ]}
+      />
+
+      <DeleteConfirmModal
+        open={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false);
+          setItemToDelete(null);
+        }}
+        onConfirm={confirmDelete}
+        title="Sakini Sil"
+        itemName={itemToDelete ? `"${itemToDelete.name} ${itemToDelete.surname}"` : ""}
+        entityName="sakin"
+        loading={deleteLoading}
       />
 
       <DynamicToast
