@@ -65,8 +65,7 @@ export const routes = [
       {
         icon: <BanknotesIcon {...icon} />,
         name: "sidebar.finance",
-        moduleName: "finance",
-        moduleId: 10,
+        // Submenu - modul yoxdur, yalnız children-ın modullarına görə açılır
         children: [
           {
             icon: <DocumentTextIcon {...icon} />,
@@ -208,8 +207,8 @@ export const routes = [
       {
         icon: <BuildingOfficeIcon {...icon} />,
         name: "sidebar.buildingManagement",
-        moduleName: "management",
-        moduleId: 3,
+        moduleName: "manage",
+        moduleId: 2,
         children: [
           {
             icon: <BuildingOfficeIcon {...icon} />,

@@ -88,7 +88,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="fixed inset-0 bg-black/50 dark:bg-black/70 z-40 xl:hidden backdrop-blur-sm"
+            className="fixed inset-0 bg-black/50 dark:bg-black/70 z-[9998] xl:hidden backdrop-blur-sm"
             onClick={() => actions.setOpenSidenav(false)}
           />
         )}
@@ -105,14 +105,14 @@ export function Sidenav({ brandImg, brandName, routes }) {
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         onMouseEnter={() => { if (!isMobile && sidenavCollapsed) setIsHovered(true); }}
         onMouseLeave={() => { if (!isMobile && sidenavCollapsed) setIsHovered(false); }}
-        className={`${sidenavTypes[sidenavType]} fixed inset-y-0 ${sidenavPosition === "right" ? "right-0" : "left-0"} ${
-          sidenavCollapsed && isHovered ? "z-[60]" : "z-50"
-        } xl:translate-x-0 flex flex-col backdrop-blur-xl ${sidenavPosition === "right" ? "border-l" : "border-r"} shadow-2xl ${
+        className={`${sidenavTypes[sidenavType]} fixed inset-y-0 ${sidenavPosition === "right" ? "right-0" : "left-0"} xl:translate-x-0 flex flex-col backdrop-blur-xl ${sidenavPosition === "right" ? "border-l" : "border-r"} shadow-2xl ${
           sidenavCollapsed && !isHovered ? "xl:overflow-hidden" : "overflow-y-auto"
         }`}
         style={{
           ...getSidenavBackground(),
           borderColor: mtkColorCode ? getRgbaColor(mtkColorCode, 0.3) : undefined,
+          zIndex: 99999, // Ən yüksək z-index - ən üstdə olmalıdır
+          isolation: 'isolate', // Yeni stacking context yaradır
         }}
       >
         <SidenavHeader brandName={brandName} collapsed={sidenavCollapsed && !isHovered} isLowHeight={isLowHeight} />

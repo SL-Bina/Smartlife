@@ -9,6 +9,7 @@ import { setSelectedProperty, loadProperties, loadPropertyById } from "@/store/s
 import { PropertyHeader } from "./components/PropertyHeader";
 import { ManagementActions, ENTITY_LEVELS } from "@/components/management/ManagementActions";
 import { PropertyTable } from "./components/PropertyTable";
+import { PropertyFloorView } from "./components/PropertyFloorView";
 import { PropertyPagination } from "./components/PropertyPagination";
 import { PropertyFormModal } from "./components/modals/PropertyFormModal";
 import { PropertySearchModal } from "./components/modals/PropertySearchModal";
@@ -30,8 +31,11 @@ import {
   EnvelopeIcon,
   GlobeAltIcon,
   Square3Stack3DIcon,
-  BuildingOffice2Icon
+  BuildingOffice2Icon,
+  Squares2X2Icon,
+  TableCellsIcon
 } from "@heroicons/react/24/outline";
+import { Button } from "@material-tailwind/react";
 
 export default function PropertiesPage() {
   const navigate = useNavigate();
@@ -88,6 +92,7 @@ export default function PropertiesPage() {
   const [itemToView, setItemToView] = useState(null);
   const [selected, setSelected] = useState(null);
   const [mode, setMode] = useState("create");
+  const [viewMode, setViewMode] = useState("table"); // "table" | "floor"
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
 
   const form = usePropertyForm();
@@ -350,16 +355,66 @@ export default function PropertiesPage() {
         onItemsPerPageChange={setItemsPerPage}
       />
 
-      <PropertyTable
-        items={items}
-        loading={loading}
-        onView={handleView}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onServiceFee={handleServiceFee}
-        onSelect={handleSelect}
-        selectedPropertyId={selectedPropertyId}
-      />
+      {/* View Mode Toggle */}
+      <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+          <Button
+            variant={viewMode === "table" ? "filled" : "text"}
+            size="sm"
+            onClick={() => setViewMode("table")}
+            className={`
+              flex items-center gap-2 px-3 py-2
+              ${viewMode === "table" 
+                ? "bg-blue-600 text-white" 
+                : "text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+              }
+            `}
+          >
+            <TableCellsIcon className="h-4 w-4" />
+            <span className="hidden sm:inline">Cədvəl</span>
+          </Button>
+          <Button
+            variant={viewMode === "floor" ? "filled" : "text"}
+            size="sm"
+            onClick={() => setViewMode("floor")}
+            className={`
+              flex items-center gap-2 px-3 py-2
+              ${viewMode === "floor" 
+                ? "bg-blue-600 text-white" 
+                : "text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+              }
+            `}
+          >
+            <Squares2X2Icon className="h-4 w-4" />
+            <span className="hidden sm:inline">Mərtəbə</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Conditional Rendering */}
+      {viewMode === "table" ? (
+        <PropertyTable
+          items={items}
+          loading={loading}
+          onView={handleView}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onServiceFee={handleServiceFee}
+          onSelect={handleSelect}
+          selectedPropertyId={selectedPropertyId}
+        />
+      ) : (
+        <PropertyFloorView
+          items={items}
+          loading={loading}
+          onView={handleView}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onServiceFee={handleServiceFee}
+          onSelect={handleSelect}
+          selectedPropertyId={selectedPropertyId}
+        />
+      )}
 
       <PropertyPagination
         page={page}

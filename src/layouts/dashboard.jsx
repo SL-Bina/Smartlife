@@ -115,31 +115,39 @@ export const filterRoutesByRole = (routes, user, hasModuleAccess) => {
           // Xüsusi səhifələr - həmişə görünür (profile, settings və s.)
           const isSpecialPage = page.path === "/profile" || page.path === "/settings";
           
-          // ModuleName yoxlaması - Root üçün keçir, digərləri üçün user-in modullarına görə filter et
-          let hasModuleAccess = false;
-          if (page.moduleName) {
-            if (isRoot) {
-              // Root üçün bütün modullar görünür
-              hasModuleAccess = true;
-            } else {
-              const moduleNameLower = page.moduleName.toLowerCase();
-              hasModuleAccess = userModuleNames.has(moduleNameLower);
-              if (!hasModuleAccess) {
-                return null; // Modul yoxdursa və ya icazəsi yoxdursa, səhifəni göstərmə
-              }
-            }
+          // Əgər children varsa, parent-in modul yoxlamasını keçiririk
+          // Submenu o zaman açılasın ki, daxilində hansısa modul aktivdirsə
+          if (page.children && page.children.length > 0) {
+            // Parent səhifənin öz modulu yoxdur - yalnız children-ın modullarına görə açılır
+            // hasModuleAccess yoxlamasını keçiririk
           } else {
-            // ModuleName yoxdursa
-            if (isRoot) {
-              // Root üçün bütün səhifələr görünür
-              hasModuleAccess = true;
-            } else if (isSpecialPage) {
-              // Xüsusi səhifələr (profile, settings) həmişə görünür
-              hasModuleAccess = true;
+            // Children yoxdursa, normal modul yoxlaması aparırıq
+            // ModuleName yoxlaması - Root üçün keçir, digərləri üçün user-in modullarına görə filter et
+            let hasModuleAccess = false;
+            if (page.moduleName) {
+              if (isRoot) {
+                // Root üçün bütün modullar görünür
+                hasModuleAccess = true;
+              } else {
+                const moduleNameLower = page.moduleName.toLowerCase();
+                hasModuleAccess = userModuleNames.has(moduleNameLower);
+                if (!hasModuleAccess) {
+                  return null; // Modul yoxdursa və ya icazəsi yoxdursa, səhifəni göstərmə
+                }
+              }
             } else {
-              // Digər səhifələr üçün modul icazəsi yoxdursa, görünməməlidir
-              // allowedRoles yoxlaması aparmırıq, çünki yalnız modul icazəsi olan səhifələr görünməlidir
-              return null;
+              // ModuleName yoxdursa
+              if (isRoot) {
+                // Root üçün bütün səhifələr görünür
+                hasModuleAccess = true;
+              } else if (isSpecialPage) {
+                // Xüsusi səhifələr (profile, settings) həmişə görünür
+                hasModuleAccess = true;
+              } else {
+                // Digər səhifələr üçün modul icazəsi yoxdursa, görünməməlidir
+                // allowedRoles yoxlaması aparmırıq, çünki yalnız modul icazəsi olan səhifələr görünməlidir
+                return null;
+              }
             }
           }
 
@@ -152,6 +160,7 @@ export const filterRoutesByRole = (routes, user, hasModuleAccess) => {
           }
 
           // Children varsa, onları da filter et
+          // Submenu o zaman açılasın ki, daxilində hansısa modul aktivdirsə
           if (page.children && page.children.length > 0) {
             const filteredChildren = page.children.filter((child) => {
               // ModuleName yoxlaması
@@ -191,10 +200,13 @@ export const filterRoutesByRole = (routes, user, hasModuleAccess) => {
             });
 
             // Əgər heç bir child görünmürsə, parent səhifəni də göstərmə
+            // Submenu o zaman açılasın ki, daxilində hansısa modul aktivdirsə
             if (filteredChildren.length === 0) {
               return null;
             }
 
+            // Parent səhifənin öz modulu yoxdur - yalnız children-ın modullarına görə açılır
+            // Buna görə parent-in modul yoxlamasını keçiririk
             return {
               ...page,
               children: filteredChildren,
@@ -350,7 +362,7 @@ export function Dashboard() {
           </div>
         </div>
       )}
-        <div className="relative z-10">
+        <div className="relative z-[99999]">
           <Sidenav
             routes={filteredRoutes}
             brandImg={
@@ -373,7 +385,7 @@ export function Dashboard() {
             stiffness: 300,
             damping: 30,
           }}
-          className="p-4 relative z-10 dashboard-content"
+          className="p-4 relative z-0 dashboard-content"
         >
           <DashboardNavbar />
           <div className="mb-8">

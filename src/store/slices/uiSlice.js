@@ -45,7 +45,7 @@ const initialState = {
   sidenavColor: 'dark',
   sidenavType: 'white',
   transparentNavbar: true,
-  fixedNavbar: false,
+  fixedNavbar: getInitialBool('fixedNavbar', true), // Default: true (sabit navbar)
   openConfigurator: false,
   darkMode: getInitialBool('darkMode', false),
   sidenavCollapsed: getInitialBool('sidenavCollapsed', false),
@@ -56,13 +56,13 @@ const initialState = {
   navbarColor: getInitialValue('navbarColor', 'default'),
   navbarHeight: getInitialValue('navbarHeight', 'normal'),
   navbarStyle: getInitialValue('navbarStyle', 'modern'),
-  navbarShadow: getInitialValue('navbarShadow', 'medium'),
+  navbarShadow: getInitialValue('navbarShadow', 'large'), // Default: 'large' (shadow large)
   navbarBorder: getInitialValue('navbarBorder', 'enabled'),
   navbarBlur: getInitialValue('navbarBlur', 'enabled'),
   navbarTransparency: getInitialValue('navbarTransparency', '95'),
   navbarPosition: getInitialValue('navbarPosition', 'top'),
   navbarAnimations: getInitialValue('navbarAnimations', 'enabled'),
-  navbarHoverEffects: getInitialValue('navbarHoverEffects', 'enabled'),
+  navbarHoverEffects: getInitialValue('navbarHoverEffects', 'disabled'), // Default: 'disabled' (hover effekt disable)
 };
 
 const uiSlice = createSlice({
@@ -83,6 +83,7 @@ const uiSlice = createSlice({
     },
     setFixedNavbar: (state, action) => {
       state.fixedNavbar = action.payload;
+      setCookie('fixedNavbar', String(action.payload));
     },
     setOpenConfigurator: (state, action) => {
       state.openConfigurator = action.payload;
