@@ -314,7 +314,9 @@ export function Dashboard() {
   }, [user?.id, isInitialized, refreshUser]);
 
   const hasToken = typeof document !== 'undefined' && document.cookie.includes('smartlife_token=');
-  if (!isInitialized || (hasToken && !user)) {
+  
+  // İnitialize olunmayıbsa loading göstər
+  if (!isInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-blue-gray-50/50 dark:bg-black">
         <div className="text-center">
@@ -325,9 +327,17 @@ export function Dashboard() {
     );
   }
 
-  const filteredRoutes = user
-    ? filterRoutesByRole(routes, user, hasModuleAccess)
-    : routes.filter((r) => r.layout === "dashboard");
+  // User yoxdursa və token varsa, sign-in-ə yönləndir
+  if (hasToken && !user) {
+    return <Navigate to="/auth/sign-in" replace />;
+  }
+
+  // User yoxdursa, sign-in-ə yönləndir
+  if (!user) {
+    return <Navigate to="/auth/sign-in" replace />;
+  }
+
+  const filteredRoutes = filterRoutesByRole(routes, user, hasModuleAccess);
 
   // Show error message if there's an auth error
   const showError = error && !user;
@@ -390,6 +400,8 @@ export function Dashboard() {
           <DashboardNavbar />
           <div className="mb-8">
             <Routes>
+              {/* Root path - home səhifəsinə yönləndir */}
+              <Route path="/" element={<Navigate to="/home" replace />} />
               {filteredRoutes.map(
                 ({ layout, pages }) =>
                   layout === "dashboard" &&
@@ -437,6 +449,7 @@ export function Dashboard() {
                     }
                   })
               )}
+              {/* 404 yalnız mövcud olmayan path-lər üçün */}
               <Route
                 path="*"
                 element={<NotFound />}
