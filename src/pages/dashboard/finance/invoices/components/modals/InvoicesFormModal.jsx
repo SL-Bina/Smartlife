@@ -2,15 +2,21 @@ import React, { useState, useEffect } from "react";
 import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Input, Typography } from "@material-tailwind/react";
 import { XMarkIcon, XCircleIcon, BuildingOfficeIcon, CalendarIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
+import api from "@/services/api";
+import buildingsAPI from "@/pages/dashboard/management/buildings/api";
+import blocksAPI from "@/pages/dashboard/management/blocks/api";
+import propertiesAPI from "@/pages/dashboard/management/properties/api";
 
 export function InvoicesFormModal({ open, onClose, title, formData, onFieldChange, onSave, isEdit = false, saving = false }) {
   const { t } = useTranslation();
   const [buildings, setBuildings] = useState([]);
   const [blocks, setBlocks] = useState([]);
-  const [apartments, setApartments] = useState([]);
+  const [properties, setProperties] = useState([]);
+  const [services, setServices] = useState([]);
   const [loadingBuildings, setLoadingBuildings] = useState(false);
   const [loadingBlocks, setLoadingBlocks] = useState(false);
-  const [loadingApartments, setLoadingApartments] = useState(false);
+  const [loadingProperties, setLoadingProperties] = useState(false);
+  const [loadingServices, setLoadingServices] = useState(false);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
 
@@ -63,54 +69,99 @@ export function InvoicesFormModal({ open, onClose, title, formData, onFieldChang
     }
   }, [open]);
 
+  // Load buildings on modal open
+  useEffect(() => {
+    if (open) {
+      setLoadingBuildings(true);
+      buildingsAPI.getAll({ per_page: 1000 })
+        .then((response) => {
+          setBuildings(response?.data?.data?.data || []);
+        })
+        .catch((error) => {
+          console.error("Error loading buildings:", error);
+          setBuildings([]);
+        })
+        .finally(() => {
+          setLoadingBuildings(false);
+        });
+    }
+  }, [open]);
+
+  // Load blocks when building is selected
   useEffect(() => {
     if (open && formData.building_id) {
-      setBlocks([
-        { id: 1, name: "Blok A" },
-        { id: 2, name: "Blok B" },
-        { id: 3, name: "Blok C" },
-      ]);
+      setLoadingBlocks(true);
+      blocksAPI.getAll({ building_id: formData.building_id, per_page: 1000 })
+        .then((response) => {
+          setBlocks(response?.data?.data?.data || []);
+        })
+        .catch((error) => {
+          console.error("Error loading blocks:", error);
+          setBlocks([]);
+        })
+        .finally(() => {
+          setLoadingBlocks(false);
+        });
     } else {
       setBlocks([]);
-      setApartments([]);
+      setProperties([]);
     }
   }, [open, formData.building_id]);
 
+  // Load properties when block is selected
   useEffect(() => {
     if (open && formData.block_id) {
-      setApartments([
-        { id: 1, name: "Mənzil 1" },
-        { id: 2, name: "Mənzil 2" },
-        { id: 3, name: "Mənzil 3" },
-      ]);
+      setLoadingProperties(true);
+      propertiesAPI.getAll({ block_id: formData.block_id, per_page: 1000 })
+        .then((response) => {
+          setProperties(response?.data?.data?.data || []);
+        })
+        .catch((error) => {
+          console.error("Error loading properties:", error);
+          setProperties([]);
+        })
+        .finally(() => {
+          setLoadingProperties(false);
+        });
     } else {
-      setApartments([]);
+      setProperties([]);
     }
   }, [open, formData.block_id]);
 
+  // Load services on modal open
   useEffect(() => {
-    if (formData.dateStart && formData.dateEnd && formData.dateEnd < formData.dateStart) {
+    if (open) {
+      setLoadingServices(true);
+      api.get("/module/services/list", { params: { per_page: 1000 } })
+        .then((response) => {
+          setServices(response?.data?.data?.data || []);
+        })
+        .catch((error) => {
+          console.error("Error loading services:", error);
+          setServices([]);
+        })
+        .finally(() => {
+          setLoadingServices(false);
+        });
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (formData.start_date && formData.due_date && formData.due_date < formData.start_date) {
       setErrors((prev) => ({
         ...prev,
-        dateEnd: t("invoices.form.dateEndError") || "Bitmə tarixi başlama tarixindən sonra olmalıdır",
+        due_date: t("invoices.form.dateEndError") || "Son tarix başlama tarixindən sonra olmalıdır",
       }));
     } else {
       setErrors((prev) => {
         const newErrors = { ...prev };
-        delete newErrors.dateEnd;
+        delete newErrors.due_date;
         return newErrors;
       });
     }
-  }, [formData.dateStart, formData.dateEnd, t]);
+  }, [formData.start_date, formData.due_date, t]);
 
   if (!open) return null;
-
-  const handleFloorChange = (e) => {
-    const value = e.target.value;
-    if (value === "" || (!isNaN(value) && parseFloat(value) >= 0)) {
-      onFieldChange("floor", value);
-    }
-  };
 
   const handleBlur = (field) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
@@ -121,41 +172,55 @@ export function InvoicesFormModal({ open, onClose, title, formData, onFieldChang
     const newErrors = { ...errors };
     
     switch (field) {
-      case "building_id":
-        if (!formData.building_id) {
-          newErrors.building_id = t("invoices.form.required") || "Bu sahə mütləqdir";
+      case "property_id":
+        if (!formData.property_id) {
+          newErrors.property_id = t("invoices.form.required") || "Bu sahə mütləqdir";
         } else {
-          delete newErrors.building_id;
+          delete newErrors.property_id;
         }
         break;
-      case "block_id":
-        if (!formData.block_id) {
-          newErrors.block_id = t("invoices.form.required") || "Bu sahə mütləqdir";
+      case "service_id":
+        if (!formData.service_id) {
+          newErrors.service_id = t("invoices.form.required") || "Bu sahə mütləqdir";
         } else {
-          delete newErrors.block_id;
-        }
-        break;
-      case "floor":
-        if (!formData.floor || formData.floor === "") {
-          newErrors.floor = t("invoices.form.required") || "Bu sahə mütləqdir";
-        } else if (parseFloat(formData.floor) < 0) {
-          newErrors.floor = t("invoices.form.floorError") || "Mərtəbə mənfi ola bilməz";
-        } else {
-          delete newErrors.floor;
-        }
-        break;
-      case "apartment_id":
-        if (!formData.apartment_id) {
-          newErrors.apartment_id = t("invoices.form.required") || "Bu sahə mütləqdir";
-        } else {
-          delete newErrors.apartment_id;
+          delete newErrors.service_id;
         }
         break;
       case "amount":
-        if (formData.amount && parseFloat(formData.amount) < 0) {
-          newErrors.amount = t("invoices.form.amountError") || "Məbləğ mənfi ola bilməz";
+        if (!formData.amount || parseFloat(formData.amount) <= 0) {
+          newErrors.amount = t("invoices.form.amountError") || "Məbləğ düzgün daxil edilməlidir";
         } else {
           delete newErrors.amount;
+        }
+        break;
+      case "start_date":
+        if (!formData.start_date) {
+          newErrors.start_date = t("invoices.form.required") || "Bu sahə mütləqdir";
+        } else {
+          delete newErrors.start_date;
+        }
+        break;
+      case "due_date":
+        if (!formData.due_date) {
+          newErrors.due_date = t("invoices.form.required") || "Bu sahə mütləqdir";
+        } else if (formData.start_date && formData.due_date < formData.start_date) {
+          newErrors.due_date = t("invoices.form.dateEndError") || "Son tarix başlama tarixindən sonra olmalıdır";
+        } else {
+          delete newErrors.due_date;
+        }
+        break;
+      case "type":
+        if (!formData.type) {
+          newErrors.type = t("invoices.form.required") || "Bu sahə mütləqdir";
+        } else {
+          delete newErrors.type;
+        }
+        break;
+      case "status":
+        if (!formData.status) {
+          newErrors.status = t("invoices.form.required") || "Bu sahə mütləqdir";
+        } else {
+          delete newErrors.status;
         }
         break;
       default:
@@ -166,28 +231,60 @@ export function InvoicesFormModal({ open, onClose, title, formData, onFieldChang
   };
 
   const handleSave = () => {
-    const requiredFields = ["building_id", "block_id", "floor", "apartment_id"];
     const newErrors = {};
     let hasErrors = false;
 
-    requiredFields.forEach((field) => {
-      if (!formData[field] || formData[field] === "") {
-        newErrors[field] = t("invoices.form.required") || "Bu sahə mütləqdir";
-        hasErrors = true;
-      }
-    });
+    // Validate required fields
+    if (!formData.service_id) {
+      newErrors.service_id = t("invoices.form.required") || "Bu sahə mütləqdir";
+      hasErrors = true;
+    }
 
-    if (formData.dateStart && formData.dateEnd && formData.dateEnd < formData.dateStart) {
-      newErrors.dateEnd = t("invoices.form.dateEndError") || "Bitmə tarixi başlama tarixindən sonra olmalıdır";
+    if (!formData.amount || parseFloat(formData.amount) <= 0) {
+      newErrors.amount = t("invoices.form.amountError") || "Məbləğ düzgün daxil edilməlidir";
+      hasErrors = true;
+    }
+
+    if (!formData.start_date) {
+      newErrors.start_date = t("invoices.form.required") || "Bu sahə mütləqdir";
+      hasErrors = true;
+    }
+
+    if (!formData.due_date) {
+      newErrors.due_date = t("invoices.form.required") || "Bu sahə mütləqdir";
+      hasErrors = true;
+    }
+
+    if (!formData.type) {
+      newErrors.type = t("invoices.form.required") || "Bu sahə mütləqdir";
+      hasErrors = true;
+    }
+
+    if (!formData.status) {
+      newErrors.status = t("invoices.form.required") || "Bu sahə mütləqdir";
+      hasErrors = true;
+    }
+
+    if (!formData.property_id) {
+      newErrors.property_id = t("invoices.form.required") || "Bu sahə mütləqdir";
+      hasErrors = true;
+    }
+
+    // Validate date range
+    if (formData.start_date && formData.due_date && formData.due_date < formData.start_date) {
+      newErrors.due_date = t("invoices.form.dateEndError") || "Son tarix başlama tarixindən sonra olmalıdır";
       hasErrors = true;
     }
 
     setErrors(newErrors);
     setTouched({
-      building_id: true,
-      block_id: true,
-      floor: true,
-      apartment_id: true,
+      property_id: true,
+      service_id: true,
+      amount: true,
+      start_date: true,
+      due_date: true,
+      type: true,
+      status: true,
     });
 
     if (!hasErrors) {
@@ -202,54 +299,78 @@ export function InvoicesFormModal({ open, onClose, title, formData, onFieldChang
       open={open} 
       handler={onClose} 
       size="xl" 
-      className="dark:bg-gray-900 max-h-[90vh] sm:max-h-[85vh] md:max-h-[80vh] flex flex-col" 
+      className="dark:bg-gray-900 max-h-[90vh] sm:max-h-[85vh] md:max-h-[80vh] flex flex-col rounded-2xl overflow-hidden shadow-2xl" 
       dismiss={{ enabled: false }} 
       style={{ zIndex: 999999 }}
     >
-      <DialogHeader className="dark:bg-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 sm:pb-4 flex items-center justify-between flex-shrink-0 px-4 sm:px-6">
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-          <div className="p-1.5 sm:p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex-shrink-0">
-            <BuildingOfficeIcon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
+      <DialogHeader className="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white border-0 pb-4 sm:pb-5 flex items-center justify-between flex-shrink-0 px-5 sm:px-7 shadow-lg">
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+          <div className="p-2 sm:p-2.5 bg-white/20 dark:bg-white/10 rounded-xl flex-shrink-0 backdrop-blur-sm shadow-md">
+            <BuildingOfficeIcon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
           </div>
-          <Typography variant="h5" className="font-bold text-sm sm:text-base md:text-lg truncate">
+          <Typography variant="h5" className="font-bold text-base sm:text-lg md:text-xl truncate text-white drop-shadow-sm">
             {title}
           </Typography>
         </div>
-        <div className="cursor-pointer p-1.5 sm:p-2 rounded-md transition-all hover:bg-gray-200 dark:hover:bg-gray-700 flex-shrink-0" onClick={onClose}>
-          <XMarkIcon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700 dark:text-white" />
+        <div className="cursor-pointer p-2 sm:p-2.5 rounded-xl transition-all hover:bg-white/20 dark:hover:bg-white/10 flex-shrink-0 backdrop-blur-sm" onClick={onClose}>
+          <XMarkIcon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
         </div>
       </DialogHeader>
-      <DialogBody divider className="space-y-6 dark:bg-gray-800 dark:border-gray-700 overflow-y-auto flex-1 min-h-0 py-4 sm:py-6 px-4 sm:px-6 scrollbar-thin">
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
-            <Typography variant="h6" className="font-semibold dark:text-white">
+      <DialogBody divider className="space-y-6 dark:bg-gray-900 dark:border-gray-700 overflow-y-auto flex-1 min-h-0 py-5 sm:py-7 px-5 sm:px-7 scrollbar-thin bg-gray-50">
+        <div className="space-y-5 bg-white dark:bg-gray-800 rounded-xl p-5 sm:p-6 shadow-md border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-3 pb-3 border-b-2 border-blue-200 dark:border-blue-700">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <BuildingOfficeIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            </div>
+            <Typography variant="h6" className="font-bold text-gray-800 dark:text-white text-lg">
               {t("invoices.form.basicInfo") || "Əsas Məlumatlar"}
             </Typography>
           </div>
 
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1.5 font-medium dark:text-gray-300">
-              {t("invoices.form.title") || "Başlıq"}
+          <div className="space-y-2">
+            <Typography variant="small" color="blue-gray" className="mb-2 font-semibold text-gray-700 dark:text-gray-300 text-sm">
+              {t("invoices.form.service") || "Xidmət"}
+              <span className="text-red-500 ml-1 font-bold">*</span>
             </Typography>
-            <Input
-              label={t("invoices.form.enterTitle") || "Başlıq"}
-              value={formData.title || ""}
-              onChange={(e) => onFieldChange("title", e.target.value)}
-              onBlur={() => handleBlur("title")}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-              error={hasError("title")}
-            />
-            {hasError("title") && (
-              <Typography variant="small" className="mt-1 text-red-500">
-                {errors.title}
+            <select
+              value={formData.service_id ? String(formData.service_id) : ""}
+              onChange={(e) => {
+                const value = e.target.value;
+                onFieldChange("service_id", value ? Number(value) : null);
+                setErrors((prev) => {
+                  const newErrors = { ...prev };
+                  delete newErrors.service_id;
+                  return newErrors;
+                });
+              }}
+              onBlur={() => handleBlur("service_id")}
+              disabled={loadingServices}
+              className={`w-full px-4 py-3 border-2 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-all shadow-sm hover:shadow-md hover:border-blue-400 dark:hover:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${
+                hasError("service_id")
+                  ? "border-red-500 dark:border-red-500 focus:ring-red-500 focus:border-red-500"
+                  : "border-gray-300 dark:border-gray-600"
+              }`}
+            >
+              <option value="" disabled>
+                {loadingServices ? (t("invoices.form.loading") || "Yüklənir...") : (t("invoices.form.selectService") || "Xidmət seçin...")}
+              </option>
+              {services.map((service) => (
+                <option key={service.id} value={String(service.id)}>
+                  {service.name}
+                </option>
+              ))}
+            </select>
+            {hasError("service_id") && (
+              <Typography variant="small" className="mt-1.5 text-red-500 font-medium">
+                {errors.service_id}
               </Typography>
             )}
           </div>
 
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-1.5 font-medium dark:text-gray-300">
+          <div className="space-y-2">
+            <Typography variant="small" color="blue-gray" className="mb-2 font-semibold text-gray-700 dark:text-gray-300 text-sm">
               {t("invoices.form.amount") || "Məbləğ (AZN)"}
+              <span className="text-red-500 ml-1 font-bold">*</span>
             </Typography>
             <Input
               type="number"
@@ -268,69 +389,186 @@ export function InvoicesFormModal({ open, onClose, title, formData, onFieldChang
                 }
               }}
               onBlur={() => handleBlur("amount")}
-              className="dark:text-white"
+              className="dark:text-white !border-2"
               labelProps={{ className: "dark:text-gray-400" }}
               min="0"
               step="0.01"
               error={hasError("amount")}
+              containerProps={{ className: "!min-w-0" }}
             />
             {hasError("amount") && (
-              <Typography variant="small" className="mt-1 text-red-500">
+              <Typography variant="small" className="mt-1.5 text-red-500 font-medium">
                 {errors.amount}
               </Typography>
             )}
           </div>
 
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <CalendarIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-              <Typography variant="small" color="blue-gray" className="font-medium dark:text-gray-300">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                <CalendarIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <Typography variant="small" color="blue-gray" className="font-bold text-gray-800 dark:text-gray-300 text-base">
                 {t("invoices.form.dateRange") || "Tarix aralığı"}
               </Typography>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
+              <div className="space-y-2">
+                <Typography variant="small" color="blue-gray" className="mb-2 font-semibold text-gray-700 dark:text-gray-300 text-sm">
+                  {t("invoices.form.startDate") || "Başlama tarixi"}
+                  <span className="text-red-500 ml-1 font-bold">*</span>
+                </Typography>
                 <Input
                   type="date"
                   label={t("invoices.form.startDate") || "Başlama tarixi"}
-                  value={formData.dateStart || ""}
-                  onChange={(e) => onFieldChange("dateStart", e.target.value)}
-                  className="dark:text-white"
+                  value={formData.start_date || ""}
+                  onChange={(e) => onFieldChange("start_date", e.target.value)}
+                  onBlur={() => handleBlur("start_date")}
+                  className="dark:text-white !border-2"
                   labelProps={{ className: "dark:text-gray-400" }}
+                  error={hasError("start_date")}
+                  containerProps={{ className: "!min-w-0" }}
                 />
+                {hasError("start_date") && (
+                  <Typography variant="small" className="mt-1.5 text-red-500 font-medium">
+                    {errors.start_date}
+                  </Typography>
+                )}
               </div>
-              <div>
+              <div className="space-y-2">
+                <Typography variant="small" color="blue-gray" className="mb-2 font-semibold text-gray-700 dark:text-gray-300 text-sm">
+                  {t("invoices.form.dueDate") || "Son tarix"}
+                  <span className="text-red-500 ml-1 font-bold">*</span>
+                </Typography>
                 <Input
                   type="date"
-                  label={t("invoices.form.endDate") || "Bitmə tarixi"}
-                  value={formData.dateEnd || ""}
-                  onChange={(e) => onFieldChange("dateEnd", e.target.value)}
-                  className="dark:text-white"
+                  label={t("invoices.form.dueDate") || "Son tarix"}
+                  value={formData.due_date || ""}
+                  onChange={(e) => onFieldChange("due_date", e.target.value)}
+                  onBlur={() => handleBlur("due_date")}
+                  className="dark:text-white !border-2"
                   labelProps={{ className: "dark:text-gray-400" }}
-                  error={hasError("dateEnd")}
+                  error={hasError("due_date")}
+                  containerProps={{ className: "!min-w-0" }}
                 />
-                {hasError("dateEnd") && (
-                  <Typography variant="small" className="mt-1 text-red-500">
-                    {errors.dateEnd}
+                {hasError("due_date") && (
+                  <Typography variant="small" className="mt-1.5 text-red-500 font-medium">
+                    {errors.due_date}
                   </Typography>
                 )}
               </div>
             </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Typography variant="small" color="blue-gray" className="mb-2 font-semibold text-gray-700 dark:text-gray-300 text-sm">
+                  {t("invoices.form.type") || "Tip"}
+                  <span className="text-red-500 ml-1 font-bold">*</span>
+                </Typography>
+                <select
+                  value={formData.type || ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    onFieldChange("type", value);
+                    setErrors((prev) => {
+                      const newErrors = { ...prev };
+                      delete newErrors.type;
+                      return newErrors;
+                    });
+                  }}
+                  onBlur={() => handleBlur("type")}
+                  className={`w-full px-4 py-3 border-2 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-all shadow-sm hover:shadow-md hover:border-blue-400 dark:hover:border-blue-500 ${
+                    hasError("type")
+                      ? "border-red-500 dark:border-red-500 focus:ring-red-500 focus:border-red-500"
+                      : "border-gray-300 dark:border-gray-600"
+                  }`}
+                >
+                  <option value="" disabled>{t("invoices.form.selectType") || "Tip seçin..."}</option>
+                  <option value="daily">{t("invoices.form.types.daily") || "Günlük"}</option>
+                  <option value="weekly">{t("invoices.form.types.weekly") || "Həftəlik"}</option>
+                  <option value="monthly">{t("invoices.form.types.monthly") || "Aylıq"}</option>
+                  <option value="quarterly">{t("invoices.form.types.quarterly") || "Rüblük"}</option>
+                  <option value="yearly">{t("invoices.form.types.yearly") || "İllik"}</option>
+                  <option value="one_time">{t("invoices.form.types.one_time") || "Bir dəfəlik"}</option>
+                  <option value="biannually">{t("invoices.form.types.biannually") || "Yarımillik"}</option>
+                </select>
+                {hasError("type") && (
+                  <Typography variant="small" className="mt-1.5 text-red-500 font-medium">
+                    {errors.type}
+                  </Typography>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Typography variant="small" color="blue-gray" className="mb-2 font-semibold text-gray-700 dark:text-gray-300 text-sm">
+                  {t("invoices.form.status") || "Status"}
+                  <span className="text-red-500 ml-1 font-bold">*</span>
+                </Typography>
+                <select
+                  value={formData.status || ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    onFieldChange("status", value);
+                    setErrors((prev) => {
+                      const newErrors = { ...prev };
+                      delete newErrors.status;
+                      return newErrors;
+                    });
+                  }}
+                  onBlur={() => handleBlur("status")}
+                  className={`w-full px-4 py-3 border-2 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-all shadow-sm hover:shadow-md hover:border-blue-400 dark:hover:border-blue-500 ${
+                    hasError("status")
+                      ? "border-red-500 dark:border-red-500 focus:ring-red-500 focus:border-red-500"
+                      : "border-gray-300 dark:border-gray-600"
+                  }`}
+                >
+                  <option value="" disabled>{t("invoices.form.selectStatus") || "Status seçin..."}</option>
+                  <option value="pending">{t("invoices.form.statuses.pending") || "Gözləyir"}</option>
+                  <option value="pre_paid">{t("invoices.form.statuses.pre_paid") || "Ön ödəniş"}</option>
+                  <option value="paid">{t("invoices.form.statuses.paid") || "Ödənilib"}</option>
+                  <option value="overdue">{t("invoices.form.statuses.overdue") || "Gecikmiş"}</option>
+                  <option value="declined">{t("invoices.form.statuses.declined") || "Rədd edilib"}</option>
+                  <option value="unpaid">{t("invoices.form.statuses.unpaid") || "Ödənilməmiş"}</option>
+                  <option value="draft">{t("invoices.form.statuses.draft") || "Qaralama"}</option>
+                </select>
+                {hasError("status") && (
+                  <Typography variant="small" className="mt-1.5 text-red-500 font-medium">
+                    {errors.status}
+                  </Typography>
+                )}
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Typography variant="small" color="blue-gray" className="mb-2 font-semibold text-gray-700 dark:text-gray-300 text-sm">
+                {t("invoices.form.description") || "Təsvir"}
+              </Typography>
+              <Input
+                label={t("invoices.form.enterDescription") || "Təsvir daxil edin..."}
+                value={formData.meta?.desc || ""}
+                onChange={(e) => onFieldChange("meta.desc", e.target.value)}
+                className="dark:text-white !border-2"
+                labelProps={{ className: "dark:text-gray-400" }}
+                containerProps={{ className: "!min-w-0" }}
+              />
+            </div>
           </div>
         </div>
 
-        <div className="space-y-4 pt-2">
-          <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
-            <Typography variant="h6" className="font-semibold dark:text-white">
+        <div className="space-y-5 bg-white dark:bg-gray-800 rounded-xl p-5 sm:p-6 shadow-md border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-3 pb-3 border-b-2 border-green-200 dark:border-green-700">
+            <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+              <BuildingOfficeIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
+            </div>
+            <Typography variant="h6" className="font-bold text-gray-800 dark:text-white text-lg">
               {t("invoices.form.apartmentInfo") || "Mənzil Məlumatları"}
             </Typography>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <Typography variant="small" color="blue-gray" className="mb-1.5 font-medium dark:text-gray-300">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="space-y-2">
+              <Typography variant="small" color="blue-gray" className="mb-2 font-semibold text-gray-700 dark:text-gray-300 text-sm">
                 {t("invoices.form.building") || "Bina"}
-                <span className="text-red-500 ml-1">*</span>
+                <span className="text-red-500 ml-1 font-bold">*</span>
               </Typography>
               <div className="flex items-center gap-2">
                 <select
@@ -342,8 +580,8 @@ export function InvoicesFormModal({ open, onClose, title, formData, onFieldChang
                     onFieldChange("building_id", selectedBuilding?.id || null);
                     onFieldChange("block_id", null);
                     onFieldChange("block", null);
-                    onFieldChange("apartment_id", null);
-                    onFieldChange("apartment", null);
+                    onFieldChange("property_id", null);
+                    onFieldChange("property", null);
                     setErrors((prev) => {
                       const newErrors = { ...prev };
                       delete newErrors.building_id;
@@ -352,9 +590,9 @@ export function InvoicesFormModal({ open, onClose, title, formData, onFieldChang
                   }}
                   onBlur={() => handleBlur("building_id")}
                   disabled={loadingBuildings}
-                  className={`flex-1 px-4 py-2.5 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed ${
+                  className={`flex-1 px-4 py-3 border-2 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-all shadow-sm hover:shadow-md hover:border-blue-400 dark:hover:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${
                     hasError("building_id")
-                      ? "border-red-500 dark:border-red-500"
+                      ? "border-red-500 dark:border-red-500 focus:ring-red-500 focus:border-red-500"
                       : "border-gray-300 dark:border-gray-600"
                   }`}
                 >
@@ -377,10 +615,10 @@ export function InvoicesFormModal({ open, onClose, title, formData, onFieldChang
                       onFieldChange("building_id", null);
                       onFieldChange("block_id", null);
                       onFieldChange("block", null);
-                      onFieldChange("apartment_id", null);
-                      onFieldChange("apartment", null);
+                      onFieldChange("property_id", null);
+                      onFieldChange("property", null);
                     }}
-                    className="flex-shrink-0 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    className="flex-shrink-0 p-2.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-all shadow-sm hover:shadow-md"
                     title={t("buttons.clear") || "Təmizlə"}
                   >
                     <XCircleIcon className="h-5 w-5" />
@@ -388,16 +626,16 @@ export function InvoicesFormModal({ open, onClose, title, formData, onFieldChang
                 )}
               </div>
               {hasError("building_id") && (
-                <Typography variant="small" className="mt-1 text-red-500">
+                <Typography variant="small" className="mt-1.5 text-red-500 font-medium">
                   {errors.building_id}
                 </Typography>
               )}
             </div>
 
-            <div>
-              <Typography variant="small" color="blue-gray" className="mb-1.5 font-medium dark:text-gray-300">
+            <div className="space-y-2">
+              <Typography variant="small" color="blue-gray" className="mb-2 font-semibold text-gray-700 dark:text-gray-300 text-sm">
                 {t("invoices.form.block") || "Blok"}
-                <span className="text-red-500 ml-1">*</span>
+                <span className="text-red-500 ml-1 font-bold">*</span>
               </Typography>
               <div className="flex items-center gap-2">
                 <select
@@ -407,8 +645,8 @@ export function InvoicesFormModal({ open, onClose, title, formData, onFieldChang
                     const selectedBlock = blocks.find((b) => String(b.id) === value);
                     onFieldChange("block", selectedBlock || null);
                     onFieldChange("block_id", selectedBlock?.id || null);
-                    onFieldChange("apartment_id", null);
-                    onFieldChange("apartment", null);
+                    onFieldChange("property_id", null);
+                    onFieldChange("property", null);
                     setErrors((prev) => {
                       const newErrors = { ...prev };
                       delete newErrors.block_id;
@@ -417,9 +655,9 @@ export function InvoicesFormModal({ open, onClose, title, formData, onFieldChang
                   }}
                   onBlur={() => handleBlur("block_id")}
                   disabled={loadingBlocks || !formData.building_id}
-                  className={`flex-1 px-4 py-2.5 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed ${
+                  className={`flex-1 px-4 py-3 border-2 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-all shadow-sm hover:shadow-md hover:border-blue-400 dark:hover:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${
                     hasError("block_id")
-                      ? "border-red-500 dark:border-red-500"
+                      ? "border-red-500 dark:border-red-500 focus:ring-red-500 focus:border-red-500"
                       : "border-gray-300 dark:border-gray-600"
                   }`}
                 >
@@ -442,10 +680,10 @@ export function InvoicesFormModal({ open, onClose, title, formData, onFieldChang
                     onClick={() => {
                       onFieldChange("block", null);
                       onFieldChange("block_id", null);
-                      onFieldChange("apartment_id", null);
-                      onFieldChange("apartment", null);
+                      onFieldChange("property_id", null);
+                      onFieldChange("property", null);
                     }}
-                    className="flex-shrink-0 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    className="flex-shrink-0 p-2.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-all shadow-sm hover:shadow-md"
                     title={t("buttons.clear") || "Təmizlə"}
                   >
                     <XCircleIcon className="h-5 w-5" />
@@ -453,122 +691,94 @@ export function InvoicesFormModal({ open, onClose, title, formData, onFieldChang
                 )}
               </div>
               {hasError("block_id") && (
-                <Typography variant="small" className="mt-1 text-red-500">
+                <Typography variant="small" className="mt-1.5 text-red-500 font-medium">
                   {errors.block_id}
                 </Typography>
               )}
             </div>
 
-            <div>
-              <Typography variant="small" color="blue-gray" className="mb-1.5 font-medium dark:text-gray-300">
-                {t("invoices.form.floor") || "Mərtəbə"}
-                <span className="text-red-500 ml-1">*</span>
-              </Typography>
-              <Input
-                type="number"
-                label={t("invoices.form.enterFloor") || "Mərtəbə daxil edin..."}
-                value={formData.floor || ""}
-                onChange={handleFloorChange}
-                onKeyDown={(e) => {
-                  if (e.key === "-" || e.key === "e" || e.key === "E" || e.key === "+") {
-                    e.preventDefault();
-                  }
-                }}
-                onBlur={() => handleBlur("floor")}
-                className="dark:text-white"
-                labelProps={{ className: "dark:text-gray-400" }}
-                min="0"
-                error={hasError("floor")}
-              />
-              {hasError("floor") && (
-                <Typography variant="small" className="mt-1 text-red-500">
-                  {errors.floor}
-                </Typography>
-              )}
-            </div>
-
-            <div>
-              <Typography variant="small" color="blue-gray" className="mb-1.5 font-medium dark:text-gray-300">
-                {t("invoices.form.apartment") || "Mənzil"}
-                <span className="text-red-500 ml-1">*</span>
+            <div className="space-y-2">
+              <Typography variant="small" color="blue-gray" className="mb-2 font-semibold text-gray-700 dark:text-gray-300 text-sm">
+                {t("invoices.form.property") || "Mənzil"}
+                <span className="text-red-500 ml-1 font-bold">*</span>
               </Typography>
               <div className="flex items-center gap-2">
                 <select
-                  value={formData.apartment_id ? String(formData.apartment_id) : ""}
+                  value={formData.property_id ? String(formData.property_id) : ""}
                   onChange={(e) => {
                     const value = e.target.value;
-                    const selectedApartment = apartments.find((a) => String(a.id) === value);
-                    onFieldChange("apartment", selectedApartment || null);
-                    onFieldChange("apartment_id", selectedApartment?.id || null);
+                    const selectedProperty = properties.find((p) => String(p.id) === value);
+                    onFieldChange("property", selectedProperty || null);
+                    onFieldChange("property_id", selectedProperty?.id || null);
                     setErrors((prev) => {
                       const newErrors = { ...prev };
-                      delete newErrors.apartment_id;
+                      delete newErrors.property_id;
                       return newErrors;
                     });
                   }}
-                  onBlur={() => handleBlur("apartment_id")}
-                  disabled={loadingApartments || !formData.block_id}
-                  className={`flex-1 px-4 py-2.5 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed ${
-                    hasError("apartment_id")
-                      ? "border-red-500 dark:border-red-500"
+                  onBlur={() => handleBlur("property_id")}
+                  disabled={loadingProperties || !formData.block_id}
+                  className={`flex-1 px-4 py-3 border-2 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-all shadow-sm hover:shadow-md hover:border-blue-400 dark:hover:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    hasError("property_id")
+                      ? "border-red-500 dark:border-red-500 focus:ring-red-500 focus:border-red-500"
                       : "border-gray-300 dark:border-gray-600"
                   }`}
                 >
                   <option value="" disabled>
                     {!formData.block_id
                       ? t("invoices.form.selectBlockFirst") || "Əvvəlcə blok seçin"
-                      : loadingApartments
+                      : loadingProperties
                       ? t("invoices.form.loading") || "Yüklənir..."
-                      : t("invoices.form.selectApartment") || "Mənzil seçin..."}
+                      : t("invoices.form.selectProperty") || "Mənzil seçin..."}
                   </option>
-                  {apartments.map((apartment) => (
-                    <option key={apartment.id} value={String(apartment.id)}>
-                      {apartment.name}
+                  {properties.map((property) => (
+                    <option key={property.id} value={String(property.id)}>
+                      {property.name || property.apartment_number || `Mənzil #${property.id}`}
                     </option>
                   ))}
                 </select>
-                {formData.apartment_id && (
+                {formData.property_id && (
                   <button
                     type="button"
                     onClick={() => {
-                      onFieldChange("apartment", null);
-                      onFieldChange("apartment_id", null);
+                      onFieldChange("property", null);
+                      onFieldChange("property_id", null);
                     }}
-                    className="flex-shrink-0 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    className="flex-shrink-0 p-2.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-all shadow-sm hover:shadow-md"
                     title={t("buttons.clear") || "Təmizlə"}
                   >
                     <XCircleIcon className="h-5 w-5" />
                   </button>
                 )}
               </div>
-              {hasError("apartment_id") && (
-                <Typography variant="small" className="mt-1 text-red-500">
-                  {errors.apartment_id}
+              {hasError("property_id") && (
+                <Typography variant="small" className="mt-1.5 text-red-500 font-medium">
+                  {errors.property_id}
                 </Typography>
               )}
             </div>
           </div>
         </div>
       </DialogBody>
-      <DialogFooter className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-2 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pt-3 sm:pt-4 px-4 sm:px-6 flex-shrink-0">
-        <Typography variant="small" className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm text-center sm:text-left order-2 sm:order-1">
-          <span className="text-red-500">*</span> {t("invoices.form.requiredFields") || "Mütləq sahələr"}
+      <DialogFooter className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 sm:gap-3 dark:bg-gray-900 border-t-2 border-gray-200 dark:border-gray-700 pt-4 sm:pt-5 px-5 sm:px-7 flex-shrink-0 bg-gray-50 shadow-lg">
+        <Typography variant="small" className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm text-center sm:text-left order-2 sm:order-1 font-medium">
+          <span className="text-red-500 font-bold">*</span> {t("invoices.form.requiredFields") || "Mütləq sahələr"}
         </Typography>
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto order-1 sm:order-2">
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto order-1 sm:order-2">
           <Button
             variant="outlined"
             color="blue-gray"
             onClick={onClose}
             disabled={saving}
-            className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 w-full sm:w-auto"
+            className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 w-full sm:w-auto px-6 py-2.5 rounded-xl font-semibold transition-all hover:shadow-md border-2"
           >
-            {t("buttons.cancel")}
+            {t("buttons.cancel") || "Ləğv et"}
           </Button>
           <Button
             color="green"
             onClick={handleSave}
             disabled={saving}
-            className="dark:bg-green-600 dark:hover:bg-green-700 border border-green-300 dark:border-green-500 shadow-md hover:shadow-lg transition-all w-full sm:w-auto"
+            className="dark:bg-green-600 dark:hover:bg-green-700 border-2 border-green-300 dark:border-green-500 shadow-md hover:shadow-lg transition-all w-full sm:w-auto px-6 py-2.5 rounded-xl font-semibold bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
           >
             {saving ? (
               <span className="flex items-center justify-center gap-2">

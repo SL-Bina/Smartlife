@@ -97,7 +97,7 @@ export function InvoicesSearchModal({ open, onClose, onSearch, currentSearch = {
         <div className="flex items-center gap-2">
           <MagnifyingGlassIcon className="h-5 w-5 text-blue-500" />
           <Typography variant="h5" className="font-bold">
-            Ətraflı Axtarış
+            {t("invoices.searchModal.title") || "Ətraflı Axtarış"}
           </Typography>
         </div>
         <div 
@@ -110,14 +110,14 @@ export function InvoicesSearchModal({ open, onClose, onSearch, currentSearch = {
       <DialogBody divider className="dark:bg-gray-800 space-y-4 py-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
-            label="Xidmət adı"
+            label={t("invoices.searchModal.serviceName") || "Xidmət adı"}
             value={searchParams.service_name}
             onChange={(e) => handleChange("service_name", e.target.value)}
             className="dark:text-gray-200"
             labelProps={{ className: "dark:text-gray-300" }}
           />
           <Input
-            label="Mənzil adı"
+            label={t("invoices.searchModal.propertyName") || "Mənzil adı"}
             value={searchParams.property_name}
             onChange={(e) => handleChange("property_name", e.target.value)}
             className="dark:text-gray-200"
@@ -127,33 +127,33 @@ export function InvoicesSearchModal({ open, onClose, onSearch, currentSearch = {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
-            label="Kompleks adı"
+            label={t("invoices.searchModal.complexName") || "Kompleks adı"}
             value={searchParams.complex_name}
             onChange={(e) => handleChange("complex_name", e.target.value)}
             className="dark:text-gray-200"
             labelProps={{ className: "dark:text-gray-300" }}
           />
           <Select
-            label="Status"
+            label={t("invoices.searchModal.status") || "Status"}
             value={searchParams.status}
             onChange={(value) => handleChange("status", value)}
             className="dark:text-gray-200"
             labelProps={{ className: "dark:text-gray-300" }}
           >
-            <Option value="">Hamısı</Option>
-            <Option value="paid">Ödənilib</Option>
-            <Option value="not_paid">Ödənilməmiş</Option>
-            <Option value="pending">Gözləyir</Option>
-            <Option value="overdue">Gecikmiş</Option>
-            <Option value="declined">Rədd edilib</Option>
-            <Option value="draft">Qaralama</Option>
-            <Option value="pre_paid">Ön ödəniş</Option>
+            <Option value="">{t("common.all") || "Hamısı"}</Option>
+            <Option value="paid">{t("invoices.form.statuses.paid") || "Ödənilib"}</Option>
+            <Option value="not_paid">{t("invoices.form.statuses.unpaid") || "Ödənilməmiş"}</Option>
+            <Option value="pending">{t("invoices.form.statuses.pending") || "Gözləyir"}</Option>
+            <Option value="overdue">{t("invoices.form.statuses.overdue") || "Gecikmiş"}</Option>
+            <Option value="declined">{t("invoices.form.statuses.declined") || "Rədd edilib"}</Option>
+            <Option value="draft">{t("invoices.form.statuses.draft") || "Qaralama"}</Option>
+            <Option value="pre_paid">{t("invoices.form.statuses.pre_paid") || "Ön ödəniş"}</Option>
           </Select>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
-            label="Minimum məbləğ"
+            label={t("invoices.searchModal.minAmount") || "Minimum məbləğ"}
             type="number"
             value={searchParams.amount_min}
             onChange={(e) => handleChange("amount_min", e.target.value)}
@@ -161,7 +161,7 @@ export function InvoicesSearchModal({ open, onClose, onSearch, currentSearch = {
             labelProps={{ className: "dark:text-gray-300" }}
           />
           <Input
-            label="Maksimum məbləğ"
+            label={t("invoices.searchModal.maxAmount") || "Maksimum məbləğ"}
             type="number"
             value={searchParams.amount_max}
             onChange={(e) => handleChange("amount_max", e.target.value)}
@@ -172,7 +172,7 @@ export function InvoicesSearchModal({ open, onClose, onSearch, currentSearch = {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
-            label="Başlama tarixi"
+            label={t("invoices.searchModal.startDate") || "Başlama tarixi"}
             type="date"
             value={searchParams.start_date}
             onChange={(e) => handleChange("start_date", e.target.value)}
@@ -180,7 +180,7 @@ export function InvoicesSearchModal({ open, onClose, onSearch, currentSearch = {
             labelProps={{ className: "dark:text-gray-300" }}
           />
           <Input
-            label="Son tarix"
+            label={t("invoices.searchModal.dueDate") || "Son tarix"}
             type="date"
             value={searchParams.due_date}
             onChange={(e) => handleChange("due_date", e.target.value)}
@@ -196,7 +196,7 @@ export function InvoicesSearchModal({ open, onClose, onSearch, currentSearch = {
           onClick={handleReset}
           className="mr-2"
         >
-          Təmizlə
+          {t("buttons.clear") || "Təmizlə"}
         </Button>
         <Button
           variant="text"
@@ -204,7 +204,7 @@ export function InvoicesSearchModal({ open, onClose, onSearch, currentSearch = {
           onClick={onClose}
           className="mr-2"
         >
-          Ləğv et
+          {t("buttons.cancel") || "Ləğv et"}
         </Button>
         <Button
           variant="filled"
@@ -213,7 +213,7 @@ export function InvoicesSearchModal({ open, onClose, onSearch, currentSearch = {
           className="flex items-center gap-2"
         >
           <MagnifyingGlassIcon className="h-4 w-4" />
-          Axtar
+          {t("buttons.search") || "Axtar"}
         </Button>
       </DialogFooter>
     </Dialog>

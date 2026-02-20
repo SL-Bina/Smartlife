@@ -48,8 +48,8 @@ export function SignIn() {
   // Only redirect if user is authenticated and we're on sign-in page
   useEffect(() => {
     if (isInitialized && isAuthenticated && user && window.location.pathname === '/auth/sign-in') {
-      const userRole = user?.role?.name?.toLowerCase();
-      if (userRole === "resident") {
+      const isResident = user?.is_resident === true;
+      if (isResident) {
         navigate("/dashboard/resident/home", { replace: true });
       } else {
         navigate("/dashboard/home", { replace: true });
@@ -81,11 +81,11 @@ export function SignIn() {
       return;
     }
 
-    const userRole = result.user?.role?.name?.toLowerCase();
-    if (userRole === "resident") {
-      navigate("/dashboard/resident/home");
+    const isResident = result.user?.is_resident === true;
+    if (isResident) {
+      navigate("/dashboard/resident/home", { replace: true });
     } else {
-      navigate("/dashboard/home");
+      navigate("/dashboard/home", { replace: true });
     }
   };
 

@@ -2,6 +2,80 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Navbar Light Mode Fix - Force text colors when navbar is white */
+.navbar-light-mode,
+.navbar-light-mode *,
+.navbar-light-mode button,
+.navbar-light-mode span,
+.navbar-light-mode div,
+.navbar-light-mode h1,
+.navbar-light-mode h2,
+.navbar-light-mode h3,
+.navbar-light-mode h4,
+.navbar-light-mode h5,
+.navbar-light-mode h6,
+.navbar-light-mode p,
+.navbar-light-mode a,
+.navbar-light-mode svg,
+.navbar-light-mode [class*="text-"],
+.navbar-light-mode [class*="Typography"],
+nav.navbar-light-mode,
+nav.navbar-light-mode *,
+nav.navbar-light-mode button,
+nav.navbar-light-mode span,
+nav.navbar-light-mode div,
+nav.navbar-light-mode h1,
+nav.navbar-light-mode h2,
+nav.navbar-light-mode h3,
+nav.navbar-light-mode h4,
+nav.navbar-light-mode h5,
+nav.navbar-light-mode h6,
+nav.navbar-light-mode p,
+nav.navbar-light-mode a,
+nav.navbar-light-mode svg {
+  color: #111827 !important;
+}
+
+/* Override Material Tailwind default colors */
+.navbar-light-mode [class*="text-blue-gray"],
+.navbar-light-mode [class*="text-gray"],
+nav.navbar-light-mode [class*="text-blue-gray"],
+nav.navbar-light-mode [class*="text-gray"] {
+  color: #111827 !important;
+}
+
+/* Dark mode navbar - ensure white text */
+html.dark .navbar-light-mode,
+html.dark .navbar-light-mode *,
+html.dark .navbar-light-mode button,
+html.dark .navbar-light-mode span,
+html.dark .navbar-light-mode div,
+html.dark .navbar-light-mode h1,
+html.dark .navbar-light-mode h2,
+html.dark .navbar-light-mode h3,
+html.dark .navbar-light-mode h4,
+html.dark .navbar-light-mode h5,
+html.dark .navbar-light-mode h6,
+html.dark .navbar-light-mode p,
+html.dark .navbar-light-mode a,
+html.dark .navbar-light-mode svg,
+html.dark nav.navbar-light-mode,
+html.dark nav.navbar-light-mode *,
+html.dark nav.navbar-light-mode button,
+html.dark nav.navbar-light-mode span,
+html.dark nav.navbar-light-mode div,
+html.dark nav.navbar-light-mode h1,
+html.dark nav.navbar-light-mode h2,
+html.dark nav.navbar-light-mode h3,
+html.dark nav.navbar-light-mode h4,
+html.dark nav.navbar-light-mode h5,
+html.dark nav.navbar-light-mode h6,
+html.dark nav.navbar-light-mode p,
+html.dark nav.navbar-light-mode a,
+html.dark nav.navbar-light-mode svg {
+  color: #ffffff !important;
+}
+
 /* Leaflet + Tailwind fix */
 .leaflet-container {
   height: 100% !important;

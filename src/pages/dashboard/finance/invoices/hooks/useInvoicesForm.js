@@ -1,23 +1,21 @@
 import { useState } from "react";
 
 const initialFormState = {
-  title: "",
   amount: "",
-  dateStart: "",
-  dateEnd: "",
+  start_date: "",
+  due_date: "",
   building_id: null,
   building: null,
   block_id: null,
   block: null,
-  floor: "",
-  apartment_id: null,
-  apartment: null,
-  serviceName: "",
-  owner: "",
-  apartment: "",
-  building: "",
-  block: "",
-  area: "",
+  property_id: null,
+  property: null,
+  service_id: null,
+  type: "",
+  status: "unpaid",
+  meta: {
+    desc: ""
+  }
 };
 
 export function useInvoicesForm() {

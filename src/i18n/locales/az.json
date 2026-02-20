@@ -72,6 +72,8 @@
     "reception": "Resepsiya",
     "services": "Xidmətlər",
     "electronicDocuments": "Elektron sənədlər",
+    "eDocuments": "Elektron sənədlər",
+    "myProperties": "Mənim Mənzillərim",
     "buildingManagement": "idarə etmə",
     "permissions": "Hüquqlar",
     "profile": "Profil",
@@ -353,11 +355,22 @@
       "enterAmount": "Məbləğ",
       "dateRange": "Tarix aralığı",
       "startDate": "Başlama tarixi",
+      "dueDate": "Son tarix",
       "endDate": "Bitmə tarixi",
       "building": "Bina",
       "selectBuilding": "Bina seçin...",
       "block": "Blok",
       "selectBlock": "Blok seçin",
+      "property": "Mənzil",
+      "selectProperty": "Mənzil seçin...",
+      "service": "Xidmət",
+      "selectService": "Xidmət seçin...",
+      "type": "Tip",
+      "selectType": "Tip seçin...",
+      "status": "Status",
+      "selectStatus": "Status seçin...",
+      "description": "Təsvir",
+      "enterDescription": "Təsvir daxil edin...",
       "floor": "Mərtəbə",
       "enterFloor": "Mərtəbə daxil edin...",
       "apartment": "Mənzil",
@@ -371,9 +384,27 @@
       "loading": "Yüklənir...",
       "selectBuildingFirst": "Əvvəlcə bina seçin",
       "selectBlockFirst": "Əvvəlcə blok seçin",
-      "dateEndError": "Bitmə tarixi başlama tarixindən sonra olmalıdır",
+      "dateEndError": "Son tarix başlama tarixindən sonra olmalıdır",
       "floorError": "Mərtəbə mənfi ola bilməz",
-      "amountError": "Məbləğ mənfi ola bilməz"
+      "amountError": "Məbləğ düzgün daxil edilməlidir",
+      "types": {
+        "daily": "Günlük",
+        "weekly": "Həftəlik",
+        "monthly": "Aylıq",
+        "quarterly": "Rüblük",
+        "yearly": "İllik",
+        "one_time": "Bir dəfəlik",
+        "biannually": "Yarımillik"
+      },
+      "statuses": {
+        "pending": "Gözləyir",
+        "pre_paid": "Ön ödəniş",
+        "paid": "Ödənilib",
+        "overdue": "Gecikmiş",
+        "declined": "Rədd edilib",
+        "unpaid": "Ödənilməmiş",
+        "draft": "Qaralama"
+      }
     },
     "view": {
       "title": "Faktura məlumatları"
@@ -432,6 +463,17 @@
     "pagination": {
       "prev": "Geri",
       "next": "İrəli"
+    },
+    "searchModal": {
+      "title": "Ətraflı Axtarış",
+      "serviceName": "Xidmət adı",
+      "propertyName": "Mənzil adı",
+      "complexName": "Kompleks adı",
+      "status": "Status",
+      "minAmount": "Minimum Məbləğ",
+      "maxAmount": "Maksimum Məbləğ",
+      "startDate": "Başlama Tarixi",
+      "dueDate": "Son Tarix"
     }
   },
   "paymentHistory": {
@@ -1935,7 +1977,103 @@
         "1": "Mənzil",
         "2": "Obyekt"
       }
+    },
+    "myProperties": "Mənim Mənzillərim",
+    "property": "mənzil",
+    "loadError": "Məlumat yüklənərkən xəta baş verdi",
+    "noProperties": "Mənzil tapılmadı",
+    "noPropertiesDesc": "Hələ heç bir mənziliniz yoxdur",
+    "viewDetails": "Ətraflı bax",
+    "details": "Mənzil Detalları",
+    "basicInfo": "Əsas Məlumatlar",
+    "complex": "Kompleks",
+    "name": "Ad",
+    "phone": "Telefon",
+    "email": "E-poçt",
+    "financialInfo": "Maliyyə Məlumatları",
+    "bankBalance": "Bank balansı",
+    "cashBalance": "Nağd balans",
+    "dates": "Tarixlər",
+    "createdAt": "Yaradılma tarixi",
+    "updatedAt": "Yenilənmə tarixi",
+    "status": {
+      "active": "Aktiv",
+      "inactive": "Qeyri-aktiv"
+    },
+    "apartmentNumber": "Mənzil nömrəsi",
+    "floor": "Mərtəbə",
+    "area": "Sahə"
+  },
+  "resident": {
+    "home": {
+      "welcome": "Xoş gəldiniz",
+      "subtitle": "Sizin şəxsi paneliniz",
+      "quickActions": "Tez Əməliyyatlar",
+      "myProperties": "Mənim Mənzillərim",
+      "invoices": "Fakturalar",
+      "unpaidInvoices": "Ödənilməmiş Fakturalar",
+      "notifications": "Bildirişlər",
+      "tickets": "Biletlər",
+      "documents": "Elektron Sənədlər"
+    },
+    "invoices": {
+      "pageTitle": "Fakturalar",
+      "invoice": "faktura",
+      "loadError": "Məlumat yüklənərkən xəta baş verdi",
+      "noInvoices": "Faktura tapılmadı",
+      "noInvoicesDesc": "Hələ heç bir fakturanız yoxdur",
+      "view": "Bax",
+      "service": "Xidmət",
+      "amount": "Məbləğ",
+      "paidAmount": "Ödənilən",
+      "dueDate": "Son tarix"
+    },
+    "notifications": {
+      "pageTitle": "Bildirişlər",
+      "notification": "bildiriş",
+      "loadError": "Məlumat yüklənərkən xəta baş verdi",
+      "noNotifications": "Bildiriş tapılmadı",
+      "noNotificationsDesc": "Hələ heç bir bildirişiniz yoxdur",
+      "new": "Yeni"
+    },
+    "tickets": {
+      "pageTitle": "Biletlər",
+      "ticket": "bilet",
+      "loadError": "Məlumat yüklənərkən xəta baş verdi",
+      "noTickets": "Bilet tapılmadı",
+      "noTicketsDesc": "Hələ heç bir biletiniz yoxdur",
+      "create": "Yeni Bilet",
+      "view": "Bax",
+      "status": {
+        "pending": "Gözləyir",
+        "inProgress": "İcrada",
+        "resolved": "Həll olunub",
+        "completed": "Tamamlanıb",
+        "cancelled": "Ləğv edilib",
+        "closed": "Bağlanıb"
+      }
+    },
+    "documents": {
+      "pageTitle": "Elektron Sənədlər",
+      "document": "sənəd",
+      "loadError": "Məlumat yüklənərkən xəta baş verdi",
+      "noDocuments": "Sənəd tapılmadı",
+      "noDocumentsDesc": "Hələ heç bir sənədiniz yoxdur",
+      "view": "Bax",
+      "download": "Yüklə",
+      "fileInfo": "Fayl Məlumatları",
+      "fileName": "Fayl adı",
+      "fileSize": "Fayl ölçüsü"
     }
+  },
+  "tickets": {
+    "description": "Təsvir",
+    "category": "Kateqoriya"
+  },
+  "documents": {
+    "fileInfo": "Fayl Məlumatları",
+    "fileName": "Fayl adı",
+    "fileSize": "Fayl ölçüsü"
   },
   "residents": {
     "pageTitle": "Sakinlər",

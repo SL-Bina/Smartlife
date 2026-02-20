@@ -28,6 +28,15 @@ import { Home, Notifications, KPI, ApplicationsListPage, ApplicationsEvaluationP
 import { SignIn } from "@/pages/auth";
 import Profile from "./pages/dashboard/profile";
 import Settings from "./pages/dashboard/settings";
+import { 
+  ResidentHomePage, 
+  ResidentNotificationsPage, 
+  ResidentEDocumentsPage, 
+  ResidentTicketsPage, 
+  ResidentMyInvaoicesPage, 
+  ResidentProfilePage, 
+  ResidentMyPropertiesPage 
+} from "@/pages/resident";
 import MtkPage from "./pages/dashboard/management/mtk";
 import ComplexesPage from "./pages/dashboard/management/complexes";
 import BuildingsPage from "./pages/dashboard/management/buildings";
@@ -335,31 +344,43 @@ export const routes = [
         icon: <HomeIcon {...icon} />,
         name: "sidebar.dashboard",
         path: "/resident/home",
-        element: <ResidentDashboard />,
+        element: <ResidentHomePage />,
       },
       {
         icon: <DocumentTextIcon {...icon} />,
         name: "sidebar.invoices",
         path: "/resident/invoices",
-        element: <InvoicesPage />,
+        element: <ResidentMyInvaoicesPage />,
+      },
+      {
+        icon: <BuildingOfficeIcon {...icon} />,
+        name: "sidebar.myProperties",
+        path: "/resident/my-properties",
+        element: <ResidentMyPropertiesPage />,
       },
       {
         icon: <QuestionMarkCircleIcon {...icon} />,
         name: "sidebar.applicationsList",
-        path: "/resident/applications",
-        element: <ApplicationsListPage />,
+        path: "/resident/tickets",
+        element: <ResidentTicketsPage />,
+      },
+      {
+        icon: <BookOpenIcon {...icon} />,
+        name: "sidebar.eDocuments",
+        path: "/resident/e-documents",
+        element: <ResidentEDocumentsPage />,
       },
       {
         icon: <BellIcon {...icon} />,
         name: "sidebar.notifications",
         path: "/resident/notifications",
-        element: <Notifications />,
+        element: <ResidentNotificationsPage />,
       },
       {
         icon: <UserCircleIcon {...icon} />,
         name: "sidebar.profile",
         path: "/resident/profile",
-        element: <Profile />,
+        element: <ResidentProfilePage />,
       },
     ],
   },

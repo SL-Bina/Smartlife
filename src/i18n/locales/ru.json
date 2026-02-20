@@ -58,6 +58,8 @@
     "reception": "Ресепшн",
     "services": "Услуги",
     "electronicDocuments": "Электронные документы",
+    "eDocuments": "Электронные документы",
+    "myProperties": "Мои Квартиры",
     "buildingManagement": "Управление зданиями",
     "userRights": "Права пользователей",
     "profile": "Профиль"
@@ -369,6 +371,75 @@
     "pagination": {
       "prev": "Назад",
       "next": "Вперед"
+    },
+    "form": {
+      "title": "Заголовок",
+      "enterTitle": "Заголовок",
+      "amount": "Сумма (AZN)",
+      "enterAmount": "Сумма",
+      "dateRange": "Диапазон дат",
+      "startDate": "Дата начала",
+      "dueDate": "Срок погашения",
+      "endDate": "Дата окончания",
+      "building": "Здание",
+      "selectBuilding": "Выберите здание...",
+      "block": "Блок",
+      "selectBlock": "Выберите блок",
+      "property": "Квартира",
+      "selectProperty": "Выберите квартиру...",
+      "service": "Услуга",
+      "selectService": "Выберите услугу...",
+      "type": "Тип",
+      "selectType": "Выберите тип...",
+      "status": "Статус",
+      "selectStatus": "Выберите статус...",
+      "description": "Описание",
+      "enterDescription": "Введите описание...",
+      "floor": "Этаж",
+      "enterFloor": "Введите этаж...",
+      "apartment": "Квартира",
+      "selectApartment": "Выберите квартиру...",
+      "confirm": "Подтвердить",
+      "saving": "Сохранение...",
+      "basicInfo": "Основная информация",
+      "apartmentInfo": "Информация о квартире",
+      "required": "Это поле обязательно",
+      "requiredFields": "Обязательные поля",
+      "loading": "Загрузка...",
+      "selectBuildingFirst": "Сначала выберите здание",
+      "selectBlockFirst": "Сначала выберите блок",
+      "dateEndError": "Срок погашения должен быть после даты начала",
+      "floorError": "Этаж не может быть отрицательным",
+      "amountError": "Сумма должна быть введена правильно",
+      "types": {
+        "daily": "Ежедневно",
+        "weekly": "Еженедельно",
+        "monthly": "Ежемесячно",
+        "quarterly": "Ежеквартально",
+        "yearly": "Ежегодно",
+        "one_time": "Одноразово",
+        "biannually": "Дважды в год"
+      },
+      "statuses": {
+        "pending": "В ожидании",
+        "pre_paid": "Предоплата",
+        "paid": "Оплачено",
+        "overdue": "Просрочено",
+        "declined": "Отклонено",
+        "unpaid": "Не оплачено",
+        "draft": "Черновик"
+      }
+    },
+    "searchModal": {
+      "title": "Расширенный поиск",
+      "serviceName": "Название услуги",
+      "propertyName": "Название квартиры",
+      "complexName": "Название комплекса",
+      "status": "Статус",
+      "minAmount": "Минимальная сумма",
+      "maxAmount": "Максимальная сумма",
+      "startDate": "Дата начала",
+      "dueDate": "Срок погашения"
     }
   },
   "paymentHistory": {
@@ -1656,7 +1727,103 @@
     "pagination": {
       "prev": "Назад",
       "next": "Вперед"
+    },
+    "myProperties": "Мои Квартиры",
+    "property": "квартира",
+    "loadError": "Ошибка загрузки данных",
+    "noProperties": "Квартиры не найдены",
+    "noPropertiesDesc": "У вас пока нет квартир",
+    "viewDetails": "Подробнее",
+    "details": "Детали Квартиры",
+    "basicInfo": "Основная Информация",
+    "complex": "Комплекс",
+    "name": "Название",
+    "phone": "Телефон",
+    "email": "Email",
+    "financialInfo": "Финансовая Информация",
+    "bankBalance": "Банковский Баланс",
+    "cashBalance": "Наличный Баланс",
+    "dates": "Даты",
+    "createdAt": "Дата Создания",
+    "updatedAt": "Дата Обновления",
+    "status": {
+      "active": "Активный",
+      "inactive": "Неактивный"
+    },
+    "apartmentNumber": "Номер Квартиры",
+    "floor": "Этаж",
+    "area": "Площадь"
+  },
+  "resident": {
+    "home": {
+      "welcome": "Добро пожаловать",
+      "subtitle": "Ваша личная панель",
+      "quickActions": "Быстрые Действия",
+      "myProperties": "Мои Квартиры",
+      "invoices": "Счета",
+      "unpaidInvoices": "Неоплаченные Счета",
+      "notifications": "Уведомления",
+      "tickets": "Заявки",
+      "documents": "Электронные Документы"
+    },
+    "invoices": {
+      "pageTitle": "Счета",
+      "invoice": "счет",
+      "loadError": "Ошибка загрузки данных",
+      "noInvoices": "Счета не найдены",
+      "noInvoicesDesc": "У вас пока нет счетов",
+      "view": "Просмотр",
+      "service": "Услуга",
+      "amount": "Сумма",
+      "paidAmount": "Оплачено",
+      "dueDate": "Срок оплаты"
+    },
+    "notifications": {
+      "pageTitle": "Уведомления",
+      "notification": "уведомление",
+      "loadError": "Ошибка загрузки данных",
+      "noNotifications": "Уведомления не найдены",
+      "noNotificationsDesc": "У вас пока нет уведомлений",
+      "new": "Новое"
+    },
+    "tickets": {
+      "pageTitle": "Заявки",
+      "ticket": "заявка",
+      "loadError": "Ошибка загрузки данных",
+      "noTickets": "Заявки не найдены",
+      "noTicketsDesc": "У вас пока нет заявок",
+      "create": "Новая Заявка",
+      "view": "Просмотр",
+      "status": {
+        "pending": "Ожидает",
+        "inProgress": "В работе",
+        "resolved": "Решено",
+        "completed": "Завершено",
+        "cancelled": "Отменено",
+        "closed": "Закрыто"
+      }
+    },
+    "documents": {
+      "pageTitle": "Электронные Документы",
+      "document": "документ",
+      "loadError": "Ошибка загрузки данных",
+      "noDocuments": "Документы не найдены",
+      "noDocumentsDesc": "У вас пока нет документов",
+      "view": "Просмотр",
+      "download": "Скачать",
+      "fileInfo": "Информация о Файле",
+      "fileName": "Имя Файла",
+      "fileSize": "Размер Файла"
     }
+  },
+  "tickets": {
+    "description": "Описание",
+    "category": "Категория"
+  },
+  "documents": {
+    "fileInfo": "Информация о Файле",
+    "fileName": "Имя Файла",
+    "fileSize": "Размер Файла"
   },
   "residents": {
     "pageTitle": "Жители",

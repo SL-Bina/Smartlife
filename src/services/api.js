@@ -100,6 +100,15 @@ export const authAPI = {
     }
   },
 
+  residentMe: async () => {
+    try {
+      const response = await api.get("/module/resident/config/me");
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
   updateProfile: async (data) => {
     try {
       const response = await api.patch("/user/me", data);

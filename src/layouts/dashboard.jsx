@@ -34,23 +34,36 @@ function ProtectedRoute({ element, allowedRoles, moduleName }) {
     return <Navigate to="/auth/sign-in" replace />;
   }
 
+  const isResident = user?.is_resident === true;
   const userRole = user.role?.name?.toLowerCase() || (typeof user.role === 'string' ? user.role.toLowerCase() : null);
   const isRoot = userRole === "root";
 
-  // Root role has access to all routes
-  if (isRoot) {
+  // If user is resident, check if route is for residents
+  const currentPath = window.location.pathname;
+  if (isResident && !currentPath.includes("/resident/")) {
+    // Resident users can only access resident routes
+    return <Navigate to="/dashboard/resident/home" replace />;
+  }
+
+  // Non-resident users cannot access resident routes
+  if (!isResident && currentPath.includes("/resident/")) {
+    return <Navigate to="/dashboard/home" replace />;
+  }
+
+  // Root role has access to all routes (except resident routes if not resident)
+  if (isRoot && !isResident) {
     return element;
   }
 
   if (moduleName && !hasModuleAccess(moduleName)) {
-    if (userRole === "resident") {
+    if (isResident) {
       return <Navigate to="/dashboard/resident/home" replace />;
     }
     return <Navigate to="/dashboard/home" replace />;
   }
 
   if (allowedRoles && userRole && !allowedRoles.includes(userRole)) {
-    if (userRole === "resident") {
+    if (isResident) {
       return <Navigate to="/dashboard/resident/home" replace />;
     }
     return <Navigate to="/dashboard/home" replace />;
@@ -64,7 +77,7 @@ export const filterRoutesByRole = (routes, user, hasModuleAccess) => {
 
   const originalRole = user?.role?.name?.toLowerCase();
   const isRoot = originalRole === "root";
-  const isResident = originalRole === "resident";
+  const isResident = user?.is_resident === true;
 
   // Build module access map from role_access_modules (preferred) or modules (fallback)
   const userModuleNames = new Set();
@@ -112,6 +125,25 @@ export const filterRoutesByRole = (routes, user, hasModuleAccess) => {
     .map((route) => {
       const filteredPages = route.pages
         .map((page) => {
+          // If user is resident, only show resident routes
+          if (isResident) {
+            if (page.path && !page.path.includes("/resident/")) {
+              return null; // Hide non-resident routes for residents
+            }
+          } else {
+            // If user is not resident, hide resident routes
+            if (page.path && page.path.includes("/resident/")) {
+              return null; // Hide resident routes for non-residents
+            }
+          }
+
+          // Resident users don't need module checks - they only see resident routes
+          if (isResident) {
+            // For resident users, all resident routes are visible (no module check needed)
+            // We already filtered out non-resident routes above
+            return page;
+          }
+
           // Xüsusi səhifələr - həmişə görünür (profile, settings və s.)
           const isSpecialPage = page.path === "/profile" || page.path === "/settings";
           
@@ -163,7 +195,21 @@ export const filterRoutesByRole = (routes, user, hasModuleAccess) => {
           // Submenu o zaman açılasın ki, daxilində hansısa modul aktivdirsə
           if (page.children && page.children.length > 0) {
             const filteredChildren = page.children.filter((child) => {
-              // ModuleName yoxlaması
+              // If user is resident, only show resident routes (no module check needed)
+              if (isResident) {
+                if (child.path && !child.path.includes("/resident/")) {
+                  return false; // Hide non-resident routes for residents
+                }
+                // For resident users, all resident routes are visible (no module check)
+                return true;
+              } else {
+                // If user is not resident, hide resident routes
+                if (child.path && child.path.includes("/resident/")) {
+                  return false; // Hide resident routes for non-residents
+                }
+              }
+
+              // ModuleName yoxlaması (only for non-resident users)
               let childHasModuleAccess = false;
               if (child.moduleName) {
                 if (isRoot) {
@@ -333,8 +379,15 @@ export function Dashboard() {
           <DashboardNavbar />
           <div className="mt-4 sm:mt-6 md:mt-8">
             <Routes>
-              {/* Root path - home səhifəsinə yönləndir */}
-              <Route path="/" element={<Navigate to="/home" replace />} />
+              {/* Root path - home səhifəsinə yönləndir (resident üçün resident/home) */}
+              <Route 
+                path="/" 
+                element={
+                  user?.is_resident === true 
+                    ? <Navigate to="/resident/home" replace /> 
+                    : <Navigate to="/home" replace />
+                } 
+              />
               {filteredRoutes.map(
                 ({ layout, pages }) =>
                   layout === "dashboard" &&

@@ -4,7 +4,7 @@ const myPropertiesAPI = {
   getAll: async () => {
     try {
       const response = await api.get("/module/resident/config/my/properties");
-      return response;
+      return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }
@@ -13,7 +13,7 @@ const myPropertiesAPI = {
   getById: async (propertyId) => {
     try {
       const response = await api.get(`/module/resident/config/my/property/${propertyId}`);
-      return response;
+      return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }
@@ -21,4 +21,3 @@ const myPropertiesAPI = {
 };
 
 export default myPropertiesAPI;
-

@@ -1,44 +1,62 @@
 import React, { useState, useEffect } from "react";
-import { Typography, Card, CardBody } from "@material-tailwind/react";
+import { Typography, Spinner } from "@material-tailwind/react";
 import { BuildingOfficeIcon } from "@heroicons/react/24/outline";
+import { useTranslation } from "react-i18next";
 import myPropertiesAPI from "./api";
+import { PropertyCard, PropertyDetailModal } from "./components";
 
 export default function MyPropertiesPage() {
+  const { t } = useTranslation();
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedProperty, setSelectedProperty] = useState(null);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
 
   useEffect(() => {
-    const fetchProperties = async () => {
-      try {
-        setLoading(true);
-        const response = await myPropertiesAPI.getAll();
-        setProperties(response?.data?.data || []);
-        setError(null);
-      } catch (err) {
-        setError(err.message || "Məlumat yüklənərkən xəta baş verdi");
-        setProperties([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProperties();
   }, []);
 
+  const fetchProperties = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await myPropertiesAPI.getAll();
+      setProperties(response?.data?.data || response?.data || []);
+    } catch (err) {
+      setError(err?.message || t("properties.loadError") || "Məlumat yüklənərkən xəta baş verdi");
+      setProperties([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleView = (property) => {
+    setSelectedProperty(property);
+    setDetailModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setDetailModalOpen(false);
+    setSelectedProperty(null);
+  };
+
   if (loading) {
     return (
-      <div className="text-center py-12">
-        <Typography className="text-sm text-gray-500 dark:text-gray-400">
-          Yüklənir...
-        </Typography>
+      <div className="flex items-center justify-center py-12" style={{ position: 'relative', zIndex: 0 }}>
+        <div className="text-center">
+          <Spinner className="h-8 w-8 mx-auto mb-4" />
+          <Typography className="text-sm text-gray-500 dark:text-gray-400">
+            {t("properties.loading") || "Yüklənir..."}
+          </Typography>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-12">
+      <div className="text-center py-12" style={{ position: 'relative', zIndex: 0 }}>
         <Typography className="text-sm text-red-500 dark:text-red-400">
           {error}
         </Typography>
@@ -46,91 +64,54 @@ export default function MyPropertiesPage() {
     );
   }
 
-  if (!properties || properties.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <Typography className="text-sm text-gray-500 dark:text-gray-400">
-          Əmlak tapılmadı
-        </Typography>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <BuildingOfficeIcon className="h-8 w-8 text-blue-500" />
-        <Typography variant="h4" className="text-gray-800 dark:text-gray-200">
-          Mənim Əmlaklarım
-        </Typography>
+    <div className="space-y-6" style={{ position: 'relative', zIndex: 0 }}>
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 dark:from-blue-700 dark:to-blue-900 p-4 rounded-xl shadow-lg border border-blue-500 dark:border-blue-700">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-white/20 rounded-lg">
+            <BuildingOfficeIcon className="h-8 w-8 text-white" />
+          </div>
+          <div>
+            <Typography variant="h4" className="text-white font-bold">
+              {t("properties.myProperties") || "Mənim Əmlaklarım"}
+            </Typography>
+            <Typography variant="small" className="text-blue-100 dark:text-blue-200">
+              {properties.length} {t("properties.property") || "əmlak"}
+            </Typography>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {properties.map((property) => (
-          <Card key={property.id} className="shadow-md hover:shadow-lg transition-shadow">
-            <CardBody className="p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <Typography variant="h6" className="text-gray-800 dark:text-gray-200 font-semibold mb-2">
-                    {property.name}
-                  </Typography>
-                  <Typography variant="small" className="text-gray-500 dark:text-gray-400 mb-1">
-                    MTK: {property.mtk?.name || `#${property.mtk_id}`}
-                  </Typography>
-                  <Typography variant="small" className="text-gray-500 dark:text-gray-400 mb-1">
-                    Kompleks: {property.complex?.name || `#${property.complex_id}`}
-                  </Typography>
-                </div>
-                <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    property.status === "active"
-                      ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                      : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-                  }`}
-                >
-                  {property.status === "active" ? "Aktiv" : "Qeyri-aktiv"}
-                </span>
-              </div>
+      {/* Properties Grid */}
+      {!properties || properties.length === 0 ? (
+        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+          <BuildingOfficeIcon className="h-16 w-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
+          <Typography className="text-lg text-gray-500 dark:text-gray-400 font-semibold mb-2">
+            {t("properties.noProperties") || "Əmlak tapılmadı"}
+          </Typography>
+          <Typography variant="small" className="text-gray-400 dark:text-gray-500">
+            {t("properties.noPropertiesDesc") || "Hələ heç bir əmlakınız yoxdur"}
+          </Typography>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {properties.map((property) => (
+            <PropertyCard
+              key={property.id}
+              property={property}
+              onView={handleView}
+            />
+          ))}
+        </div>
+      )}
 
-              {property.meta && (
-                <div className="space-y-2 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  {property.meta.area && (
-                    <div className="flex justify-between">
-                      <Typography variant="small" className="text-gray-600 dark:text-gray-400">
-                        Sahə:
-                      </Typography>
-                      <Typography variant="small" className="text-gray-800 dark:text-gray-200 font-medium">
-                        {property.meta.area} m²
-                      </Typography>
-                    </div>
-                  )}
-                  {property.meta.floor && (
-                    <div className="flex justify-between">
-                      <Typography variant="small" className="text-gray-600 dark:text-gray-400">
-                        Mərtəbə:
-                      </Typography>
-                      <Typography variant="small" className="text-gray-800 dark:text-gray-200 font-medium">
-                        {property.meta.floor}
-                      </Typography>
-                    </div>
-                  )}
-                  {property.meta.apartment_number && (
-                    <div className="flex justify-between">
-                      <Typography variant="small" className="text-gray-600 dark:text-gray-400">
-                        Mənzil nömrəsi:
-                      </Typography>
-                      <Typography variant="small" className="text-gray-800 dark:text-gray-200 font-medium">
-                        {property.meta.apartment_number}
-                      </Typography>
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardBody>
-          </Card>
-        ))}
-      </div>
+      {/* Detail Modal */}
+      <PropertyDetailModal
+        open={detailModalOpen}
+        onClose={handleCloseModal}
+        propertyId={selectedProperty?.id}
+      />
     </div>
   );
 }
-

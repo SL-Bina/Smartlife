@@ -20,7 +20,7 @@ const removeCookie = (name) => {
   document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
 };
 
-const normalizeUserData = (data) => {
+const normalizeUserData = (data, isResident = false) => {
   const userDataObj = data.user_data || {};
   return {
     id: userDataObj.id,
@@ -35,6 +35,7 @@ const normalizeUserData = (data) => {
     personal_code: userDataObj.personal_code,
     address: userDataObj.address,
     is_user: userDataObj.is_user,
+    is_resident: isResident,
     role: data.role ? {
       id: data.role.id,
       name: data.role.name,
@@ -50,6 +51,39 @@ const normalizeUserData = (data) => {
   };
 };
 
+const normalizeResidentData = (data) => {
+  // Resident API response structure: { id, name, surname, email, phone, meta: { gender, birth_date, personal_code }, properties: [...] }
+  const fullName = data.surname ? `${data.name} ${data.surname}` : data.name;
+  return {
+    id: data.id,
+    name: fullName,
+    username: data.email || data.phone || null,
+    email: data.email,
+    phone: data.phone,
+    gender: data.meta?.gender || null,
+    status: "active",
+    profile_photo: null,
+    birthday: data.meta?.birth_date || null,
+    personal_code: data.meta?.personal_code || null,
+    address: null,
+    is_user: null,
+    is_resident: true,
+    role: {
+      id: null,
+      name: "resident",
+    },
+    modules: [],
+    role_access_modules: [],
+    devices: null,
+    other_devices: null,
+    active_device: null,
+    fullName: fullName,
+    firstName: data.name || '',
+    lastName: data.surname || '',
+    properties: data.properties || [],
+  };
+};
+
 export const initializeUser = createAsyncThunk(
   'auth/initializeUser',
   async (_, { rejectWithValue }) => {
@@ -59,13 +93,51 @@ export const initializeUser = createAsyncThunk(
         return { user: null, error: null };
       }
 
-      const meResponse = await authAPI.me();
-      if (meResponse.success && meResponse.data) {
-        return { user: normalizeUserData(meResponse.data), error: null };
-      } else {
-        const errorMsg = meResponse.message || 'Failed to load user data';
-        removeCookie(TOKEN_COOKIE_NAME);
-        return { user: null, error: errorMsg };
+      // First try /module/resident/config/me (for resident users)
+      // If it fails, try /user/me (for dashboard users)
+      try {
+        const residentMeResponse = await authAPI.residentMe();
+        if (residentMeResponse.success && residentMeResponse.data) {
+          return { user: normalizeResidentData(residentMeResponse.data), error: null };
+        } else {
+          // If resident endpoint returns but not success, try dashboard endpoint
+          const errorMsg = residentMeResponse.message || 'Failed to load resident data';
+          // Try dashboard endpoint as fallback
+          try {
+            const meResponse = await authAPI.me();
+            if (meResponse.success && meResponse.data) {
+              // Check if user is resident from me() response
+              const isResident = meResponse.data.is_resident === true || meResponse.data.user_data?.is_resident === true;
+              return { user: normalizeUserData(meResponse.data, isResident), error: null };
+            } else {
+              removeCookie(TOKEN_COOKIE_NAME);
+              return { user: null, error: errorMsg };
+            }
+          } catch (meError) {
+            removeCookie(TOKEN_COOKIE_NAME);
+            return { user: null, error: errorMsg };
+          }
+        }
+      } catch (residentError) {
+        // If /module/resident/config/me fails, try /user/me (for dashboard users)
+        try {
+          const meResponse = await authAPI.me();
+          if (meResponse.success && meResponse.data) {
+            // Check if user is resident from me() response
+            const isResident = meResponse.data.is_resident === true || meResponse.data.user_data?.is_resident === true;
+            return { user: normalizeUserData(meResponse.data, isResident), error: null };
+          } else {
+            const errorMsg = meResponse.message || 'Failed to load user data';
+            removeCookie(TOKEN_COOKIE_NAME);
+            return { user: null, error: errorMsg };
+          }
+        } catch (meError) {
+          // Both endpoints failed
+          console.error('Failed to initialize user (both endpoints failed):', { residentError, meError });
+          const errorMessage = meError?.response?.data?.message || meError?.message || residentError?.response?.data?.message || residentError?.message || 'Failed to initialize user';
+          removeCookie(TOKEN_COOKIE_NAME);
+          return { user: null, error: errorMessage };
+        }
       }
     } catch (error) {
       console.error('Failed to initialize user:', error);
@@ -87,12 +159,66 @@ export const loginUser = createAsyncThunk(
         const { token } = loginResponse;
         setCookie(TOKEN_COOKIE_NAME, token, 7);
 
+        // Get is_resident from login response
+        const isResidentFromLogin = loginResponse.is_resident === true;
+
+        // Resident users: use login response directly and normalize with normalizeResidentData
+        if (isResidentFromLogin) {
+          // For resident users, login response has user object with properties
+          // First try to use login response directly (it already has properties)
+          const loginUser = loginResponse.user || {};
+          
+          // Try to get full data from /module/resident/config/me, but if it fails, use login response
+          try {
+            const residentMeResponse = await authAPI.residentMe();
+            if (residentMeResponse && residentMeResponse.success && residentMeResponse.data) {
+              return { user: normalizeResidentData(residentMeResponse.data) };
+            }
+          } catch (residentMeError) {
+            console.error('Failed to fetch resident details from /module/resident/config/me:', residentMeError);
+            // If residentMe() fails (e.g., backend error with complex property), use login response
+            // Login response structure: { user: { id, name, email, phone, properties: [...] } }
+            const residentData = {
+              id: loginUser.id,
+              name: loginUser.name || '',
+              surname: null,
+              email: loginUser.email || '',
+              phone: loginUser.phone || '',
+              meta: {
+                gender: null,
+                birth_date: null,
+                personal_code: null,
+              },
+              properties: loginUser.properties || [],
+            };
+            return { user: normalizeResidentData(residentData) };
+          }
+          
+          // If residentMe() didn't return success, use login response as fallback
+          const residentData = {
+            id: loginUser.id,
+            name: loginUser.name || '',
+            surname: null,
+            email: loginUser.email || '',
+            phone: loginUser.phone || '',
+            meta: {
+              gender: null,
+              birth_date: null,
+              personal_code: null,
+            },
+            properties: loginUser.properties || [],
+          };
+          return { user: normalizeResidentData(residentData) };
+        }
+
+        // Non-resident users: use /user/me endpoint
         let role = null;
         let modules = [];
         let devices = null;
         let other_devices = null;
         let active_device = null;
         let userDataObj = null;
+        let isResident = isResidentFromLogin;
         
         let role_access_modules = [];
         
@@ -109,6 +235,12 @@ export const loginUser = createAsyncThunk(
             devices = data.devices;
             other_devices = data.other_devices;
             active_device = data.active_device;
+            // Override is_resident from me() response if available
+            if (data.is_resident !== undefined) {
+              isResident = data.is_resident === true;
+            } else if (data.user_data?.is_resident !== undefined) {
+              isResident = data.user_data.is_resident === true;
+            }
           }
         } catch (meError) {
           console.error('Failed to fetch user details from /user/me:', meError);
@@ -135,7 +267,7 @@ export const loginUser = createAsyncThunk(
           devices: devices || null,
           other_devices: other_devices || null,
           active_device: active_device || null,
-        });
+        }, isResident);
 
         return { user: userData };
       } else {
@@ -157,30 +289,68 @@ export const loginUser = createAsyncThunk(
 
 export const refreshUser = createAsyncThunk(
   'auth/refreshUser',
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
     try {
       const token = getCookie(TOKEN_COOKIE_NAME);
       if (!token) {
         return { user: null };
       }
 
-      const meResponse = await authAPI.me();
-      if (meResponse.success && meResponse.data) {
-        const data = meResponse.data;
-        return { 
-          user: normalizeUserData({
-            user_data: data.user_data,
-            role: data.role,
-            modules: data.modules || [],
-            role_access_modules: data.role_access_modules || [],
-            devices: data.devices,
-            other_devices: data.other_devices,
-            active_device: data.active_device,
-          })
-        };
-      } else {
-        removeCookie(TOKEN_COOKIE_NAME);
-        return { user: null };
+      // Get current user from state to check if they are resident
+      const state = getState();
+      const currentUser = state?.auth?.user;
+      const isResident = currentUser?.is_resident === true;
+
+      // If user is resident, use resident endpoint
+      if (isResident) {
+        try {
+          const residentMeResponse = await authAPI.residentMe();
+          if (residentMeResponse.success && residentMeResponse.data) {
+            return { 
+              user: normalizeResidentData(residentMeResponse.data)
+            };
+          } else {
+            removeCookie(TOKEN_COOKIE_NAME);
+            return { user: null };
+          }
+        } catch (residentError) {
+          console.error('Failed to refresh resident user data:', residentError);
+          if (residentError.response?.status === 401) {
+            removeCookie(TOKEN_COOKIE_NAME);
+          }
+          return rejectWithValue(residentError.message);
+        }
+      }
+
+      // For non-resident users, use /user/me
+      try {
+        const meResponse = await authAPI.me();
+        if (meResponse.success && meResponse.data) {
+          const data = meResponse.data;
+          // Check if user is resident from me() response
+          const isResidentFromResponse = data.is_resident === true || data.user_data?.is_resident === true;
+          return { 
+            user: normalizeUserData({
+              user_data: data.user_data,
+              role: data.role,
+              modules: data.modules || [],
+              role_access_modules: data.role_access_modules || [],
+              devices: data.devices,
+              other_devices: data.other_devices,
+              active_device: data.active_device,
+            }, isResidentFromResponse)
+          };
+        } else {
+          removeCookie(TOKEN_COOKIE_NAME);
+          return { user: null };
+        }
+      } catch (meError) {
+        console.error('Failed to refresh user data:', meError);
+        if (meError.response?.status === 401) {
+          removeCookie(TOKEN_COOKIE_NAME);
+        }
+        // Don't reject on refresh errors - just return current user
+        return rejectWithValue(meError.message);
       }
     } catch (error) {
       console.error('Failed to refresh user data:', error);

@@ -58,6 +58,8 @@
     "reception": "Reception",
     "services": "Services",
     "electronicDocuments": "Electronic Documents",
+    "eDocuments": "Electronic Documents",
+    "myProperties": "My Apartments",
     "buildingManagement": "Building Management",
     "userRights": "Rights",
     "userPermissions": "Permissions",
@@ -370,6 +372,75 @@
     "pagination": {
       "prev": "Previous",
       "next": "Next"
+    },
+    "form": {
+      "title": "Title",
+      "enterTitle": "Title",
+      "amount": "Amount (AZN)",
+      "enterAmount": "Amount",
+      "dateRange": "Date Range",
+      "startDate": "Start Date",
+      "dueDate": "Due Date",
+      "endDate": "End Date",
+      "building": "Building",
+      "selectBuilding": "Select building...",
+      "block": "Block",
+      "selectBlock": "Select block",
+      "property": "Apartment",
+      "selectProperty": "Select apartment...",
+      "service": "Service",
+      "selectService": "Select service...",
+      "type": "Type",
+      "selectType": "Select type...",
+      "status": "Status",
+      "selectStatus": "Select status...",
+      "description": "Description",
+      "enterDescription": "Enter description...",
+      "floor": "Floor",
+      "enterFloor": "Enter floor...",
+      "apartment": "Apartment",
+      "selectApartment": "Select apartment...",
+      "confirm": "Confirm",
+      "saving": "Saving...",
+      "basicInfo": "Basic Information",
+      "apartmentInfo": "Apartment Information",
+      "required": "This field is required",
+      "requiredFields": "Required fields",
+      "loading": "Loading...",
+      "selectBuildingFirst": "Select building first",
+      "selectBlockFirst": "Select block first",
+      "dateEndError": "Due date must be after start date",
+      "floorError": "Floor cannot be negative",
+      "amountError": "Amount must be entered correctly",
+      "types": {
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "monthly": "Monthly",
+        "quarterly": "Quarterly",
+        "yearly": "Yearly",
+        "one_time": "One-time",
+        "biannually": "Biannually"
+      },
+      "statuses": {
+        "pending": "Pending",
+        "pre_paid": "Pre-paid",
+        "paid": "Paid",
+        "overdue": "Overdue",
+        "declined": "Declined",
+        "unpaid": "Unpaid",
+        "draft": "Draft"
+      }
+    },
+    "searchModal": {
+      "title": "Advanced Search",
+      "serviceName": "Service Name",
+      "propertyName": "Apartment Name",
+      "complexName": "Complex Name",
+      "status": "Status",
+      "minAmount": "Min Amount",
+      "maxAmount": "Max Amount",
+      "startDate": "Start Date",
+      "dueDate": "Due Date"
     }
   },
   "paymentHistory": {
@@ -1688,7 +1759,103 @@
         "1": "Apartment",
         "2": "Commercial"
       }
+    },
+    "myProperties": "My Apartments",
+    "property": "apartment",
+    "loadError": "Error loading data",
+    "noProperties": "No apartments found",
+    "noPropertiesDesc": "You don't have any apartments yet",
+    "viewDetails": "View Details",
+    "details": "Apartment Details",
+    "basicInfo": "Basic Information",
+    "complex": "Complex",
+    "name": "Name",
+    "phone": "Phone",
+    "email": "Email",
+    "financialInfo": "Financial Information",
+    "bankBalance": "Bank Balance",
+    "cashBalance": "Cash Balance",
+    "dates": "Dates",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "apartmentNumber": "Apartment Number",
+    "floor": "Floor",
+    "area": "Area"
+  },
+  "resident": {
+    "home": {
+      "welcome": "Welcome",
+      "subtitle": "Your personal dashboard",
+      "quickActions": "Quick Actions",
+      "myProperties": "My Apartments",
+      "invoices": "Invoices",
+      "unpaidInvoices": "Unpaid Invoices",
+      "notifications": "Notifications",
+      "tickets": "Tickets",
+      "documents": "Electronic Documents"
+    },
+    "invoices": {
+      "pageTitle": "Invoices",
+      "invoice": "invoice",
+      "loadError": "Error loading data",
+      "noInvoices": "No invoices found",
+      "noInvoicesDesc": "You don't have any invoices yet",
+      "view": "View",
+      "service": "Service",
+      "amount": "Amount",
+      "paidAmount": "Paid",
+      "dueDate": "Due Date"
+    },
+    "notifications": {
+      "pageTitle": "Notifications",
+      "notification": "notification",
+      "loadError": "Error loading data",
+      "noNotifications": "No notifications found",
+      "noNotificationsDesc": "You don't have any notifications yet",
+      "new": "New"
+    },
+    "tickets": {
+      "pageTitle": "Tickets",
+      "ticket": "ticket",
+      "loadError": "Error loading data",
+      "noTickets": "No tickets found",
+      "noTicketsDesc": "You don't have any tickets yet",
+      "create": "New Ticket",
+      "view": "View",
+      "status": {
+        "pending": "Pending",
+        "inProgress": "In Progress",
+        "resolved": "Resolved",
+        "completed": "Completed",
+        "cancelled": "Cancelled",
+        "closed": "Closed"
+      }
+    },
+    "documents": {
+      "pageTitle": "Electronic Documents",
+      "document": "document",
+      "loadError": "Error loading data",
+      "noDocuments": "No documents found",
+      "noDocumentsDesc": "You don't have any documents yet",
+      "view": "View",
+      "download": "Download",
+      "fileInfo": "File Information",
+      "fileName": "File Name",
+      "fileSize": "File Size"
     }
+  },
+  "tickets": {
+    "description": "Description",
+    "category": "Category"
+  },
+  "documents": {
+    "fileInfo": "File Information",
+    "fileName": "File Name",
+    "fileSize": "File Size"
   },
   
   "residents": {

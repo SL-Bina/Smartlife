@@ -17,6 +17,7 @@ export function PropertyServiceFeeModal({ open, propertyId, propertyName, onClos
   const [selectedServiceFeeId, setSelectedServiceFeeId] = useState(null);
   const [services, setServices] = useState([]);
   const [loadingServices, setLoadingServices] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
 
   const [formData, setFormData] = useState({
@@ -133,6 +134,13 @@ export function PropertyServiceFeeModal({ open, propertyId, propertyName, onClos
   };
 
   const handleSubmit = async () => {
+    console.log("handleSubmit called", { propertyId, formData, formMode });
+    
+    if (submitting) {
+      console.log("Already submitting, ignoring...");
+      return;
+    }
+    
     if (!propertyId) {
       showToast("error", "Mənzil seçilməyib", "Xəta");
       return;
@@ -145,6 +153,8 @@ export function PropertyServiceFeeModal({ open, propertyId, propertyName, onClos
       showToast("error", "Qiymət düzgün daxil edilməlidir", "Xəta");
       return;
     }
+
+    setSubmitting(true);
 
     // Tarix validasiyası
     if (formData.start_date && formData.last_date) {
@@ -167,29 +177,51 @@ export function PropertyServiceFeeModal({ open, propertyId, propertyName, onClos
 
     try {
       const submitData = {
+        property_id: propertyId,
         service_id: formData.service_id,
         status: formData.status,
         price: parseFloat(formData.price),
         type: formData.type,
-        property_id: propertyId,
         ...(formData.start_date && { start_date: formData.start_date }),
         ...(formData.last_date && { last_date: formData.last_date }),
         ...(formData.next_date && { next_date: formData.next_date }),
       };
 
+      console.log("Submitting data:", submitData);
+
       if (formMode === "edit") {
-        await propertyServiceFeeAPI.update(propertyId, selectedServiceFeeId, submitData);
+        const response = await propertyServiceFeeAPI.update(propertyId, selectedServiceFeeId, submitData);
+        console.log("Update response:", response);
         showToast("success", "Servis haqqı uğurla yeniləndi", "Uğurlu");
       } else {
-        await propertyServiceFeeAPI.add(propertyId, submitData);
-        showToast("success", "Servis haqqı uğurla əlavə edildi", "Uğurlu");
+        const response = await propertyServiceFeeAPI.add(propertyId, submitData);
+        console.log("Add response:", response);
+        
+        // API response strukturunu yoxla
+        if (response?.data?.success !== false) {
+          showToast("success", "Servis haqqı uğurla əlavə edildi", "Uğurlu");
+        } else {
+          throw new Error(response?.data?.message || "Servis haqqı əlavə edilərkən xəta baş verdi");
+        }
       }
 
       setFormOpen(false);
+      // Reset form
+      setFormData({
+        service_id: null,
+        status: "active",
+        price: "",
+        start_date: "",
+        last_date: "",
+        next_date: "",
+        type: "monthly",
+      });
+      
       // Reload service fees
-      const response = await propertyServiceFeeAPI.getList(propertyId);
-      setServiceFees(response?.data?.data?.data || []);
+      const listResponse = await propertyServiceFeeAPI.getList(propertyId);
+      setServiceFees(listResponse?.data?.data?.data || []);
     } catch (error) {
+      console.error("Error submitting service fee:", error);
       const errorData = error?.response?.data || error;
       let errorMessage = "Servis haqqı yadda saxlanarkən xəta baş verdi";
       
@@ -212,6 +244,8 @@ export function PropertyServiceFeeModal({ open, propertyId, propertyName, onClos
       }
       
       showToast("error", errorMessage, "Xəta");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -223,6 +257,29 @@ export function PropertyServiceFeeModal({ open, propertyId, propertyName, onClos
     const b = parseInt(hexClean.substring(4, 6), 16);
     return `rgba(${r}, ${g}, ${b}, ${opacity})`;
   };
+
+  // Set z-index for modal portal
+  useEffect(() => {
+    if (open) {
+      const observer = new MutationObserver(() => {
+        const portal = document.querySelector('[role="dialog"]');
+        if (portal) {
+          portal.style.zIndex = '999999';
+          const backdrop = document.querySelector('.backdrop-blur-sm');
+          if (backdrop) {
+            backdrop.style.zIndex = '999998';
+          }
+        }
+      });
+
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+      });
+
+      return () => observer.disconnect();
+    }
+  }, [open]);
 
   if (!open) return null;
 
@@ -439,7 +496,7 @@ export function PropertyServiceFeeModal({ open, propertyId, propertyName, onClos
                 value={formData.start_date}
                 onChange={(e) => setFormData(prev => ({ ...prev, start_date: e.target.value }))}
               />
-              <CustomInput
+              {/* <CustomInput
                 label="Son tarix"
                 type="date"
                 value={formData.last_date}
@@ -450,7 +507,7 @@ export function PropertyServiceFeeModal({ open, propertyId, propertyName, onClos
                 type="date"
                 value={formData.next_date}
                 onChange={(e) => setFormData(prev => ({ ...prev, next_date: e.target.value }))}
-              />
+              /> */}
             </div>
             <CustomSelect
               label="Status"
@@ -470,11 +527,13 @@ export function PropertyServiceFeeModal({ open, propertyId, propertyName, onClos
             Ləğv et
           </Button>
           <Button
+            type="button"
             onClick={handleSubmit}
             className="text-white"
             style={{ backgroundColor: ACTIVE_COLOR }}
+            disabled={submitting}
           >
-            {formMode === "edit" ? "Yenilə" : "Əlavə et"}
+            {submitting ? "Göndərilir..." : formMode === "edit" ? "Yenilə" : "Əlavə et"}
           </Button>
         </DialogFooter>
       </Dialog>

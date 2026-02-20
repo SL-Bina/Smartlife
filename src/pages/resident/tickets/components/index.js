@@ -1,0 +1,2 @@
+export { TicketDetailModal } from "./TicketDetailModal";
+

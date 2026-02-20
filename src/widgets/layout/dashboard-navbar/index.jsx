@@ -91,30 +91,30 @@ export function DashboardNavbar() {
     return {};
   };
 
-  // Navbar konfiqurasiyaları - daha görünən və effektiv
+  // Navbar konfiqurasiyaları - Glass effect ilə
   const getNavbarColorClasses = () => {
     if (colorCode) return ""; // MTK rəngi varsa default gradient-i sil
     const transparency = getNavbarTransparency();
     const colors = {
       default: {
-        light: `from-white/${transparency} via-white/${Math.max(parseInt(transparency) - 15, 0)} to-white/${transparency}`,
-        dark: `dark:from-gray-900/${Math.min(parseInt(transparency) + 10, 100)} dark:via-gray-800/${Math.min(parseInt(transparency) + 5, 100)} dark:to-gray-900/${Math.min(parseInt(transparency) + 10, 100)}`,
+        light: `bg-white/80 from-white/90 via-white/85 to-white/90`,
+        dark: `dark:bg-black/80 dark:from-black/90 dark:via-black/85 dark:to-black/90`,
       },
       red: {
-        light: `from-red-100/${transparency} via-red-200/${Math.max(parseInt(transparency) - 15, 0)} to-red-100/${transparency}`,
-        dark: `dark:from-gray-900/${Math.min(parseInt(transparency) + 10, 100)} dark:via-gray-800/${Math.min(parseInt(transparency) + 5, 100)} dark:to-gray-900/${Math.min(parseInt(transparency) + 10, 100)}`,
+        light: `from-red-100/80 via-red-200/75 to-red-100/80`,
+        dark: `dark:bg-black/80 dark:from-black/90 dark:via-black/85 dark:to-black/90`,
       },
       blue: {
-        light: `from-blue-100/${transparency} via-blue-200/${Math.max(parseInt(transparency) - 15, 0)} to-blue-100/${transparency}`,
-        dark: `dark:from-gray-900/${Math.min(parseInt(transparency) + 10, 100)} dark:via-gray-800/${Math.min(parseInt(transparency) + 5, 100)} dark:to-gray-900/${Math.min(parseInt(transparency) + 10, 100)}`,
+        light: `from-blue-100/80 via-blue-200/75 to-blue-100/80`,
+        dark: `dark:bg-black/80 dark:from-black/90 dark:via-black/85 dark:to-black/90`,
       },
       green: {
-        light: `from-green-100/${transparency} via-green-200/${Math.max(parseInt(transparency) - 15, 0)} to-green-100/${transparency}`,
-        dark: `dark:from-gray-900/${Math.min(parseInt(transparency) + 10, 100)} dark:via-gray-800/${Math.min(parseInt(transparency) + 5, 100)} dark:to-gray-900/${Math.min(parseInt(transparency) + 10, 100)}`,
+        light: `from-green-100/80 via-green-200/75 to-green-100/80`,
+        dark: `dark:bg-black/80 dark:from-black/90 dark:via-black/85 dark:to-black/90`,
       },
       purple: {
-        light: `from-purple-100/${transparency} via-purple-200/${Math.max(parseInt(transparency) - 15, 0)} to-purple-100/${transparency}`,
-        dark: `dark:from-gray-900/${Math.min(parseInt(transparency) + 10, 100)} dark:via-gray-800/${Math.min(parseInt(transparency) + 5, 100)} dark:to-gray-900/${Math.min(parseInt(transparency) + 10, 100)}`,
+        light: `from-purple-100/80 via-purple-200/75 to-purple-100/80`,
+        dark: `dark:bg-black/80 dark:from-black/90 dark:via-black/85 dark:to-black/90`,
       },
     };
     const color = colors[navbarColor] || colors.default;
@@ -153,16 +153,20 @@ export function DashboardNavbar() {
     if (navbarBorder === "disabled") return "border-0";
     if (colorCode) return "border-0 sm:border-2"; // MTK rəngi varsa border class-larını sil
     const borderColors = {
-      default: "border-0 sm:border-2 border-gray-300/80 dark:border-gray-600/50",
-      red: "border-0 sm:border-2 border-red-300/80 dark:border-gray-600/50",
-      blue: "border-0 sm:border-2 border-blue-300/80 dark:border-gray-600/50",
-      green: "border-0 sm:border-2 border-green-300/80 dark:border-gray-600/50",
-      purple: "border-0 sm:border-2 border-purple-300/80 dark:border-gray-600/50",
+      default: "border-0 sm:border-2 border-gray-200/50 dark:border-gray-800/50",
+      red: "border-0 sm:border-2 border-red-200/50 dark:border-gray-800/50",
+      blue: "border-0 sm:border-2 border-blue-200/50 dark:border-gray-800/50",
+      green: "border-0 sm:border-2 border-green-200/50 dark:border-gray-800/50",
+      purple: "border-0 sm:border-2 border-purple-200/50 dark:border-gray-800/50",
     };
     return borderColors[navbarColor] || borderColors.default;
   };
 
   const getNavbarBlurClasses = () => {
+    // Glass effect üçün həmişə blur aktiv olmalıdır
+    if (fixedNavbar) {
+      return "backdrop-blur-md sm:backdrop-blur-xl md:backdrop-blur-2xl backdrop-saturate-150";
+    }
     if (navbarBlur === "disabled") return "";
     const blurIntensity = {
       enabled: "backdrop-blur-md sm:backdrop-blur-xl md:backdrop-blur-2xl backdrop-saturate-150",
@@ -206,10 +210,56 @@ export function DashboardNavbar() {
       : `px-2 sm:px-3 md:px-4 lg:px-6 ${getNavbarHeightClasses()} z-[1001] mb-4 sm:mb-6 md:mb-8`,
   ].filter(Boolean).join(" ");
 
+  // Navbar rənglərini düzgün təyin et
+  const getNavbarTextColor = () => {
+    if (!fixedNavbar) return '';
+    if (isDarkMode) {
+      return '';
+    } else {
+      return 'navbar-light-mode';
+    }
+  };
+
+  // Navbar-ın rənglərini inline style ilə təyin et
+  useEffect(() => {
+    if (fixedNavbar) {
+      const navbarElement = document.querySelector('nav[class*="Navbar"]');
+      if (navbarElement) {
+        if (isDarkMode) {
+          navbarElement.style.color = '#ffffff';
+          // Bütün child elementlərin rənglərini təyin et
+          const allElements = navbarElement.querySelectorAll('*');
+          allElements.forEach((el) => {
+            if (el instanceof HTMLElement) {
+              const computedStyle = window.getComputedStyle(el);
+              // Yalnız default rəngləri override et
+              if (computedStyle.color === 'rgb(17, 24, 39)' || computedStyle.color === 'rgb(31, 41, 55)') {
+                el.style.color = '#ffffff';
+              }
+            }
+          });
+        } else {
+          navbarElement.style.color = '#111827';
+          // Bütün child elementlərin rənglərini təyin et
+          const allElements = navbarElement.querySelectorAll('*');
+          allElements.forEach((el) => {
+            if (el instanceof HTMLElement) {
+              const computedStyle = window.getComputedStyle(el);
+              // Yalnız default rəngləri override et
+              if (computedStyle.color === 'rgb(255, 255, 255)' || computedStyle.color === 'rgb(243, 244, 246)') {
+                el.style.color = '#111827';
+              }
+            }
+          });
+        }
+      }
+    }
+  }, [fixedNavbar, isDarkMode]);
+
   return (
     <Navbar
       color={fixedNavbar ? (isDarkMode ? "gray" : "white") : "transparent"}
-      className={navbarClasses}
+      className={`${navbarClasses} ${getNavbarTextColor()}`}
       fullWidth
       blurred={fixedNavbar && navbarBlur === "enabled"}
       style={{
@@ -218,7 +268,11 @@ export function DashboardNavbar() {
         position: 'relative',
         zIndex: 1001,
         ...(isDarkMode && fixedNavbar ? { 
-          backgroundColor: 'rgba(17, 24, 39, 0.98)',
+          backgroundColor: 'rgba(0, 0, 0, 0.85)',
+          color: '#ffffff',
+        } : fixedNavbar && !isDarkMode ? {
+          backgroundColor: 'rgba(255, 255, 255, 0.85)',
+          color: '#111827',
         } : {}),
       }}
     >
