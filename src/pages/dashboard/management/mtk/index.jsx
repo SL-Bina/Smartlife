@@ -181,7 +181,7 @@ export default function MtkPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" style={{ position: 'relative', zIndex: 0 }}>
       <MtkHeader />
 
       <ManagementActions

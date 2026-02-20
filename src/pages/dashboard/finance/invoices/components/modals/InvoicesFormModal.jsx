@@ -14,22 +14,50 @@ export function InvoicesFormModal({ open, onClose, title, formData, onFieldChang
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
 
+  // Set z-index for portal container when modal is open
   useEffect(() => {
     if (open) {
-      const fetchBuildings = async () => {
-        try {
-          setLoadingBuildings(true);
-          const response = await buildingsAPI.getAll({ page: 1, per_page: 1000 });
-          if (response.success && response.data) {
-            setBuildings(response.data.data || []);
+      // Find all dialog elements and their portal containers
+      const setDialogZIndex = () => {
+        // Find dialog by role
+        const dialogs = document.querySelectorAll('div[role="dialog"]');
+        dialogs.forEach((dialog) => {
+          // Set z-index on dialog itself
+          if (dialog instanceof HTMLElement) {
+            dialog.style.zIndex = '999999';
           }
-        } catch (error) {
-          console.error("Error fetching buildings:", error);
-        } finally {
-          setLoadingBuildings(false);
-        }
+          // Find parent portal container
+          let parent = dialog.parentElement;
+          while (parent && parent !== document.body) {
+            if (parent instanceof HTMLElement) {
+              const computedStyle = window.getComputedStyle(parent);
+              if (computedStyle.position === 'fixed' || computedStyle.position === 'absolute') {
+                parent.style.zIndex = '999999';
+              }
+            }
+            parent = parent.parentElement;
+          }
+        });
+        
+        // Find backdrop elements
+        const backdrops = document.querySelectorAll('[class*="backdrop"]');
+        backdrops.forEach((backdrop) => {
+          if (backdrop instanceof HTMLElement) {
+            backdrop.style.zIndex = '999998';
+          }
+        });
       };
-      fetchBuildings();
+      
+      // Set immediately and also after a short delay (for portal rendering)
+      setDialogZIndex();
+      const timeout = setTimeout(setDialogZIndex, 10);
+      
+      return () => clearTimeout(timeout);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (open) {
       setErrors({});
       setTouched({});
     }
@@ -170,21 +198,28 @@ export function InvoicesFormModal({ open, onClose, title, formData, onFieldChang
   const hasError = (field) => touched[field] && errors[field];
 
   return (
-    <Dialog open={open} handler={onClose} size="xl" className="dark:bg-gray-900" dismiss={{ enabled: false }}>
-      <DialogHeader className="dark:bg-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-            <BuildingOfficeIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+    <Dialog 
+      open={open} 
+      handler={onClose} 
+      size="xl" 
+      className="dark:bg-gray-900 max-h-[90vh] sm:max-h-[85vh] md:max-h-[80vh] flex flex-col" 
+      dismiss={{ enabled: false }} 
+      style={{ zIndex: 999999 }}
+    >
+      <DialogHeader className="dark:bg-gray-800 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 sm:pb-4 flex items-center justify-between flex-shrink-0 px-4 sm:px-6">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+          <div className="p-1.5 sm:p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex-shrink-0">
+            <BuildingOfficeIcon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
           </div>
-          <Typography variant="h5" className="font-bold">
+          <Typography variant="h5" className="font-bold text-sm sm:text-base md:text-lg truncate">
             {title}
           </Typography>
         </div>
-        <div className="cursor-pointer p-2 rounded-md transition-all hover:bg-gray-200 dark:hover:bg-gray-700" onClick={onClose}>
-          <XMarkIcon className="h-5 w-5 text-gray-700 dark:text-white" />
+        <div className="cursor-pointer p-1.5 sm:p-2 rounded-md transition-all hover:bg-gray-200 dark:hover:bg-gray-700 flex-shrink-0" onClick={onClose}>
+          <XMarkIcon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700 dark:text-white" />
         </div>
       </DialogHeader>
-      <DialogBody divider className="space-y-6 dark:bg-gray-800 dark:border-gray-700 max-h-[75vh] overflow-y-auto py-6 px-6">
+      <DialogBody divider className="space-y-6 dark:bg-gray-800 dark:border-gray-700 overflow-y-auto flex-1 min-h-0 py-4 sm:py-6 px-4 sm:px-6 scrollbar-thin">
         <div className="space-y-4">
           <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
             <Typography variant="h6" className="font-semibold dark:text-white">
@@ -253,7 +288,7 @@ export function InvoicesFormModal({ open, onClose, title, formData, onFieldChang
                 {t("invoices.form.dateRange") || "Tarix aralığı"}
               </Typography>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Input
                   type="date"
@@ -291,7 +326,7 @@ export function InvoicesFormModal({ open, onClose, title, formData, onFieldChang
             </Typography>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Typography variant="small" color="blue-gray" className="mb-1.5 font-medium dark:text-gray-300">
                 {t("invoices.form.building") || "Bina"}
@@ -515,17 +550,17 @@ export function InvoicesFormModal({ open, onClose, title, formData, onFieldChang
           </div>
         </div>
       </DialogBody>
-      <DialogFooter className="flex justify-between items-center gap-2 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pt-4 px-6">
-        <Typography variant="small" className="text-gray-500 dark:text-gray-400">
+      <DialogFooter className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-2 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 pt-3 sm:pt-4 px-4 sm:px-6 flex-shrink-0">
+        <Typography variant="small" className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm text-center sm:text-left order-2 sm:order-1">
           <span className="text-red-500">*</span> {t("invoices.form.requiredFields") || "Mütləq sahələr"}
         </Typography>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto order-1 sm:order-2">
           <Button
             variant="outlined"
             color="blue-gray"
             onClick={onClose}
             disabled={saving}
-            className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
+            className="dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 w-full sm:w-auto"
           >
             {t("buttons.cancel")}
           </Button>
@@ -533,10 +568,10 @@ export function InvoicesFormModal({ open, onClose, title, formData, onFieldChang
             color="green"
             onClick={handleSave}
             disabled={saving}
-            className="dark:bg-green-600 dark:hover:bg-green-700 border border-green-300 dark:border-green-500 shadow-md hover:shadow-lg transition-all"
+            className="dark:bg-green-600 dark:hover:bg-green-700 border border-green-300 dark:border-green-500 shadow-md hover:shadow-lg transition-all w-full sm:w-auto"
           >
             {saving ? (
-              <span className="flex items-center gap-2">
+              <span className="flex items-center justify-center gap-2">
                 <svg
                   className="animate-spin h-4 w-4"
                   xmlns="http://www.w3.org/2000/svg"

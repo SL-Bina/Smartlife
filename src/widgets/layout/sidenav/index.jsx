@@ -88,7 +88,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="fixed inset-0 bg-black/50 dark:bg-black/70 z-[9998] xl:hidden backdrop-blur-sm"
+            className="fixed inset-0 bg-black/50 dark:bg-black/70 z-[999] xl:hidden backdrop-blur-sm"
             onClick={() => actions.setOpenSidenav(false)}
           />
         )}
@@ -111,7 +111,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
         style={{
           ...getSidenavBackground(),
           borderColor: mtkColorCode ? getRgbaColor(mtkColorCode, 0.3) : undefined,
-          zIndex: 99999, // Ən yüksək z-index - ən üstdə olmalıdır
+          zIndex: 1000, // Sidebar z-index - modallardan aşağı olmalıdır
           isolation: 'isolate', // Yeni stacking context yaradır
         }}
       >

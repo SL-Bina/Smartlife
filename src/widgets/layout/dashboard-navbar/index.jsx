@@ -175,8 +175,8 @@ export function DashboardNavbar() {
     getNavbarBorderClasses(),
     getNavbarHoverClasses(),
     fixedNavbar
-      ? `${getNavbarPositionClasses()} z-40 ${getNavbarHeightClasses()} ${getNavbarShadowClasses()}`
-      : `px-2 sm:px-3 md:px-4 lg:px-6 ${getNavbarHeightClasses()}`,
+      ? `${getNavbarPositionClasses()} z-[1001] ${getNavbarHeightClasses()} ${getNavbarShadowClasses()}`
+      : `px-2 sm:px-3 md:px-4 lg:px-6 ${getNavbarHeightClasses()} z-[1001]`,
   ].filter(Boolean).join(" ");
 
   return (
@@ -188,6 +188,8 @@ export function DashboardNavbar() {
       style={{
         ...getNavbarBackground(),
         borderColor: colorCode ? getRgbaColor(colorCode, 0.3) : undefined,
+        position: 'relative',
+        zIndex: 1001,
       }}
     >
       <MobileNavbar pageTitle={pageTitle} navbarHoverEffects={navbarHoverEffects} />

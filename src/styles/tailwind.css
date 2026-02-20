@@ -226,9 +226,62 @@
   }
 }
 
+/* Global Dialog z-index - must be above sidebar (1000) */
+/* Material Tailwind Dialog uses React Portal, so we target body children */
+/* Target all possible portal containers and dialogs - highest priority */
+/* This must be outside @layer to have highest specificity */
+body > div[class*="portal"],
+body > div[id*="portal"],
+body > div[role="dialog"],
+body > div[class*="Dialog"],
+body > div[class*="dialog"],
+body > div[class*="fixed"][class*="inset-0"],
+body > div[class*="fixed"][class*="inset"],
+body > div[style*="position: fixed"][style*="inset"],
+/* Direct body children that are fixed and might be dialogs */
+body > div[style*="position: fixed"],
+body > div[style*="z-index"],
+/* Dialog elements */
+div[role="dialog"],
+div[class*="Dialog-root"],
+div[class*="Dialog-container"],
+/* Material Tailwind specific classes */
+div[class*="material-tailwind"][class*="Dialog"],
+div[class*="mt-dialog"],
+/* Any fixed element that might be a dialog container */
+div[style*="z-index"][style*="position: fixed"],
+/* Material Tailwind Dialog wrapper - most common case */
+body > div:has(> div[role="dialog"]),
+body > div:has([role="dialog"]),
+/* All body direct children that contain dialogs */
+body > div > div[role="dialog"],
+body > div[style*="position: fixed"] {
+  z-index: 999999 !important;
+}
+
+/* Dialog backdrop - below dialog but above sidebar */
+body > div[class*="portal"] > div[class*="backdrop"],
+body > div[id*="portal"] > div[class*="backdrop"],
+body > div[role="dialog"] > div[class*="backdrop"],
+body > div[class*="Dialog"] > div[class*="backdrop"],
+body > div[class*="dialog"] > div[class*="backdrop"],
+body > div[class*="fixed"] > div[class*="backdrop"],
+div[role="dialog"] > div[class*="backdrop"],
+div[role="dialog"] ~ div[class*="backdrop"],
+div[role="dialog"] + div[class*="backdrop"],
+[class*="backdrop"],
+/* Material Tailwind backdrop */
+div[class*="material-tailwind"] [class*="backdrop"],
+div[class*="mt-dialog"] [class*="backdrop"],
+/* Any backdrop element */
+div[class*="fixed"][class*="inset-0"][class*="backdrop"],
+div[class*="fixed"][class*="inset"][class*="backdrop"] {
+  z-index: 999998 !important;
+}
+
 /* Disable Material Tailwind Dialog animations completely for better performance */
 @layer components {
-  /* Disable all Dialog animations - instant open/close */
+  /* Set high z-index for all dialogs to appear above sidebar */
   div[role="dialog"],
   [class*="dialog-root"],
   [class*="dialog-container"],
@@ -236,11 +289,21 @@
   [class*="MuiDialog"],
   div[class*="Dialog"],
   div[class*="dialog"] {
+    z-index: 999999 !important;
     transition: none !important;
     animation: none !important;
     -webkit-transition: none !important;
     -moz-transition: none !important;
     -o-transition: none !important;
+  }
+  
+  /* Dialog backdrop - high z-index */
+  [class*="backdrop"],
+  [class*="dialog-backdrop"],
+  [class*="MuiBackdrop-root"],
+  div[class*="Backdrop"],
+  div[class*="backdrop"] {
+    z-index: 999998 !important;
   }
   
   /* Dialog backdrop - instant */

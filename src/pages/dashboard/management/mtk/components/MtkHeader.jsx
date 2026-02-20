@@ -30,6 +30,8 @@ export function MtkHeader() {
       style={{
         ...gradientStyle,
         border: `1px solid ${borderColor}`,
+        position: 'relative',
+        zIndex: 0,
       }}
     >
       <div className="absolute inset-0 opacity-10">

@@ -16,6 +16,7 @@ export const ENTITY_LEVELS = {
   BLOCK: "block",
   PROPERTY: "property",
   RESIDENT: "resident",
+  INVOICE: "invoice",
 };
 
 const LEVEL_CONFIG = {
@@ -54,6 +55,12 @@ const LEVEL_CONFIG = {
     label: "Sakin",
     addButtonText: "Sakin əlavə et",
     gradientColors: "from-orange-500 to-orange-600",
+  },
+  [ENTITY_LEVELS.INVOICE]: {
+    filters: [], 
+    label: "Faktura",
+    addButtonText: "Faktura əlavə et",
+    gradientColors: "from-green-500 to-green-600",
   },
 };
 
@@ -223,11 +230,27 @@ export function ManagementActions({
       }));
   }, [search, customFilterLabels]);
 
-  const statusOptions = [
-    { value: "", label: "Hamısı" },
-    { value: "active", label: "Aktiv" },
-    { value: "inactive", label: "Qeyri-aktiv" },
-  ];
+  const getStatusOptions = () => {
+    if (entityLevel === ENTITY_LEVELS.INVOICE) {
+      return [
+        { value: "", label: "Hamısı" },
+        { value: "paid", label: "Ödənilib" },
+        { value: "not_paid", label: "Ödənilməmiş" },
+        { value: "pending", label: "Gözləyir" },
+        { value: "overdue", label: "Gecikmiş" },
+        { value: "declined", label: "Rədd edilib" },
+        { value: "draft", label: "Qaralama" },
+        { value: "pre_paid", label: "Ön ödəniş" },
+      ];
+    }
+    return [
+      { value: "", label: "Hamısı" },
+      { value: "active", label: "Aktiv" },
+      { value: "inactive", label: "Qeyri-aktiv" },
+    ];
+  };
+
+  const statusOptions = getStatusOptions();
 
   const itemsPerPageOptions = useMemo(() => {
     if (totalItems < 25) {

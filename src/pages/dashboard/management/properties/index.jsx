@@ -337,7 +337,7 @@ export default function PropertiesPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" style={{ position: 'relative', zIndex: 0 }}>
       <PropertyHeader />
 
       <ManagementActions
@@ -355,7 +355,6 @@ export default function PropertiesPage() {
         onItemsPerPageChange={setItemsPerPage}
       />
 
-      {/* View Mode Toggle */}
       <div className="flex items-center justify-end gap-2">
         <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
           <Button
