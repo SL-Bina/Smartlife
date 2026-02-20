@@ -9,6 +9,7 @@ import { setSelectedProperty, loadProperties, loadPropertyById } from "@/store/s
 import { PropertyHeader } from "./components/PropertyHeader";
 import { ManagementActions, ENTITY_LEVELS } from "@/components/management/ManagementActions";
 import { PropertyTable } from "./components/PropertyTable";
+import { PropertyCardList } from "./components/PropertyCardList";
 import { PropertyFloorView } from "./components/PropertyFloorView";
 import { PropertyPagination } from "./components/PropertyPagination";
 import { PropertyFormModal } from "./components/modals/PropertyFormModal";
@@ -392,16 +393,28 @@ export default function PropertiesPage() {
 
       {/* Conditional Rendering */}
       {viewMode === "table" ? (
-        <PropertyTable
-          items={items}
-          loading={loading}
-          onView={handleView}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onServiceFee={handleServiceFee}
-          onSelect={handleSelect}
-          selectedPropertyId={selectedPropertyId}
-        />
+        <>
+          <PropertyTable
+            items={items}
+            loading={loading}
+            onView={handleView}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onServiceFee={handleServiceFee}
+            onSelect={handleSelect}
+            selectedPropertyId={selectedPropertyId}
+          />
+          <PropertyCardList
+            items={items}
+            loading={loading}
+            onView={handleView}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onServiceFee={handleServiceFee}
+            onSelect={handleSelect}
+            selectedPropertyId={selectedPropertyId}
+          />
+        </>
       ) : (
         <PropertyFloorView
           items={items}

@@ -11,6 +11,7 @@ import { InvoicesTable } from "./components/InvoicesTable";
 import { InvoicesCardList } from "./components/InvoicesCardList";
 import { InvoicesPagination } from "./components/InvoicesPagination";
 import { InvoicesFormModal } from "./components/modals/InvoicesFormModal";
+import { InvoicesSearchModal } from "./components/modals/InvoicesSearchModal";
 import { ViewModal } from "@/components/management/ViewModal";
 import { DeleteConfirmModal } from "@/components/management/DeleteConfirmModal";
 import DynamicToast from "@/components/DynamicToast";
@@ -35,6 +36,7 @@ const InvoicesPage = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [viewLoading, setViewLoading] = useState(false);
   
@@ -91,6 +93,18 @@ const InvoicesPage = () => {
       return newSearch;
     });
     setPage(1);
+  };
+
+  const handleSearch = (searchParams) => {
+    setSearch((prev) => ({
+      ...prev,
+      ...searchParams,
+    }));
+    setPage(1);
+  };
+
+  const handleSearchClick = () => {
+    setSearchModalOpen(true);
   };
 
   const handleCreate = () => {
@@ -358,6 +372,7 @@ const InvoicesPage = () => {
         onApplyNameSearch={handleApplyNameSearch}
         onStatusChange={handleStatusChange}
         onRemoveFilter={handleRemoveFilter}
+        onSearchClick={handleSearchClick}
         totalItems={pagination.total || 0}
         itemsPerPage={itemsPerPage}
         onItemsPerPageChange={setItemsPerPage}
@@ -443,6 +458,13 @@ const InvoicesPage = () => {
         itemName={itemToDelete ? `ID: ${itemToDelete.id}` : ""}
         entityName="faktura"
         loading={deleteLoading}
+      />
+
+      <InvoicesSearchModal
+        open={searchModalOpen}
+        onClose={() => setSearchModalOpen(false)}
+        onSearch={handleSearch}
+        currentSearch={search}
       />
 
       <DynamicToast

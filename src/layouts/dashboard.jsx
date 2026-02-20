@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/solid";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Sidenav,
@@ -229,8 +229,6 @@ export function Dashboard() {
   const { sidenavType, sidenavCollapsed, sidenavSize, sidenavPosition } = controller;
   const { user, hasModuleAccess, refreshUser, isInitialized, error, clearError } = useAuth();
   const [isDesktop, setIsDesktop] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const bgRef = useRef(null);
 
   useDocumentTitle();
 
@@ -243,63 +241,7 @@ export function Dashboard() {
     return () => window.removeEventListener("resize", checkDesktop);
   }, []);
 
-  // Check dark mode
-  useEffect(() => {
-    const checkDarkMode = () => {
-      const isDark = document.documentElement.classList.contains('dark') || 
-                    window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setIsDarkMode(isDark);
-    };
-    
-    checkDarkMode();
-    
-    // Watch for dark mode changes
-    const observer = new MutationObserver(checkDarkMode);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
-    
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    mediaQuery.addEventListener('change', checkDarkMode);
-    
-    return () => {
-      observer.disconnect();
-      mediaQuery.removeEventListener('change', checkDarkMode);
-    };
-  }, []);
 
-  // Parallax effect on mouse move
-  useEffect(() => {
-    if (!isDarkMode || !bgRef.current) return;
-
-    const handleMouseMove = (e) => {
-      const { clientX, clientY } = e;
-      const { innerWidth, innerHeight } = window;
-      
-      // Daha güclü parallax effekti
-      const x = (clientX / innerWidth - 0.5) * 40;
-      const y = (clientY / innerHeight - 0.5) * 40;
-      
-      if (bgRef.current) {
-        bgRef.current.style.transform = `translate(${x}px, ${y}px) scale(1.1)`;
-      }
-    };
-
-    const handleMouseLeave = () => {
-      if (bgRef.current) {
-        bgRef.current.style.transform = 'translate(0, 0) scale(1)';
-      }
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseleave', handleMouseLeave);
-    
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseleave', handleMouseLeave);
-    };
-  }, [isDarkMode]);
 
   // Refresh user data periodically (only if user is logged in and initialized)
   useEffect(() => {
@@ -344,15 +286,6 @@ export function Dashboard() {
 
   return (
     <div className="min-h-screen bg-blue-gray-50/50 dark:bg-gray-900 flex flex-col relative">
-      {/* Parallax Space Background for Dark Mode */}
-      {isDarkMode && (
-        <div 
-          ref={bgRef}
-          className="dashboard-dark-bg parallax-active"
-        >
-          <div className="nebula"></div>
-        </div>
-      )}
       
       {/* Error Banner */}
       {showError && (
@@ -398,7 +331,7 @@ export function Dashboard() {
           className="p-4 relative z-0 dashboard-content"
         >
           <DashboardNavbar />
-          <div className="mb-8">
+          <div className="mt-4 sm:mt-6 md:mt-8">
             <Routes>
               {/* Root path - home səhifəsinə yönləndir */}
               <Route path="/" element={<Navigate to="/home" replace />} />

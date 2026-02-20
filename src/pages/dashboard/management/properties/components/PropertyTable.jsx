@@ -72,7 +72,7 @@ export function PropertyTable({ items = [], loading, onView, onEdit, onDelete, o
   }
 
   return (
-    <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg border border-white/20 dark:border-gray-700/50 overflow-hidden">
+    <div className="hidden lg:block bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg border border-white/20 dark:border-gray-700/50 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>

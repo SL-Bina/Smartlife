@@ -68,7 +68,7 @@ export function InvoicesCardList({ invoices, loading, onView, onEdit, onDelete }
   }
 
   return (
-    <div className="lg:hidden grid gap-4 sm:grid-cols-2 p-4">
+    <div className="lg:hidden flex flex-col gap-4 px-4">
       {invoices.map((invoice) => {
         const remaining = calculateRemaining(invoice.amount, invoice.amount_paid);
         

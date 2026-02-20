@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Navbar } from "@material-tailwind/react";
 import { useMaterialTailwindController } from "@/store/exports";
@@ -26,6 +26,33 @@ export function DashboardNavbar() {
   const colorCode = null;
   const { pathname } = useLocation();
   const { t } = useTranslation();
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Dark mode yoxlaması
+  useEffect(() => {
+    const checkDarkMode = () => {
+      const isDark = document.documentElement.classList.contains('dark') || 
+                    window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setIsDarkMode(isDark);
+    };
+    
+    checkDarkMode();
+    
+    // Watch for dark mode changes
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+    
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaQuery.addEventListener('change', checkDarkMode);
+    
+    return () => {
+      observer.disconnect();
+      mediaQuery.removeEventListener('change', checkDarkMode);
+    };
+  }, []);
 
   const pathParts = pathname.split("/").filter((el) => el !== "");
   const page = pathParts.slice(1).join("/") || pathParts[0] || "";
@@ -71,23 +98,23 @@ export function DashboardNavbar() {
     const colors = {
       default: {
         light: `from-white/${transparency} via-white/${Math.max(parseInt(transparency) - 15, 0)} to-white/${transparency}`,
-        dark: `dark:from-gray-900/${transparency} dark:via-gray-800/${Math.max(parseInt(transparency) - 15, 0)} dark:to-gray-900/${transparency}`,
+        dark: `dark:from-gray-900/${Math.min(parseInt(transparency) + 10, 100)} dark:via-gray-800/${Math.min(parseInt(transparency) + 5, 100)} dark:to-gray-900/${Math.min(parseInt(transparency) + 10, 100)}`,
       },
       red: {
         light: `from-red-100/${transparency} via-red-200/${Math.max(parseInt(transparency) - 15, 0)} to-red-100/${transparency}`,
-        dark: `dark:from-red-900/${transparency} dark:via-red-800/${Math.max(parseInt(transparency) - 15, 0)} dark:to-red-900/${transparency}`,
+        dark: `dark:from-gray-900/${Math.min(parseInt(transparency) + 10, 100)} dark:via-gray-800/${Math.min(parseInt(transparency) + 5, 100)} dark:to-gray-900/${Math.min(parseInt(transparency) + 10, 100)}`,
       },
       blue: {
         light: `from-blue-100/${transparency} via-blue-200/${Math.max(parseInt(transparency) - 15, 0)} to-blue-100/${transparency}`,
-        dark: `dark:from-blue-900/${transparency} dark:via-blue-800/${Math.max(parseInt(transparency) - 15, 0)} dark:to-blue-900/${transparency}`,
+        dark: `dark:from-gray-900/${Math.min(parseInt(transparency) + 10, 100)} dark:via-gray-800/${Math.min(parseInt(transparency) + 5, 100)} dark:to-gray-900/${Math.min(parseInt(transparency) + 10, 100)}`,
       },
       green: {
         light: `from-green-100/${transparency} via-green-200/${Math.max(parseInt(transparency) - 15, 0)} to-green-100/${transparency}`,
-        dark: `dark:from-green-900/${transparency} dark:via-green-800/${Math.max(parseInt(transparency) - 15, 0)} dark:to-green-900/${transparency}`,
+        dark: `dark:from-gray-900/${Math.min(parseInt(transparency) + 10, 100)} dark:via-gray-800/${Math.min(parseInt(transparency) + 5, 100)} dark:to-gray-900/${Math.min(parseInt(transparency) + 10, 100)}`,
       },
       purple: {
         light: `from-purple-100/${transparency} via-purple-200/${Math.max(parseInt(transparency) - 15, 0)} to-purple-100/${transparency}`,
-        dark: `dark:from-purple-900/${transparency} dark:via-purple-800/${Math.max(parseInt(transparency) - 15, 0)} dark:to-purple-900/${transparency}`,
+        dark: `dark:from-gray-900/${Math.min(parseInt(transparency) + 10, 100)} dark:via-gray-800/${Math.min(parseInt(transparency) + 5, 100)} dark:to-gray-900/${Math.min(parseInt(transparency) + 10, 100)}`,
       },
     };
     const color = colors[navbarColor] || colors.default;
@@ -106,8 +133,8 @@ export function DashboardNavbar() {
   const getNavbarStyleClasses = () => {
     const styles = {
       minimalist: "rounded-none border-0",
-      modern: "rounded-none sm:rounded-xl md:rounded-2xl lg:rounded-3xl",
-      classic: "rounded-none sm:rounded-md md:rounded-lg border-0 sm:border-2",
+      modern: "rounded-xl sm:rounded-xl md:rounded-2xl lg:rounded-3xl",
+      classic: "rounded-lg sm:rounded-md md:rounded-lg border-0 sm:border-2",
     };
     return styles[navbarStyle] || styles.modern;
   };
@@ -126,11 +153,11 @@ export function DashboardNavbar() {
     if (navbarBorder === "disabled") return "border-0";
     if (colorCode) return "border-0 sm:border-2"; // MTK rəngi varsa border class-larını sil
     const borderColors = {
-      default: "border-0 sm:border-2 border-gray-300/80 dark:border-gray-600/80",
-      red: "border-0 sm:border-2 border-red-300/80 dark:border-red-600/80",
-      blue: "border-0 sm:border-2 border-blue-300/80 dark:border-blue-600/80",
-      green: "border-0 sm:border-2 border-green-300/80 dark:border-green-600/80",
-      purple: "border-0 sm:border-2 border-purple-300/80 dark:border-purple-600/80",
+      default: "border-0 sm:border-2 border-gray-300/80 dark:border-gray-600/50",
+      red: "border-0 sm:border-2 border-red-300/80 dark:border-gray-600/50",
+      blue: "border-0 sm:border-2 border-blue-300/80 dark:border-gray-600/50",
+      green: "border-0 sm:border-2 border-green-300/80 dark:border-gray-600/50",
+      purple: "border-0 sm:border-2 border-purple-300/80 dark:border-gray-600/50",
     };
     return borderColors[navbarColor] || borderColors.default;
   };
@@ -175,13 +202,13 @@ export function DashboardNavbar() {
     getNavbarBorderClasses(),
     getNavbarHoverClasses(),
     fixedNavbar
-      ? `${getNavbarPositionClasses()} z-[1001] ${getNavbarHeightClasses()} ${getNavbarShadowClasses()}`
-      : `px-2 sm:px-3 md:px-4 lg:px-6 ${getNavbarHeightClasses()} z-[1001]`,
+      ? `${getNavbarPositionClasses()} z-[1001] ${getNavbarHeightClasses()} ${getNavbarShadowClasses()} mb-4 sm:mb-6 md:mb-8`
+      : `px-2 sm:px-3 md:px-4 lg:px-6 ${getNavbarHeightClasses()} z-[1001] mb-4 sm:mb-6 md:mb-8`,
   ].filter(Boolean).join(" ");
 
   return (
     <Navbar
-      color={fixedNavbar ? "white" : "transparent"}
+      color={fixedNavbar ? (isDarkMode ? "gray" : "white") : "transparent"}
       className={navbarClasses}
       fullWidth
       blurred={fixedNavbar && navbarBlur === "enabled"}
@@ -190,6 +217,9 @@ export function DashboardNavbar() {
         borderColor: colorCode ? getRgbaColor(colorCode, 0.3) : undefined,
         position: 'relative',
         zIndex: 1001,
+        ...(isDarkMode && fixedNavbar ? { 
+          backgroundColor: 'rgba(17, 24, 39, 0.98)',
+        } : {}),
       }}
     >
       <MobileNavbar pageTitle={pageTitle} navbarHoverEffects={navbarHoverEffects} />

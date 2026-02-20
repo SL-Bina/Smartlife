@@ -20,7 +20,7 @@ export function MobileNavbar({ pageTitle, navbarHoverEffects }) {
 
   return (
     <div 
-      className="flex md:hidden items-center justify-between w-full px-3 sm:px-4 py-2.5 sm:py-3 gap-2 sm:gap-3"
+      className="flex md:hidden items-center justify-between w-full px-3 sm:px-4 py-2.5 sm:py-3 gap-2 sm:gap-3 rounded-xl sm:rounded-2xl"
       style={{ 
         position: 'relative',
         zIndex: 1001,
