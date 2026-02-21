@@ -347,6 +347,12 @@ export const routes = [
         element: <ResidentHomePage />,
       },
       {
+        icon: <BellIcon {...icon} />,
+        name: "sidebar.notifications",
+        path: "/notifications",
+        element: <ResidentNotificationsPage />,
+      },
+      {
         icon: <DocumentTextIcon {...icon} />,
         name: "sidebar.invoices",
         path: "/invoices",
@@ -369,12 +375,6 @@ export const routes = [
         name: "sidebar.eDocuments",
         path: "/e-documents",
         element: <ResidentEDocumentsPage />,
-      },
-      {
-        icon: <BellIcon {...icon} />,
-        name: "sidebar.notifications",
-        path: "/notifications",
-        element: <ResidentNotificationsPage />,
       },
       {
         icon: <UserCircleIcon {...icon} />,

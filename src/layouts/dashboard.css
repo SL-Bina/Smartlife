@@ -159,3 +159,6 @@
   z-index: 1;
 }
 
+.min-h-screen-minus-footer {
+  min-height: calc(100vh - 36px);
+}

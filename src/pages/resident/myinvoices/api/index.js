@@ -16,7 +16,7 @@ export const residentInvoicesAPI = {
   },
   getById: async (invoiceId) => {
     try {
-      const response = await api.get(`${INVOICES_BASE}/invoice/${invoiceId}`);
+      const response = await api.get(`${INVOICES_BASE}/invoices/${invoiceId}`);
       return response?.data ?? response;
     } catch (error) {
       if (error?.response?.status === 404) {

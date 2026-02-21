@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import {
   Dialog,
   DialogHeader,
@@ -6,7 +6,6 @@ import {
   DialogFooter,
   Button,
   Typography,
-  Spinner,
 } from "@material-tailwind/react";
 import {
   XMarkIcon,
@@ -14,55 +13,13 @@ import {
   CurrencyDollarIcon,
   CalendarIcon,
   HomeIcon,
-  CheckCircleIcon,
+  ClockIcon,
+  CreditCardIcon,
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
-import residentInvoicesAPI from "../api";
 
-export function InvoiceDetailModal({ open, onClose, invoiceId }) {
+export function InvoiceDetailModal({ open, onClose, invoice }) {
   const { t } = useTranslation();
-  const [invoice, setInvoice] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    if (open && invoiceId) {
-      fetchInvoiceDetails();
-    } else {
-      setInvoice(null);
-      setError(null);
-    }
-  }, [open, invoiceId]);
-
-  const fetchInvoiceDetails = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await residentInvoicesAPI.getById(invoiceId);
-      if (response?.success && response?.data) {
-        setInvoice(response.data);
-      } else {
-        setError(response?.message || "Məlumat tapılmadı");
-      }
-    } catch (err) {
-      // Mock data on error
-      setInvoice({
-        id: invoiceId,
-        service: { name: "Elektrik" },
-        property: { name: "Mənzil 12", apartment_number: 12 },
-        amount: 45.50,
-        amount_paid: 45.50,
-        status: "paid",
-        due_date: "2026-02-15",
-        start_date: "2026-01-15",
-        type: "monthly",
-        payment_method: { name: "Balans" },
-        created_at: "2026-01-15T10:00:00Z",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Set z-index for portal container when modal is open
   useEffect(() => {
@@ -111,6 +68,27 @@ export function InvoiceDetailModal({ open, onClose, invoiceId }) {
     }
   };
 
+  const formatDateTime = (dateString) => {
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("az-AZ", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
+  const parseAmount = (val) => {
+    const n = parseFloat(val);
+    return isNaN(n) ? 0 : n;
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case "paid":
@@ -122,6 +100,8 @@ export function InvoiceDetailModal({ open, onClose, invoiceId }) {
         return "yellow";
       case "overdue":
         return "red";
+      case "pre_paid":
+        return "purple";
       default:
         return "gray";
     }
@@ -134,9 +114,34 @@ export function InvoiceDetailModal({ open, onClose, invoiceId }) {
       not_paid: t("invoices.status.unpaid") || "Ödənilməmiş",
       pending: t("invoices.filter.pending") || "Gözləyir",
       overdue: t("invoices.filter.overdue") || "Gecikmiş",
+      pre_paid: t("invoices.status.prePaid") || "Ön ödəniş",
     };
     return statusMap[status] || status;
   };
+
+  const getTypeLabel = (type) => {
+    const typeMap = {
+      one_time: t("invoices.type.oneTime") || "Birdəfəlik",
+      monthly: t("invoices.type.monthly") || "Aylıq",
+      yearly: t("invoices.type.yearly") || "İllik",
+    };
+    return typeMap[type] || type || "-";
+  };
+
+  const getPaymentMethodLabel = (method) => {
+    if (!method && method !== 0) return "-";
+    if (typeof method === "object") return method.name || "-";
+    const methodMap = {
+      1: t("invoices.paymentMethod.bank") || "Bank",
+      2: t("invoices.paymentMethod.cash") || "Nəğd",
+      3: t("invoices.paymentMethod.online") || "Onlayn",
+    };
+    return methodMap[method] || `#${method}`;
+  };
+
+  const amount = parseAmount(invoice?.amount);
+  const amountPaid = parseAmount(invoice?.amount_paid);
+  const remaining = amount - amountPaid;
 
   return (
     <Dialog
@@ -162,24 +167,14 @@ export function InvoiceDetailModal({ open, onClose, invoiceId }) {
       </DialogHeader>
 
       <DialogBody divider className="dark:bg-gray-800 py-6 max-h-[70vh] overflow-y-auto">
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Spinner className="h-8 w-8" />
-          </div>
-        ) : error ? (
-          <div className="text-center py-12">
-            <Typography className="text-red-500 dark:text-red-400">
-              {error}
-            </Typography>
-          </div>
-        ) : invoice ? (
+        {invoice ? (
           <div className="space-y-6">
             {/* Invoice Header */}
             <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-4 rounded-xl">
               <div className="flex items-center justify-between">
                 <div>
                   <Typography variant="h5" className="font-bold text-gray-800 dark:text-white mb-1">
-                    {invoice.service?.name || t("resident.invoices.service") || "Xidmət"}
+                    {invoice.service?.name || (t("resident.invoices.service") || "Xidmət") + ` #${invoice.service_id}`}
                   </Typography>
                   <Typography variant="small" className="text-gray-600 dark:text-gray-400">
                     {t("invoices.table.id") || "ID"}: {invoice.id}
@@ -192,17 +187,15 @@ export function InvoiceDetailModal({ open, onClose, invoiceId }) {
             </div>
 
             {/* Property Info */}
-            {invoice.property && (
-              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-                <Typography variant="h6" className="font-bold mb-4 text-gray-800 dark:text-white flex items-center gap-2">
-                  <HomeIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  {t("properties.pageTitle") || "Mənzil"}
-                </Typography>
-                <Typography variant="h6" className="font-semibold text-gray-800 dark:text-white">
-                  {invoice.property.name || invoice.property.apartment_number || `Mənzil #${invoice.property.id}`}
-                </Typography>
-              </div>
-            )}
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+              <Typography variant="h6" className="font-bold mb-4 text-gray-800 dark:text-white flex items-center gap-2">
+                <HomeIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                {t("properties.pageTitle") || "Əmlak"}
+              </Typography>
+              <Typography variant="h6" className="font-semibold text-gray-800 dark:text-white">
+                {invoice.property?.name || (t("properties.property") || "Əmlak") + ` #${invoice.property_id}`}
+              </Typography>
+            </div>
 
             {/* Financial Info */}
             <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
@@ -216,30 +209,56 @@ export function InvoiceDetailModal({ open, onClose, invoiceId }) {
                     {t("resident.invoices.amount") || t("invoices.amount") || "Məbləğ"}:
                   </Typography>
                   <Typography variant="h6" className="font-bold text-gray-800 dark:text-white">
-                    {invoice.amount || 0} ₼
+                    {amount.toFixed(2)} ₼
                   </Typography>
                 </div>
-                {invoice.amount_paid > 0 && (
+                {amountPaid > 0 && (
                   <div className="flex justify-between items-center">
                     <Typography variant="small" className="text-gray-600 dark:text-gray-400 font-medium">
                       {t("resident.invoices.paidAmount") || t("invoices.paidAmount") || "Ödənilən"}:
                     </Typography>
                     <Typography variant="h6" className="font-bold text-green-600 dark:text-green-400">
-                      {invoice.amount_paid} ₼
+                      {amountPaid.toFixed(2)} ₼
                     </Typography>
                   </div>
                 )}
-                {invoice.amount && invoice.amount_paid && (
+                {remaining > 0 && (
                   <div className="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-700">
                     <Typography variant="small" className="text-gray-600 dark:text-gray-400 font-medium">
                       {t("invoices.table.remaining") || "Qalıq"}:
                     </Typography>
                     <Typography variant="h6" className="font-bold text-red-600 dark:text-red-400">
-                      {(invoice.amount - invoice.amount_paid).toFixed(2)} ₼
+                      {remaining.toFixed(2)} ₼
                     </Typography>
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Type & Payment Method */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {invoice.type && (
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+                  <Typography variant="h6" className="font-bold mb-2 text-gray-800 dark:text-white flex items-center gap-2">
+                    <ClockIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    {t("invoices.form.type") || "Növ"}
+                  </Typography>
+                  <Typography variant="small" className="text-gray-600 dark:text-gray-400">
+                    {getTypeLabel(invoice.type)}
+                  </Typography>
+                </div>
+              )}
+              {invoice.payment_method != null && (
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+                  <Typography variant="h6" className="font-bold mb-2 text-gray-800 dark:text-white flex items-center gap-2">
+                    <CreditCardIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    {t("invoices.table.paymentMethod") || "Ödəniş üsulu"}
+                  </Typography>
+                  <Typography variant="small" className="text-gray-600 dark:text-gray-400">
+                    {getPaymentMethodLabel(invoice.payment_method)}
+                  </Typography>
+                </div>
+              )}
             </div>
 
             {/* Dates */}
@@ -269,21 +288,28 @@ export function InvoiceDetailModal({ open, onClose, invoiceId }) {
                     </Typography>
                   </div>
                 )}
+                {invoice.paid_at && (
+                  <div>
+                    <Typography variant="small" className="text-gray-600 dark:text-gray-400">
+                      {t("invoices.paidAt") || "Ödəniş tarixi"}
+                    </Typography>
+                    <Typography variant="small" className="font-semibold text-green-600 dark:text-green-400">
+                      {formatDateTime(invoice.paid_at)}
+                    </Typography>
+                  </div>
+                )}
+                {invoice.created_at && (
+                  <div>
+                    <Typography variant="small" className="text-gray-600 dark:text-gray-400">
+                      {t("properties.createdAt") || "Yaradılma tarixi"}
+                    </Typography>
+                    <Typography variant="small" className="font-semibold text-gray-800 dark:text-white">
+                      {formatDateTime(invoice.created_at)}
+                    </Typography>
+                  </div>
+                )}
               </div>
             </div>
-
-            {/* Payment Method */}
-            {invoice.payment_method && (
-              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-                <Typography variant="h6" className="font-bold mb-2 text-gray-800 dark:text-white flex items-center gap-2">
-                  <CheckCircleIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
-                  {t("invoices.table.paymentMethod") || "Ödəniş üsulu"}
-                </Typography>
-                <Typography variant="small" className="text-gray-600 dark:text-gray-400">
-                  {invoice.payment_method.name || invoice.payment_method}
-                </Typography>
-              </div>
-            )}
           </div>
         ) : (
           <div className="flex items-center justify-center py-12">

@@ -7,7 +7,7 @@ import { pageTitleKeyMap } from "./utils/pageTitleMap";
 import { MobileNavbar } from "./components/MobileNavbar";
 import { DesktopNavbar } from "./components/DesktopNavbar";
 
-export function DashboardNavbar() {
+export function DashboardNavbar({ homePath, filteredRoutes }) {
   const [controller] = useMaterialTailwindController();
   const {
     fixedNavbar,
@@ -58,6 +58,26 @@ export function DashboardNavbar() {
   const currentLayout = pathParts[0] || "dashboard";
   const page = pathParts.slice(1).join("/") || pathParts[0] || "";
   const fullPath = pathParts.slice(1).join("/");
+
+  // Parent segment → ilk child path xəritəsi (breadcrumb üçün)
+  const parentPathMap = React.useMemo(() => {
+    const map = {};
+    if (!filteredRoutes) return map;
+    for (const route of filteredRoutes) {
+      if (route.layout !== currentLayout || !route.pages) continue;
+      for (const pg of route.pages) {
+        if (!pg.children || pg.children.length === 0) continue;
+        const firstChild = pg.children.find((c) => !c.hideInSidenav && c.path);
+        if (!firstChild?.path) continue;
+        // "/management/mtk" → parentSegment = "management"
+        const segments = firstChild.path.replace(/^\//, "").split("/");
+        if (segments.length > 0) {
+          map[segments[0]] = firstChild.path;
+        }
+      }
+    }
+    return map;
+  }, [filteredRoutes, currentLayout]);
 
   // Resident səhifələri üçün layout prefix ilə də axtarma apar
   const layoutFullPath = currentLayout === "resident" ? `resident/${fullPath}` : fullPath;
@@ -288,6 +308,8 @@ export function DashboardNavbar() {
         pageTitle={pageTitle} 
         fixedNavbar={fixedNavbar}
         navbarHoverEffects={navbarHoverEffects}
+        homePath={homePath}
+        parentPathMap={parentPathMap}
       />
     </Navbar>
   );

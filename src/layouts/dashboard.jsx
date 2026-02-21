@@ -323,9 +323,9 @@ export function Dashboard() {
             stiffness: 300,
             damping: 30,
           }}
-          className="p-4 relative z-0 dashboard-content"
+          className="p-4 relative z-0 dashboard-content min-h-screen-minus-footer"
         >
-          <DashboardNavbar />
+          <DashboardNavbar homePath={`/${currentLayout}${homePath}`} filteredRoutes={filteredRoutes} />
           <div className="mt-4 sm:mt-6 md:mt-8">
             <Routes>
               {/* Root path - sidebar-dakı ilk səhifəyə yönləndir */}

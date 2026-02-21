@@ -4,13 +4,16 @@ import { Breadcrumbs, Typography } from "@material-tailwind/react";
 import { useTranslation } from "react-i18next";
 import { layoutTitleKeyMap, pageTitleKeyMap } from "../utils/pageTitleMap";
 
-export function NavbarBreadcrumbs({ pathParts, fixedNavbar, navbarHoverEffects }) {
+export function NavbarBreadcrumbs({ pathParts, fixedNavbar, navbarHoverEffects, homePath, parentPathMap = {} }) {
   const { t } = useTranslation();
   const layout = pathParts[0] || "";
 
   const layoutTitle = layoutTitleKeyMap[layout]
     ? t(layoutTitleKeyMap[layout])
     : layout;
+
+  // Layout link — sidebar-dakı ilk aktiv səhifəyə yönləndirir
+  const layoutHomePath = homePath || `/${layout}/home`;
 
   const translatePathSegment = (segment) => {
     if (pageTitleKeyMap[segment]) {
@@ -27,7 +30,7 @@ export function NavbarBreadcrumbs({ pathParts, fixedNavbar, navbarHoverEffects }
   if (filteredParts.length > 0) {
     breadcrumbItems.push({
       label: layoutTitle,
-      path: `/${layout}/home`,
+      path: layoutHomePath,
     });
 
     let currentPath = "";
@@ -45,9 +48,15 @@ export function NavbarBreadcrumbs({ pathParts, fixedNavbar, navbarHoverEffects }
         translatedLabel = translatePathSegment(segment);
       }
 
+      // Parent segment (məs. "management") → ilk aktiv child-a yönləndir
+      let itemPath = `/${layout}/${currentPath}`;
+      if (!isLast && parentPathMap[segment]) {
+        itemPath = `/${layout}${parentPathMap[segment]}`;
+      }
+
       breadcrumbItems.push({
         label: translatedLabel,
-        path: `/${layout}/${currentPath}`,
+        path: itemPath,
         isLast: isLast,
       });
     }
@@ -55,7 +64,7 @@ export function NavbarBreadcrumbs({ pathParts, fixedNavbar, navbarHoverEffects }
     // home səhifəsində və ya layout root-unda yalnız layout adını göstər
     breadcrumbItems.push({
       label: layoutTitle,
-      path: `/${layout}/home`,
+      path: layoutHomePath,
       isLast: true,
     });
   }

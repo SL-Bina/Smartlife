@@ -313,7 +313,7 @@ function WeatherPillCenter() {
 }
 
 /* ------------------------------ Desktop Navbar ------------------------------ */
-export function DesktopNavbar({ pathParts, pageTitle, fixedNavbar, navbarHoverEffects }) {
+export function DesktopNavbar({ pathParts, pageTitle, fixedNavbar, navbarHoverEffects, homePath, parentPathMap }) {
   const [controller, dispatch] = useMaterialTailwindController();
   const { openSidenav } = controller;
   const mtk = null;
@@ -391,7 +391,7 @@ export function DesktopNavbar({ pathParts, pageTitle, fixedNavbar, navbarHoverEf
         )}
 
         <div className="min-w-0 flex-1">
-          <NavbarBreadcrumbs pathParts={pathParts} fixedNavbar={fixedNavbar} navbarHoverEffects={navbarHoverEffects} />
+          <NavbarBreadcrumbs pathParts={pathParts} fixedNavbar={fixedNavbar} navbarHoverEffects={navbarHoverEffects} homePath={homePath} parentPathMap={parentPathMap} />
         </div>
       </div>
 

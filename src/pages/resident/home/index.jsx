@@ -3,25 +3,12 @@ import { Card, CardBody, Typography, Spinner } from "@material-tailwind/react";
 import {
   HomeIcon,
   DocumentTextIcon,
-  BellIcon,
-  QuestionMarkCircleIcon,
-  BookOpenIcon,
   CurrencyDollarIcon,
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import residentHomeAPI from "./api";
-
-// Mock data
-const mockStats = {
-  properties_count: 2,
-  invoices_count: 8,
-  unpaid_invoices_count: 3,
-  notifications_count: 5,
-  tickets_count: 2,
-  documents_count: 4,
-};
 
 const ResidentHomePage = () => {
   const { t } = useTranslation();
@@ -31,19 +18,39 @@ const ResidentHomePage = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchStats();
+    fetchData();
   }, []);
 
-  const fetchStats = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await residentHomeAPI.getStats();
-      setStats(response?.data || mockStats);
+
+      const [propsRes, invRes] = await Promise.allSettled([
+        residentHomeAPI.getProperties(),
+        residentHomeAPI.getInvoices(),
+      ]);
+
+      const properties = propsRes.status === "fulfilled"
+        ? (propsRes.value?.data?.data ?? propsRes.value?.data ?? [])
+        : [];
+      const invoices = invRes.status === "fulfilled"
+        ? (invRes.value?.data?.data ?? invRes.value?.data ?? [])
+        : [];
+
+      const propsList = Array.isArray(properties) ? properties : [];
+      const invList = Array.isArray(invoices) ? invoices : [];
+
+      setStats({
+        properties_count: propsList.length,
+        invoices_count: invList.length,
+        unpaid_invoices_count: invList.filter(
+          (inv) => inv.status === "unpaid" || inv.status === "not_paid" || inv.status === "overdue"
+        ).length,
+      });
     } catch (err) {
-      // Use mock data on error
-      setStats(mockStats);
-      setError(null); // Don't show error, just use mock data
+      setError(err?.message || t("common.loadError") || "Məlumat yüklənərkən xəta baş verdi");
+      setStats({ properties_count: 0, invoices_count: 0, unpaid_invoices_count: 0 });
     } finally {
       setLoading(false);
     }
@@ -69,28 +76,7 @@ const ResidentHomePage = () => {
       value: stats?.unpaid_invoices_count || 0,
       icon: CurrencyDollarIcon,
       color: "red",
-      onClick: () => navigate("/resident/invoices?status=unpaid"),
-    },
-    {
-      title: t("resident.home.notifications") || "Bildirişlər",
-      value: stats?.notifications_count || 0,
-      icon: BellIcon,
-      color: "yellow",
-      onClick: () => navigate("/resident/notifications"),
-    },
-    {
-      title: t("resident.home.tickets") || "Biletlər",
-      value: stats?.tickets_count || 0,
-      icon: QuestionMarkCircleIcon,
-      color: "purple",
-      onClick: () => navigate("/resident/tickets"),
-    },
-    {
-      title: t("resident.home.documents") || "Elektron Sənədlər",
-      value: stats?.documents_count || 0,
-      icon: BookOpenIcon,
-      color: "indigo",
-      onClick: () => navigate("/resident/e-documents"),
+      onClick: () => navigate("/resident/invoices"),
     },
   ];
 
@@ -167,7 +153,7 @@ const ResidentHomePage = () => {
           <Typography variant="h6" className="text-blue-gray-900 dark:text-white font-bold mb-4">
             {t("resident.home.quickActions") || "Tez Əməliyyatlar"}
           </Typography>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             {statCards.map((stat, index) => (
               <motion.div
                 key={index}
