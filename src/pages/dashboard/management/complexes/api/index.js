@@ -83,6 +83,15 @@ export const complexesAPI = {
       throw error.response?.data || error.message;
     }
   },
+
+  updateConfig: async (id, configData) => {
+    try {
+      const response = await api.patch(`/module/complexes/config/${id}`, configData);
+      return response;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  }
 };
 
 export default complexesAPI;

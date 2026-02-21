@@ -82,14 +82,13 @@ export default function UserAddPage() {
       return "/dashboard/home";
     }
 
-    const currentLayout = window.location.pathname.startsWith("/resident") ? "resident" : "dashboard";
-    const filteredRoutes = filterRoutesByRole(routes, user, hasModuleAccess, currentLayout);
+    const filteredRoutes = filterRoutesByRole(routes, user, hasModuleAccess);
     
 
 
     // Find first visible page
     for (const route of filteredRoutes) {
-      if (route.layout === currentLayout && route.pages && route.pages.length > 0) {
+      if (route.layout === "dashboard" && route.pages && route.pages.length > 0) {
         for (const page of route.pages) {
           // Skip if page is hidden in sidenav
           if (page.hideInSidenav) continue;
@@ -101,10 +100,10 @@ export default function UserAddPage() {
               const childPath = firstVisibleChild.path.startsWith('/')
                 ? firstVisibleChild.path
                 : '/' + firstVisibleChild.path;
-              if (childPath.startsWith('/dashboard') || childPath.startsWith('/resident')) {
+              if (childPath.startsWith('/dashboard')) {
                 return childPath;
               }
-              return `/${currentLayout}${childPath}`;
+              return `/dashboard${childPath}`;
             }
           }
 
@@ -113,10 +112,10 @@ export default function UserAddPage() {
             const pagePath = page.path.startsWith('/')
               ? page.path
               : '/' + page.path;
-            if (pagePath.startsWith('/dashboard') || pagePath.startsWith('/resident')) {
+            if (pagePath.startsWith('/dashboard')) {
               return pagePath;
             }
-            return `/${currentLayout}${pagePath}`;
+            return `/dashboard${pagePath}`;
           }
         }
       }
@@ -127,7 +126,7 @@ export default function UserAddPage() {
       user?.role?.name?.toLowerCase() ||
       (typeof user?.role === "string" ? user?.role.toLowerCase() : null);
     if (userRole === "resident") {
-      return "/resident/home";
+      return "/dashboard/resident/home";
     }
     return "/dashboard/home";
   };

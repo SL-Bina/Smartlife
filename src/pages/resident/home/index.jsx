@@ -51,7 +51,7 @@ const ResidentHomePage = () => {
 
   const statCards = [
     {
-      title: t("resident.home.myProperties") || "Mənzillərim",
+      title: t("resident.home.myProperties") || "Mənim Mənzillərim",
       value: stats?.properties_count || 0,
       icon: HomeIcon,
       color: "blue",

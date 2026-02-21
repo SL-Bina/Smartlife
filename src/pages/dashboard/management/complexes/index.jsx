@@ -17,24 +17,25 @@ import DynamicToast from "@/components/DynamicToast";
 import { ViewModal } from "@/components/management/ViewModal";
 import { DeleteConfirmModal } from "@/components/management/DeleteConfirmModal";
 import { BuildingOfficeIcon, MapPinIcon, InformationCircleIcon, CheckCircleIcon, PhoneIcon, EnvelopeIcon, GlobeAltIcon, CubeIcon } from "@heroicons/react/24/outline";
+import ComplexSettingsModal from "./components/modals/ComplexSettingsModal";
 
 export default function ComplexesPage() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [searchParams] = useSearchParams();
-  
+
   // URL-dən mtk_id götür
   const urlMtkId = searchParams.get("mtk_id");
-  
+
   // Redux-dan selected MTK ID götür
   const selectedMtkId = useAppSelector((state) => state.mtk.selectedMtkId);
   const selectedMtk = useAppSelector((state) => state.mtk.selectedMtk);
   const mtks = useAppSelector((state) => state.mtk.mtks);
-  
+
   // Redux-dan selected Complex ID götür
   const selectedComplexId = useAppSelector((state) => state.complex.selectedComplexId);
   const selectedComplex = useAppSelector((state) => state.complex.selectedComplex);
-  
+
   // Local state for mtkId filter
   const [mtkId, setMtkId] = useState(() => {
     if (urlMtkId) {
@@ -43,9 +44,17 @@ export default function ComplexesPage() {
     }
     return selectedMtkId || null;
   });
-  
+
   const [search, setSearch] = useState({});
-  
+
+  const [paramModalOpen, setParamModalOpen] = useState(false);
+  const [paramItem, setParamItem] = useState(null);
+
+  const handleOpenParams = (item) => {
+    setItemToView(item);
+    setSettingsModalOpen(true);
+  };
+
   // Sync mtkId with URL changes or Redux changes
   useEffect(() => {
     if (urlMtkId) {
@@ -70,13 +79,18 @@ export default function ComplexesPage() {
   const [selected, setSelected] = useState(null);
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
 
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const updateField = (field, value) => {
+    setSelected({ ...selected, [field]: value });
+  };
+
+  const config = useAppSelector((state) => state.complex.selectedComplex?.config);
+
   const form = useComplexForm();
   const { items, loading, page, lastPage, total, itemsPerPage, setItemsPerPage, goToPage, refresh } = useComplexData({ search, mtkId });
-  
-  // MTK seçim işleminin bir kez yapılması için flag
+
   const mtkInitializedRef = useRef(false);
 
-  // Load MTKs and Complexes to Redux on mount
   useEffect(() => {
     dispatch(loadMtks({ page: 1, per_page: 1000 }));
     dispatch(loadComplexes({ page: 1, per_page: 1000 }));
@@ -176,7 +190,7 @@ export default function ComplexesPage() {
     if (filterType === "mtk") {
       // Update local state immediately for instant filter
       setMtkId(value);
-      
+
       if (value) {
         // MTK'yı yüklə və Redux'a kaydet (cookie'ye de yazılacak)
         try {
@@ -187,7 +201,7 @@ export default function ComplexesPage() {
         } catch (error) {
           console.error("Error loading MTK:", error);
         }
-        
+
         // URL-i yenilə
         navigate(`/dashboard/management/complexes?mtk_id=${value}`, { replace: true });
       } else {
@@ -264,7 +278,7 @@ export default function ComplexesPage() {
 
   const confirmDelete = async () => {
     if (!itemToDelete) return;
-    
+
     setDeleteLoading(true);
     try {
       await complexesAPI.delete(itemToDelete.id);
@@ -332,6 +346,7 @@ export default function ComplexesPage() {
         onGoToBuildings={handleGoToBuildings}
         onSelect={handleSelect}
         selectedComplexId={selectedComplexId}
+        onOpenParams={handleOpenParams}   // 🔥 bunu əlavə et
       />
 
       {lastPage > 1 && (
@@ -380,53 +395,53 @@ export default function ComplexesPage() {
         loading={viewLoading}
         fields={[
           { key: "name", label: "Ad", icon: BuildingOfficeIcon },
-          { 
-            key: "meta.desc", 
+          {
+            key: "meta.desc",
             label: "Təsvir",
             icon: InformationCircleIcon,
             fullWidth: true,
             getValue: (item) => item?.meta?.desc
           },
-          { 
-            key: "meta.address", 
+          {
+            key: "meta.address",
             label: "Ünvan",
             icon: MapPinIcon,
             fullWidth: true,
             getValue: (item) => item?.meta?.address
           },
-          { 
-            key: "meta.phone", 
+          {
+            key: "meta.phone",
             label: "Telefon",
             icon: PhoneIcon,
             getValue: (item) => item?.meta?.phone
           },
-          { 
-            key: "meta.email", 
+          {
+            key: "meta.email",
             label: "E-mail",
             icon: EnvelopeIcon,
             getValue: (item) => item?.meta?.email
           },
-          { 
-            key: "meta.website", 
+          {
+            key: "meta.website",
             label: "Website",
             icon: GlobeAltIcon,
             fullWidth: true,
             getValue: (item) => item?.meta?.website
           },
-          { 
-            key: "meta.lat", 
+          {
+            key: "meta.lat",
             label: "Enlik (Lat)",
             icon: MapPinIcon,
             getValue: (item) => item?.meta?.lat
           },
-          { 
-            key: "meta.lng", 
+          {
+            key: "meta.lng",
             label: "Uzunluq (Lng)",
             icon: MapPinIcon,
             getValue: (item) => item?.meta?.lng
           },
-          { 
-            key: "meta.color_code", 
+          {
+            key: "meta.color_code",
             label: "Rəng kodu",
             icon: InformationCircleIcon,
             getValue: (item) => item?.meta?.color_code,
@@ -435,8 +450,8 @@ export default function ComplexesPage() {
               return (
                 <div className="flex items-center gap-2">
                   <span>{value}</span>
-                  <div 
-                    className="w-6 h-6 rounded border border-gray-300 dark:border-gray-600" 
+                  <div
+                    className="w-6 h-6 rounded border border-gray-300 dark:border-gray-600"
                     style={{ backgroundColor: value }}
                   />
                 </div>
@@ -479,7 +494,7 @@ export default function ComplexesPage() {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {modules.map((moduleId, index) => (
-                      <span 
+                      <span
                         key={index}
                         className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
                       >
@@ -491,15 +506,15 @@ export default function ComplexesPage() {
               );
             }
           },
-          { 
-            key: "avaliable_services", 
+          {
+            key: "avaliable_services",
             label: "Mövcud xidmətlər",
             icon: InformationCircleIcon,
             getValue: (item) => item?.avaliable_services,
             format: (value) => value ? String(value) : "Yoxdur"
           },
-          { 
-            key: "status", 
+          {
+            key: "status",
             label: "Status",
             icon: CheckCircleIcon
           },
@@ -564,6 +579,16 @@ export default function ComplexesPage() {
         itemName={itemToDelete ? `"${itemToDelete.name}"` : ""}
         entityName="complex"
         loading={deleteLoading}
+      />
+
+      <ComplexSettingsModal
+        open={settingsModalOpen}
+        onClose={() => {
+          setSettingsModalOpen(false);
+          setItemToView(null);
+        }}
+        complexId={itemToView?.id}
+        complexData={itemToView}
       />
 
       <DynamicToast

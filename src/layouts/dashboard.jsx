@@ -42,7 +42,7 @@ function ProtectedRoute({ element, allowedRoles, moduleName }) {
   const currentPath = window.location.pathname;
   if (isResident && !currentPath.includes("/resident/")) {
     // Resident users can only access resident routes
-    return <Navigate to="/resident/home" replace />;
+    return <Navigate to="/dashboard/resident/home" replace />;
   }
 
   // Non-resident users cannot access resident routes
@@ -57,14 +57,14 @@ function ProtectedRoute({ element, allowedRoles, moduleName }) {
 
   if (moduleName && !hasModuleAccess(moduleName)) {
     if (isResident) {
-      return <Navigate to="/resident/home" replace />;
+      return <Navigate to="/dashboard/resident/home" replace />;
     }
     return <Navigate to="/dashboard/home" replace />;
   }
 
   if (allowedRoles && userRole && !allowedRoles.includes(userRole)) {
     if (isResident) {
-      return <Navigate to="/resident/home" replace />;
+      return <Navigate to="/dashboard/resident/home" replace />;
     }
     return <Navigate to="/dashboard/home" replace />;
   }
@@ -72,13 +72,12 @@ function ProtectedRoute({ element, allowedRoles, moduleName }) {
   return element;
 }
 
-export const filterRoutesByRole = (routes, user, hasModuleAccess, currentLayoutParam) => {
+export const filterRoutesByRole = (routes, user, hasModuleAccess) => {
   let userRole = user?.role?.name?.toLowerCase() || (typeof user?.role === 'string' ? user.role.toLowerCase() : null);
 
   const originalRole = user?.role?.name?.toLowerCase();
   const isRoot = originalRole === "root";
   const isResident = user?.is_resident === true;
-  const currentLayout = currentLayoutParam ?? (window.location.pathname.startsWith("/resident") ? "resident" : "dashboard");
 
   // Build module access map from role_access_modules (preferred) or modules (fallback)
   const userModuleNames = new Set();
@@ -109,13 +108,34 @@ export const filterRoutesByRole = (routes, user, hasModuleAccess, currentLayoutP
 
   return routes
     .filter((route) => {
-      if (route.layout !== currentLayout) return false;
+      if (route.layout !== "dashboard") return false;
+
+      if (route.pages && route.pages.length > 0) {
+        const firstPage = route.pages[0];
+        if (firstPage.path && firstPage.path.includes("/resident/")) {
+          return isResident;
+        }
+        if (isResident && firstPage.path && !firstPage.path.includes("/resident/")) {
+          return false;
+        }
+      }
+
       return true;
     })
     .map((route) => {
       const filteredPages = route.pages
         .map((page) => {
-          // Layout filter already applied above, no path-based resident checks needed
+          // If user is resident, only show resident routes
+          if (isResident) {
+            if (page.path && !page.path.includes("/resident/")) {
+              return null; // Hide non-resident routes for residents
+            }
+          } else {
+            // If user is not resident, hide resident routes
+            if (page.path && page.path.includes("/resident/")) {
+              return null; // Hide resident routes for non-residents
+            }
+          }
 
           // Resident users don't need module checks - they only see resident routes
           if (isResident) {
@@ -305,8 +325,7 @@ export function Dashboard() {
     return <Navigate to="/auth/sign-in" replace />;
   }
 
-  const currentLayout = window.location.pathname.startsWith("/resident") ? "resident" : "dashboard";
-  const filteredRoutes = filterRoutesByRole(routes, user, hasModuleAccess, currentLayout);
+  const filteredRoutes = filterRoutesByRole(routes, user, hasModuleAccess);
 
   // Show error message if there's an auth error
   const showError = error && !user;
@@ -355,7 +374,7 @@ export function Dashboard() {
             stiffness: 300,
             damping: 30,
           }}
-          className="p-4 relative z-0 dashboard-content min-h-screen-minus-footer"
+          className="p-4 relative z-0 dashboard-content"
         >
           <DashboardNavbar />
           <div className="mt-4 sm:mt-6 md:mt-8">
@@ -370,19 +389,17 @@ export function Dashboard() {
                 } 
               />
               {filteredRoutes.map(
-                ({ layout, pages }) => {
-                  const currentLayout = window.location.pathname.startsWith("/resident") ? "resident" : "dashboard";
-                  if (layout !== currentLayout) return null;
-                  return pages.map((page) => {
+                ({ layout, pages }) =>
+                  layout === "dashboard" &&
+                  pages.map((page) => {
                     if (page.children && page.children.length > 0) {
                       return page.children.map(({ path, element, allowedRoles, moduleName }) => {
                         // Path-i düzgün formatla - /dashboard prefix-i olmadan, amma / ilə başlamalıdır
-                        const currentLayout = window.location.pathname.startsWith("/resident") ? "resident" : "dashboard";
                         let routePath = path;
-                        if (routePath.startsWith(`/${currentLayout}/`)) {
-                          routePath = routePath.replace(`/${currentLayout}/`, "");
-                        } else if (routePath.startsWith("/")) {
-                          routePath = routePath.slice(1);
+                        if (routePath.startsWith("/dashboard/")) {
+                          routePath = routePath.replace("/dashboard", "");
+                        } else if (!routePath.startsWith("/")) {
+                          routePath = `/${routePath}`;
                         }
                         // /dashboard altında olduğumuz üçün path-dən /dashboard-ı çıxarırıq
                         if (routePath === "/") {
@@ -397,13 +414,12 @@ export function Dashboard() {
                         );
                       });
                     } else {
-                      // Path-i düzgün formatla - cari layout prefix-i olmadan, nisbi path olmalıdır
-                      const currentLayout = window.location.pathname.startsWith("/resident") ? "resident" : "dashboard";
+                      // Path-i düzgün formatla - /dashboard prefix-i olmadan, amma / ilə başlamalıdır
                       let routePath = page.path;
-                      if (routePath.startsWith(`/${currentLayout}/`)) {
-                        routePath = routePath.replace(`/${currentLayout}/`, "");
-                      } else if (routePath.startsWith("/")) {
-                        routePath = routePath.slice(1);
+                      if (routePath.startsWith("/dashboard/")) {
+                        routePath = routePath.replace("/dashboard", "");
+                      } else if (!routePath.startsWith("/")) {
+                        routePath = `/${routePath}`;
                       }
                       // /dashboard altında olduğumuz üçün path-dən /dashboard-ı çıxarırıq
                       if (routePath === "/") {
@@ -417,8 +433,7 @@ export function Dashboard() {
                         />
                       );
                     }
-                  });
-                }
+                  })
               )}
               {/* 404 yalnız mövcud olmayan path-lər üçün */}
               <Route

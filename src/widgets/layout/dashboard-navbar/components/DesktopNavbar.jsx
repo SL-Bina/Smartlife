@@ -16,9 +16,6 @@ import { LanguageSelector } from "./LanguageSelector";
 import { NotificationsMenu } from "./NotificationsMenu";
 import { UserMenu } from "./UserMenu";
 import { BuildingOfficeIcon } from "@heroicons/react/24/outline";
-import routes from "@/routes";
-import { useAuth } from "@/store/hooks/useAuth";
-import { filterRoutesByRole } from "@/layouts/dashboard";
 
 /* --------------------------- Weather Pill (center, dynamic) --------------------------- */
 /**
@@ -321,28 +318,6 @@ export function DesktopNavbar({ pathParts, pageTitle, fixedNavbar, navbarHoverEf
   const { openSidenav } = controller;
   const mtk = null;
   const colorCode = null;
-  const { user, hasModuleAccess } = useAuth();
-  const currentLayout = pathParts[0] || "dashboard";
-  const filteredRoutes = filterRoutesByRole(routes, user, hasModuleAccess, currentLayout);
-  const parentPathMap = React.useMemo(() => {
-    const map = {};
-    filteredRoutes.forEach(({ layout, pages }) => {
-      if (layout !== currentLayout) return;
-      pages.forEach((page) => {
-        if (Array.isArray(page.children) && page.children.length > 0) {
-          const firstVisibleChild = page.children.find((child) => !child.hideInSidenav);
-          const childPath = firstVisibleChild?.path;
-          if (typeof childPath === "string") {
-            const seg = childPath.split("/")[1] || "";
-            if (seg) {
-              map[seg] = childPath;
-            }
-          }
-        }
-      });
-    });
-    return map;
-  }, [filteredRoutes, currentLayout]);
   
   // MTK rəng kodunu al (mtk-dan və ya context-dən)
   const mtkColorCode = null;
@@ -416,7 +391,7 @@ export function DesktopNavbar({ pathParts, pageTitle, fixedNavbar, navbarHoverEf
         )}
 
         <div className="min-w-0 flex-1">
-          <NavbarBreadcrumbs pathParts={pathParts} fixedNavbar={fixedNavbar} navbarHoverEffects={navbarHoverEffects} homePath={`/${currentLayout}/home`} parentPathMap={parentPathMap} />
+          <NavbarBreadcrumbs pathParts={pathParts} fixedNavbar={fixedNavbar} navbarHoverEffects={navbarHoverEffects} />
         </div>
       </div>
 

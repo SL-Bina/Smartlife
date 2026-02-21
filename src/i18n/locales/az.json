@@ -73,7 +73,7 @@
     "services": "Xidmətlər",
     "electronicDocuments": "Elektron sənədlər",
     "eDocuments": "Elektron sənədlər",
-    "myProperties": "Mənzillərim",
+    "myProperties": "Mənim Mənzillərim",
     "buildingManagement": "idarə etmə",
     "permissions": "Hüquqlar",
     "profile": "Profil",
@@ -1978,7 +1978,7 @@
         "2": "Obyekt"
       }
     },
-    "myProperties": "Mənzillərim",
+    "myProperties": "Mənim Mənzillərim",
     "property": "mənzil",
     "loadError": "Məlumat yüklənərkən xəta baş verdi",
     "noProperties": "Mənzil tapılmadı",
@@ -2009,7 +2009,7 @@
       "welcome": "Xoş gəldiniz",
       "subtitle": "Sizin şəxsi paneliniz",
       "quickActions": "Tez Əməliyyatlar",
-      "myProperties": "Mənzillərim",
+      "myProperties": "Mənim Mənzillərim",
       "invoices": "Fakturalar",
       "unpaidInvoices": "Ödənilməmiş Fakturalar",
       "notifications": "Bildirişlər",

@@ -1,11 +1,11 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem, Tooltip, Card, CardBody } from "@material-tailwind/react";
-import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon, PencilIcon, TrashIcon, GlobeAltIcon, MapPinIcon, EnvelopeIcon, PhoneIcon, BuildingOffice2Icon, HomeModernIcon, CheckCircleIcon, EyeIcon } from "@heroicons/react/24/outline";
+import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon, PencilIcon, TrashIcon, GlobeAltIcon, MapPinIcon, EnvelopeIcon, PhoneIcon, BuildingOffice2Icon, HomeModernIcon, CheckCircleIcon, EyeIcon, TicketIcon, BoltIcon, WrenchIcon } from "@heroicons/react/24/outline";
 
 const DEFAULT_COLOR = "#dc2626";
 
-export function ComplexTable({ items = [], loading, onView, onEdit, onDelete, onGoToBuildings, onSelect, selectedComplexId }) {
+export function ComplexTable({ items = [], loading, onView, onEdit, onDelete, onGoToBuildings, onSelect, selectedComplexId, onOpenParams }) {
   const navigate = useNavigate();
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
@@ -166,7 +166,7 @@ export function ComplexTable({ items = [], loading, onView, onEdit, onDelete, on
               const itemColorCode = item.meta?.color_code || DEFAULT_COLOR;
               const hoverColor = getRgbaColor(itemColorCode, 0.08);
               const buildingsCount = item.buildings?.length || 0;
-              
+
               return (
                 <tr
                   key={item.id ?? `complex-${index}`}
@@ -181,7 +181,7 @@ export function ComplexTable({ items = [], loading, onView, onEdit, onDelete, on
                     e.currentTarget.style.backgroundColor = '';
                   }}
                   style={{
-                    ...(selectedComplexId === item.id && itemColorCode ? { 
+                    ...(selectedComplexId === item.id && itemColorCode ? {
                       backgroundColor: getRgbaColor(itemColorCode, 0.15),
                     } : {}),
                   }}
@@ -193,11 +193,10 @@ export function ComplexTable({ items = [], loading, onView, onEdit, onDelete, on
                           e.stopPropagation();
                           onSelect?.(item);
                         }}
-                        className={`w-5 h-5 xl:w-6 xl:h-6 rounded-full flex items-center justify-center transition-all ${
-                          selectedComplexId === item.id
-                            ? "bg-blue-600 dark:bg-blue-500 shadow-md"
-                            : "bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
-                        }`}
+                        className={`w-5 h-5 xl:w-6 xl:h-6 rounded-full flex items-center justify-center transition-all ${selectedComplexId === item.id
+                          ? "bg-blue-600 dark:bg-blue-500 shadow-md"
+                          : "bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
+                          }`}
                       >
                         {selectedComplexId === item.id && (
                           <CheckCircleIcon className="h-3 w-3 xl:h-4 xl:w-4 text-white" />
@@ -323,11 +322,10 @@ export function ComplexTable({ items = [], loading, onView, onEdit, onDelete, on
                   </td>
                   <td className="px-4 xl:px-6 py-3 xl:py-4 whitespace-nowrap">
                     <span
-                      className={`inline-flex items-center px-2 xl:px-2.5 py-0.5 xl:py-1 rounded-full text-xs font-semibold ${
-                        item.status === "active"
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                          : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                      }`}
+                      className={`inline-flex items-center px-2 xl:px-2.5 py-0.5 xl:py-1 rounded-full text-xs font-semibold ${item.status === "active"
+                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                        : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                        }`}
                     >
                       {item.status === "active" ? "Aktiv" : "Qeyri-aktiv"}
                     </span>
@@ -335,67 +333,89 @@ export function ComplexTable({ items = [], loading, onView, onEdit, onDelete, on
                   <td className="px-4 xl:px-6 py-3 xl:py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                     <Menu placement="bottom-end">
                       <MenuHandler>
-                        <IconButton 
-                          variant="text" 
-                          size="sm" 
+                        <IconButton
+                          variant="text"
+                          size="sm"
                           className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                         >
                           <EllipsisVerticalIcon className="h-4 w-4 xl:h-5 xl:w-5" />
                         </IconButton>
                       </MenuHandler>
-                      <MenuList className="min-w-[160px] !z-[9999]">
+                      <MenuList className="min-w-[190px] !z-[9999] p-2">
+
                         {onView && (
-                          <MenuItem 
+                          <MenuItem
                             onClick={(e) => {
                               e.stopPropagation();
                               onView?.(item);
-                            }} 
-                            className="flex items-center gap-2"
+                            }}
+                            className="flex items-center gap-3 px-3 py-2 text-base font-medium"
                           >
-                            <EyeIcon className="h-4 w-4" />
+                            <EyeIcon className="h-5 w-5 opacity-80" />
                             Bax
                           </MenuItem>
                         )}
-                        <MenuItem 
+
+                        <MenuItem
                           onClick={(e) => {
                             e.stopPropagation();
                             onSelect?.(item);
-                          }} 
-                          className="flex items-center gap-2"
+                          }}
+                          className="flex items-center gap-3 px-3 py-2 text-base font-medium"
                         >
-                          <CheckCircleIcon className="h-4 w-4" />
+                          <CheckCircleIcon className="h-5 w-5 opacity-80" />
                           Seç
                         </MenuItem>
-                        <MenuItem 
+
+                        <MenuItem
                           onClick={(e) => {
                             e.stopPropagation();
                             onEdit?.(item);
-                          }} 
-                          className="flex items-center gap-2"
+                          }}
+                          className="flex items-center gap-3 px-3 py-2 text-base font-medium"
                         >
-                          <PencilIcon className="h-4 w-4" />
+                          <PencilIcon className="h-5 w-5 opacity-80" />
                           Redaktə et
                         </MenuItem>
-                        <MenuItem 
+
+                        <MenuItem
                           onClick={(e) => {
                             e.stopPropagation();
                             onDelete?.(item);
-                          }} 
-                          className="flex items-center gap-2 text-red-600 dark:text-red-400"
+                          }}
+                          className="flex items-center gap-3 px-3 py-2 text-base font-medium text-red-600 dark:text-red-400"
                         >
-                          <TrashIcon className="h-4 w-4" />
+                          <TrashIcon className="h-5 w-5 opacity-80" />
                           Sil
                         </MenuItem>
-                        <MenuItem 
+
+                        <MenuItem
                           onClick={(e) => {
                             e.stopPropagation();
                             onGoToBuildings?.(item.id);
-                          }} 
-                          className="flex items-center gap-2 text-blue-600 dark:text-blue-400"
+                          }}
+                          className="flex items-center gap-3 px-3 py-2 text-base font-medium text-blue-600 dark:text-blue-400"
                         >
-                          <HomeModernIcon className="h-4 w-4" />
+                          <HomeModernIcon className="h-5 w-5 opacity-80" />
                           Binalara keç
                         </MenuItem>
+
+                        <MenuItem className="flex items-center gap-3 px-3 py-2 text-base font-medium text-yellow-600 dark:text-yellow-400">
+                          <TicketIcon className="h-5 w-5 opacity-80" />
+                          Müraciətlər
+                        </MenuItem>
+
+                        <MenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onOpenParams?.(item);   // 🔥 əsas hissə
+                          }}
+                          className="flex items-center gap-3 px-3 py-2 text-base font-medium text-purple-600 dark:text-purple-400"
+                        >
+                          <WrenchIcon className="h-5 w-5 opacity-80" />
+                          Parametr
+                        </MenuItem>
+
                       </MenuList>
                     </Menu>
                   </td>
@@ -412,16 +432,15 @@ export function ComplexTable({ items = [], loading, onView, onEdit, onDelete, on
           const itemColorCode = item.meta?.color_code || DEFAULT_COLOR;
           const isSelected = selectedComplexId === item.id;
           const buildingsCount = item.buildings?.length || 0;
-          
+
           return (
             <Card
               key={item.id ?? `complex-${index}`}
-              className={`transition-all duration-200 cursor-pointer ${
-                isSelected ? "ring-2 ring-offset-2" : ""
-              }`}
+              className={`transition-all duration-200 cursor-pointer ${isSelected ? "ring-2 ring-offset-2" : ""
+                }`}
               onClick={() => onSelect?.(item)}
               style={{
-                ...(isSelected && itemColorCode ? { 
+                ...(isSelected && itemColorCode ? {
                   backgroundColor: getRgbaColor(itemColorCode, 0.15),
                   ringColor: itemColorCode,
                 } : {}),
@@ -435,11 +454,10 @@ export function ComplexTable({ items = [], loading, onView, onEdit, onDelete, on
                         e.stopPropagation();
                         onSelect?.(item);
                       }}
-                      className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center transition-all flex-shrink-0 ${
-                        isSelected
-                          ? "bg-blue-600 dark:bg-blue-500 shadow-md"
-                          : "bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
-                      }`}
+                      className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center transition-all flex-shrink-0 ${isSelected
+                        ? "bg-blue-600 dark:bg-blue-500 shadow-md"
+                        : "bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"
+                        }`}
                     >
                       {isSelected && (
                         <CheckCircleIcon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
@@ -464,19 +482,18 @@ export function ComplexTable({ items = [], loading, onView, onEdit, onDelete, on
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                     <span
-                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${
-                        item.status === "active"
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                          : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                      }`}
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${item.status === "active"
+                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                        : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                        }`}
                     >
                       {item.status === "active" ? "Aktiv" : "Qeyri-aktiv"}
                     </span>
                     <Menu placement="bottom-end">
                       <MenuHandler>
-                        <IconButton 
-                          variant="text" 
-                          size="sm" 
+                        <IconButton
+                          variant="text"
+                          size="sm"
                           className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                         >
                           <EllipsisVerticalIcon className="h-5 w-5" />
@@ -484,56 +501,76 @@ export function ComplexTable({ items = [], loading, onView, onEdit, onDelete, on
                       </MenuHandler>
                       <MenuList className="min-w-[160px] !z-[9999]">
                         {onView && (
-                          <MenuItem 
+                          <MenuItem
                             onClick={(e) => {
                               e.stopPropagation();
                               onView?.(item);
-                            }} 
+                            }}
                             className="flex items-center gap-2"
                           >
                             <EyeIcon className="h-4 w-4" />
                             Bax
                           </MenuItem>
                         )}
-                        <MenuItem 
+                        <MenuItem
                           onClick={(e) => {
                             e.stopPropagation();
                             onSelect?.(item);
-                          }} 
+                          }}
                           className="flex items-center gap-2"
                         >
                           <CheckCircleIcon className="h-4 w-4" />
                           Seç
                         </MenuItem>
-                        <MenuItem 
+                        <MenuItem
                           onClick={(e) => {
                             e.stopPropagation();
                             onEdit?.(item);
-                          }} 
+                          }}
                           className="flex items-center gap-2"
                         >
                           <PencilIcon className="h-4 w-4" />
                           Redaktə et
                         </MenuItem>
-                        <MenuItem 
+                        <MenuItem
                           onClick={(e) => {
                             e.stopPropagation();
                             onDelete?.(item);
-                          }} 
+                          }}
                           className="flex items-center gap-2 text-red-600 dark:text-red-400"
                         >
                           <TrashIcon className="h-4 w-4" />
                           Sil
                         </MenuItem>
-                        <MenuItem 
+                        <MenuItem
                           onClick={(e) => {
                             e.stopPropagation();
                             onGoToBuildings?.(item.id);
-                          }} 
+                          }}
                           className="flex items-center gap-2 text-blue-600 dark:text-blue-400"
                         >
                           <HomeModernIcon className="h-4 w-4" />
                           Binalara keç
+                        </MenuItem>
+                        <MenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onGoToApplications?.(item.id);
+                          }}
+                          className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400"
+                        >
+                          <TicketIcon className="h-4 w-4" />
+                          Müraciətlər
+                        </MenuItem>
+                        <MenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onOpenParams?.(item);   // 🔥 əsas hissə
+                          }}
+                          className="flex items-center gap-3 px-3 py-2 text-base font-medium text-purple-600 dark:text-purple-400"
+                        >
+                          <WrenchIcon className="h-5 w-5 opacity-80" />
+                          Parametr
                         </MenuItem>
                       </MenuList>
                     </Menu>

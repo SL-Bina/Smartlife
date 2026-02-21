@@ -50,7 +50,7 @@ export function SignIn() {
     if (isInitialized && isAuthenticated && user && window.location.pathname === '/auth/sign-in') {
       const isResident = user?.is_resident === true;
       if (isResident) {
-        navigate("/resident/home", { replace: true });
+        navigate("/dashboard/resident/home", { replace: true });
       } else {
         navigate("/dashboard/home", { replace: true });
       }
@@ -83,7 +83,7 @@ export function SignIn() {
 
     const isResident = result.user?.is_resident === true;
     if (isResident) {
-      navigate("/resident/home", { replace: true });
+      navigate("/dashboard/resident/home", { replace: true });
     } else {
       navigate("/dashboard/home", { replace: true });
     }
