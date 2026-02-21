@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { SidenavHeader } from "./components/SidenavHeader";
 import { SidenavMenu } from "./components/SidenavMenu";
 
-export function Sidenav({ brandImg, brandName, routes }) {
+export function Sidenav({ brandImg, brandName, routes, homePath }) {
   const [controller, actions] = useMaterialTailwindController();
   const { sidenavType, openSidenav, sidenavCollapsed, sidenavFlatMenu, sidenavExpandAll, sidenavSize, sidenavPosition } = controller;
   
@@ -115,7 +115,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
           isolation: 'isolate', // Yeni stacking context yaradır
         }}
       >
-        <SidenavHeader brandName={brandName} collapsed={sidenavCollapsed && !isHovered} isLowHeight={isLowHeight} />
+        <SidenavHeader brandName={brandName} collapsed={sidenavCollapsed && !isHovered} isLowHeight={isLowHeight} homePath={homePath} />
 
         <SidenavMenu
           routes={filteredRoutes}
@@ -140,6 +140,7 @@ Sidenav.propTypes = {
   brandImg: PropTypes.string,
   brandName: PropTypes.string,
   routes: PropTypes.arrayOf(PropTypes.object).isRequired,
+  homePath: PropTypes.string,
 };
 
 export default Sidenav;

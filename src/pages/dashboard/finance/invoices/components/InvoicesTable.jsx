@@ -155,7 +155,7 @@ export function InvoicesTable({ invoices, loading, onView, onEdit, onDelete }) {
                 </td>
                 <td className="px-4 xl:px-6 py-3 xl:py-4 text-left">
                   <Typography variant="small" className="text-gray-700 dark:text-gray-300">
-                    {invoice.property?.name || "-"}
+                    {invoice.property?.name || invoice.property?.meta?.apartment_number || invoice.property?.apartment_number || (invoice.property?.id != null ? `Mənzil #${invoice.property.id}` : invoice.property_id != null ? `Mənzil #${invoice.property_id}` : "-")}
                   </Typography>
                   {invoice.property?.complex?.name && (
                     <Typography variant="small" className="text-xs text-gray-500 dark:text-gray-400">

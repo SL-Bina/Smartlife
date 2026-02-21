@@ -55,14 +55,20 @@ export function DashboardNavbar() {
   }, []);
 
   const pathParts = pathname.split("/").filter((el) => el !== "");
+  const currentLayout = pathParts[0] || "dashboard";
   const page = pathParts.slice(1).join("/") || pathParts[0] || "";
   const fullPath = pathParts.slice(1).join("/");
 
-  const pageTitle = pageTitleKeyMap[fullPath]
-    ? t(pageTitleKeyMap[fullPath])
-    : pageTitleKeyMap[page]
-      ? t(pageTitleKeyMap[page])
-      : page;
+  // Resident səhifələri üçün layout prefix ilə də axtarma apar
+  const layoutFullPath = currentLayout === "resident" ? `resident/${fullPath}` : fullPath;
+
+  const pageTitle = pageTitleKeyMap[layoutFullPath]
+    ? t(pageTitleKeyMap[layoutFullPath])
+    : pageTitleKeyMap[fullPath]
+      ? t(pageTitleKeyMap[fullPath])
+      : pageTitleKeyMap[page]
+        ? t(pageTitleKeyMap[page])
+        : page;
 
   const getRgbaColor = (hex, opacity = 1) => {
     if (!hex) return null;

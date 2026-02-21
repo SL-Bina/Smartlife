@@ -49,11 +49,7 @@ export function SignIn() {
   useEffect(() => {
     if (isInitialized && isAuthenticated && user && window.location.pathname === '/auth/sign-in') {
       const isResident = user?.is_resident === true;
-      if (isResident) {
-        navigate("/dashboard/resident/home", { replace: true });
-      } else {
-        navigate("/dashboard/home", { replace: true });
-      }
+      navigate(isResident ? "/resident" : "/dashboard", { replace: true });
     }
   }, [isInitialized, isAuthenticated, user, navigate]);
 
@@ -82,11 +78,7 @@ export function SignIn() {
     }
 
     const isResident = result.user?.is_resident === true;
-    if (isResident) {
-      navigate("/dashboard/resident/home", { replace: true });
-    } else {
-      navigate("/dashboard/home", { replace: true });
-    }
+    navigate(isResident ? "/resident" : "/dashboard", { replace: true });
   };
 
   if (!isInitialized) {

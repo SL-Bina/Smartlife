@@ -44,28 +44,45 @@ export function useInvoicesForm() {
     setFormData(initialFormState);
   };
 
+  const toDateOnly = (val) => {
+    if (!val) return "";
+    const s = typeof val === "string" ? val : String(val);
+    return s.length >= 10 ? s.slice(0, 10) : s;
+  };
+
   const setFormFromInvoice = (invoice) => {
-    if (invoice) {
-      setFormData({
-        title: invoice.title || invoice.serviceName || "",
-        amount: invoice.amount || "",
-        dateStart: invoice.dateStart || invoice.invoiceDate || "",
-        dateEnd: invoice.dateEnd || "",
-        building_id: invoice.building_id || invoice.building?.id || null,
-        building: invoice.building || null,
-        block_id: invoice.block_id || invoice.block?.id || null,
-        block: invoice.block || null,
-        floor: invoice.floor || "",
-        apartment_id: invoice.apartment_id || invoice.apartment?.id || null,
-        apartment: invoice.apartment || null,
-        serviceName: invoice.serviceName || "",
-        owner: invoice.owner || "",
-        apartment: invoice.apartment || "",
-        building: invoice.building || "",
-        block: invoice.block || "",
-        area: invoice.area || "",
-      });
-    }
+    if (!invoice) return;
+    const prop = invoice.property || invoice.apartment || null;
+    const amount = invoice.amount != null ? String(invoice.amount) : "";
+    const startDate = toDateOnly(invoice.start_date || invoice.dateStart || invoice.invoiceDate);
+    const dueDate = toDateOnly(invoice.due_date || invoice.dateEnd);
+    const propertyId = invoice.property_id ?? prop?.id ?? null;
+    const serviceId = invoice.service_id ?? invoice.service?.id ?? null;
+    const buildingId =
+      invoice.building_id ??
+      prop?.building_id ??
+      prop?.building?.id ??
+      invoice.building?.id ??
+      null;
+    const blockId =
+      invoice.block_id ?? prop?.block_id ?? prop?.block?.id ?? invoice.block?.id ?? null;
+    setFormData({
+      amount,
+      start_date: startDate,
+      due_date: dueDate,
+      building_id: buildingId,
+      building: invoice.building || prop?.building || null,
+      block_id: blockId,
+      block: invoice.block || prop?.block || null,
+      property_id: propertyId,
+      property: prop,
+      service_id: serviceId,
+      type: invoice.type || "",
+      status: invoice.status || "unpaid",
+      meta: {
+        desc: invoice.meta?.desc || "",
+      },
+    });
   };
 
   return {

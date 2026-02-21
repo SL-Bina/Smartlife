@@ -152,53 +152,30 @@ export function NotFound() {
       return "/dashboard/home";
     }
 
-    const filteredRoutes = filterRoutesByRole(routes, user, hasModuleAccess);
+    const isResident = user?.is_resident === true;
+    const currentLayout = isResident ? "resident" : "dashboard";
+    const filteredRoutes = filterRoutesByRole(routes, user, hasModuleAccess, currentLayout);
     
-    // Find first visible page
     for (const route of filteredRoutes) {
-      if (route.layout === "dashboard" && route.pages && route.pages.length > 0) {
+      if (route.pages && route.pages.length > 0) {
         for (const page of route.pages) {
-          // Skip if page is hidden in sidenav
           if (page.hideInSidenav) continue;
           
-          // If page has children, get first visible child
           if (page.children && page.children.length > 0) {
             const firstVisibleChild = page.children.find(child => !child.hideInSidenav);
-            if (firstVisibleChild && firstVisibleChild.path) {
-              const childPath = firstVisibleChild.path.startsWith('/') 
-                ? firstVisibleChild.path 
-                : '/' + firstVisibleChild.path;
-              // Check if path already includes /dashboard
-              if (childPath.startsWith('/dashboard')) {
-                return childPath;
-              }
-              return `/dashboard${childPath}`;
+            if (firstVisibleChild?.path) {
+              return `/${currentLayout}${firstVisibleChild.path}`;
             }
           }
           
-          // If page has direct path, use it
           if (page.path) {
-            const pagePath = page.path.startsWith('/') 
-              ? page.path 
-              : '/' + page.path;
-            // Check if path already includes /dashboard
-            if (pagePath.startsWith('/dashboard')) {
-              return pagePath;
-            }
-            return `/dashboard${pagePath}`;
+            return `/${currentLayout}${page.path}`;
           }
         }
       }
     }
     
-    // Fallback to default home
-    const userRole =
-      user?.role?.name?.toLowerCase() ||
-      (typeof user?.role === "string" ? user?.role.toLowerCase() : null);
-    if (userRole === "resident") {
-      return "/dashboard/resident/home";
-    }
-    return "/dashboard/home";
+    return isResident ? "/resident/home" : "/dashboard/home";
   };
 
   const handleGoHome = () => {

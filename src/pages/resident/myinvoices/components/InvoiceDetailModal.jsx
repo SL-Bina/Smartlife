@@ -285,7 +285,13 @@ export function InvoiceDetailModal({ open, onClose, invoiceId }) {
               </div>
             )}
           </div>
-        ) : null}
+        ) : (
+          <div className="flex items-center justify-center py-12">
+            <Typography variant="small" className="text-gray-500 dark:text-gray-400">
+              {t("resident.invoices.noData") || "Məlumat yoxdur"}
+            </Typography>
+          </div>
+        )}
       </DialogBody>
 
       <DialogFooter className="border-t border-gray-200 dark:border-gray-700 dark:bg-gray-800">

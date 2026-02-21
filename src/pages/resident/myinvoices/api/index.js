@@ -1,20 +1,28 @@
 import api from "@/services/api";
 
+const INVOICES_BASE = "/module/resident/config/my";
+
 export const residentInvoicesAPI = {
   getAll: async (params = {}) => {
     try {
-      const response = await api.get("/module/resident/config/my/invoices", { params });
-      return response.data;
+      const response = await api.get(`${INVOICES_BASE}/invoices`, { params });
+      return response?.data ?? response;
     } catch (error) {
-      throw error.response?.data || error.message;
+      if (error?.response?.status === 404) {
+        return { success: false, data: [] };
+      }
+      throw error.response?.data || error;
     }
   },
   getById: async (invoiceId) => {
     try {
-      const response = await api.get(`/module/resident/config/my/invoice/${invoiceId}`);
-      return response.data;
+      const response = await api.get(`${INVOICES_BASE}/invoice/${invoiceId}`);
+      return response?.data ?? response;
     } catch (error) {
-      throw error.response?.data || error.message;
+      if (error?.response?.status === 404) {
+        return { success: false, data: null };
+      }
+      throw error.response?.data || error;
     }
   },
 };

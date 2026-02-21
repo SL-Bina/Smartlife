@@ -9,7 +9,8 @@ import { useAppDispatch } from "@/store/hooks";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/store/hooks/useAuth";
 
-export function SidenavHeader({ brandName, collapsed = false, isLowHeight = false }) {
+export function SidenavHeader({ brandName, collapsed = false, isLowHeight = false, homePath = "/dashboard/home" }) {
+  // homePath artıq tam absolute path-dir (məs: /resident/home və ya /dashboard/home)
   const [controller, actions] = useMaterialTailwindController();
   const { sidenavSize } = controller;
   const { t, i18n } = useTranslation();
@@ -72,7 +73,7 @@ export function SidenavHeader({ brandName, collapsed = false, isLowHeight = fals
       className={`relative flex-shrink-0 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-br from-red-600/5 via-red-500/3 to-transparent dark:from-red-600/10 dark:via-red-500/5 dark:to-transparent ${getHeaderPadding()}`}
     >
       <Link
-        to="/"
+        to={homePath}
         className={`flex items-center gap-2.5 group relative ${collapsed ? "xl:justify-center" : "xl:flex-col xl:gap-3"
           }`}
       >

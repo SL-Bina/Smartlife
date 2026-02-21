@@ -20,17 +20,21 @@ export function NavbarBreadcrumbs({ pathParts, fixedNavbar, navbarHoverEffects }
   };
 
   const breadcrumbItems = [];
-  if (pathParts.length > 1) {
+
+  // "home" seqmentini çıxar — layout adı artıq home-u əks etdirir
+  const filteredParts = pathParts.slice(1).filter((seg) => seg !== "home");
+
+  if (filteredParts.length > 0) {
     breadcrumbItems.push({
       label: layoutTitle,
-      path: `/${layout}`,
+      path: `/${layout}/home`,
     });
 
     let currentPath = "";
-    for (let i = 1; i < pathParts.length; i++) {
-      currentPath += (currentPath ? "/" : "") + pathParts[i];
-      const segment = pathParts[i];
-      const isLast = i === pathParts.length - 1;
+    for (let i = 0; i < filteredParts.length; i++) {
+      currentPath += (currentPath ? "/" : "") + filteredParts[i];
+      const segment = filteredParts[i];
+      const isLast = i === filteredParts.length - 1;
 
       let translatedLabel;
       if (isLast && pageTitleKeyMap[currentPath]) {
@@ -48,9 +52,10 @@ export function NavbarBreadcrumbs({ pathParts, fixedNavbar, navbarHoverEffects }
       });
     }
   } else {
+    // home səhifəsində və ya layout root-unda yalnız layout adını göstər
     breadcrumbItems.push({
       label: layoutTitle,
-      path: `/${layout}`,
+      path: `/${layout}/home`,
       isLast: true,
     });
   }

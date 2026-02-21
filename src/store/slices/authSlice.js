@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { authAPI } from '@/services/api';
 
 const TOKEN_COOKIE_NAME = 'smartlife_token';
+const IS_RESIDENT_COOKIE_NAME = 'smartlife_is_resident';
 
 const getCookie = (name) => {
   const value = `; ${document.cookie}`;
@@ -52,7 +53,6 @@ const normalizeUserData = (data, isResident = false) => {
 };
 
 const normalizeResidentData = (data) => {
-  // Resident API response structure: { id, name, surname, email, phone, meta: { gender, birth_date, personal_code }, properties: [...] }
   const fullName = data.surname ? `${data.name} ${data.surname}` : data.name;
   return {
     id: data.id,
@@ -93,57 +93,57 @@ export const initializeUser = createAsyncThunk(
         return { user: null, error: null };
       }
 
-      // First try /module/resident/config/me (for resident users)
-      // If it fails, try /user/me (for dashboard users)
-      try {
-        const residentMeResponse = await authAPI.residentMe();
-        if (residentMeResponse.success && residentMeResponse.data) {
-          return { user: normalizeResidentData(residentMeResponse.data), error: null };
-        } else {
-          // If resident endpoint returns but not success, try dashboard endpoint
-          const errorMsg = residentMeResponse.message || 'Failed to load resident data';
-          // Try dashboard endpoint as fallback
-          try {
-            const meResponse = await authAPI.me();
-            if (meResponse.success && meResponse.data) {
-              // Check if user is resident from me() response
-              const isResident = meResponse.data.is_resident === true || meResponse.data.user_data?.is_resident === true;
-              return { user: normalizeUserData(meResponse.data, isResident), error: null };
-            } else {
-              removeCookie(TOKEN_COOKIE_NAME);
-              return { user: null, error: errorMsg };
-            }
-          } catch (meError) {
-            removeCookie(TOKEN_COOKIE_NAME);
-            return { user: null, error: errorMsg };
+      const isResidentCookie = getCookie(IS_RESIDENT_COOKIE_NAME);
+      const callResidentOnly = isResidentCookie === 'true';
+      const callMeOnly = isResidentCookie === 'false';
+
+      if (callResidentOnly) {
+        try {
+          const residentMeResponse = await authAPI.residentMe();
+          if (residentMeResponse.success && residentMeResponse.data) {
+            return { user: normalizeResidentData(residentMeResponse.data), error: null };
           }
+        } catch (residentError) {
+          if (residentError?.response?.status === 401) {
+            removeCookie(TOKEN_COOKIE_NAME);
+            removeCookie(IS_RESIDENT_COOKIE_NAME);
+          }
+          return { user: null, error: residentError?.response?.data?.message || residentError?.message || 'Unauthorized' };
         }
-      } catch (residentError) {
-        // If /module/resident/config/me fails, try /user/me (for dashboard users)
+        removeCookie(TOKEN_COOKIE_NAME);
+        removeCookie(IS_RESIDENT_COOKIE_NAME);
+        return { user: null, error: null };
+      }
+
+      if (callMeOnly || !callResidentOnly) {
         try {
           const meResponse = await authAPI.me();
           if (meResponse.success && meResponse.data) {
-            // Check if user is resident from me() response
             const isResident = meResponse.data.is_resident === true || meResponse.data.user_data?.is_resident === true;
             return { user: normalizeUserData(meResponse.data, isResident), error: null };
-          } else {
-            const errorMsg = meResponse.message || 'Failed to load user data';
-            removeCookie(TOKEN_COOKIE_NAME);
-            return { user: null, error: errorMsg };
           }
         } catch (meError) {
-          // Both endpoints failed
-          console.error('Failed to initialize user (both endpoints failed):', { residentError, meError });
-          const errorMessage = meError?.response?.data?.message || meError?.message || residentError?.response?.data?.message || residentError?.message || 'Failed to initialize user';
-          removeCookie(TOKEN_COOKIE_NAME);
-          return { user: null, error: errorMessage };
+          if (meError?.response?.status === 401 && !callMeOnly) {
+            removeCookie(TOKEN_COOKIE_NAME);
+            removeCookie(IS_RESIDENT_COOKIE_NAME);
+          }
+          const errorMessage = meError?.response?.data?.message || meError?.message || 'Failed to load user';
+          if (callMeOnly) {
+            removeCookie(TOKEN_COOKIE_NAME);
+            return { user: null, error: errorMessage };
+          }
         }
       }
+
+      const errorMessage = 'Failed to initialize user';
+      removeCookie(TOKEN_COOKIE_NAME);
+      removeCookie(IS_RESIDENT_COOKIE_NAME);
+      return { user: null, error: errorMessage };
     } catch (error) {
       console.error('Failed to initialize user:', error);
-      // Return error message instead of rejecting
       const errorMessage = error?.response?.data?.message || error?.message || 'Failed to initialize user';
       removeCookie(TOKEN_COOKIE_NAME);
+      removeCookie(IS_RESIDENT_COOKIE_NAME);
       return { user: null, error: errorMessage };
     }
   }
@@ -158,17 +158,12 @@ export const loginUser = createAsyncThunk(
       if (loginResponse.token && loginResponse.user) {
         const { token } = loginResponse;
         setCookie(TOKEN_COOKIE_NAME, token, 7);
-
-        // Get is_resident from login response
         const isResidentFromLogin = loginResponse.is_resident === true;
+        setCookie(IS_RESIDENT_COOKIE_NAME, isResidentFromLogin ? 'true' : 'false', 7);
 
-        // Resident users: use login response directly and normalize with normalizeResidentData
         if (isResidentFromLogin) {
-          // For resident users, login response has user object with properties
-          // First try to use login response directly (it already has properties)
           const loginUser = loginResponse.user || {};
           
-          // Try to get full data from /module/resident/config/me, but if it fails, use login response
           try {
             const residentMeResponse = await authAPI.residentMe();
             if (residentMeResponse && residentMeResponse.success && residentMeResponse.data) {
@@ -176,8 +171,6 @@ export const loginUser = createAsyncThunk(
             }
           } catch (residentMeError) {
             console.error('Failed to fetch resident details from /module/resident/config/me:', residentMeError);
-            // If residentMe() fails (e.g., backend error with complex property), use login response
-            // Login response structure: { user: { id, name, email, phone, properties: [...] } }
             const residentData = {
               id: loginUser.id,
               name: loginUser.name || '',
@@ -194,7 +187,6 @@ export const loginUser = createAsyncThunk(
             return { user: normalizeResidentData(residentData) };
           }
           
-          // If residentMe() didn't return success, use login response as fallback
           const residentData = {
             id: loginUser.id,
             name: loginUser.name || '',
@@ -211,7 +203,6 @@ export const loginUser = createAsyncThunk(
           return { user: normalizeResidentData(residentData) };
         }
 
-        // Non-resident users: use /user/me endpoint
         let role = null;
         let modules = [];
         let devices = null;
@@ -219,11 +210,7 @@ export const loginUser = createAsyncThunk(
         let active_device = null;
         let userDataObj = null;
         let isResident = isResidentFromLogin;
-        
         let role_access_modules = [];
-        
-        // Try to get full user data from /user/me endpoint
-        // If it fails, use the basic user data from login response
         try {
           const meResponse = await authAPI.me();
           if (meResponse && meResponse.success && meResponse.data) {
@@ -235,7 +222,6 @@ export const loginUser = createAsyncThunk(
             devices = data.devices;
             other_devices = data.other_devices;
             active_device = data.active_device;
-            // Override is_resident from me() response if available
             if (data.is_resident !== undefined) {
               isResident = data.is_resident === true;
             } else if (data.user_data?.is_resident !== undefined) {
@@ -244,14 +230,9 @@ export const loginUser = createAsyncThunk(
           }
         } catch (meError) {
           console.error('Failed to fetch user details from /user/me:', meError);
-          // If me() fails, we'll use loginResponse.user as fallback
-          // This ensures login still works even if /user/me fails
         }
         
-        // Use me() data if available, otherwise fallback to login response
         const finalUser = userDataObj && userDataObj.id ? userDataObj : loginResponse.user;
-        
-        // If we don't have role/modules from me(), try to construct from loginResponse if available
         if (!role && loginResponse.user?.role) {
           role = loginResponse.user.role;
         }
@@ -296,12 +277,9 @@ export const refreshUser = createAsyncThunk(
         return { user: null };
       }
 
-      // Get current user from state to check if they are resident
       const state = getState();
       const currentUser = state?.auth?.user;
       const isResident = currentUser?.is_resident === true;
-
-      // If user is resident, use resident endpoint
       if (isResident) {
         try {
           const residentMeResponse = await authAPI.residentMe();
@@ -322,12 +300,10 @@ export const refreshUser = createAsyncThunk(
         }
       }
 
-      // For non-resident users, use /user/me
       try {
         const meResponse = await authAPI.me();
         if (meResponse.success && meResponse.data) {
           const data = meResponse.data;
-          // Check if user is resident from me() response
           const isResidentFromResponse = data.is_resident === true || data.user_data?.is_resident === true;
           return { 
             user: normalizeUserData({
@@ -349,7 +325,6 @@ export const refreshUser = createAsyncThunk(
         if (meError.response?.status === 401) {
           removeCookie(TOKEN_COOKIE_NAME);
         }
-        // Don't reject on refresh errors - just return current user
         return rejectWithValue(meError.message);
       }
     } catch (error) {
@@ -357,7 +332,6 @@ export const refreshUser = createAsyncThunk(
       if (error.response?.status === 401) {
         removeCookie(TOKEN_COOKIE_NAME);
       }
-      // Don't reject on refresh errors - just return current user
       return rejectWithValue(error.message);
     }
   }
@@ -372,6 +346,7 @@ export const logoutUser = createAsyncThunk(
       console.error('Logout error:', error);
     } finally {
       removeCookie(TOKEN_COOKIE_NAME);
+      removeCookie(IS_RESIDENT_COOKIE_NAME);
       if (window.location.pathname !== '/auth/sign-in') {
         window.location.href = '/auth/sign-in';
       }
@@ -396,6 +371,7 @@ const authSlice = createSlice({
       state.user = null;
       state.error = null;
       removeCookie(TOKEN_COOKIE_NAME);
+      removeCookie(IS_RESIDENT_COOKIE_NAME);
     },
     clearError: (state) => {
       state.error = null;
@@ -434,8 +410,6 @@ const authSlice = createSlice({
         state.user = action.payload.user;
       })
       .addCase(refreshUser.rejected, (state) => {
-        // Don't clear user on refresh error - keep current user
-        // This prevents logout on network errors
       })
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
@@ -445,8 +419,6 @@ const authSlice = createSlice({
 });
 
 export const { clearUser, clearError } = authSlice.actions;
-
-// Selectors
 export const selectUser = (state) => state.auth.user;
 export const selectIsAuthenticated = (state) => !!state.auth.user;
 export const selectAuthLoading = (state) => state.auth.loading;

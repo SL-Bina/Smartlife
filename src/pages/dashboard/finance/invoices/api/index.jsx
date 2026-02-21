@@ -18,13 +18,33 @@ export const fetchInvoices = async (filters = {}, page = 1, itemsPerPage = 20) =
     const response = await api.get(`/module/finance/invoices?${queryParams}`);
     
     if (response.data.success) {
+      const payload = response.data.data;
+      const rawData = Array.isArray(payload)
+        ? payload
+        : (payload?.data ?? payload?.invoices ?? payload?.items ?? []);
+      // Mənzil məlumatı: property, apartment, flat, unit və ya yalnız property_id olanda da göstərik
+      const getPropertyName = (p) => p && (p.name ?? p.meta?.apartment_number ?? p.apartment_number ?? (p.id != null ? `Mənzil #${p.id}` : null));
+      const data = rawData.map((inv) => {
+        const prop = inv.property || inv.apartment || inv.flat || inv.unit || inv.real_estate;
+        let propertyResolved = null;
+        if (prop != null) {
+          propertyResolved = { ...prop, name: getPropertyName(prop) || prop.name };
+        } else if (inv.property_id != null) {
+          propertyResolved = { id: inv.property_id, name: `Mənzil #${inv.property_id}` };
+        }
+        return {
+          ...inv,
+          property: propertyResolved,
+        };
+      });
+      const paginationPayload = Array.isArray(payload) ? {} : payload;
       return {
-        data: response.data.data.data || [],
+        data,
         pagination: {
-          page: response.data.data.current_page || page,
-          itemsPerPage: response.data.data.per_page || itemsPerPage,
-          total: response.data.data.total || 0,
-          totalPages: response.data.data.last_page || 1,
+          page: paginationPayload.current_page ?? page,
+          itemsPerPage: paginationPayload.per_page ?? itemsPerPage,
+          total: paginationPayload.total ?? data.length,
+          totalPages: paginationPayload.last_page ?? 1,
         },
       };
     }
@@ -157,7 +177,11 @@ export const fetchInvoiceById = async (id) => {
     const response = await api.get(`/module/finance/invoice/${id}`);
     
     if (response.data.success) {
-      return response.data.data;
+      const data = response.data.data;
+      return {
+        ...data,
+        property: data.property || data.apartment || null,
+      };
     }
     
     throw new Error(response.data.message || "Failed to fetch invoice");

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Input, Typography } from "@material-tailwind/react";
+import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Input, Typography, Spinner } from "@material-tailwind/react";
 import { XMarkIcon, XCircleIcon, BuildingOfficeIcon, CalendarIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 import api from "@/services/api";
@@ -7,7 +7,7 @@ import buildingsAPI from "@/pages/dashboard/management/buildings/api";
 import blocksAPI from "@/pages/dashboard/management/blocks/api";
 import propertiesAPI from "@/pages/dashboard/management/properties/api";
 
-export function InvoicesFormModal({ open, onClose, title, formData, onFieldChange, onSave, isEdit = false, saving = false }) {
+export function InvoicesFormModal({ open, onClose, title, formData, onFieldChange, onSave, isEdit = false, saving = false, formLoading = false }) {
   const { t } = useTranslation();
   const [buildings, setBuildings] = useState([]);
   const [blocks, setBlocks] = useState([]);
@@ -317,17 +317,26 @@ export function InvoicesFormModal({ open, onClose, title, formData, onFieldChang
         </div>
       </DialogHeader>
       <DialogBody divider className="space-y-6 dark:bg-gray-900 dark:border-gray-700 overflow-y-auto flex-1 min-h-0 py-5 sm:py-7 px-5 sm:px-7 scrollbar-thin bg-gray-50">
-        <div className="space-y-5 bg-white dark:bg-gray-800 rounded-xl p-5 sm:p-6 shadow-md border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center gap-3 pb-3 border-b-2 border-blue-200 dark:border-blue-700">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <BuildingOfficeIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-            </div>
-            <Typography variant="h6" className="font-bold text-gray-800 dark:text-white text-lg">
-              {t("invoices.form.basicInfo") || "Əsas Məlumatlar"}
+        {formLoading ? (
+          <div className="flex flex-col items-center justify-center min-h-[240px] gap-4 py-8">
+            <Spinner className="h-12 w-12 text-blue-500" />
+            <Typography variant="paragraph" className="text-gray-600 dark:text-gray-400">
+              {t("invoices.form.loading") || "Yüklənir..."}
             </Typography>
           </div>
+        ) : (
+          <>
+          <div className="space-y-5 bg-white dark:bg-gray-800 rounded-xl p-5 sm:p-6 shadow-md border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-3 pb-3 border-b-2 border-blue-200 dark:border-blue-700">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                <BuildingOfficeIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <Typography variant="h6" className="font-bold text-gray-800 dark:text-white text-lg">
+                {t("invoices.form.basicInfo") || "Əsas Məlumatlar"}
+              </Typography>
+            </div>
 
-          <div className="space-y-2">
+            <div className="space-y-2">
             <Typography variant="small" color="blue-gray" className="mb-2 font-semibold text-gray-700 dark:text-gray-300 text-sm">
               {t("invoices.form.service") || "Xidmət"}
               <span className="text-red-500 ml-1 font-bold">*</span>
@@ -759,6 +768,8 @@ export function InvoicesFormModal({ open, onClose, title, formData, onFieldChang
             </div>
           </div>
         </div>
+          </>
+        )}
       </DialogBody>
       <DialogFooter className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 sm:gap-3 dark:bg-gray-900 border-t-2 border-gray-200 dark:border-gray-700 pt-4 sm:pt-5 px-5 sm:px-7 flex-shrink-0 bg-gray-50 shadow-lg">
         <Typography variant="small" className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm text-center sm:text-left order-2 sm:order-1 font-medium">

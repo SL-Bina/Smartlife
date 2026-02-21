@@ -72,9 +72,10 @@ const ResidentMyInvaoicesPage = () => {
       setLoading(true);
       setError(null);
       const response = await residentInvoicesAPI.getAll();
-      setInvoices(response?.data?.data || response?.data || mockInvoices);
+      const list = response?.data?.data ?? response?.data;
+      const useMock = !response?.success && (!list || (Array.isArray(list) && list.length === 0));
+      setInvoices(useMock ? mockInvoices : (list || mockInvoices));
     } catch (err) {
-      // Use mock data on error
       setInvoices(mockInvoices);
       setError(null);
     } finally {

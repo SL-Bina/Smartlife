@@ -1,5 +1,6 @@
 export const layoutTitleKeyMap = {
   dashboard: "sidebar.dashboard",
+  resident: "sidebar.resident",
 };
 
 export const pageTitleKeyMap = {
@@ -57,9 +58,15 @@ export const pageTitleKeyMap = {
   "management/residents": "sidebar.residents",
   "resident/home": "residentDashboard.pageTitle",
   "resident/invoices": "sidebar.invoices",
+  "resident/my-properties": "sidebar.myProperties",
+  "resident/tickets": "sidebar.applicationsList",
+  "resident/e-documents": "sidebar.eDocuments",
   "resident/applications": "sidebar.applicationsList",
   "resident/notifications": "sidebar.notifications",
   "resident/profile": "sidebar.profile",
+  "my-properties": "sidebar.myProperties",
+  "tickets": "sidebar.applicationsList",
+  "e-documents": "sidebar.eDocuments",
   "settings": "header.settings",
 };
 

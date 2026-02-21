@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useInvoicesData } from "./hooks/useInvoicesData";
 import { useInvoicesForm } from "./hooks/useInvoicesForm";
 import { createInvoice, updateInvoice, deleteInvoice, fetchInvoiceById } from "./api";
+import propertiesAPI from "@/pages/dashboard/management/properties/api";
 import { InvoicesHeader } from "./components/InvoicesHeader";
 import { InvoicesSummaryCard } from "./components/InvoicesSummaryCard";
 import { ManagementActions } from "@/components/management/ManagementActions";
@@ -39,6 +40,7 @@ const InvoicesPage = () => {
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [viewLoading, setViewLoading] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
   
   const [selectedItem, setSelectedItem] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
@@ -131,11 +133,52 @@ const InvoicesPage = () => {
     }
   };
 
-  const handleEdit = (item) => {
+  const handleEdit = async (item) => {
     setSelectedItem(item);
-    setFormFromInvoice(item);
     setMode("edit");
     setFormOpen(true);
+    setFormLoading(true);
+    try {
+      let invoiceData = await fetchInvoiceById(item.id);
+      const prop = invoiceData.property || invoiceData.apartment;
+      const hasBuildingBlock = (inv) => {
+        const b = inv?.building_id ?? inv?.property?.building_id ?? inv?.property?.building?.id ?? inv?.apartment?.building_id ?? inv?.apartment?.building?.id;
+        const bl = inv?.block_id ?? inv?.property?.block_id ?? inv?.property?.block?.id ?? inv?.apartment?.block_id ?? inv?.apartment?.block?.id;
+        return b != null && bl != null;
+      };
+      if ((invoiceData.property_id ?? prop?.id) && !hasBuildingBlock(invoiceData)) {
+        try {
+          const propId = invoiceData.property_id ?? prop?.id;
+          const res = await propertiesAPI.getById(propId);
+          const propDetail = res?.data?.data ?? res?.data ?? (typeof res === "object" ? res : null);
+          if (propDetail) {
+            const buildingId = propDetail.building_id ?? propDetail.building?.id ?? null;
+            const blockId = propDetail.block_id ?? propDetail.block?.id ?? null;
+            invoiceData = {
+              ...invoiceData,
+              property: {
+                ...(prop || {}),
+                ...propDetail,
+                building_id: buildingId ?? propDetail.building_id,
+                block_id: blockId ?? propDetail.block_id,
+                building: propDetail.building ?? prop?.building,
+                block: propDetail.block ?? prop?.block,
+              },
+            };
+          }
+        } catch (err) {
+          console.error("Error fetching property for edit:", err);
+        }
+      }
+      setFormFromInvoice(invoiceData);
+    } catch (error) {
+      console.error("Error fetching invoice for edit:", error);
+      showToast("error", error.response?.data?.message || "Faktura məlumatları yüklənərkən xəta baş verdi", "Xəta");
+      setFormOpen(false);
+      setSelectedItem(null);
+    } finally {
+      setFormLoading(false);
+    }
   };
 
   const handleDelete = (item) => {
@@ -462,6 +505,7 @@ const InvoicesPage = () => {
         onSave={mode === "create" ? handleCreateSave : handleEditSave}
         isEdit={mode === "edit"}
         saving={saving}
+        formLoading={formLoading}
       />
 
       <ViewModal
