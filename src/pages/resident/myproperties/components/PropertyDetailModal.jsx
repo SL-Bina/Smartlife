@@ -340,11 +340,7 @@ export function PropertyDetailModal({ open, onClose, propertyId }) {
               </div>
             </div>
           </div>
-        ) : (
-          <div className="flex items-center justify-center py-12">
-            <Spinner className="h-8 w-8" />
-          </div>
-        )}
+        ) : null}
       </DialogBody>
 
       <DialogFooter className="border-t border-gray-200 dark:border-gray-700 dark:bg-gray-800">

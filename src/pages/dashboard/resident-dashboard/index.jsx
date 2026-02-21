@@ -47,42 +47,42 @@ export function ResidentDashboard() {
       value: stats.totalInvoices,
       icon: DocumentTextIcon,
       color: "blue",
-      onClick: () => navigate("/dashboard/resident/invoices"),
+      onClick: () => navigate("/resident/invoices"),
     },
     {
       title: t("residentDashboard.unpaidInvoices"),
       value: stats.unpaidInvoices,
       icon: CurrencyDollarIcon,
       color: "red",
-      onClick: () => navigate("/dashboard/resident/invoices"),
+      onClick: () => navigate("/resident/invoices"),
     },
     {
       title: t("residentDashboard.totalApplications"),
       value: stats.totalApplications,
       icon: QuestionMarkCircleIcon,
       color: "green",
-      onClick: () => navigate("/dashboard/resident/applications"),
+      onClick: () => navigate("/resident/tickets"),
     },
     {
       title: t("residentDashboard.pendingApplications"),
       value: stats.pendingApplications,
       icon: QuestionMarkCircleIcon,
       color: "orange",
-      onClick: () => navigate("/dashboard/resident/applications"),
+      onClick: () => navigate("/resident/tickets"),
     },
     {
       title: t("residentDashboard.unreadNotifications"),
       value: stats.unreadNotifications,
       icon: BellIcon,
       color: "purple",
-      onClick: () => navigate("/dashboard/resident/notifications"),
+      onClick: () => navigate("/resident/notifications"),
     },
     {
       title: t("residentDashboard.totalDebt"),
       value: `${stats.totalDebt} AZN`,
       icon: CurrencyDollarIcon,
       color: "red",
-      onClick: () => navigate("/dashboard/resident/invoices"),
+      onClick: () => navigate("/resident/invoices"),
     },
   ];
 
@@ -147,7 +147,7 @@ export function ResidentDashboard() {
               variant="outlined"
               color="blue"
               className="flex items-center justify-center gap-2 dark:text-blue-300 dark:border-blue-600"
-              onClick={() => navigate("/dashboard/resident/invoices")}
+              onClick={() => navigate("/resident/invoices")}
             >
               <DocumentTextIcon className="h-5 w-5" />
               {t("residentDashboard.viewInvoices")}
@@ -156,7 +156,7 @@ export function ResidentDashboard() {
               variant="outlined"
               color="green"
               className="flex items-center justify-center gap-2 dark:text-green-300 dark:border-green-600"
-              onClick={() => navigate("/dashboard/resident/applications")}
+              onClick={() => navigate("/resident/tickets")}
             >
               <QuestionMarkCircleIcon className="h-5 w-5" />
               {t("residentDashboard.viewApplications")}
@@ -165,7 +165,7 @@ export function ResidentDashboard() {
               variant="outlined"
               color="purple"
               className="flex items-center justify-center gap-2 dark:text-purple-300 dark:border-purple-600"
-              onClick={() => navigate("/dashboard/resident/notifications")}
+              onClick={() => navigate("/resident/notifications")}
             >
               <BellIcon className="h-5 w-5" />
               {t("residentDashboard.viewNotifications")}
@@ -178,4 +178,3 @@ export function ResidentDashboard() {
 }
 
 export default ResidentDashboard;
-

@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -16,7 +16,7 @@ import Footer from "@/widgets/layout/footer";
 import { NotFound } from "@/pages/404";
 import "./dashboard.css";
 
-function ProtectedRoute({ element, allowedRoles, moduleName, currentLayout }) {
+function ProtectedRoute({ element, allowedRoles, moduleName }) {
   const { user, isInitialized, hasModuleAccess } = useAuth();
 
   if (!isInitialized) {
@@ -38,38 +38,47 @@ function ProtectedRoute({ element, allowedRoles, moduleName, currentLayout }) {
   const userRole = user.role?.name?.toLowerCase() || (typeof user.role === 'string' ? user.role.toLowerCase() : null);
   const isRoot = userRole === "root";
 
-  // Resident istifadəçi /dashboard-dadırsa → /resident-ə yönləndir
-  if (isResident && currentLayout === "dashboard") {
-    return <Navigate to="/resident" replace />;
+  // If user is resident, check if route is for residents
+  const currentPath = window.location.pathname;
+  if (isResident && !currentPath.includes("/resident/")) {
+    // Resident users can only access resident routes
+    return <Navigate to="/resident/home" replace />;
   }
 
-  // Qeyri-resident istifadəçi /resident-dədirdirsa → /dashboard-a yönləndir
-  if (!isResident && currentLayout === "resident") {
-    return <Navigate to="/dashboard" replace />;
+  // Non-resident users cannot access resident routes
+  if (!isResident && currentPath.includes("/resident/")) {
+    return <Navigate to="/dashboard/home" replace />;
   }
 
-  // Root role has access to all dashboard routes
-  if (isRoot) {
+  // Root role has access to all routes (except resident routes if not resident)
+  if (isRoot && !isResident) {
     return element;
   }
 
   if (moduleName && !hasModuleAccess(moduleName)) {
-    return <Navigate to={`/${currentLayout}`} replace />;
+    if (isResident) {
+      return <Navigate to="/resident/home" replace />;
+    }
+    return <Navigate to="/dashboard/home" replace />;
   }
 
   if (allowedRoles && userRole && !allowedRoles.includes(userRole)) {
-    return <Navigate to={`/${currentLayout}`} replace />;
+    if (isResident) {
+      return <Navigate to="/resident/home" replace />;
+    }
+    return <Navigate to="/dashboard/home" replace />;
   }
 
   return element;
 }
 
-export const filterRoutesByRole = (routes, user, hasModuleAccess, currentLayout) => {
+export const filterRoutesByRole = (routes, user, hasModuleAccess, currentLayoutParam) => {
   let userRole = user?.role?.name?.toLowerCase() || (typeof user?.role === 'string' ? user.role.toLowerCase() : null);
 
   const originalRole = user?.role?.name?.toLowerCase();
   const isRoot = originalRole === "root";
   const isResident = user?.is_resident === true;
+  const currentLayout = currentLayoutParam ?? (window.location.pathname.startsWith("/resident") ? "resident" : "dashboard");
 
   // Build module access map from role_access_modules (preferred) or modules (fallback)
   const userModuleNames = new Set();
@@ -77,6 +86,7 @@ export const filterRoutesByRole = (routes, user, hasModuleAccess, currentLayout)
   if (isRoot) {
     // Root has access to all modules - don't filter
   } else {
+    // Check role_access_modules first (more accurate)
     if (user?.role_access_modules && Array.isArray(user.role_access_modules) && user.role_access_modules.length > 0) {
       user.role_access_modules.forEach((m) => {
         if (m.module_name && m.permissions && Array.isArray(m.permissions) && m.permissions.length > 0) {
@@ -85,6 +95,7 @@ export const filterRoutesByRole = (routes, user, hasModuleAccess, currentLayout)
       });
     }
     
+    // Fallback to modules (for backward compatibility)
     if (userModuleNames.size === 0 && user?.modules && Array.isArray(user.modules)) {
       user.modules
         .filter((m) => m?.can && Array.isArray(m.can) && m.can.length > 0)
@@ -98,86 +109,130 @@ export const filterRoutesByRole = (routes, user, hasModuleAccess, currentLayout)
 
   return routes
     .filter((route) => {
-      // Yalnız cari layout-a uyğun route-ları göstər
-      return route.layout === currentLayout;
+      if (route.layout !== currentLayout) return false;
+      return true;
     })
     .map((route) => {
       const filteredPages = route.pages
         .map((page) => {
-          // Resident layout-da modul yoxlaması lazım deyil
-          if (currentLayout === "resident") {
+          // Layout filter already applied above, no path-based resident checks needed
+
+          // Resident users don't need module checks - they only see resident routes
+          if (isResident) {
+            // For resident users, all resident routes are visible (no module check needed)
+            // We already filtered out non-resident routes above
             return page;
           }
 
-          // Aşağıdakı yoxlamalar yalnız dashboard layout üçündür
+          // Xüsusi səhifələr - həmişə görünür (profile, settings və s.)
           const isSpecialPage = page.path === "/profile" || page.path === "/settings";
           
+          // Əgər children varsa, parent-in modul yoxlamasını keçiririk
+          // Submenu o zaman açılasın ki, daxilində hansısa modul aktivdirsə
           if (page.children && page.children.length > 0) {
-            // Parent - yalnız children-ın modullarına görə açılır
+            // Parent səhifənin öz modulu yoxdur - yalnız children-ın modullarına görə açılır
+            // hasModuleAccess yoxlamasını keçiririk
           } else {
+            // Children yoxdursa, normal modul yoxlaması aparırıq
+            // ModuleName yoxlaması - Root üçün keçir, digərləri üçün user-in modullarına görə filter et
             let hasModuleAccess = false;
             if (page.moduleName) {
               if (isRoot) {
+                // Root üçün bütün modullar görünür
                 hasModuleAccess = true;
               } else {
                 const moduleNameLower = page.moduleName.toLowerCase();
                 hasModuleAccess = userModuleNames.has(moduleNameLower);
                 if (!hasModuleAccess) {
-                  return null;
+                  return null; // Modul yoxdursa və ya icazəsi yoxdursa, səhifəni göstərmə
                 }
               }
             } else {
+              // ModuleName yoxdursa
               if (isRoot) {
+                // Root üçün bütün səhifələr görünür
                 hasModuleAccess = true;
               } else if (isSpecialPage) {
+                // Xüsusi səhifələr (profile, settings) həmişə görünür
                 hasModuleAccess = true;
               } else {
+                // Digər səhifələr üçün modul icazəsi yoxdursa, görünməməlidir
+                // allowedRoles yoxlaması aparmırıq, çünki yalnız modul icazəsi olan səhifələr görünməlidir
                 return null;
               }
             }
           }
 
+          // AllowedRoles yoxlaması - yalnız xüsusi səhifələr üçün (profile, settings)
           if (page.allowedRoles && userRole && !isRoot && isSpecialPage) {
+            // Xüsusi səhifələr üçün allowedRoles yoxlaması apar
             if (!page.allowedRoles.includes(userRole)) {
               return null;
             }
           }
 
+          // Children varsa, onları da filter et
+          // Submenu o zaman açılasın ki, daxilində hansısa modul aktivdirsə
           if (page.children && page.children.length > 0) {
             const filteredChildren = page.children.filter((child) => {
+              // If user is resident, only show resident routes (no module check needed)
+              if (isResident) {
+                if (child.path && !child.path.includes("/resident/")) {
+                  return false; // Hide non-resident routes for residents
+                }
+                // For resident users, all resident routes are visible (no module check)
+                return true;
+              } else {
+                // If user is not resident, hide resident routes
+                if (child.path && child.path.includes("/resident/")) {
+                  return false; // Hide resident routes for non-residents
+                }
+              }
+
+              // ModuleName yoxlaması (only for non-resident users)
               let childHasModuleAccess = false;
               if (child.moduleName) {
                 if (isRoot) {
+                  // Root üçün bütün modullar görünür
                   childHasModuleAccess = true;
                 } else {
                   const moduleNameLower = child.moduleName.toLowerCase();
                   childHasModuleAccess = userModuleNames.has(moduleNameLower);
                   if (!childHasModuleAccess) {
-                    return false;
+                    return false; // Modul yoxdursa və ya icazəsi yoxdursa, child görünməməlidir
                   }
                 }
               } else {
+                // ModuleName yoxdursa, allowedRoles yoxlaması aparılmalıdır
                 childHasModuleAccess = false;
               }
 
+              // AllowedRoles yoxlaması - Root üçün və modul icazəsi olanlar üçün keçir
               if (child.allowedRoles && userRole && !isRoot) {
+                // Əgər modul varsa və icazəsi varsa, allowedRoles yoxlamasını keçir
                 if (childHasModuleAccess) {
-                  // OK
+                  // Modul var, icazəsi var - allowedRoles yoxlamasını keçir
                 } else {
+                  // Modul yoxdursa və ya icazəsi yoxdursa, allowedRoles yoxlamasını apar
                   if (!child.allowedRoles.includes(userRole)) {
                     return false;
                   }
                 }
               } else if (!childHasModuleAccess && !isRoot) {
+                // Əgər modul yoxdursa və allowedRoles də yoxdursa, child görünməməlidir
                 return false;
               }
               return true;
             });
 
+            // Əgər heç bir child görünmürsə, parent səhifəni də göstərmə
+            // Submenu o zaman açılasın ki, daxilində hansısa modul aktivdirsə
             if (filteredChildren.length === 0) {
               return null;
             }
 
+            // Parent səhifənin öz modulu yoxdur - yalnız children-ın modullarına görə açılır
+            // Buna görə parent-in modul yoxlamasını keçiririk
             return {
               ...page,
               children: filteredChildren,
@@ -195,33 +250,11 @@ export const filterRoutesByRole = (routes, user, hasModuleAccess, currentLayout)
     });
 };
 
-// İstifadəçinin sidebar-da gördüyü ilk səhifənin path-ini qaytarır (layout-a nisbətən)
-function getFirstPagePath(filteredRoutes) {
-  for (const route of filteredRoutes) {
-    if (route.pages) {
-      for (const page of route.pages) {
-        if (page.hideInSidenav) continue;
-        if (page.children && page.children.length > 0) {
-          const firstChild = page.children.find(c => !c.hideInSidenav);
-          if (firstChild?.path) return firstChild.path;
-        } else if (page.path) {
-          return page.path;
-        }
-      }
-    }
-  }
-  return "/home"; // fallback
-}
-
 export function Dashboard() {
   const [controller, uiActions] = useMaterialTailwindController();
   const { sidenavType, sidenavCollapsed, sidenavSize, sidenavPosition } = controller;
   const { user, hasModuleAccess, refreshUser, isInitialized, error, clearError } = useAuth();
   const [isDesktop, setIsDesktop] = useState(false);
-  const { pathname } = useLocation();
-
-  // URL-dən cari layout-u təyin et
-  const currentLayout = pathname.startsWith("/resident") ? "resident" : "dashboard";
 
   useDocumentTitle();
 
@@ -272,8 +305,8 @@ export function Dashboard() {
     return <Navigate to="/auth/sign-in" replace />;
   }
 
+  const currentLayout = window.location.pathname.startsWith("/resident") ? "resident" : "dashboard";
   const filteredRoutes = filterRoutesByRole(routes, user, hasModuleAccess, currentLayout);
-  const homePath = getFirstPagePath(filteredRoutes);
 
   // Show error message if there's an auth error
   const showError = error && !user;
@@ -305,7 +338,6 @@ export function Dashboard() {
             brandImg={
               sidenavType === "dark" ? "/Site_Logo/white_big.png" : "/Site_Logo/color_big.png"
             }
-            homePath={`/${currentLayout}${homePath}`}
           />
         </div>
         <motion.div
@@ -325,46 +357,68 @@ export function Dashboard() {
           }}
           className="p-4 relative z-0 dashboard-content min-h-screen-minus-footer"
         >
-          <DashboardNavbar homePath={`/${currentLayout}${homePath}`} filteredRoutes={filteredRoutes} />
+          <DashboardNavbar />
           <div className="mt-4 sm:mt-6 md:mt-8">
             <Routes>
-              {/* Root path - sidebar-dakı ilk səhifəyə yönləndir */}
+              {/* Root path - home səhifəsinə yönləndir (resident üçün resident/home) */}
               <Route 
                 path="/" 
-                element={<Navigate to={homePath} replace />}
+                element={
+                  user?.is_resident === true 
+                    ? <Navigate to="/resident/home" replace /> 
+                    : <Navigate to="/home" replace />
+                } 
               />
               {filteredRoutes.map(
-                ({ layout, pages }) =>
-                  layout === currentLayout &&
-                  pages.map((page) => {
+                ({ layout, pages }) => {
+                  const currentLayout = window.location.pathname.startsWith("/resident") ? "resident" : "dashboard";
+                  if (layout !== currentLayout) return null;
+                  return pages.map((page) => {
                     if (page.children && page.children.length > 0) {
                       return page.children.map(({ path, element, allowedRoles, moduleName }) => {
+                        // Path-i düzgün formatla - /dashboard prefix-i olmadan, amma / ilə başlamalıdır
+                        const currentLayout = window.location.pathname.startsWith("/resident") ? "resident" : "dashboard";
                         let routePath = path;
-                        if (!routePath.startsWith("/")) {
-                          routePath = `/${routePath}`;
+                        if (routePath.startsWith(`/${currentLayout}/`)) {
+                          routePath = routePath.replace(`/${currentLayout}/`, "");
+                        } else if (routePath.startsWith("/")) {
+                          routePath = routePath.slice(1);
+                        }
+                        // /dashboard altında olduğumuz üçün path-dən /dashboard-ı çıxarırıq
+                        if (routePath === "/") {
+                          routePath = "";
                         }
                         return (
                           <Route
                             key={path}
                             path={routePath}
-                            element={<ProtectedRoute element={element} allowedRoles={allowedRoles} moduleName={moduleName} currentLayout={currentLayout} />}
+                            element={<ProtectedRoute element={element} allowedRoles={allowedRoles} moduleName={moduleName} />}
                           />
                         );
                       });
                     } else {
+                      // Path-i düzgün formatla - cari layout prefix-i olmadan, nisbi path olmalıdır
+                      const currentLayout = window.location.pathname.startsWith("/resident") ? "resident" : "dashboard";
                       let routePath = page.path;
-                      if (!routePath.startsWith("/")) {
-                        routePath = `/${routePath}`;
+                      if (routePath.startsWith(`/${currentLayout}/`)) {
+                        routePath = routePath.replace(`/${currentLayout}/`, "");
+                      } else if (routePath.startsWith("/")) {
+                        routePath = routePath.slice(1);
+                      }
+                      // /dashboard altında olduğumuz üçün path-dən /dashboard-ı çıxarırıq
+                      if (routePath === "/") {
+                        routePath = "";
                       }
                       return (
                         <Route
                           key={page.path}
                           path={routePath}
-                          element={<ProtectedRoute element={page.element} allowedRoles={page.allowedRoles} moduleName={page.moduleName} currentLayout={currentLayout} />}
+                          element={<ProtectedRoute element={page.element} allowedRoles={page.allowedRoles} moduleName={page.moduleName} />}
                         />
                       );
                     }
-                  })
+                  });
+                }
               )}
               {/* 404 yalnız mövcud olmayan path-lər üçün */}
               <Route

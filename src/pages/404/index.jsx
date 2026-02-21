@@ -164,12 +164,24 @@ export function NotFound() {
           if (page.children && page.children.length > 0) {
             const firstVisibleChild = page.children.find(child => !child.hideInSidenav);
             if (firstVisibleChild?.path) {
-              return `/${currentLayout}${firstVisibleChild.path}`;
+              const childPath = firstVisibleChild.path.startsWith("/")
+                ? firstVisibleChild.path
+                : `/${firstVisibleChild.path}`;
+              if (childPath.startsWith("/dashboard") || childPath.startsWith("/resident")) {
+                return childPath;
+              }
+              return `/${currentLayout}${childPath}`;
             }
           }
           
           if (page.path) {
-            return `/${currentLayout}${page.path}`;
+            const pagePath = page.path.startsWith("/")
+              ? page.path
+              : `/${page.path}`;
+            if (pagePath.startsWith("/dashboard") || pagePath.startsWith("/resident")) {
+              return pagePath;
+            }
+            return `/${currentLayout}${pagePath}`;
           }
         }
       }
