@@ -108,18 +108,8 @@ export const filterRoutesByRole = (routes, user) => {
 
           const isSpecial = page.path === "/profile" || page.path === "/settings";
 
-          if (!isRoot && !isSpecial) {
-            if (page.moduleName) {
-              if (!userModules.has(page.moduleName.toLowerCase())) return null;
-            } else {
-              return null;
-            }
-          }
-
-          if (page.allowedRoles && roleName && !isRoot) {
-            if (!page.allowedRoles.includes(roleName)) return null;
-          }
-
+          // Children olan parent-larda əvvəlcə children-ları filtr et.
+          // Hər hansı child keçirsə parent-ı göstər (parent group/container kimi işləyir).
           if (page.children?.length) {
             const children = page.children.filter((child) => {
               if (!isRoot) {
@@ -140,6 +130,19 @@ export const filterRoutesByRole = (routes, user) => {
             if (!children.length) return null;
 
             return { ...page, children };
+          }
+
+          // Normal page (children yoxdur)
+          if (!isRoot && !isSpecial) {
+            if (page.moduleName) {
+              if (!userModules.has(page.moduleName.toLowerCase())) return null;
+            } else {
+              return null;
+            }
+          }
+
+          if (page.allowedRoles && roleName && !isRoot) {
+            if (!page.allowedRoles.includes(roleName)) return null;
           }
 
           return page;
