@@ -15,6 +15,9 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/store/exports";
 import { useTranslation } from "react-i18next";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { getFirstActivePath } from "@/utils/getFirstActivePath";
+import { filterRoutesByRole } from "@/layouts/dashboard";
+import routes from "@/routes";
 
 import ReactCountryFlag from "react-country-flag";
 
@@ -45,15 +48,10 @@ export function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
 
-  // Only redirect if user is authenticated and we're on sign-in page
   useEffect(() => {
     if (isInitialized && isAuthenticated && user && window.location.pathname === '/auth/sign-in') {
-      const isResident = user?.is_resident === true;
-      if (isResident) {
-        navigate("/dashboard/resident/home", { replace: true });
-      } else {
-        navigate("/dashboard/home", { replace: true });
-      }
+      const filtered = filterRoutesByRole(routes, user);
+      navigate(getFirstActivePath(filtered), { replace: true });
     }
   }, [isInitialized, isAuthenticated, user, navigate]);
 
@@ -81,12 +79,8 @@ export function SignIn() {
       return;
     }
 
-    const isResident = result.user?.is_resident === true;
-    if (isResident) {
-      navigate("/dashboard/resident/home", { replace: true });
-    } else {
-      navigate("/dashboard/home", { replace: true });
-    }
+    const filtered = filterRoutesByRole(routes, result.user);
+    navigate(getFirstActivePath(filtered), { replace: true });
   };
 
   if (!isInitialized) {

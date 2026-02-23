@@ -7,7 +7,7 @@ import { pageTitleKeyMap } from "./utils/pageTitleMap";
 import { MobileNavbar } from "./components/MobileNavbar";
 import { DesktopNavbar } from "./components/DesktopNavbar";
 
-export function DashboardNavbar() {
+export function DashboardNavbar({ homePath, parentPathMap }) {
   const [controller] = useMaterialTailwindController();
   const {
     fixedNavbar,
@@ -282,6 +282,8 @@ export function DashboardNavbar() {
         pageTitle={pageTitle} 
         fixedNavbar={fixedNavbar}
         navbarHoverEffects={navbarHoverEffects}
+        homePath={homePath}
+        parentPathMap={parentPathMap}
       />
     </Navbar>
   );

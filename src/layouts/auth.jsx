@@ -11,31 +11,10 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 export function Auth() {
   useDocumentTitle();
-  const navbarRoutes = [
-    {
-      name: "dashboard",
-      path: "/dashboard/home",
-      icon: ChartPieIcon,
-    },
-    {
-      name: "profile",
-      path: "/dashboard/home",
-      icon: UserIcon,
-    },
-    {
-      name: "sign up",
-      path: "/auth/sign-up",
-      icon: UserPlusIcon,
-    },
-    {
-      name: "sign in",
-      path: "/auth/sign-in",
-      icon: ArrowRightOnRectangleIcon,
-    },
-  ];
+  
 
   return (
-    <div className="relative h-screen w-full overflow-hidden">
+    <div className="relative h-screen w-full overflow-hidden min-h-screen-minus-footer">
       <Routes>
         {routes.map(
           ({ layout, pages }) =>

@@ -14,260 +14,143 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import AiChat from "@/widgets/layout/ai-chat";
 import Footer from "@/widgets/layout/footer";
 import { NotFound } from "@/pages/404";
+import { getFirstActivePath, buildParentPathMap } from "@/utils/getFirstActivePath";
 import "./dashboard.css";
 
-function ProtectedRoute({ element, allowedRoles, moduleName }) {
+function ProtectedRoute({ element, allowedRoles, moduleName, fallbackPath }) {
   const { user, isInitialized, hasModuleAccess } = useAuth();
 
   if (!isInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Yüklənir...</p>
-        </div>
+        <div className="animate-spin h-10 w-10 border-b-2 border-red-600 rounded-full"></div>
       </div>
     );
   }
 
-  if (!user) {
-    return <Navigate to="/auth/sign-in" replace />;
-  }
+  if (!user) return <Navigate to="/auth/sign-in" replace />;
 
   const isResident = user?.is_resident === true;
-  const userRole = user.role?.name?.toLowerCase() || (typeof user.role === 'string' ? user.role.toLowerCase() : null);
-  const isRoot = userRole === "root";
+  const roleName =
+    user?.role?.name?.toLowerCase() ||
+    (typeof user?.role === "string" ? user.role.toLowerCase() : null);
 
-  // If user is resident, check if route is for residents
+  const isRoot = roleName === "root";
+
   const currentPath = window.location.pathname;
+  const redirectTo = fallbackPath || (isResident ? "/resident/home" : "/dashboard/home");
+
   if (isResident && !currentPath.includes("/resident/")) {
-    // Resident users can only access resident routes
-    return <Navigate to="/dashboard/resident/home" replace />;
+    return <Navigate to={redirectTo} replace />;
   }
 
-  // Non-resident users cannot access resident routes
   if (!isResident && currentPath.includes("/resident/")) {
-    return <Navigate to="/dashboard/home" replace />;
+    return <Navigate to={redirectTo} replace />;
   }
 
-  // Root role has access to all routes (except resident routes if not resident)
-  if (isRoot && !isResident) {
-    return element;
-  }
-
-  if (moduleName && !hasModuleAccess(moduleName)) {
-    if (isResident) {
-      return <Navigate to="/dashboard/resident/home" replace />;
+  if (!isRoot) {
+    if (moduleName && !hasModuleAccess(moduleName)) {
+      return <Navigate to={redirectTo} replace />;
     }
-    return <Navigate to="/dashboard/home" replace />;
-  }
 
-  if (allowedRoles && userRole && !allowedRoles.includes(userRole)) {
-    if (isResident) {
-      return <Navigate to="/dashboard/resident/home" replace />;
+    if (allowedRoles && roleName) {
+      if (!allowedRoles.includes(roleName)) {
+        return <Navigate to={redirectTo} replace />;
+      }
     }
-    return <Navigate to="/dashboard/home" replace />;
   }
 
   return element;
 }
 
-export const filterRoutesByRole = (routes, user, hasModuleAccess) => {
-  let userRole = user?.role?.name?.toLowerCase() || (typeof user?.role === 'string' ? user.role.toLowerCase() : null);
+export const filterRoutesByRole = (routes, user) => {
+  if (!user) return [];
 
-  const originalRole = user?.role?.name?.toLowerCase();
-  const isRoot = originalRole === "root";
+  const roleName =
+    user?.role?.name?.toLowerCase() ||
+    (typeof user?.role === "string" ? user.role.toLowerCase() : null);
+
+  const isRoot = roleName === "root";
   const isResident = user?.is_resident === true;
 
-  // Build module access map from role_access_modules (preferred) or modules (fallback)
-  const userModuleNames = new Set();
-  
-  if (isRoot) {
-    // Root has access to all modules - don't filter
-  } else {
-    // Check role_access_modules first (more accurate)
-    if (user?.role_access_modules && Array.isArray(user.role_access_modules) && user.role_access_modules.length > 0) {
+  const userModules = new Set();
+
+  if (!isRoot) {
+    if (Array.isArray(user?.role_access_modules)) {
       user.role_access_modules.forEach((m) => {
-        if (m.module_name && m.permissions && Array.isArray(m.permissions) && m.permissions.length > 0) {
-          userModuleNames.add(m.module_name.toLowerCase());
+        if (m?.module_name && Array.isArray(m?.permissions) && m.permissions.length > 0) {
+          userModules.add(m.module_name.toLowerCase());
         }
       });
     }
-    
-    // Fallback to modules (for backward compatibility)
-    if (userModuleNames.size === 0 && user?.modules && Array.isArray(user.modules)) {
+
+    if (userModules.size === 0 && Array.isArray(user?.modules)) {
       user.modules
-        .filter((m) => m?.can && Array.isArray(m.can) && m.can.length > 0)
+        .filter((m) => Array.isArray(m?.can) && m.can.length > 0)
         .forEach((m) => {
-          if (m?.name) {
-            userModuleNames.add(m.name.toLowerCase());
-          }
+          if (m?.name) userModules.add(m.name.toLowerCase());
         });
     }
   }
 
   return routes
     .filter((route) => {
-      if (route.layout !== "dashboard") return false;
-
-      if (route.pages && route.pages.length > 0) {
-        const firstPage = route.pages[0];
-        if (firstPage.path && firstPage.path.includes("/resident/")) {
-          return isResident;
-        }
-        if (isResident && firstPage.path && !firstPage.path.includes("/resident/")) {
-          return false;
-        }
-      }
-
-      return true;
+      if (route.layout === "resident") return isResident;
+      if (route.layout === "dashboard") return !isResident;
+      return false;
     })
     .map((route) => {
+      const isResidentLayout = route.layout === "resident";
       const filteredPages = route.pages
         .map((page) => {
-          // If user is resident, only show resident routes
-          if (isResident) {
-            if (page.path && !page.path.includes("/resident/")) {
-              return null; // Hide non-resident routes for residents
-            }
-          } else {
-            // If user is not resident, hide resident routes
-            if (page.path && page.path.includes("/resident/")) {
-              return null; // Hide resident routes for non-residents
-            }
-          }
+          // Resident layout pages don't have module-based access control
+          if (isResidentLayout) return page;
 
-          // Resident users don't need module checks - they only see resident routes
-          if (isResident) {
-            // For resident users, all resident routes are visible (no module check needed)
-            // We already filtered out non-resident routes above
-            return page;
-          }
+          const isSpecial = page.path === "/profile" || page.path === "/settings";
 
-          // Xüsusi səhifələr - həmişə görünür (profile, settings və s.)
-          const isSpecialPage = page.path === "/profile" || page.path === "/settings";
-          
-          // Əgər children varsa, parent-in modul yoxlamasını keçiririk
-          // Submenu o zaman açılasın ki, daxilində hansısa modul aktivdirsə
-          if (page.children && page.children.length > 0) {
-            // Parent səhifənin öz modulu yoxdur - yalnız children-ın modullarına görə açılır
-            // hasModuleAccess yoxlamasını keçiririk
-          } else {
-            // Children yoxdursa, normal modul yoxlaması aparırıq
-            // ModuleName yoxlaması - Root üçün keçir, digərləri üçün user-in modullarına görə filter et
-            let hasModuleAccess = false;
+          if (!isRoot && !isSpecial) {
             if (page.moduleName) {
-              if (isRoot) {
-                // Root üçün bütün modullar görünür
-                hasModuleAccess = true;
-              } else {
-                const moduleNameLower = page.moduleName.toLowerCase();
-                hasModuleAccess = userModuleNames.has(moduleNameLower);
-                if (!hasModuleAccess) {
-                  return null; // Modul yoxdursa və ya icazəsi yoxdursa, səhifəni göstərmə
-                }
-              }
+              if (!userModules.has(page.moduleName.toLowerCase())) return null;
             } else {
-              // ModuleName yoxdursa
-              if (isRoot) {
-                // Root üçün bütün səhifələr görünür
-                hasModuleAccess = true;
-              } else if (isSpecialPage) {
-                // Xüsusi səhifələr (profile, settings) həmişə görünür
-                hasModuleAccess = true;
-              } else {
-                // Digər səhifələr üçün modul icazəsi yoxdursa, görünməməlidir
-                // allowedRoles yoxlaması aparmırıq, çünki yalnız modul icazəsi olan səhifələr görünməlidir
-                return null;
-              }
-            }
-          }
-
-          // AllowedRoles yoxlaması - yalnız xüsusi səhifələr üçün (profile, settings)
-          if (page.allowedRoles && userRole && !isRoot && isSpecialPage) {
-            // Xüsusi səhifələr üçün allowedRoles yoxlaması apar
-            if (!page.allowedRoles.includes(userRole)) {
               return null;
             }
           }
 
-          // Children varsa, onları da filter et
-          // Submenu o zaman açılasın ki, daxilində hansısa modul aktivdirsə
-          if (page.children && page.children.length > 0) {
-            const filteredChildren = page.children.filter((child) => {
-              // If user is resident, only show resident routes (no module check needed)
-              if (isResident) {
-                if (child.path && !child.path.includes("/resident/")) {
-                  return false; // Hide non-resident routes for residents
+          if (page.allowedRoles && roleName && !isRoot) {
+            if (!page.allowedRoles.includes(roleName)) return null;
+          }
+
+          if (page.children?.length) {
+            const children = page.children.filter((child) => {
+              if (!isRoot) {
+                if (child.moduleName) {
+                  if (!userModules.has(child.moduleName.toLowerCase())) return false;
+                } else {
+                  return false;
                 }
-                // For resident users, all resident routes are visible (no module check)
-                return true;
-              } else {
-                // If user is not resident, hide resident routes
-                if (child.path && child.path.includes("/resident/")) {
-                  return false; // Hide resident routes for non-residents
+
+                if (child.allowedRoles && roleName) {
+                  if (!child.allowedRoles.includes(roleName)) return false;
                 }
               }
 
-              // ModuleName yoxlaması (only for non-resident users)
-              let childHasModuleAccess = false;
-              if (child.moduleName) {
-                if (isRoot) {
-                  // Root üçün bütün modullar görünür
-                  childHasModuleAccess = true;
-                } else {
-                  const moduleNameLower = child.moduleName.toLowerCase();
-                  childHasModuleAccess = userModuleNames.has(moduleNameLower);
-                  if (!childHasModuleAccess) {
-                    return false; // Modul yoxdursa və ya icazəsi yoxdursa, child görünməməlidir
-                  }
-                }
-              } else {
-                // ModuleName yoxdursa, allowedRoles yoxlaması aparılmalıdır
-                childHasModuleAccess = false;
-              }
-
-              // AllowedRoles yoxlaması - Root üçün və modul icazəsi olanlar üçün keçir
-              if (child.allowedRoles && userRole && !isRoot) {
-                // Əgər modul varsa və icazəsi varsa, allowedRoles yoxlamasını keçir
-                if (childHasModuleAccess) {
-                  // Modul var, icazəsi var - allowedRoles yoxlamasını keçir
-                } else {
-                  // Modul yoxdursa və ya icazəsi yoxdursa, allowedRoles yoxlamasını apar
-                  if (!child.allowedRoles.includes(userRole)) {
-                    return false;
-                  }
-                }
-              } else if (!childHasModuleAccess && !isRoot) {
-                // Əgər modul yoxdursa və allowedRoles də yoxdursa, child görünməməlidir
-                return false;
-              }
               return true;
             });
 
-            // Əgər heç bir child görünmürsə, parent səhifəni də göstərmə
-            // Submenu o zaman açılasın ki, daxilində hansısa modul aktivdirsə
-            if (filteredChildren.length === 0) {
-              return null;
-            }
+            if (!children.length) return null;
 
-            // Parent səhifənin öz modulu yoxdur - yalnız children-ın modullarına görə açılır
-            // Buna görə parent-in modul yoxlamasını keçiririk
-            return {
-              ...page,
-              children: filteredChildren,
-            };
+            return { ...page, children };
           }
 
           return page;
         })
-        .filter((page) => page !== null);
+        .filter(Boolean);
 
-      return {
-        ...route,
-        pages: filteredPages,
-      };
-    });
+      if (!filteredPages.length) return null;
+
+      return { ...route, pages: filteredPages };
+    })
+    .filter(Boolean);
 };
 
 export function Dashboard() {
@@ -289,10 +172,8 @@ export function Dashboard() {
 
 
 
-  // Refresh user data periodically (only if user is logged in and initialized)
   useEffect(() => {
     if (user && isInitialized) {
-      // Refresh every 10 minutes instead of 5 to reduce API calls
       const interval = setInterval(() => {
         refreshUser();
       }, 10 * 60 * 1000);
@@ -302,8 +183,7 @@ export function Dashboard() {
   }, [user?.id, isInitialized, refreshUser]);
 
   const hasToken = typeof document !== 'undefined' && document.cookie.includes('smartlife_token=');
-  
-  // İnitialize olunmayıbsa loading göstər
+
   if (!isInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-blue-gray-50/50 dark:bg-black">
@@ -315,25 +195,22 @@ export function Dashboard() {
     );
   }
 
-  // User yoxdursa və token varsa, sign-in-ə yönləndir
   if (hasToken && !user) {
     return <Navigate to="/auth/sign-in" replace />;
   }
 
-  // User yoxdursa, sign-in-ə yönləndir
   if (!user) {
     return <Navigate to="/auth/sign-in" replace />;
   }
 
   const filteredRoutes = filterRoutesByRole(routes, user, hasModuleAccess);
+  const firstActivePath = getFirstActivePath(filteredRoutes);
+  const parentPathMap = buildParentPathMap(filteredRoutes);
 
-  // Show error message if there's an auth error
   const showError = error && !user;
 
   return (
-    <div className="min-h-screen bg-blue-gray-50/50 dark:bg-gray-900 flex flex-col relative">
-      
-      {/* Error Banner */}
+    <div className="min-h-screen bg-blue-gray-50/50 dark:bg-gray-900 flex flex-col relative ">
       {showError && (
         <div className="bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800 px-4 py-3 relative z-10">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -351,105 +228,98 @@ export function Dashboard() {
           </div>
         </div>
       )}
-        <div className="relative z-[99999]">
-          <Sidenav
-            routes={filteredRoutes}
-            brandImg={
-              sidenavType === "dark" ? "/Site_Logo/white_big.png" : "/Site_Logo/color_big.png"
-            }
-          />
-        </div>
-        <motion.div
-          initial={false}
-          animate={{
-            marginLeft: isDesktop && sidenavPosition === "left"
-              ? (sidenavCollapsed ? 80 : (sidenavSize === "small" ? 240 : sidenavSize === "large" ? 400 : 320))
-              : 0,
-            marginRight: isDesktop && sidenavPosition === "right"
-              ? (sidenavCollapsed ? 80 : (sidenavSize === "small" ? 240 : sidenavSize === "large" ? 400 : 320))
-              : 0,
-          }}
-          transition={{
-            type: "spring",
-            stiffness: 300,
-            damping: 30,
-          }}
-          className="p-4 relative z-0 dashboard-content"
-        >
-          <DashboardNavbar />
-          <div className="mt-4 sm:mt-6 md:mt-8">
-            <Routes>
-              {/* Root path - home səhifəsinə yönləndir (resident üçün resident/home) */}
-              <Route 
-                path="/" 
-                element={
-                  user?.is_resident === true 
-                    ? <Navigate to="/resident/home" replace /> 
-                    : <Navigate to="/home" replace />
-                } 
-              />
-              {filteredRoutes.map(
-                ({ layout, pages }) =>
-                  layout === "dashboard" &&
-                  pages.map((page) => {
-                    if (page.children && page.children.length > 0) {
-                      return page.children.map(({ path, element, allowedRoles, moduleName }) => {
-                        // Path-i düzgün formatla - /dashboard prefix-i olmadan, amma / ilə başlamalıdır
-                        let routePath = path;
-                        if (routePath.startsWith("/dashboard/")) {
-                          routePath = routePath.replace("/dashboard", "");
-                        } else if (!routePath.startsWith("/")) {
-                          routePath = `/${routePath}`;
-                        }
-                        // /dashboard altında olduğumuz üçün path-dən /dashboard-ı çıxarırıq
-                        if (routePath === "/") {
-                          routePath = "";
-                        }
-                        return (
-                          <Route
-                            key={path}
-                            path={routePath}
-                            element={<ProtectedRoute element={element} allowedRoles={allowedRoles} moduleName={moduleName} />}
-                          />
-                        );
-                      });
-                    } else {
-                      // Path-i düzgün formatla - /dashboard prefix-i olmadan, amma / ilə başlamalıdır
-                      let routePath = page.path;
+      <div className="relative z-[99999]">
+        <Sidenav
+          routes={filteredRoutes}
+          brandImg={
+            sidenavType === "dark" ? "/Site_Logo/white_big.png" : "/Site_Logo/color_big.png"
+          }
+        />
+      </div>
+      <motion.div
+        initial={false}
+        animate={{
+          marginLeft: isDesktop && sidenavPosition === "left"
+            ? (sidenavCollapsed ? 80 : (sidenavSize === "small" ? 240 : sidenavSize === "large" ? 400 : 320))
+            : 0,
+          marginRight: isDesktop && sidenavPosition === "right"
+            ? (sidenavCollapsed ? 80 : (sidenavSize === "small" ? 240 : sidenavSize === "large" ? 400 : 320))
+            : 0,
+        }}
+        transition={{
+          type: "spring",
+          stiffness: 300,
+          damping: 30,
+        }}
+        className="p-4 relative z-0 dashboard-content"
+      >
+        <DashboardNavbar homePath={firstActivePath} parentPathMap={parentPathMap} />
+        <div className="mt-4 sm:mt-6 md:mt-8">
+          <Routes>
+            <Route
+              path="/"
+              element={<Navigate to={firstActivePath} replace />}
+            />
+            {filteredRoutes.map(
+              ({ layout, pages }) =>
+                (layout === "dashboard" || layout === "resident") &&
+                pages.map((page) => {
+                  if (page.children && page.children.length > 0) {
+                    return page.children.map(({ path, element, allowedRoles, moduleName }) => {
+                      let routePath = path;
                       if (routePath.startsWith("/dashboard/")) {
                         routePath = routePath.replace("/dashboard", "");
+                      } else if (routePath.startsWith("/resident/")) {
+                        routePath = routePath.replace("/resident", "");
                       } else if (!routePath.startsWith("/")) {
                         routePath = `/${routePath}`;
                       }
-                      // /dashboard altında olduğumuz üçün path-dən /dashboard-ı çıxarırıq
                       if (routePath === "/") {
                         routePath = "";
                       }
                       return (
                         <Route
-                          key={page.path}
+                          key={path}
                           path={routePath}
-                          element={<ProtectedRoute element={page.element} allowedRoles={page.allowedRoles} moduleName={page.moduleName} />}
+                          element={<ProtectedRoute element={element} allowedRoles={allowedRoles} moduleName={moduleName} fallbackPath={firstActivePath} />}
                         />
                       );
+                    });
+                  } else {
+                    let routePath = page.path;
+                    if (routePath.startsWith("/dashboard/")) {
+                      routePath = routePath.replace("/dashboard", "");
+                    } else if (routePath.startsWith("/resident/")) {
+                      routePath = routePath.replace("/resident", "");
+                    } else if (!routePath.startsWith("/")) {
+                      routePath = `/${routePath}`;
                     }
-                  })
-              )}
-              {/* 404 yalnız mövcud olmayan path-lər üçün */}
-              <Route
-                path="*"
-                element={<NotFound />}
-              />
-            </Routes>
-          </div>
-        </motion.div>
-        <div className="relative z-10">
-          <Configurator />
-          <AiChat />
-          {/* <ManagementInfo /> */}
-          <Footer />
+                    if (routePath === "/") {
+                      routePath = "";
+                    }
+                    return (
+                      <Route
+                        key={page.path}
+                        path={routePath}
+                        element={<ProtectedRoute element={page.element} allowedRoles={page.allowedRoles} moduleName={page.moduleName} fallbackPath={firstActivePath} />}
+                      />
+                    );
+                  }
+                })
+            )}
+            <Route
+              path="*"
+              element={<NotFound />}
+            />
+          </Routes>
         </div>
+      </motion.div>
+      <div className="relative z-10">
+        <Configurator />
+        <AiChat />
+        <Footer />
       </div>
+    </div>
   );
 }
 

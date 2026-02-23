@@ -33,7 +33,6 @@ export function PropertyFormModal({ open, mode = "create", onClose, form, onSubm
     { value: "inactive", label: "Qeyri-aktiv" },
   ];
 
-  // Load lookups when modal opens
   useEffect(() => {
     if (open) {
       setLoadingLookups(true);

@@ -126,7 +126,7 @@ export default function UserAddPage() {
       user?.role?.name?.toLowerCase() ||
       (typeof user?.role === "string" ? user?.role.toLowerCase() : null);
     if (userRole === "resident") {
-      return "/dashboard/resident/home";
+      return "/resident/home";
     }
     return "/dashboard/home";
   };

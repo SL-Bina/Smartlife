@@ -4,6 +4,7 @@ import { useMaterialTailwindController } from "@/store/hooks/useMaterialTailwind
 import { motion, AnimatePresence } from "framer-motion";
 import { SidenavHeader } from "./components/SidenavHeader";
 import { SidenavMenu } from "./components/SidenavMenu";
+import { getFirstActivePath } from "@/utils/getFirstActivePath";
 
 export function Sidenav({ brandImg, brandName, routes }) {
   const [controller, actions] = useMaterialTailwindController();
@@ -13,6 +14,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
   const mtkColorCode = null;
 
   const filteredRoutes = routes;
+  const homePath = getFirstActivePath(filteredRoutes);
 
   const [openMenus, setOpenMenus] = React.useState({});
   const [isMobile, setIsMobile] = React.useState(false);
@@ -115,7 +117,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
           isolation: 'isolate', // Yeni stacking context yaradır
         }}
       >
-        <SidenavHeader brandName={brandName} collapsed={sidenavCollapsed && !isHovered} isLowHeight={isLowHeight} />
+        <SidenavHeader brandName={brandName} collapsed={sidenavCollapsed && !isHovered} isLowHeight={isLowHeight} homePath={homePath} />
 
         <SidenavMenu
           routes={filteredRoutes}

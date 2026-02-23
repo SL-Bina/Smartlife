@@ -7,7 +7,7 @@ import DynamicToast from "@/components/DynamicToast";
 import propertyServiceFeeAPI from "../../api/serviceFee";
 import api from "@/services/api";
 
-const ACTIVE_COLOR = "#14b8a6"; // Teal for properties
+const ACTIVE_COLOR = "#14b8a6"; 
 
 export function PropertyServiceFeeModal({ open, propertyId, propertyName, onClose }) {
   const [serviceFees, setServiceFees] = useState([]);
