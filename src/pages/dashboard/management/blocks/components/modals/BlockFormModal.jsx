@@ -5,6 +5,7 @@ import { CustomSelect } from "@/components/ui/CustomSelect";
 import { RectangleStackIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import DynamicToast from "@/components/DynamicToast";
 import blockLookupsAPI from "../../api/lookups";
+import buildingsAPI from "../../../buildings/api";
 
 const ACTIVE_COLOR = "#6366f1"; // Indigo for blocks
 
@@ -49,8 +50,13 @@ export function BlockFormModal({ open, mode = "create", onClose, form, onSubmit,
   useEffect(() => {
     if (open && form?.formData?.complex_id) {
       setLoadingBuildings(true);
-      blockLookupsAPI.getBuildings({ complex_id: form.formData.complex_id })
-        .then((data) => {
+      // Use search endpoint for filtering like ManagementActions
+      buildingsAPI.search({ 
+        complex_ids: [form.formData.complex_id],
+        per_page: 1000 
+      })
+        .then((res) => {
+          const data = res?.data?.data?.data || [];
           setBuildings(data || []);
         })
         .catch((error) => {
@@ -188,7 +194,7 @@ export function BlockFormModal({ open, mode = "create", onClose, form, onSubmit,
                   loading={loadingComplexes}
                   error={!!form?.errors?.complex_id}
                   helperText={form?.errors?.complex_id}
-                  disabled={loadingComplexes || isEdit}
+                  disabled={loadingComplexes}
                 />
                 <CustomSelect
                   label="Building *"
@@ -198,7 +204,7 @@ export function BlockFormModal({ open, mode = "create", onClose, form, onSubmit,
                   loading={loadingBuildings}
                   error={!!form?.errors?.building_id}
                   helperText={form?.errors?.building_id}
-                  disabled={loadingBuildings || !form?.formData?.complex_id || isEdit}
+                  disabled={loadingBuildings || !form?.formData?.complex_id}
                 />
               </div>
             </div>

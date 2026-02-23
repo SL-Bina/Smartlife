@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { loadMtkById } from "@/store/slices/mtkSlice";
 import { loadComplexById } from "@/store/slices/complexSlice";
@@ -39,46 +38,13 @@ import {
 import { Button } from "@material-tailwind/react";
 
 export default function PropertiesPage() {
-  const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const [searchParams] = useSearchParams();
-  
-  // URL parametrlərindən gələn ID-lər
-  const mtkIdFromUrl = searchParams.get("mtk_id");
-  const complexIdFromUrl = searchParams.get("complex_id");
-  const buildingIdFromUrl = searchParams.get("building_id");
-  const blockIdFromUrl = searchParams.get("block_id");
 
-  // State - URL-dən ilk dəyərləri götür
-  const [mtkId, setMtkId] = useState(() => {
-    if (mtkIdFromUrl) {
-      const id = parseInt(mtkIdFromUrl, 10);
-      return !isNaN(id) ? id : null;
-    }
-    return null;
-  });
-  const [complexId, setComplexId] = useState(() => {
-    if (complexIdFromUrl) {
-      const id = parseInt(complexIdFromUrl, 10);
-      return !isNaN(id) ? id : null;
-    }
-    return null;
-  });
-  const [buildingId, setBuildingId] = useState(() => {
-    if (buildingIdFromUrl) {
-      const id = parseInt(buildingIdFromUrl, 10);
-      return !isNaN(id) ? id : null;
-    }
-    return null;
-  });
-  const [blockId, setBlockId] = useState(() => {
-    if (blockIdFromUrl) {
-      const id = parseInt(blockIdFromUrl, 10);
-      return !isNaN(id) ? id : null;
-    }
-    return null;
-  });
-  // Redux-dan selected Property ID götür
+  // Redux-dan filter ID-ləri oxu (global state)
+  const mtkId = useAppSelector((state) => state.mtk.selectedMtkId);
+  const complexId = useAppSelector((state) => state.complex.selectedComplexId);
+  const buildingId = useAppSelector((state) => state.building.selectedBuildingId);
+  const blockId = useAppSelector((state) => state.block.selectedBlockId);
   const selectedPropertyId = useAppSelector((state) => state.property.selectedPropertyId);
   const selectedProperty = useAppSelector((state) => state.property.selectedProperty);
 
@@ -117,54 +83,7 @@ export default function PropertiesPage() {
     }
   }, [dispatch, selectedPropertyId, selectedProperty]);
 
-  // URL parametrlərindən gələn ID-ləri yüklə və state-i yenilə
-  useEffect(() => {
-    if (mtkIdFromUrl) {
-      const id = parseInt(mtkIdFromUrl, 10);
-      if (!isNaN(id)) {
-        setMtkId(id);
-        dispatch(loadMtkById(id));
-      }
-    } else {
-      setMtkId(null);
-    }
-  }, [mtkIdFromUrl, dispatch]);
-
-  useEffect(() => {
-    if (complexIdFromUrl) {
-      const id = parseInt(complexIdFromUrl, 10);
-      if (!isNaN(id)) {
-        setComplexId(id);
-        dispatch(loadComplexById(id));
-      }
-    } else {
-      setComplexId(null);
-    }
-  }, [complexIdFromUrl, dispatch]);
-
-  useEffect(() => {
-    if (buildingIdFromUrl) {
-      const id = parseInt(buildingIdFromUrl, 10);
-      if (!isNaN(id)) {
-        setBuildingId(id);
-        dispatch(loadBuildingById(id));
-      }
-    } else {
-      setBuildingId(null);
-    }
-  }, [buildingIdFromUrl, dispatch]);
-
-  useEffect(() => {
-    if (blockIdFromUrl) {
-      const id = parseInt(blockIdFromUrl, 10);
-      if (!isNaN(id)) {
-        setBlockId(id);
-        dispatch(loadBlockById(id));
-      }
-    } else {
-      setBlockId(null);
-    }
-  }, [blockIdFromUrl, dispatch]);
+  // Artıq URL sync lazim deyil - Redux state istifadə edirik
 
   const showToast = (type, message, title = "") => {
     setToast({ open: true, type, message, title });
@@ -223,10 +142,19 @@ export default function PropertiesPage() {
   const submitForm = async (formData) => {
     try {
       if (mode === "edit") {
-        const propertyId = form.formData.id || items.find((item) => item.name === formData.name)?.id;
+        // Redaktə rejimində form.formData.id istifadə et, ad axtarışı etmə
+        const propertyId = form.formData.id;
         if (!propertyId) {
           throw new Error("Mənzil ID tapılmadı");
         }
+        
+        // Debug log - backend-ə gedən məlumatları yoxla
+        console.log("Backend-ə göndərilən PATCH data:", {
+          propertyId,
+          formData,
+          endpoint: `/module/properties/${propertyId}`
+        });
+        
         await propertiesAPI.update(propertyId, formData);
         showToast("success", "Mənzil uğurla yeniləndi", "Uğurlu");
       } else {
@@ -255,79 +183,7 @@ export default function PropertiesPage() {
     }));
   };
 
-  // Filter change handler for ManagementActions
-  const handleFilterChange = async (filterType, value, filtersToReset = []) => {
-    // Reset child filters
-    filtersToReset.forEach((filter) => {
-      switch (filter) {
-        case "complex":
-          setComplexId(null);
-          break;
-        case "building":
-          setBuildingId(null);
-          break;
-        case "block":
-          setBlockId(null);
-          dispatch(setSelectedBlock({ id: null, block: null }));
-          break;
-      }
-    });
-
-    // Build URL params
-    const params = new URLSearchParams();
-    
-    switch (filterType) {
-      case "mtk":
-        if (value) {
-          setMtkId(value);
-          params.set("mtk_id", value);
-          dispatch(loadMtkById(value));
-        } else {
-          setMtkId(null);
-        }
-        break;
-      case "complex":
-        if (mtkId) params.set("mtk_id", mtkId);
-        if (value) {
-          setComplexId(value);
-          params.set("complex_id", value);
-          dispatch(loadComplexById(value));
-        } else {
-          setComplexId(null);
-        }
-        break;
-      case "building":
-        if (mtkId) params.set("mtk_id", mtkId);
-        if (complexId) params.set("complex_id", complexId);
-        if (value) {
-          setBuildingId(value);
-          params.set("building_id", value);
-          dispatch(loadBuildingById(value));
-        } else {
-          setBuildingId(null);
-        }
-        break;
-      case "block":
-        if (mtkId) params.set("mtk_id", mtkId);
-        if (complexId) params.set("complex_id", complexId);
-        if (buildingId) params.set("building_id", buildingId);
-        if (value) {
-          setBlockId(value);
-          params.set("block_id", value);
-          const result = await dispatch(loadBlockById(value));
-          if (result.payload) {
-            dispatch(setSelectedBlock({ id: value, block: result.payload }));
-          }
-        } else {
-          setBlockId(null);
-          dispatch(setSelectedBlock({ id: null, block: null }));
-        }
-        break;
-    }
-
-    const queryString = params.toString();
-    navigate(`/dashboard/management/properties${queryString ? `?${queryString}` : ""}`, { replace: true });
-  };
+  // Filter state artıq ManagementActions tərəfindən Redux-da idarə olunur
 
   const handleRemoveFilter = (key) => {
     setSearch((prev) => {
@@ -344,8 +200,6 @@ export default function PropertiesPage() {
       <ManagementActions
         entityLevel={ENTITY_LEVELS.PROPERTY}
         search={search}
-        filterValues={{ mtkId, complexId, buildingId, blockId }}
-        onFilterChange={handleFilterChange}
         onCreateClick={handleCreate}
         onSearchClick={() => setSearchModalOpen(true)}
         onApplyNameSearch={handleApplyNameSearch}

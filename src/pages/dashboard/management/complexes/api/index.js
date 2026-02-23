@@ -73,7 +73,16 @@ export const complexesAPI = {
       // Build URLSearchParams to ensure proper formatting
       const searchParams = new URLSearchParams();
       Object.keys(params).forEach((key) => {
-        if (params[key] !== null && params[key] !== undefined && params[key] !== '') {
+        // Array parameter: mtk_ids[]
+        if (key === 'mtk_ids' && Array.isArray(params[key]) && params[key].length > 0) {
+          params[key].forEach((id) => {
+            if (id !== null && id !== undefined && id !== '') {
+              searchParams.append(`${key}[]`, String(id));
+            }
+          });
+        } 
+        // Single value parameters: name, status, phone, email, etc.
+        else if (params[key] !== null && params[key] !== undefined && params[key] !== '') {
           searchParams.append(key, String(params[key]));
         }
       });

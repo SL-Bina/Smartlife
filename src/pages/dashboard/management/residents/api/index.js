@@ -10,15 +10,25 @@ const residentsAPI = {
     }
   },
 
-  search: async (searchParams = {}) => {
+  search: async (params = {}) => {
     try {
-      const urlParams = new URLSearchParams();
-      Object.keys(searchParams).forEach((key) => {
-        if (searchParams[key] !== null && searchParams[key] !== undefined && searchParams[key] !== '') {
-          urlParams.append(key, String(searchParams[key]));
+      // Build URLSearchParams to ensure proper formatting
+      const searchParams = new URLSearchParams();
+      Object.keys(params).forEach((key) => {
+        // Array parameters: mtk_ids[], complex_ids[]
+        if ((key === 'mtk_ids' || key === 'complex_ids') && Array.isArray(params[key]) && params[key].length > 0) {
+          params[key].forEach((id) => {
+            if (id !== null && id !== undefined && id !== '') {
+              searchParams.append(`${key}[]`, String(id));
+            }
+          });
+        } 
+        // Single value parameters: name, surname, email, phone, status
+        else if (params[key] !== null && params[key] !== undefined && params[key] !== '') {
+          searchParams.append(key, String(params[key]));
         }
       });
-      const response = await api.get(`/search/module/resident?${urlParams.toString()}`);
+      const response = await api.get(`/search/module/resident?${searchParams.toString()}`);
       return response;
     } catch (error) {
       throw error.response?.data || error.message;

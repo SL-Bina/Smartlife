@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { Typography } from "@material-tailwind/react";
 import { loadMtkById, setSelectedMtk, loadMtks } from "@/store/slices/mtkSlice";
@@ -20,30 +19,14 @@ import { BuildingOfficeIcon, MapPinIcon, InformationCircleIcon, CheckCircleIcon,
 import ComplexSettingsModal from "./components/modals/ComplexSettingsModal";
 
 export default function ComplexesPage() {
-  const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const [searchParams] = useSearchParams();
 
-  // URL-dən mtk_id götür
-  const urlMtkId = searchParams.get("mtk_id");
-
-  // Redux-dan selected MTK ID götür
-  const selectedMtkId = useAppSelector((state) => state.mtk.selectedMtkId);
+  // Redux-dan filter state (global) - table filtering üçün
+  const mtkId = useAppSelector((state) => state.mtk.selectedMtkId);
   const selectedMtk = useAppSelector((state) => state.mtk.selectedMtk);
   const mtks = useAppSelector((state) => state.mtk.mtks);
-
-  // Redux-dan selected Complex ID götür
   const selectedComplexId = useAppSelector((state) => state.complex.selectedComplexId);
   const selectedComplex = useAppSelector((state) => state.complex.selectedComplex);
-
-  // Local state for mtkId filter
-  const [mtkId, setMtkId] = useState(() => {
-    if (urlMtkId) {
-      const id = parseInt(urlMtkId, 10);
-      return !isNaN(id) ? id : null;
-    }
-    return selectedMtkId || null;
-  });
 
   const [search, setSearch] = useState({});
 
@@ -55,18 +38,6 @@ export default function ComplexesPage() {
     setSettingsModalOpen(true);
   };
 
-  // Sync mtkId with URL changes or Redux changes
-  useEffect(() => {
-    if (urlMtkId) {
-      const id = parseInt(urlMtkId, 10);
-      if (!isNaN(id) && id !== mtkId) {
-        setMtkId(id);
-      }
-    } else if (selectedMtkId && selectedMtkId !== mtkId) {
-      // URL-də yoxdursa, Redux-dan oxu
-      setMtkId(selectedMtkId);
-    }
-  }, [urlMtkId, selectedMtkId]);
   const [formOpen, setFormOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
@@ -89,8 +60,6 @@ export default function ComplexesPage() {
   const form = useComplexForm();
   const { items, loading, page, lastPage, total, itemsPerPage, setItemsPerPage, goToPage, refresh } = useComplexData({ search, mtkId });
 
-  const mtkInitializedRef = useRef(false);
-
   useEffect(() => {
     dispatch(loadMtks({ page: 1, per_page: 1000 }));
     dispatch(loadComplexes({ page: 1, per_page: 1000 }));
@@ -102,70 +71,6 @@ export default function ComplexesPage() {
       dispatch(loadComplexById(selectedComplexId));
     }
   }, [dispatch, selectedComplexId, selectedComplex]);
-
-  // MTK seçim mantığı: URL > Cookie > İlk MTK (sadece bir kez çalışır)
-  useEffect(() => {
-    // Zaten initialize edildiyse tekrar çalıştırma
-    if (mtkInitializedRef.current) {
-      return;
-    }
-
-    // MTK listesi henüz yüklenmediyse bekle
-    if (mtks.length === 0) {
-      return;
-    }
-
-    // 1. URL'de mtk_id varsa, onu kullan
-    if (urlMtkId) {
-      const id = parseInt(urlMtkId, 10);
-      if (!isNaN(id)) {
-        mtkInitializedRef.current = true;
-        if (id !== selectedMtkId || !selectedMtk) {
-          // MTK'yı yüklə və Redux'a kaydet (cookie'ye de yazılacak)
-          dispatch(loadMtkById(id)).then((result) => {
-            if (result.payload) {
-              dispatch(setSelectedMtk({ id, mtk: result.payload }));
-            }
-          });
-        }
-        return;
-      }
-    }
-
-    // 2. Cookie'den gelen selectedMtkId varsa, onu kullan
-    if (selectedMtkId) {
-      mtkInitializedRef.current = true;
-      if (!selectedMtk) {
-        // MTK verisi yoksa yükle
-        dispatch(loadMtkById(selectedMtkId)).then((result) => {
-          if (result.payload) {
-            dispatch(setSelectedMtk({ id: selectedMtkId, mtk: result.payload }));
-          }
-        });
-      }
-      // URL'i güncelle
-      if (!urlMtkId) {
-        navigate(`/dashboard/management/complexes?mtk_id=${selectedMtkId}`, { replace: true });
-      }
-      return;
-    }
-
-    // 3. Hiçbiri yoksa, ilk MTK'yı otomatik seç
-    if (mtks.length > 0) {
-      const firstMtk = mtks[0];
-      if (firstMtk && firstMtk.id) {
-        mtkInitializedRef.current = true;
-        // İlk MTK'yı yükle ve seç
-        dispatch(loadMtkById(firstMtk.id)).then((result) => {
-          if (result.payload) {
-            dispatch(setSelectedMtk({ id: firstMtk.id, mtk: result.payload }));
-            // URL'i de güncelle
-            navigate(`/dashboard/management/complexes?mtk_id=${firstMtk.id}`, { replace: true });
-          }
-        });
-      }
-    }
-  }, [urlMtkId, selectedMtkId, selectedMtk, mtks, dispatch, navigate]);
 
   const handleNameSearchChange = (value) => {
     // Bu funksiya artıq istifadə olunmur, amma uyğunluq üçün saxlanılır
@@ -185,32 +90,6 @@ export default function ComplexesPage() {
     }));
   };
 
-  // Filter change handler for ManagementActions
-  const handleFilterChange = async (filterType, value, filtersToReset = []) => {
-    if (filterType === "mtk") {
-      // Update local state immediately for instant filter
-      setMtkId(value);
-
-      if (value) {
-        // MTK'yı yüklə və Redux'a kaydet (cookie'ye de yazılacak)
-        try {
-          const result = await dispatch(loadMtkById(value));
-          if (result.payload) {
-            dispatch(setSelectedMtk({ id: value, mtk: result.payload }));
-          }
-        } catch (error) {
-          console.error("Error loading MTK:", error);
-        }
-
-        // URL-i yenilə
-        navigate(`/dashboard/management/complexes?mtk_id=${value}`, { replace: true });
-      } else {
-        // MTK seçimini temizle (cookie'den de silinecek)
-        dispatch(setSelectedMtk({ id: null, mtk: null }));
-        navigate("/dashboard/management/complexes", { replace: true });
-      }
-    }
-  };
 
   const handleRemoveFilter = (filterKey) => {
     setSearch((prev) => {
@@ -298,10 +177,6 @@ export default function ComplexesPage() {
     showToast("success", `"${item.name}" Complex seçildi`, "Uğurlu");
   };
 
-  const handleGoToBuildings = (complexId) => {
-    navigate(`/dashboard/management/buildings?complex_id=${complexId}`);
-  };
-
   const submitForm = async (formData) => {
     try {
       if (mode === "create") {
@@ -325,8 +200,6 @@ export default function ComplexesPage() {
       <ManagementActions
         entityLevel={ENTITY_LEVELS.COMPLEX}
         search={search}
-        filterValues={{ mtkId }}
-        onFilterChange={handleFilterChange}
         onCreateClick={handleCreate}
         onSearchClick={() => setSearchModalOpen(true)}
         onApplyNameSearch={handleApplyNameSearch}
@@ -343,10 +216,9 @@ export default function ComplexesPage() {
         onView={handleView}
         onEdit={handleEdit}
         onDelete={handleDelete}
-        onGoToBuildings={handleGoToBuildings}
         onSelect={handleSelect}
         selectedComplexId={selectedComplexId}
-        onOpenParams={handleOpenParams}   // 🔥 bunu əlavə et
+        onOpenParams={handleOpenParams}
       />
 
       {lastPage > 1 && (

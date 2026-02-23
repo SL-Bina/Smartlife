@@ -14,31 +14,42 @@ export function useMtkData({ search = "" } = {}) {
     setLoading(true);
     setError(null);
     try {
-      // Əgər axtarış parametrləri varsa, search endpoint istifadə et
-      const hasSearchParams = search && Object.keys(search).length > 0;
-      
-      if (hasSearchParams) {
-        // Axtarış endpoint-i istifadə et
-        const response = await mtkAPI.search(search);
-        const data = response?.data?.data || {};
-        
-        setItems(Array.isArray(data) ? data : data.data || []);
-        setLastPage(1); // Axtarış nəticələri üçün pagination yoxdur
-        setTotal(Array.isArray(data) ? data.length : data.total || 0);
-      } else {
-        // Normal list endpoint istifadə et
-        const params = {
-          page,
-          per_page: itemsPerPage,
-        };
+      const params = {
+        page,
+        per_page: itemsPerPage,
+      };
 
-        const response = await mtkAPI.getAll(params);
-        const data = response?.data?.data || {};
-        
-        setItems(data.data || []);
-        setLastPage(data.last_page || 1);
-        setTotal(data.total || 0);
+      // Separate name and status from other search params
+      const { name, status, ...advancedSearch } = search;
+      
+      // Add name and status to params if they exist
+      if (name && name.trim()) {
+        params.name = name.trim();
       }
+      if (status && status.trim()) {
+        params.status = status.trim();
+      }
+
+      // Check if there are any search parameters (name, status, or advanced)
+      const hasSearchParams = Object.keys(search).length > 0 && Object.keys(search).some(key => search[key] && search[key].toString().trim());
+
+      let response;
+      if (hasSearchParams) {
+        // Merge advanced search params
+        if (Object.keys(advancedSearch).length > 0) {
+          Object.assign(params, advancedSearch);
+        }
+        response = await mtkAPI.search(params);
+      } else {
+        // No filters, use getAll
+        response = await mtkAPI.getAll(params);
+      }
+      
+      const data = response?.data?.data || {};
+
+      setItems(data.data || []);
+      setLastPage(data.last_page || 1);
+      setTotal(data.total || 0);
     } catch (err) {
       setError(err.message || "Məlumat yüklənərkən xəta baş verdi");
       setItems([]);

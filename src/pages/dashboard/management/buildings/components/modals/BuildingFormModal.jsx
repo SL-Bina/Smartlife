@@ -12,7 +12,9 @@ export function BuildingFormModal({ open, mode = "create", onClose, form, onSubm
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
   const [complexes, setComplexes] = useState([]);
+  const [mtks, setMtks] = useState([]);
   const [loadingComplexes, setLoadingComplexes] = useState(false);
+  const [loadingMtks, setLoadingMtks] = useState(false);
 
   const showToast = (type, message, title = "") => {
     setToast({ open: true, type, message, title });
@@ -26,12 +28,32 @@ export function BuildingFormModal({ open, mode = "create", onClose, form, onSubm
     { value: "inactive", label: "Qeyri-aktiv" },
   ];
 
-  // Load complexes when modal opens
+  // Load MTKs when modal opens
+  useEffect(() => {
+    if (open) {
+      setLoadingMtks(true);
+      buildingLookupsAPI.getMtks()
+        .then((data) => {
+          setMtks(data || []);
+        })
+        .catch((error) => {
+          console.error("Error loading MTKs:", error);
+          setMtks([]);
+        })
+        .finally(() => {
+          setLoadingMtks(false);
+        });
+    }
+  }, [open]);
+
+  // Load complexes when modal opens or MTK changes
   useEffect(() => {
     if (open) {
       setLoadingComplexes(true);
       const params = {};
-      if (mtkId) {
+      if (form?.formData?.mtk_id) {
+        params.mtk_id = form.formData.mtk_id;
+      } else if (mtkId) {
         params.mtk_id = mtkId;
       }
       buildingLookupsAPI.getComplexes(params)
@@ -46,7 +68,7 @@ export function BuildingFormModal({ open, mode = "create", onClose, form, onSubm
           setLoadingComplexes(false);
         });
     }
-  }, [open, mtkId]);
+  }, [open, form?.formData?.mtk_id, mtkId]);
 
   // Set complex_id from prop if provided (only for create mode)
   useEffect(() => {
@@ -58,6 +80,13 @@ export function BuildingFormModal({ open, mode = "create", onClose, form, onSubm
       }
     }
   }, [open, isEdit, complexId, form?.formData?.complex_id]);
+
+  // Clear complexes when MTK changes
+  useEffect(() => {
+    if (form?.formData?.mtk_id) {
+      form?.updateField("complex_id", null);
+    }
+  }, [form?.formData?.mtk_id, form]);
 
   const errorText = useMemo(() => {
     if (!form?.formData?.name?.trim()) return "Ad mütləqdir";
@@ -148,6 +177,25 @@ export function BuildingFormModal({ open, mode = "create", onClose, form, onSubm
                 />
 
                 <CustomSelect
+                  label="MTK"
+                  value={form?.formData?.mtk_id ? String(form.formData.mtk_id) : ""}
+                  onChange={(value) => {
+                    form?.updateField("mtk_id", value ? parseInt(value, 10) : null);
+                    // MTK dəyişəndə Complex-i təmizlə
+                    form?.updateField("complex_id", null);
+                  }}
+                  options={[
+                    { value: "", label: "Seçin..." },
+                    ...mtks.map((mtk) => ({
+                      value: String(mtk.id),
+                      label: mtk.name || `MTK #${mtk.id}`,
+                    })),
+                  ]}
+                  loading={loadingMtks}
+                  disabled={loadingMtks && !isEdit}
+                />
+
+                <CustomSelect
                   label="Complex *"
                   value={form?.formData?.complex_id ? String(form.formData.complex_id) : ""}
                   onChange={(value) => form?.updateField("complex_id", value ? parseInt(value, 10) : null)}
@@ -160,7 +208,8 @@ export function BuildingFormModal({ open, mode = "create", onClose, form, onSubm
                   ]}
                   error={!!form?.errors?.complex_id}
                   helperText={form?.errors?.complex_id}
-                  disabled={loadingComplexes}
+                  loading={loadingComplexes}
+                  disabled={loadingComplexes || (!form?.formData?.mtk_id && !isEdit)}
                 />
               </div>
 

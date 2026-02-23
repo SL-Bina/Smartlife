@@ -40,11 +40,21 @@ export function useComplexData({ search = {}, mtkId = null } = {}) {
 
       let response;
       if (hasAdvancedSearch) {
+        // Format mtk_ids as array if it exists for search endpoint
+        if (mtkId) {
+          params.mtk_ids = [mtkId];
+          delete params.mtk_id;
+        }
         // Merge advanced search params
         Object.assign(params, advancedSearch);
         response = await complexesAPI.search(params);
       } else if (name || status || mtkId) {
         // If name, status, or mtkId exists, use search endpoint
+        // Format mtk_ids as array if it exists
+        if (mtkId) {
+          params.mtk_ids = [mtkId];
+          delete params.mtk_id;
+        }
         response = await complexesAPI.search(params);
       } else {
         // No filters, use getAll

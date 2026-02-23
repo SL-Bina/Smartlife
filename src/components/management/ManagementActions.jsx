@@ -1,11 +1,49 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { Button, Chip, Typography } from "@material-tailwind/react";
-import { PlusIcon, MagnifyingGlassIcon, FunnelIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, MagnifyingGlassIcon, FunnelIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 import { CustomInput } from "@/components/ui/CustomInput";
 import { CustomSelect } from "@/components/ui/CustomSelect";
 import { AsyncSearchSelect } from "@/components/ui/AsyncSearchSelect";
 import AppSelect from "@/components/ui/AppSelect";
-import { useAppSelector } from "@/store/hooks";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { setSelectedMtk, loadMtkById } from "@/store/slices/mtkSlice";
+import { setSelectedComplex, loadComplexById } from "@/store/slices/complexSlice";
+import { setSelectedBuilding, loadBuildingById } from "@/store/slices/buildingSlice";
+import { setSelectedBlock, loadBlockById } from "@/store/slices/blockSlice";
+import { setSelectedProperty, loadPropertyById } from "@/store/slices/propertySlice";
+import api from "@/services/api";
+
+// localStorage keys for persisting filter selections
+const STORAGE_KEYS = {
+  MTK: 'selected_mtk_id',
+  COMPLEX: 'selected_complex_id', 
+  BUILDING: 'selected_building_id',
+  BLOCK: 'selected_block_id',
+  PROPERTY: 'selected_property_id',
+};
+
+// Load saved selections from localStorage on mount
+const loadSavedSelections = () => {
+  const saved = {};
+  Object.values(STORAGE_KEYS).forEach(key => {
+    const value = localStorage.getItem(key);
+    if (value) {
+      const entityKey = Object.keys(STORAGE_KEYS).find(k => STORAGE_KEYS[k] === key);
+      saved[entityKey.toLowerCase()] = parseInt(value);
+    }
+  });
+  return saved;
+};
+
+// Save selection to localStorage
+const saveSelection = (entityType, id) => {
+  const storageKey = STORAGE_KEYS[entityType.toUpperCase()];
+  if (id) {
+    localStorage.setItem(storageKey, id.toString());
+  } else {
+    localStorage.removeItem(storageKey);
+  }
+};
 
 const STANDARD_OPTIONS = [10, 20, 50, 75, 100];
 
@@ -102,8 +140,6 @@ export function ManagementActions({
   onApplyNameSearch,
   onStatusChange,
   onRemoveFilter,
-  filterValues = {},
-  onFilterChange,
   onCreateClick,
   onSearchClick,
   totalItems = 0,
@@ -113,12 +149,46 @@ export function ManagementActions({
 }) {
   const config = LEVEL_CONFIG[entityLevel];
 
-  // Redux-dan seçilmiş entity-ləri oxu
+  // Load saved selections from localStorage on mount
+  const [savedSelections, setSavedSelections] = useState({});
+
+  // Initialize saved selections on component mount
+  useEffect(() => {
+    const saved = loadSavedSelections();
+    setSavedSelections(saved);
+    
+    // Apply saved selections to Redux if they exist
+    if (saved.mtk && !mtkId) {
+      handleFilterChange('mtk', saved.mtk, { value: saved.mtk, label: '' });
+    }
+    if (saved.complex && !complexId) {
+      handleFilterChange('complex', saved.complex, { value: saved.complex, label: '' });
+    }
+    if (saved.building && !buildingId) {
+      handleFilterChange('building', saved.building, { value: saved.building, label: '' });
+    }
+    if (saved.block && !blockId) {
+      handleFilterChange('block', saved.block, { value: saved.block, label: '' });
+    }
+    if (saved.property && !propertyId) {
+      handleFilterChange('property', saved.property, { value: saved.property, label: '' });
+    }
+  }, []); // Empty dependency array - only run on mount
+
+  // Global filter state-dən oxu (Redux)
+  const mtkId = useAppSelector((state) => state.mtk.selectedMtkId);
+  const complexId = useAppSelector((state) => state.complex.selectedComplexId);
+  const buildingId = useAppSelector((state) => state.building.selectedBuildingId);
+  const blockId = useAppSelector((state) => state.block.selectedBlockId);
+  const propertyId = useAppSelector((state) => state.property.selectedPropertyId);
+  
   const selectedMtk = useAppSelector((state) => state.mtk.selectedMtk);
   const selectedComplex = useAppSelector((state) => state.complex.selectedComplex);
   const selectedBuilding = useAppSelector((state) => state.building.selectedBuilding);
   const selectedBlock = useAppSelector((state) => state.block.selectedBlock);
   const selectedProperty = useAppSelector((state) => state.property.selectedProperty);
+  
+  const dispatch = useAppDispatch();
 
   // Selected labels for display when value exists but not in current options
   const [selectedLabels, setSelectedLabels] = useState({});
@@ -137,17 +207,95 @@ export function ManagementActions({
     setSelectedLabels(prev => ({ ...prev, ...labels }));
   }, [selectedMtk, selectedComplex, selectedBuilding, selectedBlock, selectedProperty]);
 
+  // Auto-select first option when filters are loaded
+  useEffect(() => {
+    // Auto-select first MTK if none selected and MTKs are available
+    if (entityLevel === ENTITY_LEVELS.MTK && !mtkId && config.filters.length === 0) {
+      // Check if we have a saved MTK selection
+      if (savedSelections.mtk) {
+        handleFilterChange('mtk', savedSelections.mtk, { value: savedSelections.mtk, label: '' });
+      } else {
+        handleAutoSelectFirst('mtk');
+      }
+    }
+  }, [entityLevel, mtkId, config.filters, savedSelections.mtk]);
+
+  const handleAutoSelectFirst = async (filterType) => {
+    try {
+      const searchParams = {};
+      const filterConfig = FILTER_CONFIG[filterType];
+      
+      // Get first option from search endpoint using API
+      const response = await api.get(`${filterConfig.endpoint}?per_page=1`);
+      const firstItem = response?.data?.data?.data?.[0];
+      
+      if (firstItem) {
+        await handleFilterChange(filterType, firstItem.id, { value: firstItem.id, label: firstItem.name });
+      }
+    } catch (error) {
+      console.error(`Error auto-selecting first ${filterType}:`, error);
+    }
+  };
+
+  // Refresh all filters
+  const handleRefreshFilters = async () => {
+    try {
+      // Clear all selections from Redux
+      dispatch(setSelectedMtk({ id: null, mtk: null }));
+      dispatch(setSelectedComplex({ id: null, complex: null }));
+      dispatch(setSelectedBuilding({ id: null, building: null }));
+      dispatch(setSelectedBlock({ id: null, block: null }));
+      dispatch(setSelectedProperty({ id: null, property: null }));
+      
+      // Clear all selections from localStorage
+      Object.values(STORAGE_KEYS).forEach(key => {
+        localStorage.removeItem(key);
+      });
+      
+      // Auto-select first options after a short delay
+      if (config.filters.includes('mtk')) {
+        setTimeout(() => handleAutoSelectFirst('mtk'), 100);
+      }
+      if (config.filters.includes('complex')) {
+        setTimeout(() => handleAutoSelectFirst('complex'), 200);
+      }
+      if (config.filters.includes('building')) {
+        setTimeout(() => handleAutoSelectFirst('building'), 300);
+      }
+      if (config.filters.includes('block')) {
+        setTimeout(() => handleAutoSelectFirst('block'), 400);
+      }
+      if (config.filters.includes('property')) {
+        setTimeout(() => handleAutoSelectFirst('property'), 500);
+      }
+    } catch (error) {
+      console.error('Error refreshing filters:', error);
+    }
+  };
+
   useEffect(() => {
     setLocalName(search?.name || "");
   }, [search?.name]);
 
   const getFilterValue = (filterType) => {
-    const key = FILTER_CONFIG[filterType].key;
-    return filterValues[key] || null;
+    switch (filterType) {
+      case "mtk":
+        return mtkId;
+      case "complex":
+        return complexId;
+      case "building":
+        return buildingId;
+      case "block":
+        return blockId;
+      case "property":
+        return propertyId;
+      default:
+        return null;
+    }
   };
 
   // Get parent filter value for API params (ARRAY FORMAT for backend)
-  // Yalnız birbaşa parent filter göndərir (OR problem-ini aradan qaldırmaq üçün)
+  // Send all relevant parent filters for proper filtering
   const getParentSearchParams = (filterType) => {
     const params = {};
 
@@ -164,23 +312,51 @@ export function ManagementActions({
         break;
 
       case "building":
-        // Yalnız birbaşa parent (complex) göndər
+        // Send both mtk_ids and complex_ids for proper filtering
+        if (mtkVal) {
+          params.mtk_ids = [mtkVal];
+        }
         if (complexVal) {
           params.complex_ids = [complexVal];
         }
         break;
 
       case "block":
-        // Yalnız birbaşa parent (building) göndər
+        // Send mtk_ids, complex_ids, and building_ids for proper filtering
+        if (mtkVal) {
+          params.mtk_ids = [mtkVal];
+        }
+        if (complexVal) {
+          params.complex_ids = [complexVal];
+        }
         if (buildingVal) {
           params.building_ids = [buildingVal];
         }
         break;
 
       case "property":
-        // Yalnız birbaşa parent (block) göndər
+        // Send all parent filters for proper filtering
+        if (mtkVal) {
+          params.mtk_ids = [mtkVal];
+        }
+        if (complexVal) {
+          params.complex_ids = [complexVal];
+        }
+        if (buildingVal) {
+          params.building_ids = [buildingVal];
+        }
         if (blockVal) {
           params.block_ids = [blockVal];
+        }
+        break;
+
+      case "resident":
+        // Send all parent filters for proper filtering
+        if (mtkVal) {
+          params.mtk_ids = [mtkVal];
+        }
+        if (complexVal) {
+          params.complex_ids = [complexVal];
         }
         break;
 
@@ -191,15 +367,18 @@ export function ManagementActions({
     return params;
   };
 
-  const handleFilterChange = (filterType, value, selectedOption) => {
+  const handleFilterChange = async (filterType, numValue, selectedOption) => {
+    // Save to localStorage
+    saveSelection(filterType, numValue);
+    
     const filterIndex = config.filters.indexOf(filterType);
     const filtersToReset = config.filters.slice(filterIndex + 1);
 
     // Store selected label for display
-    if (selectedOption && value) {
+    if (selectedOption && numValue) {
       setSelectedLabels(prev => ({
         ...prev,
-        [filterType]: selectedOption.name || selectedOption.apartment_number || `#${value}`
+        [filterType]: selectedOption.name || selectedOption.apartment_number || `#${numValue}`
       }));
     } else {
       setSelectedLabels(prev => {
@@ -211,7 +390,82 @@ export function ManagementActions({
       });
     }
 
-    onFilterChange?.(filterType, value ? parseInt(value, 10) : null, filtersToReset);
+    // Update Redux state directly
+    const value = numValue ? parseInt(numValue, 10) : null;
+    
+    switch (filterType) {
+      case "mtk":
+        if (value) {
+          const result = await dispatch(loadMtkById(value));
+          if (result.payload) {
+            dispatch(setSelectedMtk({ id: value, mtk: result.payload }));
+          }
+        } else {
+          dispatch(setSelectedMtk({ id: null, mtk: null }));
+        }
+        // Clear dependent filters
+        if (filtersToReset.includes("complex")) dispatch(setSelectedComplex({ id: null, complex: null }));
+        if (filtersToReset.includes("building")) dispatch(setSelectedBuilding({ id: null, building: null }));
+        if (filtersToReset.includes("block")) dispatch(setSelectedBlock({ id: null, block: null }));
+        if (filtersToReset.includes("property")) dispatch(setSelectedProperty({ id: null, property: null }));
+        break;
+
+      case "complex":
+        if (numValue) {
+          const result = await dispatch(loadComplexById(numValue));
+          if (result.payload) {
+            dispatch(setSelectedComplex({ id: numValue, complex: result.payload }));
+          }
+        } else {
+          dispatch(setSelectedComplex({ id: null, complex: null }));
+        }
+        // Clear dependent filters
+        if (filtersToReset.includes("building")) dispatch(setSelectedBuilding({ id: null, building: null }));
+        if (filtersToReset.includes("block")) dispatch(setSelectedBlock({ id: null, block: null }));
+        if (filtersToReset.includes("property")) dispatch(setSelectedProperty({ id: null, property: null }));
+        break;
+
+      case "building":
+        if (numValue) {
+          const result = await dispatch(loadBuildingById(numValue));
+          if (result.payload) {
+            dispatch(setSelectedBuilding({ id: numValue, building: result.payload }));
+          }
+        } else {
+          dispatch(setSelectedBuilding({ id: null, building: null }));
+        }
+        // Clear dependent filters
+        if (filtersToReset.includes("block")) dispatch(setSelectedBlock({ id: null, block: null }));
+        if (filtersToReset.includes("property")) dispatch(setSelectedProperty({ id: null, property: null }));
+        break;
+
+      case "block":
+        if (numValue) {
+          const result = await dispatch(loadBlockById(numValue));
+          if (result.payload) {
+            dispatch(setSelectedBlock({ id: numValue, block: result.payload }));
+          }
+        } else {
+          dispatch(setSelectedBlock({ id: null, block: null }));
+        }
+        // Clear dependent filters
+        if (filtersToReset.includes("property")) dispatch(setSelectedProperty({ id: null, property: null }));
+        break;
+
+      case "property":
+        if (numValue) {
+          const result = await dispatch(loadPropertyById(numValue));
+          if (result.payload) {
+            dispatch(setSelectedProperty({ id: numValue, property: result.payload }));
+          }
+        } else {
+          dispatch(setSelectedProperty({ id: null, property: null }));
+        }
+        break;
+
+      default:
+        break;
+    }
   };
 
   const handleNameInputChange = (value) => {
@@ -427,6 +681,17 @@ export function ManagementActions({
 
         {/* Action Buttons */}
         <div className="flex gap-2">
+          {onCreateClick && (
+            <Button
+              type="button"
+              onClick={handleRefreshFilters}
+              className="bg-gray-500 hover:bg-gray-600 text-white shadow-md hover:shadow-lg transition-all px-3"
+              size="sm"
+              title="Filterləri sıfırla və yenilə"
+            >
+              <ArrowPathIcon className="h-4 w-4" />
+            </Button>
+          )}
           {onSearchClick && (
             <Button
               type="button"
@@ -499,6 +764,17 @@ export function ManagementActions({
 
           {/* Action Buttons */}
           <div className="flex gap-2 flex-shrink-0">
+            {onCreateClick && (
+              <Button
+                type="button"
+                onClick={handleRefreshFilters}
+                className="bg-gray-500 hover:bg-gray-600 text-white shadow-md hover:shadow-lg transition-all px-3"
+                size="md"
+                title="Filterləri sıfırla və yenilə"
+              >
+                <ArrowPathIcon className="h-4 w-4" />
+              </Button>
+            )}
             {onSearchClick && (
               <Button
                 type="button"

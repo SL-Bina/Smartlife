@@ -6,6 +6,8 @@ import { CustomSelect } from "@/components/ui/CustomSelect";
 import DynamicToast from "@/components/DynamicToast";
 import propertyLookupsAPI from "../../../properties/api/lookups";
 import propertiesAPI from "../../../properties/api/index";
+import mtkAPI from "../../../mtk/api";
+import complexesAPI from "../../../complexes/api";
 
 const ACTIVE_COLOR = "#3b82f6";
 
@@ -24,16 +26,9 @@ export function ResidentFormModal({
   const [mtks, setMtks] = useState([]);
   const [complexes, setComplexes] = useState([]);
   const [properties, setProperties] = useState([]);
-  const [propPage, setPropPage] = useState(1);
-  const [propHasMore, setPropHasMore] = useState(false);
   const [loadingLookups, setLoadingLookups] = useState(false);
   const [loadingComplexes, setLoadingComplexes] = useState(false);
   const [loadingProperties, setLoadingProperties] = useState(false);
-  const [loadingMoreProps, setLoadingMoreProps] = useState(false);
-  const [initialized, setInitialized] = useState(false);
-  const propListRef = React.useRef(null);
-  const [propOpen, setPropOpen] = useState(false);
-  const propWrapperRef = useRef(null);
   const showToast = (type, message, title = "") => {
     setToast({ open: true, type, message, title });
   };
@@ -62,8 +57,10 @@ export function ResidentFormModal({
   useEffect(() => {
     if (open) {
       setLoadingLookups(true);
-      propertyLookupsAPI.getMtks()
-        .then((data) => {
+      // Use search endpoint for MTKs like ManagementActions
+      mtkAPI.getAll({ per_page: 1000 })
+        .then((res) => {
+          const data = res?.data?.data?.data || [];
           setMtks(data || []);
         })
         .catch((error) => {
@@ -73,19 +70,14 @@ export function ResidentFormModal({
         .finally(() => {
           setLoadingLookups(false);
         });
-    } else {
-      setInitialized(false);
     }
   }, [open]);
 
   useEffect(() => {
-    if (open && mode === "create" && !initialized && mtks.length > 0) {
-      if (mtkId && !form?.formData?.property?.mtk_id) {
-        form?.updateField("property.mtk_id", mtkId);
-      }
-      setInitialized(true);
+    if (open && mode === "create" && mtkId && mtks.length > 0 && !form?.formData?.property?.mtk_id) {
+      form?.updateField("property.mtk_id", mtkId);
     }
-  }, [open, mode, initialized, mtkId, mtks.length, form]);
+  }, [open, mode, mtkId, mtks.length, form]);
 
   useEffect(() => {
     if (open && mode === "create" && complexId && complexes.length > 0 && !form?.formData?.property?.complex_id) {
@@ -102,8 +94,13 @@ export function ResidentFormModal({
   useEffect(() => {
     if (open && formMtkId) {
       setLoadingComplexes(true);
-      propertyLookupsAPI.getComplexes({ mtk_id: formMtkId })
-        .then((data) => {
+      // Use search endpoint for complexes like ManagementActions
+      complexesAPI.search({ 
+        mtk_ids: [formMtkId],
+        per_page: 1000 
+      })
+        .then((res) => {
+          const data = res?.data?.data?.data || [];
           setComplexes(data || []);
         })
         .catch((error) => {
@@ -118,50 +115,26 @@ export function ResidentFormModal({
     }
   }, [open, formMtkId]);
 
-  const PER_PAGE = 30;
-
-  // Load first page of properties when complex changes
+  // Load properties when complex changes
   useEffect(() => {
     if (open && formComplexId) {
       setLoadingProperties(true);
       setProperties([]);
-      setPropPage(1);
-      setPropHasMore(false);
-      propertiesAPI.getAll({ per_page: PER_PAGE, page: 1, complex_id: formComplexId })
+      // Use search endpoint for properties like ManagementActions
+      propertiesAPI.search({ 
+        complex_ids: [formComplexId], 
+        per_page: 1000 
+      })
         .then((response) => {
           const data = response?.data?.data?.data || [];
-          const lastPage = response?.data?.data?.last_page || 1;
           setProperties(data);
-          setPropHasMore(1 < lastPage);
-          setPropPage(1);
         })
         .catch(() => setProperties([]))
         .finally(() => setLoadingProperties(false));
     } else if (open && !formComplexId) {
       setProperties([]);
-      setPropPage(1);
-      setPropHasMore(false);
     }
   }, [open, formComplexId]);
-
-  // Load more properties on scroll
-  const handlePropScroll = (e) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.target;
-    if (scrollHeight - scrollTop <= clientHeight + 40 && propHasMore && !loadingMoreProps) {
-      const nextPage = propPage + 1;
-      setLoadingMoreProps(true);
-      propertiesAPI.getAll({ per_page: PER_PAGE, page: nextPage, complex_id: formComplexId })
-        .then((response) => {
-          const data = response?.data?.data?.data || [];
-          const lastPage = response?.data?.data?.last_page || 1;
-          setProperties(prev => [...prev, ...data]);
-          setPropHasMore(nextPage < lastPage);
-          setPropPage(nextPage);
-        })
-        .catch(() => { })
-        .finally(() => setLoadingMoreProps(false));
-    }
-  };
 
   const errorText = useMemo(() => {
     if (!form?.formData?.name?.trim()) return "Ad mütləqdir";
@@ -378,116 +351,25 @@ export function ResidentFormModal({
                     loading={loadingComplexes}
                     error={form.errors?.property?.complex_id}
                   />
-                  <div className="flex flex-col gap-1 relative" ref={propWrapperRef}>
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Mənzil *
-                    </label>
-
-                    {/* Trigger */}
-                    <div
-                      onClick={() => {
-                        if (!loadingProperties && form.formData.property?.complex_id)
-                          setPropOpen(prev => !prev);
-                      }}
-                      className={`
-      group w-full rounded-xl border px-3 py-2 text-sm
-      flex items-center justify-between
-      bg-white/70 dark:bg-gray-800/60
-      backdrop-blur-md
-      transition-all duration-200
-      ${propOpen ? "ring-2 ring-blue-500/20 border-blue-500" : ""}
-      ${form.errors?.property?.property_id ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'}
-      ${(!form.formData.property?.complex_id || loadingProperties)
-                          ? 'opacity-50 cursor-not-allowed'
-                          : 'cursor-pointer hover:border-blue-400'}
-    `}
-                    >
-                      <span className="truncate">
-                        {
-                          properties.find(p => p.id === form.formData.property?.property_id)?.name ||
-                          properties.find(p => p.id === form.formData.property?.property_id)?.meta?.apartment_number ||
-                          (form.formData.property?.property_id
-                            ? `Mənzil #${form.formData.property.property_id}`
-                            : '-- Mənzil seçin --')
-                        }
-                      </span>
-
-                      <svg
-                        className={`w-4 h-4 transition-transform duration-200 ${propOpen ? "rotate-180 text-blue-500" : "text-gray-400 group-hover:text-blue-400"}`}
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </div>
-
-                    {/* Dropdown */}
-                    {propOpen && (
-                      <div
-                        ref={propListRef}
-                        // onScroll={handlePropScroll}
-                        className="
-        absolute z-50 mt-2 w-full
-        animate-[fadeIn_.15s_ease]
-        rounded-xl
-        border border-gray-200 dark:border-gray-700
-        bg-white/90 dark:bg-gray-900/90
-        backdrop-blur-xl
-        shadow-xl
-        overflow-hidden
-      "
-                      >
-                        <div className="max-h-60 overflow-auto" onScroll={handlePropScroll}>
-
-                          <div
-                            onClick={() => {
-                              form.updateField("property.property_id", null);
-                              setPropOpen(false);
-                            }}
-                            className="px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
-                          >
-                            -- Mənzil seçin --
-                          </div>
-
-                          {properties.map((p) => (
-                            <div
-                              key={p.id}
-                              onClick={() => {
-                                form.updateField("property.property_id", p.id);
-                                setPropOpen(false);
-                              }}
-                              className={`
-              px-3 py-2 text-sm cursor-pointer
-              transition-colors
-              hover:bg-blue-50 dark:hover:bg-gray-800
-              ${form.formData.property?.property_id === p.id
-                                  ? "bg-blue-100 dark:bg-gray-800 font-medium text-blue-600"
-                                  : ""}
-            `}
-                            >
-                              {p.name || p.meta?.apartment_number || `Mənzil #${p.id}`}
-                            </div>
-                          ))}
-
-                          {loadingProperties && (
-                            <div className="px-3 py-2 text-xs text-gray-400">Yüklənir...</div>
-                          )}
-
-                          {loadingMoreProps && (
-                            <div className="px-3 py-2 text-xs text-gray-400">Daha çox yüklənir...</div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {form.errors?.property?.property_id && (
-                      <span className="text-xs text-red-500">
-                        {form.errors.property.property_id}
-                      </span>
-                    )}
-                  </div>
+                  <CustomSelect
+                    label="Mənzil *"
+                    value={form.formData.property?.property_id ? String(form.formData.property.property_id) : ""}
+                    onChange={(value) => {
+                      form.updateField("property.property_id", value ? Number(value) : null);
+                    }}
+                    options={[
+                      { value: "", label: "-- Mənzil seçin --" },
+                      ...properties.map((p) => ({
+                        value: String(p.id),
+                        label: p.name || p.meta?.apartment_number || `Mənzil #${p.id}`,
+                      })),
+                    ]}
+                    loading={loadingProperties}
+                    disabled={loadingProperties || !form.formData.property?.complex_id}
+                    placeholder="Mənzil seçin"
+                    error={!!form.errors?.property?.property_id}
+                    helperText={form.errors?.property?.property_id}
+                  />
                 </div>
               </div>
             </div>

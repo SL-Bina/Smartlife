@@ -5,6 +5,10 @@ import { CustomSelect } from "@/components/ui/CustomSelect";
 import { HomeIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import DynamicToast from "@/components/DynamicToast";
 import propertyLookupsAPI from "../../api/lookups";
+import mtkAPI from "../../../mtk/api";
+import complexesAPI from "../../../complexes/api";
+import buildingsAPI from "../../../buildings/api";
+import blocksAPI from "../../../blocks/api";
 
 const ACTIVE_COLOR = "#14b8a6";
 
@@ -81,10 +85,21 @@ export function PropertyFormModal({
       return;
     }
     setLoadingComplexes(true);
-    propertyLookupsAPI.getComplexes({ mtk_id: form.formData.mtk_id })
-      .then((data) => setComplexes(data || []))
-      .catch(() => setComplexes([]))
-      .finally(() => setLoadingComplexes(false));
+    complexesAPI.search({
+      mtk_ids: [form.formData.mtk_id],
+      per_page: 1000,
+    })
+      .then((res) => {
+        const data = res?.data?.data?.data || [];
+        setComplexes(data || []);
+      })
+      .catch((error) => {
+        console.error("Error loading complexes:", error);
+        setComplexes([]);
+      })
+      .finally(() => {
+        setLoadingComplexes(false);
+      });
   }, [open, form?.formData?.mtk_id]);
   useEffect(() => {
     if (!open || !form?.formData?.complex_id) {
@@ -92,10 +107,21 @@ export function PropertyFormModal({
       return;
     }
     setLoadingBuildings(true);
-    propertyLookupsAPI.getBuildings({ complex_id: form.formData.complex_id })
-      .then((data) => setBuildings(data || []))
-      .catch(() => setBuildings([]))
-      .finally(() => setLoadingBuildings(false));
+    buildingsAPI.search({
+      complex_ids: [form.formData.complex_id],
+      per_page: 1000,
+    })
+      .then((res) => {
+        const data = res?.data?.data?.data || [];
+        setBuildings(data || []);
+      })
+      .catch((error) => {
+        console.error("Error loading buildings:", error);
+        setBuildings([]);
+      })
+      .finally(() => {
+        setLoadingBuildings(false);
+      });
   }, [open, form?.formData?.complex_id]);
   useEffect(() => {
     if (!open || !form?.formData?.building_id) {
@@ -103,27 +129,29 @@ export function PropertyFormModal({
       return;
     }
     setLoadingBlocks(true);
-    propertyLookupsAPI.getBlocks({ building_id: form.formData.building_id })
-      .then((data) => setBlocks(data || []))
-      .catch(() => setBlocks([]))
-      .finally(() => setLoadingBlocks(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    blocksAPI.search({
+      building_ids: [form.formData.building_id],
+      per_page: 1000,
+    })
+      .then((res) => {
+        const data = res?.data?.data?.data || [];
+        setBlocks(data || []);
+      })
+      .catch((error) => {
+        console.error("Error loading blocks:", error);
+        setBlocks([]);
+      })
+      .finally(() => {
+        setLoadingBlocks(false);
+      });
   }, [open, form?.formData?.building_id]);
 
   const errorText = useMemo(() => {
     if (!form?.formData?.name?.trim()) return "Ad mütləqdir";
 
-    // Create modda hierarchy validation
-    if (!isEdit) {
-      if (!form?.formData?.mtk_id) return "MTK mütləqdir";
-      if (!form?.formData?.complex_id) return "Complex mütləqdir";
-      if (!form?.formData?.building_id) return "Building mütləqdir";
-      if (!form?.formData?.block_id) return "Block mütləqdir";
-    }
-
     if (!form?.formData?.property_type) return "Mənzil tipi mütləqdir";
     return "";
-  }, [form?.formData, isEdit]);
+  }, [form?.formData]);
 
   const submit = async () => {
     if (errorText) {
@@ -131,10 +159,27 @@ export function PropertyFormModal({
       return;
     }
     setSaving(true);
+    
+    // Debug log to check if submit is being called
+    console.log("PropertyFormModal submit called:", {
+      isEdit,
+      formData: form.formData,
+      mode
+    });
+    
     try {
-      await onSubmit?.(form.formData);
+      if (isEdit) {
+        // Edit mode - send update request
+        console.log("Sending update request with data:", form.formData);
+        await onSubmit?.(form.formData, true); // Pass true for edit mode
+      } else {
+        // Create mode - send create request
+        console.log("Sending create request with data:", form.formData);
+        await onSubmit?.(form.formData, false); // Pass false for create mode
+      }
       onClose?.();
     } catch (e) {
+      console.error("Submit error:", e);
       showToast("error", e?.message || "Xəta baş verdi", "Xəta");
     } finally {
       setSaving(false);
@@ -218,7 +263,7 @@ export function PropertyFormModal({
                   onChange={(value) => form?.updateField("mtk_id", value ? Number(value) : null)}
                   options={mtks.map((m) => ({ value: String(m.id), label: m.name }))}
                   loading={loadingMtks}
-                  disabled={loadingMtks || isEdit}
+                  disabled={loadingMtks }
                   placeholder="MTK seçin"
                   error={!!form?.errors?.mtk_id}
                 />
@@ -228,7 +273,7 @@ export function PropertyFormModal({
                   onChange={(value) => form?.updateField("complex_id", value ? Number(value) : null)}
                   options={complexes.map((c) => ({ value: String(c.id), label: c.name }))}
                   loading={loadingComplexes}
-                  disabled={loadingComplexes || isEdit}
+                  disabled={loadingComplexes }
                   placeholder="Complex seçin"
                   error={!!form?.errors?.complex_id}
                 />
@@ -238,7 +283,7 @@ export function PropertyFormModal({
                   onChange={(value) => form?.updateField("building_id", value ? Number(value) : null)}
                   options={buildings.map((b) => ({ value: String(b.id), label: b.name }))}
                   loading={loadingBuildings}
-                  disabled={loadingBuildings || isEdit}
+                  disabled={loadingBuildings }
                   placeholder="Building seçin"
                   error={!!form?.errors?.building_id}
                 />
@@ -248,7 +293,7 @@ export function PropertyFormModal({
                   onChange={(value) => form?.updateField("block_id", value ? Number(value) : null)}
                   options={blocks.map((b) => ({ value: String(b.id), label: b.name }))}
                   loading={loadingBlocks}
-                  disabled={loadingBlocks || isEdit}
+                  disabled={loadingBlocks }
                   placeholder="Block seçin"
                   error={!!form?.errors?.block_id}
                 />
@@ -311,7 +356,7 @@ export function PropertyFormModal({
           </Button>
           <Button
             onClick={submit}
-            disabled={saving || !!errorText}
+            disabled={saving}
             className="text-white"
             style={{ backgroundColor: ACTIVE_COLOR }}
           >

@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 
 const initialFormData = {
+  id: null, // ID field-i əlavə edildi
   name: "",
   mtk_id: null,
   complex_id: null,
@@ -52,6 +53,7 @@ export function usePropertyForm() {
     }
 
     setFormData({
+      id: property.id || null, // ID-ni saxla
       name: property.name || "",
       mtk_id: property.sub_data?.mtk?.id || property.mtk_id || null,
       complex_id: property.sub_data?.complex?.id || property.complex_id || null,
