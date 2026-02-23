@@ -21,19 +21,19 @@ export const ENTITY_LEVELS = {
 
 const LEVEL_CONFIG = {
   [ENTITY_LEVELS.MTK]: {
-    filters: [], 
+    filters: [],
     label: "MTK",
     addButtonText: "MTK əlavə et",
     gradientColors: "from-red-500 to-red-600",
   },
   [ENTITY_LEVELS.COMPLEX]: {
-    filters: ["mtk"], 
+    filters: ["mtk"],
     label: "Complex",
     addButtonText: "Complex əlavə et",
     gradientColors: "from-blue-500 to-blue-600",
   },
   [ENTITY_LEVELS.BUILDING]: {
-    filters: ["mtk", "complex"], 
+    filters: ["mtk", "complex"],
     label: "Bina",
     addButtonText: "Bina əlavə et",
     gradientColors: "from-purple-500 to-purple-600",
@@ -45,19 +45,19 @@ const LEVEL_CONFIG = {
     gradientColors: "from-indigo-500 to-indigo-600",
   },
   [ENTITY_LEVELS.PROPERTY]: {
-    filters: ["mtk", "complex", "building", "block"], 
+    filters: ["mtk", "complex", "building", "block"],
     label: "Mənzil",
     addButtonText: "Mənzil əlavə et",
     gradientColors: "from-teal-500 to-teal-600",
   },
   [ENTITY_LEVELS.RESIDENT]: {
-    filters: ["mtk", "complex", "building", "block", "property"], 
+    filters: ["mtk", "complex", "building", "block", "property"],
     label: "Sakin",
     addButtonText: "Sakin əlavə et",
     gradientColors: "from-orange-500 to-orange-600",
   },
   [ENTITY_LEVELS.INVOICE]: {
-    filters: [], 
+    filters: [],
     label: "Faktura",
     addButtonText: "Faktura əlavə et",
     gradientColors: "from-green-500 to-green-600",
@@ -65,33 +65,33 @@ const LEVEL_CONFIG = {
 };
 
 const FILTER_CONFIG = {
-  mtk: { 
-    label: "MTK", 
+  mtk: {
+    label: "MTK",
     key: "mtkId",
-    endpoint: "/module/mtk/list",
+    endpoint: "/search/module/mtk",
   },
-  complex: { 
-    label: "Complex", 
+  complex: {
+    label: "Complex",
     key: "complexId",
-    endpoint: "/module/complexes/list",
+    endpoint: "/search/module/complex",
     parentParam: "mtk_id",
   },
-  building: { 
-    label: "Bina", 
+  building: {
+    label: "Bina",
     key: "buildingId",
-    endpoint: "/module/buildings/list",
+    endpoint: "/search/module/building",
     parentParam: "complex_id",
   },
-  block: { 
-    label: "Blok", 
+  block: {
+    label: "Blok",
     key: "blockId",
-    endpoint: "/module/blocks/list",
+    endpoint: "/search/module/block",
     parentParam: "building_id",
   },
-  property: { 
-    label: "Mənzil", 
+  property: {
+    label: "Mənzil",
     key: "propertyId",
-    endpoint: "/module/properties/list",
+    endpoint: "/search/module/property",
     parentParam: "block_id",
   },
 };
@@ -112,18 +112,18 @@ export function ManagementActions({
   customFilterLabels = {},
 }) {
   const config = LEVEL_CONFIG[entityLevel];
-  
+
   // Redux-dan seçilmiş entity-ləri oxu
   const selectedMtk = useAppSelector((state) => state.mtk.selectedMtk);
   const selectedComplex = useAppSelector((state) => state.complex.selectedComplex);
   const selectedBuilding = useAppSelector((state) => state.building.selectedBuilding);
   const selectedBlock = useAppSelector((state) => state.block.selectedBlock);
   const selectedProperty = useAppSelector((state) => state.property.selectedProperty);
-  
+
   // Selected labels for display when value exists but not in current options
   const [selectedLabels, setSelectedLabels] = useState({});
   const [localName, setLocalName] = useState(search?.name || "");
-  
+
   // Redux-dan gələn seçilmiş entity label-lərini yüklə
   useEffect(() => {
     const labels = {};
@@ -136,7 +136,7 @@ export function ManagementActions({
     }
     setSelectedLabels(prev => ({ ...prev, ...labels }));
   }, [selectedMtk, selectedComplex, selectedBuilding, selectedBlock, selectedProperty]);
-  
+
   useEffect(() => {
     setLocalName(search?.name || "");
   }, [search?.name]);
@@ -146,31 +146,55 @@ export function ManagementActions({
     return filterValues[key] || null;
   };
 
-  // Get parent filter value for API params
+  // Get parent filter value for API params (ARRAY FORMAT for backend)
+  // Yalnız birbaşa parent filter göndərir (OR problem-ini aradan qaldırmaq üçün)
   const getParentSearchParams = (filterType) => {
     const params = {};
-    
-    if (filterType === "complex") {
-      const mtkVal = getFilterValue("mtk");
-      if (mtkVal) params.mtk_id = mtkVal;
-    } else if (filterType === "building") {
-      const complexVal = getFilterValue("complex");
-      if (complexVal) params.complex_id = complexVal;
-    } else if (filterType === "block") {
-      const buildingVal = getFilterValue("building");
-      if (buildingVal) params.building_id = buildingVal;
-    } else if (filterType === "property") {
-      const blockVal = getFilterValue("block");
-      if (blockVal) params.block_id = blockVal;
+
+    const mtkVal = getFilterValue("mtk");
+    const complexVal = getFilterValue("complex");
+    const buildingVal = getFilterValue("building");
+    const blockVal = getFilterValue("block");
+
+    switch (filterType) {
+      case "complex":
+        if (mtkVal) {
+          params.mtk_ids = [mtkVal];
+        }
+        break;
+
+      case "building":
+        // Yalnız birbaşa parent (complex) göndər
+        if (complexVal) {
+          params.complex_ids = [complexVal];
+        }
+        break;
+
+      case "block":
+        // Yalnız birbaşa parent (building) göndər
+        if (buildingVal) {
+          params.building_ids = [buildingVal];
+        }
+        break;
+
+      case "property":
+        // Yalnız birbaşa parent (block) göndər
+        if (blockVal) {
+          params.block_ids = [blockVal];
+        }
+        break;
+
+      default:
+        break;
     }
-    
+
     return params;
   };
 
   const handleFilterChange = (filterType, value, selectedOption) => {
     const filterIndex = config.filters.indexOf(filterType);
     const filtersToReset = config.filters.slice(filterIndex + 1);
-    
+
     // Store selected label for display
     if (selectedOption && value) {
       setSelectedLabels(prev => ({
@@ -186,7 +210,7 @@ export function ManagementActions({
         return newLabels;
       });
     }
-    
+
     onFilterChange?.(filterType, value ? parseInt(value, 10) : null, filtersToReset);
   };
 
@@ -291,7 +315,7 @@ export function ManagementActions({
   const isFilterDisabled = (filterType) => {
     const filterIndex = config.filters.indexOf(filterType);
     if (filterIndex <= 0) return false;
-    
+
     const parentFilter = config.filters[filterIndex - 1];
     const parentValue = getFilterValue(parentFilter);
     return !parentValue;
@@ -303,6 +327,16 @@ export function ManagementActions({
     const label = customFilterLabels[filterType] || filterConfig.label;
     const disabled = isFilterDisabled(filterType);
     const searchParams = getParentSearchParams(filterType);
+    
+    // Create unique key based on parent filter values to force re-render when parents change
+    const parentFilters = [];
+    const filterIndex = config.filters.indexOf(filterType);
+    if (filterIndex > 0) {
+      config.filters.slice(0, filterIndex).forEach(parentFilter => {
+        parentFilters.push(getFilterValue(parentFilter) || 'null');
+      });
+    }
+    const selectKey = `${filterType}-${parentFilters.join('-')}`;
 
     return (
       <div
@@ -310,6 +344,7 @@ export function ManagementActions({
         className={isMobile ? "w-full" : "w-full md:w-[160px] lg:w-[180px] flex-shrink-0"}
       >
         <AsyncSearchSelect
+          key={selectKey}
           label={label}
           value={value}
           onChange={(val, option) => handleFilterChange(filterType, val, option)}

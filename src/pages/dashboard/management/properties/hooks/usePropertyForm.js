@@ -20,30 +20,30 @@ export function usePropertyForm() {
   const [errors, setErrors] = useState({});
 
   const updateField = useCallback((field, value) => {
-    if (field.startsWith("meta.")) {
-      const metaField = field.replace("meta.", "");
-      setFormData((prev) => ({
-        ...prev,
-        meta: {
-          ...prev.meta,
-          [metaField]: value,
-        },
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-    }
-    // Clear error for this field
-    if (errors[field]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
-  }, [errors]);
+  if (field.startsWith("meta.")) {
+    const metaField = field.replace("meta.", "");
+    setFormData((prev) => ({
+      ...prev,
+      meta: {
+        ...prev.meta,
+        [metaField]: value,
+      },
+    }));
+  } else {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  }
+
+  // errors-u ayrı setErrors ilə təmizlə, dependency-dən çıxar
+  setErrors((prev) => {
+    if (!prev[field]) return prev;
+    const newErrors = { ...prev };
+    delete newErrors[field];
+    return newErrors;
+  });
+}, []); // ← boş dependency, errors-u götürmür
 
   const setFormFromProperty = useCallback((property) => {
     if (!property) {

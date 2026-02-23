@@ -1,9 +1,11 @@
 import React, { useState, useMemo } from "react";
 import { Card, CardBody, Typography, IconButton, Menu, MenuHandler, MenuList, MenuItem, Tooltip, Button } from "@material-tailwind/react";
 import { EllipsisVerticalIcon, ChevronUpIcon, ChevronDownIcon, PencilIcon, TrashIcon, CheckCircleIcon, UserIcon, EnvelopeIcon, PhoneIcon, EyeIcon } from "@heroicons/react/24/outline";
+import { BlindsIcon } from "lucide-react";
 
-export function ResidentTable({ items = [], loading, onView, onEdit, onDelete, onSelect, selectedResidentId }) {
+export function ResidentTable({ items = [], loading, onView, onEdit, onBind, onDelete, onSelect, selectedResidentId }) {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+  const [bindOpen, setBindOpen] = useState(false);
 
   const handleSort = (key) => {
     let direction = "asc";
@@ -131,9 +133,8 @@ export function ResidentTable({ items = [], loading, onView, onEdit, onDelete, o
             {sortedItems.map((item) => (
               <tr
                 key={item.id}
-                className={`border-b border-gray-200/50 dark:border-gray-700/50 hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors ${
-                  selectedResidentId === item.id ? "bg-blue-50/50 dark:bg-blue-900/20" : ""
-                }`}
+                className={`border-b border-gray-200/50 dark:border-gray-700/50 hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors ${selectedResidentId === item.id ? "bg-blue-50/50 dark:bg-blue-900/20" : ""
+                  }`}
               >
                 <td className="px-4 xl:px-6 py-3 xl:py-4">
                   <Typography variant="small" className="text-gray-700 dark:text-gray-300 font-medium">
@@ -162,11 +163,10 @@ export function ResidentTable({ items = [], loading, onView, onEdit, onDelete, o
                 </td>
                 <td className="px-4 xl:px-6 py-3 xl:py-4">
                   <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      item.status === "active"
-                        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                        : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-                    }`}
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.status === "active"
+                      ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                      : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                      }`}
                   >
                     {item.status === "active" ? "Aktiv" : "Qeyri-aktiv"}
                   </span>
@@ -189,6 +189,12 @@ export function ResidentTable({ items = [], loading, onView, onEdit, onDelete, o
                         <MenuItem onClick={() => onSelect(item)}>
                           <CheckCircleIcon className="h-4 w-4 mr-2" />
                           Seç
+                        </MenuItem>
+                      )}
+                      {onBind && (
+                        <MenuItem onClick={() => onBind(item)}>
+                          <BlindsIcon className="h-4 w-4 mr-2" />
+                          Mənzillər
                         </MenuItem>
                       )}
                       {onEdit && (
@@ -239,10 +245,18 @@ export function ResidentTable({ items = [], loading, onView, onEdit, onDelete, o
                         Bax
                       </MenuItem>
                     )}
+
+
                     {onSelect && (
                       <MenuItem onClick={() => onSelect(item)}>
                         <CheckCircleIcon className="h-4 w-4 mr-2" />
                         Seç
+                      </MenuItem>
+                    )}
+                    {onBind && (
+                      <MenuItem onClick={() => onBind(item)}>
+                        <BlindsIcon className="h-4 w-4 mr-2" />
+                        Mənzillər
                       </MenuItem>
                     )}
                     {onEdit && (
@@ -279,11 +293,10 @@ export function ResidentTable({ items = [], loading, onView, onEdit, onDelete, o
                 )}
                 <div className="flex items-center justify-between mt-3">
                   <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      item.status === "active"
-                        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                        : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-                    }`}
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.status === "active"
+                      ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                      : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                      }`}
                   >
                     {item.status === "active" ? "Aktiv" : "Qeyri-aktiv"}
                   </span>

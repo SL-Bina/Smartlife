@@ -10,6 +10,7 @@ const initialFormData = {
     gender: "",
     personal_code: "",
     birth_date: "",
+    father_name: "",
   },
   property: {
     mtk_id: null,
@@ -75,6 +76,7 @@ export function useResidentForm() {
         gender: resident.meta?.gender || "",
         personal_code: resident.meta?.personal_code || "",
         birth_date: resident.meta?.birth_date || "",
+        father_name: resident.meta?.father_name || "",
       },
       property: {
         mtk_id: resident.property?.mtk_id || null,

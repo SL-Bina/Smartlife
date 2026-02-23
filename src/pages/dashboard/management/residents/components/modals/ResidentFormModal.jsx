@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography } from "@material-tailwind/react";
 import { XMarkIcon, UserIcon } from "@heroicons/react/24/outline";
 import { CustomInput } from "@/components/ui/CustomInput";
@@ -7,28 +7,33 @@ import DynamicToast from "@/components/DynamicToast";
 import propertyLookupsAPI from "../../../properties/api/lookups";
 import propertiesAPI from "../../../properties/api/index";
 
-const ACTIVE_COLOR = "#3b82f6"; // Blue for residents
+const ACTIVE_COLOR = "#3b82f6";
 
-export function ResidentFormModal({ 
-  open, 
-  mode = "create", 
-  onClose, 
-  form, 
+export function ResidentFormModal({
+  open,
+  mode = "create",
+  onClose,
+  form,
   onSubmit,
   mtkId = null,
   complexId = null,
-  propertyId = null 
+  propertyId = null
 }) {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
   const [mtks, setMtks] = useState([]);
   const [complexes, setComplexes] = useState([]);
   const [properties, setProperties] = useState([]);
+  const [propPage, setPropPage] = useState(1);
+  const [propHasMore, setPropHasMore] = useState(false);
   const [loadingLookups, setLoadingLookups] = useState(false);
   const [loadingComplexes, setLoadingComplexes] = useState(false);
   const [loadingProperties, setLoadingProperties] = useState(false);
+  const [loadingMoreProps, setLoadingMoreProps] = useState(false);
   const [initialized, setInitialized] = useState(false);
-
+  const propListRef = React.useRef(null);
+  const [propOpen, setPropOpen] = useState(false);
+  const propWrapperRef = useRef(null);
   const showToast = (type, message, title = "") => {
     setToast({ open: true, type, message, title });
   };
@@ -51,11 +56,9 @@ export function ResidentFormModal({
     { value: "inactive", label: "Qeyri-aktiv" },
   ];
 
-  // Get current form values for cascade loading
   const formMtkId = form?.formData?.property?.mtk_id;
   const formComplexId = form?.formData?.property?.complex_id;
 
-  // Load MTKs when modal opens
   useEffect(() => {
     if (open) {
       setLoadingLookups(true);
@@ -71,15 +74,12 @@ export function ResidentFormModal({
           setLoadingLookups(false);
         });
     } else {
-      // Reset initialization flag when modal closes
       setInitialized(false);
     }
   }, [open]);
 
-  // Auto-fill parent IDs when modal opens (for create mode)
   useEffect(() => {
     if (open && mode === "create" && !initialized && mtks.length > 0) {
-      // Set MTK if provided
       if (mtkId && !form?.formData?.property?.mtk_id) {
         form?.updateField("property.mtk_id", mtkId);
       }
@@ -87,21 +87,18 @@ export function ResidentFormModal({
     }
   }, [open, mode, initialized, mtkId, mtks.length, form]);
 
-  // Auto-fill complex when complexes are loaded
   useEffect(() => {
     if (open && mode === "create" && complexId && complexes.length > 0 && !form?.formData?.property?.complex_id) {
       form?.updateField("property.complex_id", complexId);
     }
   }, [open, mode, complexId, complexes.length, form]);
 
-  // Auto-fill property when properties are loaded
   useEffect(() => {
     if (open && mode === "create" && propertyId && properties.length > 0 && !form?.formData?.property?.property_id) {
       form?.updateField("property.property_id", propertyId);
     }
   }, [open, mode, propertyId, properties.length, form]);
 
-  // Load complexes when MTK changes
   useEffect(() => {
     if (open && formMtkId) {
       setLoadingComplexes(true);
@@ -121,29 +118,50 @@ export function ResidentFormModal({
     }
   }, [open, formMtkId]);
 
-  // Load properties when Complex changes
+  const PER_PAGE = 30;
+
+  // Load first page of properties when complex changes
   useEffect(() => {
     if (open && formComplexId) {
       setLoadingProperties(true);
-      propertiesAPI.getAll({ 
-        per_page: 1000, 
-        complex_id: formComplexId 
-      })
+      setProperties([]);
+      setPropPage(1);
+      setPropHasMore(false);
+      propertiesAPI.getAll({ per_page: PER_PAGE, page: 1, complex_id: formComplexId })
         .then((response) => {
           const data = response?.data?.data?.data || [];
-          setProperties(data || []);
+          const lastPage = response?.data?.data?.last_page || 1;
+          setProperties(data);
+          setPropHasMore(1 < lastPage);
+          setPropPage(1);
         })
-        .catch((error) => {
-          console.error("Error loading properties:", error);
-          setProperties([]);
-        })
-        .finally(() => {
-          setLoadingProperties(false);
-        });
+        .catch(() => setProperties([]))
+        .finally(() => setLoadingProperties(false));
     } else if (open && !formComplexId) {
       setProperties([]);
+      setPropPage(1);
+      setPropHasMore(false);
     }
   }, [open, formComplexId]);
+
+  // Load more properties on scroll
+  const handlePropScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    if (scrollHeight - scrollTop <= clientHeight + 40 && propHasMore && !loadingMoreProps) {
+      const nextPage = propPage + 1;
+      setLoadingMoreProps(true);
+      propertiesAPI.getAll({ per_page: PER_PAGE, page: nextPage, complex_id: formComplexId })
+        .then((response) => {
+          const data = response?.data?.data?.data || [];
+          const lastPage = response?.data?.data?.last_page || 1;
+          setProperties(prev => [...prev, ...data]);
+          setPropHasMore(nextPage < lastPage);
+          setPropPage(nextPage);
+        })
+        .catch(() => { })
+        .finally(() => setLoadingMoreProps(false));
+    }
+  };
 
   const errorText = useMemo(() => {
     if (!form?.formData?.name?.trim()) return "Ad mütləqdir";
@@ -181,26 +199,39 @@ export function ResidentFormModal({
     }
   };
 
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (propWrapperRef.current && !propWrapperRef.current.contains(e.target)) {
+        setPropOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   if (!open) return null;
+
 
   return (
     <>
-      <Dialog 
-        open={!!open} 
-        handler={onClose} 
+      <Dialog
+        open={!!open}
+        handler={onClose}
         size="xl"
         className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl"
         style={{ zIndex: 9999 }}
         dismiss={{ enabled: false }}
       >
-        <DialogHeader 
+        <DialogHeader
           className="border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between"
           style={{
             background: `linear-gradient(to right, ${getRgbaColor(ACTIVE_COLOR, 0.9)}, ${getRgbaColor(ACTIVE_COLOR, 0.7)})`,
           }}
         >
           <div className="flex items-center gap-3">
-            <div 
+            <div
               className="p-2 rounded-lg bg-white/20 backdrop-blur-sm"
               style={{ backgroundColor: getRgbaColor(ACTIVE_COLOR, 0.3) }}
             >
@@ -221,9 +252,8 @@ export function ResidentFormModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
-        <DialogBody className="p-6 overflow-y-auto max-h-[70vh]">
+          <DialogBody className="p-6 overflow-y-auto max-h-[70vh]">
             <div className="space-y-6">
-              {/* Əsas Məlumatlar */}
               <div>
                 <Typography variant="h6" className="text-gray-900 dark:text-white mb-4 font-semibold flex items-center gap-2">
                   <div className="w-1 h-6 rounded-full" style={{ backgroundColor: ACTIVE_COLOR }}></div>
@@ -245,7 +275,6 @@ export function ResidentFormModal({
                 </div>
               </div>
 
-              {/* Əlaqə Məlumatları */}
               <div>
                 <Typography variant="h6" className="text-gray-900 dark:text-white mb-4 font-semibold flex items-center gap-2">
                   <div className="w-1 h-6 rounded-full" style={{ backgroundColor: ACTIVE_COLOR }}></div>
@@ -268,7 +297,6 @@ export function ResidentFormModal({
                 </div>
               </div>
 
-              {/* Şəxsi Məlumatlar */}
               <div>
                 <Typography variant="h6" className="text-gray-900 dark:text-white mb-4 font-semibold flex items-center gap-2">
                   <div className="w-1 h-6 rounded-full" style={{ backgroundColor: ACTIVE_COLOR }}></div>
@@ -295,7 +323,6 @@ export function ResidentFormModal({
                 </div>
               </div>
 
-              {/* Tip və Status */}
               <div>
                 <Typography variant="h6" className="text-gray-900 dark:text-white mb-4 font-semibold flex items-center gap-2">
                   <div className="w-1 h-6 rounded-full" style={{ backgroundColor: ACTIVE_COLOR }}></div>
@@ -317,7 +344,6 @@ export function ResidentFormModal({
                 </div>
               </div>
 
-              {/* Mənzil Seçimi */}
               <div>
                 <Typography variant="h6" className="text-gray-900 dark:text-white mb-4 font-semibold flex items-center gap-2">
                   <div className="w-1 h-6 rounded-full" style={{ backgroundColor: ACTIVE_COLOR }}></div>
@@ -352,15 +378,116 @@ export function ResidentFormModal({
                     loading={loadingComplexes}
                     error={form.errors?.property?.complex_id}
                   />
-                  <CustomSelect
-                    label="Mənzil *"
-                    value={form.formData.property?.property_id ? String(form.formData.property.property_id) : ""}
-                    onChange={(value) => form.updateField("property.property_id", value ? Number(value) : null)}
-                    options={properties.map(property => ({ value: String(property.id), label: property.name }))}
-                    disabled={loadingProperties || !form.formData.property?.complex_id}
-                    loading={loadingProperties}
-                    error={form.errors?.property?.property_id}
-                  />
+                  <div className="flex flex-col gap-1 relative" ref={propWrapperRef}>
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Mənzil *
+                    </label>
+
+                    {/* Trigger */}
+                    <div
+                      onClick={() => {
+                        if (!loadingProperties && form.formData.property?.complex_id)
+                          setPropOpen(prev => !prev);
+                      }}
+                      className={`
+      group w-full rounded-xl border px-3 py-2 text-sm
+      flex items-center justify-between
+      bg-white/70 dark:bg-gray-800/60
+      backdrop-blur-md
+      transition-all duration-200
+      ${propOpen ? "ring-2 ring-blue-500/20 border-blue-500" : ""}
+      ${form.errors?.property?.property_id ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'}
+      ${(!form.formData.property?.complex_id || loadingProperties)
+                          ? 'opacity-50 cursor-not-allowed'
+                          : 'cursor-pointer hover:border-blue-400'}
+    `}
+                    >
+                      <span className="truncate">
+                        {
+                          properties.find(p => p.id === form.formData.property?.property_id)?.name ||
+                          properties.find(p => p.id === form.formData.property?.property_id)?.meta?.apartment_number ||
+                          (form.formData.property?.property_id
+                            ? `Mənzil #${form.formData.property.property_id}`
+                            : '-- Mənzil seçin --')
+                        }
+                      </span>
+
+                      <svg
+                        className={`w-4 h-4 transition-transform duration-200 ${propOpen ? "rotate-180 text-blue-500" : "text-gray-400 group-hover:text-blue-400"}`}
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+
+                    {/* Dropdown */}
+                    {propOpen && (
+                      <div
+                        ref={propListRef}
+                        // onScroll={handlePropScroll}
+                        className="
+        absolute z-50 mt-2 w-full
+        animate-[fadeIn_.15s_ease]
+        rounded-xl
+        border border-gray-200 dark:border-gray-700
+        bg-white/90 dark:bg-gray-900/90
+        backdrop-blur-xl
+        shadow-xl
+        overflow-hidden
+      "
+                      >
+                        <div className="max-h-60 overflow-auto" onScroll={handlePropScroll}>
+
+                          <div
+                            onClick={() => {
+                              form.updateField("property.property_id", null);
+                              setPropOpen(false);
+                            }}
+                            className="px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+                          >
+                            -- Mənzil seçin --
+                          </div>
+
+                          {properties.map((p) => (
+                            <div
+                              key={p.id}
+                              onClick={() => {
+                                form.updateField("property.property_id", p.id);
+                                setPropOpen(false);
+                              }}
+                              className={`
+              px-3 py-2 text-sm cursor-pointer
+              transition-colors
+              hover:bg-blue-50 dark:hover:bg-gray-800
+              ${form.formData.property?.property_id === p.id
+                                  ? "bg-blue-100 dark:bg-gray-800 font-medium text-blue-600"
+                                  : ""}
+            `}
+                            >
+                              {p.name || p.meta?.apartment_number || `Mənzil #${p.id}`}
+                            </div>
+                          ))}
+
+                          {loadingProperties && (
+                            <div className="px-3 py-2 text-xs text-gray-400">Yüklənir...</div>
+                          )}
+
+                          {loadingMoreProps && (
+                            <div className="px-3 py-2 text-xs text-gray-400">Daha çox yüklənir...</div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {form.errors?.property?.property_id && (
+                      <span className="text-xs text-red-500">
+                        {form.errors.property.property_id}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

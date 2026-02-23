@@ -70,10 +70,8 @@ export const propertiesAPI = {
 
   search: async (params = {}) => {
     try {
-      // Format array params with brackets notation
       const formattedParams = { ...params };
       
-      // Build URLSearchParams manually to ensure array format
       const searchParams = new URLSearchParams();
       Object.keys(formattedParams).forEach((key) => {
         // Array parameters: mtk_ids[], complex_ids[], building_ids[], block_ids[]

@@ -20,19 +20,20 @@ import DynamicToast from "@/components/DynamicToast";
 import { ViewModal } from "@/components/management/ViewModal";
 import { DeleteConfirmModal } from "@/components/management/DeleteConfirmModal";
 import { UserIcon, EnvelopeIcon, PhoneIcon, IdentificationIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import PropertyBindModal from "./components/modals/PropertyBindModal";
 
 export default function ResidentsPage() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [searchParams] = useSearchParams();
-  
+
   // URL-dən mtk_id, complex_id, building_id, block_id və property_id götür
   const urlMtkId = searchParams.get("mtk_id");
   const urlComplexId = searchParams.get("complex_id");
   const urlBuildingId = searchParams.get("building_id");
   const urlBlockId = searchParams.get("block_id");
   const urlPropertyId = searchParams.get("property_id");
-  
+
   // Redux-dan selected ID'leri götür
   const selectedMtkId = useAppSelector((state) => state.mtk.selectedMtkId);
   const selectedMtk = useAppSelector((state) => state.mtk.selectedMtk);
@@ -49,7 +50,8 @@ export default function ResidentsPage() {
   const buildings = useAppSelector((state) => state.building.buildings);
   const blocks = useAppSelector((state) => state.block.blocks);
   const properties = useAppSelector((state) => state.property.properties);
-  
+  const [bindOpen, setBindOpen] = useState(false);
+
   // Local state for filter values - immediate update
   const [mtkId, setMtkIdState] = useState(() => {
     if (urlMtkId) {
@@ -58,7 +60,7 @@ export default function ResidentsPage() {
     }
     return selectedMtkId || null;
   });
-  
+
   const [complexId, setComplexIdState] = useState(() => {
     if (urlComplexId) {
       const id = parseInt(urlComplexId, 10);
@@ -66,7 +68,7 @@ export default function ResidentsPage() {
     }
     return selectedComplexId || null;
   });
-  
+
   const [buildingId, setBuildingIdState] = useState(() => {
     if (urlBuildingId) {
       const id = parseInt(urlBuildingId, 10);
@@ -74,7 +76,7 @@ export default function ResidentsPage() {
     }
     return selectedBuildingId || null;
   });
-  
+
   const [blockId, setBlockIdState] = useState(() => {
     if (urlBlockId) {
       const id = parseInt(urlBlockId, 10);
@@ -82,7 +84,7 @@ export default function ResidentsPage() {
     }
     return selectedBlockId || null;
   });
-  
+
   const [propertyId, setPropertyIdState] = useState(() => {
     if (urlPropertyId) {
       const id = parseInt(urlPropertyId, 10);
@@ -99,6 +101,7 @@ export default function ResidentsPage() {
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [bindModalOpen, setBindModalOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [itemToView, setItemToView] = useState(null);
@@ -108,7 +111,7 @@ export default function ResidentsPage() {
 
   const form = useResidentForm();
   const { items, loading, page, lastPage, total, itemsPerPage, setItemsPerPage, goToPage, refresh } = useResidentData({ search, mtkId, complexId, buildingId, blockId, propertyId });
-  
+
   // MTK seçim işleminin bir kez yapılması için flag
   const mtkInitializedRef = useRef(false);
 
@@ -121,7 +124,7 @@ export default function ResidentsPage() {
     dispatch(loadProperties({ page: 1, per_page: 1000 }));
     dispatch(loadResidents({ page: 1, per_page: 1000 }));
   }, [dispatch]);
-  
+
   // Sync filter values with URL changes
   useEffect(() => {
     if (urlMtkId) {
@@ -186,7 +189,7 @@ export default function ResidentsPage() {
 
     // Build URL params
     const params = new URLSearchParams();
-    
+
     // Set the changed filter and get parent values
     switch (filterType) {
       case "mtk":
@@ -321,7 +324,7 @@ export default function ResidentsPage() {
 
   const confirmDelete = async () => {
     if (!itemToDelete) return;
-    
+
     setDeleteLoading(true);
     try {
       await residentsAPI.delete(itemToDelete.id);
@@ -387,6 +390,10 @@ export default function ResidentsPage() {
         loading={loading}
         onView={handleView}
         onEdit={handleEdit}
+        onBind={(resident) => {
+          dispatch(setSelectedResident({ id: resident.id, resident }));
+          setBindModalOpen(true);
+        }}
         onDelete={handleDelete}
         onSelect={handleSelect}
         selectedResidentId={selectedResidentId}
@@ -413,6 +420,19 @@ export default function ResidentsPage() {
         mtkId={mtkId}
         complexId={complexId}
         propertyId={propertyId}
+      />
+
+      <PropertyBindModal
+
+        open={bindModalOpen}
+        onClose={() => setBindModalOpen(false)}
+        residentId={selectedResidentId}
+        residentProperties={selectedResident?.properties}
+        onSuccess={() => {
+          if (selectedResidentId) {
+            dispatch(loadResidentById(selectedResidentId));
+          }
+        }}
       />
 
       <ResidentSearchModal
@@ -442,20 +462,20 @@ export default function ResidentsPage() {
           { key: "surname", label: "Soyad", icon: UserIcon },
           { key: "email", label: "E-mail", icon: EnvelopeIcon },
           { key: "phone", label: "Telefon", icon: PhoneIcon },
-          { 
-            key: "gender", 
+          {
+            key: "gender",
             label: "Cins",
             icon: UserIcon,
             format: (value) => value === "male" ? "Kişi" : value === "female" ? "Qadın" : value || "-"
           },
-          { 
-            key: "type", 
+          {
+            key: "type",
             label: "Tip",
             icon: IdentificationIcon,
             format: (value) => value === "owner" ? "Sahib" : value === "tenant" ? "Kirayəçi" : value || "-"
           },
-          { 
-            key: "status", 
+          {
+            key: "status",
             label: "Status",
             icon: CheckCircleIcon
           },
@@ -485,4 +505,3 @@ export default function ResidentsPage() {
     </div>
   );
 }
-

@@ -19,6 +19,41 @@ function useDebounce(value, delay) {
   return debouncedValue;
 }
 
+const loadOptions = async (search, loadedOptions, { page }) => {
+  try {
+    const params = {
+      ...searchParamsRef.current,
+      search: search || "",
+      page: page || 1,
+      per_page: 20,
+    };
+
+    console.log("REQUEST:", endpoint, params);
+
+    const response = await api.get(endpoint, { params });
+
+    const result = response.data?.data;
+
+    return {
+      options:
+        result?.data?.map((item) => ({
+          value: item.id,
+          label: item.name,
+        })) || [],
+      hasMore: result?.current_page < result?.last_page,
+      additional: {
+        page: result?.current_page + 1,
+      },
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      options: [],
+      hasMore: false,
+    };
+  }
+};
+
 export function AsyncSearchSelect({
   label,
   value,
@@ -29,10 +64,10 @@ export function AsyncSearchSelect({
   disabled = false,
   className = "",
   labelClassName = "",
-  endpoint, 
+  endpoint,
   searchParams = {},
-  labelKey = "name", 
-  valueKey = "id", 
+  labelKey = "name",
+  valueKey = "id",
   selectedLabel = null,
   perPage = 20,
 }) {
@@ -44,7 +79,7 @@ export function AsyncSearchSelect({
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
-  
+
   const selectRef = useRef(null);
   const buttonRef = useRef(null);
   const dropdownRef = useRef(null);
@@ -66,7 +101,7 @@ export function AsyncSearchSelect({
 
   const searchParamsKey = JSON.stringify(searchParams);
   const searchParamsRef = useRef(searchParams);
-  
+
   useEffect(() => {
     searchParamsRef.current = searchParams;
   }, [searchParamsKey]);
@@ -74,7 +109,7 @@ export function AsyncSearchSelect({
   const parseResponse = useCallback((response) => {
     let data = [];
     let lastPage = 1;
-    
+
     if (response.data?.success && response.data?.data) {
       const responseData = response.data.data;
       if (Array.isArray(responseData.data)) {
@@ -91,13 +126,13 @@ export function AsyncSearchSelect({
     } else if (Array.isArray(response.data)) {
       data = response.data;
     }
-    
+
     return { data, lastPage };
   }, []);
 
   const loadMoreData = useCallback(async (search, pageNum) => {
     if (!endpoint || loadingMore) return;
-    
+
     setLoadingMore(true);
     try {
       const params = {
@@ -105,14 +140,14 @@ export function AsyncSearchSelect({
         per_page: perPage,
         page: pageNum,
       };
-      
+
       if (search && search.trim()) {
-        params.name = search.trim();
+        params.search = search.trim();
       }
 
       const response = await api.get(endpoint, { params });
       const { data, lastPage } = parseResponse(response);
-      
+
       setOptions(prev => [...prev, ...data]);
       setPage(pageNum);
       setHasMore(pageNum < lastPage);
@@ -135,7 +170,7 @@ export function AsyncSearchSelect({
     if (isOpen && endpoint) {
       setPage(1);
       setHasMore(true);
-      
+
       const fetchData = async () => {
         setLoading(true);
         try {
@@ -144,14 +179,14 @@ export function AsyncSearchSelect({
             per_page: perPage,
             page: 1,
           };
-          
+
           if (debouncedSearch && debouncedSearch.trim()) {
-            params.name = debouncedSearch.trim();
+            params.search = debouncedSearch.trim();
           }
 
           const response = await api.get(endpoint, { params });
           const { data, lastPage } = parseResponse(response);
-          
+
           setOptions(data);
           setPage(1);
           setHasMore(1 < lastPage);
@@ -163,7 +198,7 @@ export function AsyncSearchSelect({
           setLoading(false);
         }
       };
-      
+
       fetchData();
     }
   }, [debouncedSearch, isOpen, endpoint, perPage, searchParamsKey, parseResponse]);
@@ -171,7 +206,7 @@ export function AsyncSearchSelect({
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
-        selectRef.current && 
+        selectRef.current &&
         !selectRef.current.contains(event.target) &&
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target)
@@ -237,10 +272,10 @@ export function AsyncSearchSelect({
   };
 
   const dropdown = isOpen && createPortal(
-    <div 
+    <div
       ref={dropdownRef}
       className="fixed bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-xl overflow-hidden"
-      style={{ 
+      style={{
         top: dropdownPosition.top,
         left: dropdownPosition.left,
         width: dropdownPosition.width,
@@ -261,8 +296,8 @@ export function AsyncSearchSelect({
           />
         </div>
       </div>
-      
-      <div 
+
+      <div
         ref={listRef}
         className="max-h-52 overflow-y-auto"
         onScroll={handleListScroll}
@@ -347,7 +382,7 @@ export function AsyncSearchSelect({
         </span>
         <div className="flex items-center gap-1">
           {value && (
-            <XMarkIcon 
+            <XMarkIcon
               className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               onClick={handleClear}
             />
