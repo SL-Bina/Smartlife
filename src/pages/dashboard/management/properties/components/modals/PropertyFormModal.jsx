@@ -6,174 +6,124 @@ import { HomeIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import DynamicToast from "@/components/DynamicToast";
 import propertyLookupsAPI from "../../api/lookups";
 
-const ACTIVE_COLOR = "#14b8a6"; // Teal for properties
+const ACTIVE_COLOR = "#14b8a6";
 
-export function PropertyFormModal({ open, mode = "create", onClose, form, onSubmit, mtkId = null, complexId = null, buildingId = null, blockId = null }) {
+const getRgbaColor = (hex, opacity = 1) => {
+  if (!hex) return null;
+  const hexClean = hex.replace("#", "");
+  const r = parseInt(hexClean.substring(0, 2), 16);
+  const g = parseInt(hexClean.substring(2, 4), 16);
+  const b = parseInt(hexClean.substring(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+};
+
+const statusOptions = [
+  { value: "active", label: "Aktiv" },
+  { value: "inactive", label: "Qeyri-aktiv" },
+];
+
+export function PropertyFormModal({
+  open,
+  mode = "create",
+  onClose,
+  form,
+  onSubmit,
+  mtkId = null,
+  complexId = null,
+  buildingId = null,
+  blockId = null,
+}) {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
+
   const [mtks, setMtks] = useState([]);
   const [complexes, setComplexes] = useState([]);
   const [buildings, setBuildings] = useState([]);
   const [blocks, setBlocks] = useState([]);
   const [propertyTypes, setPropertyTypes] = useState([]);
-  const [loadingLookups, setLoadingLookups] = useState(false);
+  const [loadingMtks, setLoadingMtks] = useState(false);
   const [loadingComplexes, setLoadingComplexes] = useState(false);
   const [loadingBuildings, setLoadingBuildings] = useState(false);
   const [loadingBlocks, setLoadingBlocks] = useState(false);
-
-  const showToast = (type, message, title = "") => {
-    setToast({ open: true, type, message, title });
-  };
+  const [loadingTypes, setLoadingTypes] = useState(false);
 
   const isEdit = mode === "edit";
   const title = isEdit ? "Mənzil Redaktə et" : "Yeni Mənzil Əlavə Et";
 
-  const statusOptions = [
-    { value: "active", label: "Aktiv" },
-    { value: "inactive", label: "Qeyri-aktiv" },
-  ];
-
+  const showToast = (type, message, ttl = "") =>
+    setToast({ open: true, type, message, title: ttl });
   useEffect(() => {
-    if (open) {
-      setLoadingLookups(true);
-      Promise.all([
-        propertyLookupsAPI.getMtks(),
-        propertyLookupsAPI.getPropertyTypes(),
-      ])
-        .then(([mtksData, typesData]) => {
-          setMtks(mtksData || []);
-          setPropertyTypes(typesData || []);
-        })
-        .catch((error) => {
-          console.error("Error loading lookups:", error);
-        })
-        .finally(() => {
-          setLoadingLookups(false);
-        });
-    }
+    if (!open || isEdit) return;
+    if (mtkId) form?.updateField("mtk_id", mtkId);
+    if (complexId) form?.updateField("complex_id", complexId);
+    if (buildingId) form?.updateField("building_id", buildingId);
+    if (blockId) form?.updateField("block_id", blockId);
   }, [open]);
-
-  // Load complexes when MTK changes
   useEffect(() => {
-    if (open && form?.formData?.mtk_id) {
-      setLoadingComplexes(true);
-      propertyLookupsAPI.getComplexes({ mtk_id: form.formData.mtk_id })
-        .then((data) => {
-          setComplexes(data || []);
-        })
-        .catch((error) => {
-          console.error("Error loading complexes:", error);
-          setComplexes([]);
-        })
-        .finally(() => {
-          setLoadingComplexes(false);
-        });
-    } else if (open && !form?.formData?.mtk_id) {
+    if (!open) return;
+    setLoadingMtks(true);
+    propertyLookupsAPI.getMtks()
+      .then((data) => setMtks(data || []))
+      .catch(console.error)
+      .finally(() => setLoadingMtks(false));
+  }, [open]);
+  useEffect(() => {
+    if (!open) return;
+    setLoadingTypes(true);
+    propertyLookupsAPI.getPropertyTypes()
+      .then((data) => setPropertyTypes(data || []))
+      .catch(console.error)
+      .finally(() => setLoadingTypes(false));
+  }, [open]);
+  useEffect(() => {
+    if (!open || !form?.formData?.mtk_id) {
       setComplexes([]);
-      form?.updateField("complex_id", null);
-      form?.updateField("building_id", null);
-      form?.updateField("block_id", null);
+      return;
     }
-  }, [open, form?.formData?.mtk_id, form]);
-
-  // Load buildings when Complex changes
+    setLoadingComplexes(true);
+    propertyLookupsAPI.getComplexes({ mtk_id: form.formData.mtk_id })
+      .then((data) => setComplexes(data || []))
+      .catch(() => setComplexes([]))
+      .finally(() => setLoadingComplexes(false));
+  }, [open, form?.formData?.mtk_id]);
   useEffect(() => {
-    if (open && form?.formData?.complex_id) {
-      setLoadingBuildings(true);
-      propertyLookupsAPI.getBuildings({ complex_id: form.formData.complex_id })
-        .then((data) => {
-          setBuildings(data || []);
-        })
-        .catch((error) => {
-          console.error("Error loading buildings:", error);
-          setBuildings([]);
-        })
-        .finally(() => {
-          setLoadingBuildings(false);
-        });
-    } else if (open && !form?.formData?.complex_id) {
+    if (!open || !form?.formData?.complex_id) {
       setBuildings([]);
-      form?.updateField("building_id", null);
-      form?.updateField("block_id", null);
+      return;
     }
-  }, [open, form?.formData?.complex_id, form]);
-
-  // Load blocks when Building changes
+    setLoadingBuildings(true);
+    propertyLookupsAPI.getBuildings({ complex_id: form.formData.complex_id })
+      .then((data) => setBuildings(data || []))
+      .catch(() => setBuildings([]))
+      .finally(() => setLoadingBuildings(false));
+  }, [open, form?.formData?.complex_id]);
   useEffect(() => {
-    if (open && form?.formData?.building_id) {
-      setLoadingBlocks(true);
-      propertyLookupsAPI.getBlocks({ building_id: form.formData.building_id })
-        .then((data) => {
-          setBlocks(data || []);
-        })
-        .catch((error) => {
-          console.error("Error loading blocks:", error);
-          setBlocks([]);
-        })
-        .finally(() => {
-          setLoadingBlocks(false);
-        });
-    } else if (open && !form?.formData?.building_id) {
+    if (!open || !form?.formData?.building_id) {
       setBlocks([]);
-      form?.updateField("block_id", null);
+      return;
     }
-  }, [open, form?.formData?.building_id, form]);
-
-  // Set IDs from props if provided (only for create mode)
-  useEffect(() => {
-    if (open && !isEdit && mtkId && form?.updateField) {
-      const currentMtkId = form?.formData?.mtk_id;
-      if (!currentMtkId || currentMtkId !== mtkId) {
-        form.updateField("mtk_id", mtkId);
-      }
-    }
-  }, [open, isEdit, mtkId, form?.formData?.mtk_id]);
-
-  useEffect(() => {
-    if (open && !isEdit && complexId && form?.updateField) {
-      const currentComplexId = form?.formData?.complex_id;
-      if (!currentComplexId || currentComplexId !== complexId) {
-        form.updateField("complex_id", complexId);
-      }
-    }
-  }, [open, isEdit, complexId, form?.formData?.complex_id]);
-
-  useEffect(() => {
-    if (open && !isEdit && buildingId && form?.updateField) {
-      const currentBuildingId = form?.formData?.building_id;
-      if (!currentBuildingId || currentBuildingId !== buildingId) {
-        form.updateField("building_id", buildingId);
-      }
-    }
-  }, [open, isEdit, buildingId, form?.formData?.building_id]);
-
-  useEffect(() => {
-    if (open && !isEdit && blockId && form?.updateField) {
-      const currentBlockId = form?.formData?.block_id;
-      if (!currentBlockId || currentBlockId !== blockId) {
-        form.updateField("block_id", blockId);
-      }
-    }
-  }, [open, isEdit, blockId, form?.formData?.block_id]);
+    setLoadingBlocks(true);
+    propertyLookupsAPI.getBlocks({ building_id: form.formData.building_id })
+      .then((data) => setBlocks(data || []))
+      .catch(() => setBlocks([]))
+      .finally(() => setLoadingBlocks(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, form?.formData?.building_id]);
 
   const errorText = useMemo(() => {
     if (!form?.formData?.name?.trim()) return "Ad mütləqdir";
-    if (!form?.formData?.mtk_id) return "MTK mütləqdir";
-    if (!form?.formData?.complex_id) return "Complex mütləqdir";
-    if (!form?.formData?.building_id) return "Building mütləqdir";
-    if (!form?.formData?.block_id) return "Block mütləqdir";
+
+    // Create modda hierarchy validation
+    if (!isEdit) {
+      if (!form?.formData?.mtk_id) return "MTK mütləqdir";
+      if (!form?.formData?.complex_id) return "Complex mütləqdir";
+      if (!form?.formData?.building_id) return "Building mütləqdir";
+      if (!form?.formData?.block_id) return "Block mütləqdir";
+    }
+
     if (!form?.formData?.property_type) return "Mənzil tipi mütləqdir";
     return "";
-  }, [form?.formData]);
-
-  const getRgbaColor = (hex, opacity = 1) => {
-    if (!hex) return null;
-    const hexClean = hex.replace("#", "");
-    const r = parseInt(hexClean.substring(0, 2), 16);
-    const g = parseInt(hexClean.substring(2, 4), 16);
-    const b = parseInt(hexClean.substring(4, 6), 16);
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-  };
+  }, [form?.formData, isEdit]);
 
   const submit = async () => {
     if (errorText) {
@@ -185,9 +135,7 @@ export function PropertyFormModal({ open, mode = "create", onClose, form, onSubm
       await onSubmit?.(form.formData);
       onClose?.();
     } catch (e) {
-      console.error(e);
-      const errorMessage = e?.message || "Xəta baş verdi";
-      showToast("error", errorMessage, "Xəta");
+      showToast("error", e?.message || "Xəta baş verdi", "Xəta");
     } finally {
       setSaving(false);
     }
@@ -197,22 +145,22 @@ export function PropertyFormModal({ open, mode = "create", onClose, form, onSubm
 
   return (
     <>
-      <Dialog 
-        open={!!open} 
-        handler={onClose} 
+      <Dialog
+        open={!!open}
+        handler={onClose}
         size="xl"
         className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl"
         dismiss={{ enabled: false }}
       >
-        <DialogHeader 
+        <DialogHeader
           className="border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between"
           style={{
             background: `linear-gradient(to right, ${getRgbaColor(ACTIVE_COLOR, 0.9)}, ${getRgbaColor(ACTIVE_COLOR, 0.7)})`,
           }}
         >
           <div className="flex items-center gap-3">
-            <div 
-              className="p-2 rounded-lg bg-white/20 backdrop-blur-sm"
+            <div
+              className="p-2 rounded-lg"
               style={{ backgroundColor: getRgbaColor(ACTIVE_COLOR, 0.3) }}
             >
               <HomeIcon className="h-6 w-6 text-white" />
@@ -225,7 +173,7 @@ export function PropertyFormModal({ open, mode = "create", onClose, form, onSubm
             variant="text"
             size="sm"
             onClick={onClose}
-            className="text-white hover:bg-white/20 rounded-full relative z-10"
+            className="text-white hover:bg-white/20 rounded-full"
           >
             <XMarkIcon className="h-5 w-5" />
           </Button>
@@ -233,10 +181,11 @@ export function PropertyFormModal({ open, mode = "create", onClose, form, onSubm
 
         <DialogBody className="p-6 overflow-y-auto max-h-[70vh]">
           <div className="space-y-6">
+
             {/* Əsas Məlumatlar */}
             <div>
               <Typography variant="h6" className="text-gray-900 dark:text-white mb-4 font-semibold flex items-center gap-2">
-                <div className="w-1 h-6 rounded-full" style={{ backgroundColor: ACTIVE_COLOR }}></div>
+                <div className="w-1 h-6 rounded-full" style={{ backgroundColor: ACTIVE_COLOR }} />
                 Əsas Məlumatlar
               </Typography>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -256,64 +205,52 @@ export function PropertyFormModal({ open, mode = "create", onClose, form, onSubm
               </div>
             </div>
 
-            {/* Seçimlər */}
+            {/* Seçimlər - hər biri müstəqil */}
             <div>
               <Typography variant="h6" className="text-gray-900 dark:text-white mb-4 font-semibold flex items-center gap-2">
-                <div className="w-1 h-6 rounded-full" style={{ backgroundColor: ACTIVE_COLOR }}></div>
+                <div className="w-1 h-6 rounded-full" style={{ backgroundColor: ACTIVE_COLOR }} />
                 Seçimlər
               </Typography>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <CustomSelect
                   label="MTK *"
                   value={form?.formData?.mtk_id ? String(form.formData.mtk_id) : ""}
-                  onChange={(value) => {
-                    form?.updateField("mtk_id", value ? Number(value) : null);
-                    form?.updateField("complex_id", null);
-                    form?.updateField("building_id", null);
-                    form?.updateField("block_id", null);
-                  }}
-                  options={mtks.map(mtk => ({ value: String(mtk.id), label: mtk.name }))}
-                  loading={loadingLookups}
+                  onChange={(value) => form?.updateField("mtk_id", value ? Number(value) : null)}
+                  options={mtks.map((m) => ({ value: String(m.id), label: m.name }))}
+                  loading={loadingMtks}
+                  disabled={loadingMtks || isEdit}
+                  placeholder="MTK seçin"
                   error={!!form?.errors?.mtk_id}
-                  helperText={form?.errors?.mtk_id}
-                  disabled={loadingLookups || isEdit}
                 />
                 <CustomSelect
                   label="Complex *"
                   value={form?.formData?.complex_id ? String(form.formData.complex_id) : ""}
-                  onChange={(value) => {
-                    form?.updateField("complex_id", value ? Number(value) : null);
-                    form?.updateField("building_id", null);
-                    form?.updateField("block_id", null);
-                  }}
-                  options={complexes.map(complex => ({ value: String(complex.id), label: complex.name }))}
+                  onChange={(value) => form?.updateField("complex_id", value ? Number(value) : null)}
+                  options={complexes.map((c) => ({ value: String(c.id), label: c.name }))}
                   loading={loadingComplexes}
+                  disabled={loadingComplexes || isEdit}
+                  placeholder="Complex seçin"
                   error={!!form?.errors?.complex_id}
-                  helperText={form?.errors?.complex_id}
-                  disabled={loadingComplexes || !form?.formData?.mtk_id || isEdit}
                 />
                 <CustomSelect
                   label="Building *"
                   value={form?.formData?.building_id ? String(form.formData.building_id) : ""}
-                  onChange={(value) => {
-                    form?.updateField("building_id", value ? Number(value) : null);
-                    form?.updateField("block_id", null);
-                  }}
-                  options={buildings.map(building => ({ value: String(building.id), label: building.name }))}
+                  onChange={(value) => form?.updateField("building_id", value ? Number(value) : null)}
+                  options={buildings.map((b) => ({ value: String(b.id), label: b.name }))}
                   loading={loadingBuildings}
+                  disabled={loadingBuildings || isEdit}
+                  placeholder="Building seçin"
                   error={!!form?.errors?.building_id}
-                  helperText={form?.errors?.building_id}
-                  disabled={loadingBuildings || !form?.formData?.complex_id || isEdit}
                 />
                 <CustomSelect
                   label="Block *"
                   value={form?.formData?.block_id ? String(form.formData.block_id) : ""}
                   onChange={(value) => form?.updateField("block_id", value ? Number(value) : null)}
-                  options={blocks.map(block => ({ value: String(block.id), label: block.name }))}
+                  options={blocks.map((b) => ({ value: String(b.id), label: b.name }))}
                   loading={loadingBlocks}
+                  disabled={loadingBlocks || isEdit}
+                  placeholder="Block seçin"
                   error={!!form?.errors?.block_id}
-                  helperText={form?.errors?.block_id}
-                  disabled={loadingBlocks || !form?.formData?.building_id || isEdit}
                 />
               </div>
               <div className="mt-4">
@@ -321,11 +258,14 @@ export function PropertyFormModal({ open, mode = "create", onClose, form, onSubm
                   label="Mənzil Tipi *"
                   value={form?.formData?.property_type ? String(form.formData.property_type) : ""}
                   onChange={(value) => form?.updateField("property_type", value ? Number(value) : null)}
-                  options={propertyTypes.map(type => ({ value: String(type.id), label: type.name || `Tip #${type.id}` }))}
-                  loading={loadingLookups}
+                  options={propertyTypes.map((t) => ({
+                    value: String(t.id),
+                    label: t.name || `Tip #${t.id}`,
+                  }))}
+                  loading={loadingTypes}
+                  disabled={loadingTypes}
+                  placeholder="Tip seçin"
                   error={!!form?.errors?.property_type}
-                  helperText={form?.errors?.property_type}
-                  disabled={loadingLookups}
                 />
               </div>
             </div>
@@ -333,7 +273,7 @@ export function PropertyFormModal({ open, mode = "create", onClose, form, onSubm
             {/* Meta Məlumatlar */}
             <div>
               <Typography variant="h6" className="text-gray-900 dark:text-white mb-4 font-semibold flex items-center gap-2">
-                <div className="w-1 h-6 rounded-full" style={{ backgroundColor: ACTIVE_COLOR }}></div>
+                <div className="w-1 h-6 rounded-full" style={{ backgroundColor: ACTIVE_COLOR }} />
                 Meta Məlumatlar
               </Typography>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -357,6 +297,7 @@ export function PropertyFormModal({ open, mode = "create", onClose, form, onSubm
                 />
               </div>
             </div>
+
           </div>
         </DialogBody>
 
@@ -364,7 +305,7 @@ export function PropertyFormModal({ open, mode = "create", onClose, form, onSubm
           <Button
             variant="outlined"
             onClick={onClose}
-            className="border-gray-600 text-gray-600 hover:bg-gray-600 hover:text-white dark:border-gray-400 dark:text-gray-400 dark:hover:bg-gray-400"
+            className="border-gray-600 text-gray-600 hover:bg-gray-600 hover:text-white dark:border-gray-400 dark:text-gray-400"
           >
             Ləğv et
           </Button>
@@ -384,9 +325,8 @@ export function PropertyFormModal({ open, mode = "create", onClose, form, onSubm
         type={toast.type}
         message={toast.message}
         title={toast.title}
-        onClose={() => setToast({ ...toast, open: false })}
+        onClose={() => setToast((p) => ({ ...p, open: false }))}
       />
     </>
   );
 }
-
