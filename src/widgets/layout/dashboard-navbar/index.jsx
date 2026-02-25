@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { pageTitleKeyMap } from "./utils/pageTitleMap";
 import { MobileNavbar } from "./components/MobileNavbar";
 import { DesktopNavbar } from "./components/DesktopNavbar";
+import { useSelector } from "react-redux";
 
 export function DashboardNavbar({ homePath, parentPathMap }) {
   const [controller] = useMaterialTailwindController();
@@ -23,7 +24,12 @@ export function DashboardNavbar({ homePath, parentPathMap }) {
     navbarHoverEffects,
     sidenavType,
   } = controller;
-  const colorCode = null;
+  // obtain color from currently selected property (resident side)
+  const selectedProperty = useSelector((state) => state.property.selectedProperty);
+  const colorCode =
+    selectedProperty?.sub_data?.complex?.meta?.color_code ||
+    selectedProperty?.sub_data?.mtk?.meta?.color_code ||
+    null;
   const { pathname } = useLocation();
   const { t } = useTranslation();
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -63,6 +69,10 @@ export function DashboardNavbar({ homePath, parentPathMap }) {
     : pageTitleKeyMap[page]
       ? t(pageTitleKeyMap[page])
       : page;
+  // append property name for resident side
+  const displayTitle = selectedProperty && selectedProperty.name
+    ? `${pageTitle} (${selectedProperty.name})`
+    : pageTitle;
 
   const getRgbaColor = (hex, opacity = 1) => {
     if (!hex) return null;
@@ -276,10 +286,10 @@ export function DashboardNavbar({ homePath, parentPathMap }) {
         } : {}),
       }}
     >
-      <MobileNavbar pageTitle={pageTitle} navbarHoverEffects={navbarHoverEffects} />
+      <MobileNavbar pageTitle={displayTitle} navbarHoverEffects={navbarHoverEffects} />
       <DesktopNavbar 
         pathParts={pathParts} 
-        pageTitle={pageTitle} 
+        pageTitle={displayTitle} 
         fixedNavbar={fixedNavbar}
         navbarHoverEffects={navbarHoverEffects}
         homePath={homePath}

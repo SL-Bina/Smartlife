@@ -22,5 +22,13 @@ export default defineConfig({
     port: 3157,
     open: true,
     host: true,
+    proxy: {
+      // forward API requests to backend to avoid CORS during development
+      "/api": {
+        target: "http://api.smartlife.az/api/v1",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ""),
+      },
+    },
   },
 });

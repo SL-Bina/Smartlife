@@ -343,7 +343,7 @@ export function PropertyDetailModal({ open, onClose, propertyId }) {
         ) : null}
       </DialogBody>
 
-      <DialogFooter className="border-t border-gray-200 dark:border-gray-700 dark:bg-gray-800">
+      <DialogFooter className="border-t border-gray-200 dark:border-gray-700 dark:bg-gray-800 flex justify-between">
         <Button
           variant="text"
           color="gray"
@@ -352,6 +352,17 @@ export function PropertyDetailModal({ open, onClose, propertyId }) {
         >
           {t("buttons.close") || "Bağla"}
         </Button>
+        {property && property.id && (
+          <Button
+            variant="text"
+            size="sm"
+            onClick={() => {
+              window.location.href = `/resident/my-properties/${property.id}`;
+            }}
+          >
+            {t("properties.goTo") || "Keçid et"}
+          </Button>
+        )}
       </DialogFooter>
     </Dialog>
   );

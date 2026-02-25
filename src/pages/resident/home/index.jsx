@@ -13,81 +13,72 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import residentHomeAPI from "./api";
 
-// Mock data
-const mockStats = {
-  properties_count: 2,
-  invoices_count: 8,
-  unpaid_invoices_count: 3,
-  notifications_count: 5,
-  tickets_count: 2,
-  documents_count: 4,
-};
 
 const ResidentHomePage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState(null);
+  // const [stats, setStats] = useState(null);
   const [error, setError] = useState(null);
+  const [info, setInfo] = useState(null);
 
   useEffect(() => {
-    fetchStats();
+    fetchInfo();
   }, []);
 
-  const fetchStats = async () => {
+  const fetchInfo = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await residentHomeAPI.getStats();
-      setStats(response?.data || mockStats);
+      const response = await residentHomeAPI.getInfo();
+      setInfo(response.data); // <-- FIX
     } catch (err) {
-      // Use mock data on error
-      setStats(mockStats);
-      setError(null); // Don't show error, just use mock data
+      setError(err?.message || t("resident.home.infoLoadError") || "Məlumatlar yüklənərkən xəta baş verdi");
     } finally {
       setLoading(false);
     }
   };
 
+
   const statCards = [
     {
       title: t("resident.home.myProperties") || "Mənim Mənzillərim",
-      value: stats?.properties_count || 0,
+      value: info?.properties?.length || 0,
       icon: HomeIcon,
       color: "blue",
       onClick: () => navigate("/resident/my-properties"),
     },
     {
       title: t("resident.home.invoices") || "Fakturalar",
-      value: stats?.invoices_count || 0,
+      value: info?.invoices?.length || 0,
       icon: DocumentTextIcon,
       color: "green",
       onClick: () => navigate("/resident/invoices"),
     },
     {
       title: t("resident.home.unpaidInvoices") || "Ödənilməmiş Fakturalar",
-      value: stats?.unpaid_invoices_count || 0,
+      value: info?.unpaid_invoices || 0,
       icon: CurrencyDollarIcon,
       color: "red",
       onClick: () => navigate("/resident/invoices?status=unpaid"),
     },
     {
       title: t("resident.home.notifications") || "Bildirişlər",
-      value: stats?.notifications_count || 0,
+      value: info?.notifications || 0,
       icon: BellIcon,
       color: "yellow",
       onClick: () => navigate("/resident/notifications"),
     },
     {
-      title: t("resident.home.tickets") || "Biletlər",
-      value: stats?.tickets_count || 0,
+      title: t("resident.home.tickets") || "Müraciətlər",
+      value: info?.tickets || 0,
       icon: QuestionMarkCircleIcon,
       color: "purple",
       onClick: () => navigate("/resident/tickets"),
     },
     {
       title: t("resident.home.documents") || "Elektron Sənədlər",
-      value: stats?.documents_count || 0,
+      value: info?.documents || 0,
       icon: BookOpenIcon,
       color: "indigo",
       onClick: () => navigate("/resident/e-documents"),
@@ -109,7 +100,6 @@ const ResidentHomePage = () => {
 
   return (
     <div className="space-y-6" style={{ position: 'relative', zIndex: 0 }}>
-      {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 dark:from-blue-700 dark:to-blue-900 p-4 sm:p-6 rounded-xl shadow-lg border border-blue-500 dark:border-blue-700">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-white/20 rounded-lg">
@@ -126,7 +116,6 @@ const ResidentHomePage = () => {
         </div>
       </div>
 
-      {/* Statistics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {statCards.map((stat, index) => (
           <motion.div
@@ -161,7 +150,6 @@ const ResidentHomePage = () => {
         ))}
       </div>
 
-      {/* Quick Actions */}
       <Card className="border border-blue-600 dark:border-gray-700 shadow-lg dark:bg-gray-800">
         <CardBody className="p-4 sm:p-6 dark:bg-gray-800">
           <Typography variant="h6" className="text-blue-gray-900 dark:text-white font-bold mb-4">

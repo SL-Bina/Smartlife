@@ -1,14 +1,17 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { motion } from "framer-motion";
 import {
   Sidenav,
   DashboardNavbar,
   Configurator,
 } from "@/widgets/layout";
+import myPropertiesAPI from "@/pages/resident/myproperties/api"; // resident API for property count
 import routes from "@/routes";
 import { useAuth } from "@/store/hooks/useAuth";
+import { loadPropertyById, setSelectedProperty } from "@/store/slices/propertySlice";
 import { useMaterialTailwindController } from "@/store/hooks/useMaterialTailwind";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import AiChat from "@/widgets/layout/ai-chat";
@@ -19,6 +22,8 @@ import "./dashboard.css";
 
 function ProtectedRoute({ element, allowedRoles, moduleName, fallbackPath }) {
   const { user, isInitialized, hasModuleAccess } = useAuth();
+  const selectedPropertyId = useSelector((state) => state.property.selectedPropertyId);
+  const properties = useSelector((state) => state.property.properties);
 
   if (!isInitialized) {
     return (
@@ -57,6 +62,14 @@ function ProtectedRoute({ element, allowedRoles, moduleName, fallbackPath }) {
       if (!allowedRoles.includes(roleName)) {
         return <Navigate to={redirectTo} replace />;
       }
+    }
+  }
+
+  // require apartment selection if resident has multiple
+  if (isResident && properties && properties.length > 1 && !selectedPropertyId) {
+    // if user is not already on the selector page, redirect
+    if (!window.location.pathname.startsWith("/resident/my-properties")) {
+      return <Navigate to="/resident/my-properties" replace />;
     }
   }
 
@@ -160,6 +173,9 @@ export function Dashboard() {
   const [controller, uiActions] = useMaterialTailwindController();
   const { sidenavType, sidenavCollapsed, sidenavSize, sidenavPosition } = controller;
   const { user, hasModuleAccess, refreshUser, isInitialized, error, clearError } = useAuth();
+  const dispatch = useDispatch();
+  const selectedPropertyId = useSelector((state) => state.property.selectedPropertyId);
+  const [residentPropertyCount, setResidentPropertyCount] = useState(null);
   const [isDesktop, setIsDesktop] = useState(false);
 
   useDocumentTitle();
@@ -185,6 +201,39 @@ export function Dashboard() {
     }
   }, [user?.id, isInitialized, refreshUser]);
 
+  // no longer call admin list; resident point-of-truth is myPropertiesAPI
+
+  // if there's an apartment selected but we don't have its full object, load via resident API
+  const selectedProperty = useSelector((state) => state.property.selectedProperty);
+  useEffect(() => {
+    if (user?.is_resident && selectedPropertyId && !selectedProperty) {
+      // fetch from resident endpoint and store in redux
+      import("@/pages/resident/myproperties/api").then(({ default: myPropertiesAPI }) => {
+        myPropertiesAPI.getById(selectedPropertyId)
+          .then((resp) => {
+            if (resp?.data) {
+              dispatch(setSelectedProperty({ id: selectedPropertyId, property: resp.data }));
+            }
+          })
+          .catch(() => {
+            // ignore failure
+          });
+      });
+    }
+  }, [user, selectedPropertyId, selectedProperty, dispatch]);
+
+  // load resident property count to possibly hide sidebar entry when only one
+  useEffect(() => {
+    if (user?.is_resident) {
+      myPropertiesAPI.getAll()
+        .then((resp) => {
+          const list = resp?.data?.data || resp?.data || [];
+          setResidentPropertyCount(list.length);
+        })
+        .catch(() => setResidentPropertyCount(0));
+    }
+  }, [user]);
+
   const hasToken = typeof document !== 'undefined' && document.cookie.includes('smartlife_token=');
 
   if (!isInitialized) {
@@ -206,7 +255,21 @@ export function Dashboard() {
     return <Navigate to="/auth/sign-in" replace />;
   }
 
-  const filteredRoutes = filterRoutesByRole(routes, user, hasModuleAccess);
+  let filteredRoutes = filterRoutesByRole(routes, user, hasModuleAccess);
+
+  // hide "my-properties" sidebar entry except if user is currently viewing it
+  const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+  // hide entry only when resident really has exactly one apartment (not when they've selected one)
+  const hideMyProps = user?.is_resident && residentPropertyCount === 1 && !currentPath.startsWith("/resident/my-properties");
+  if (hideMyProps) {
+    filteredRoutes = filteredRoutes.map((route) => {
+      if (route.layout === "resident") {
+        const pages = route.pages.filter((page) => page.path !== "/my-properties");
+        return { ...route, pages };
+      }
+      return route;
+    });
+  }
   const firstActivePath = getFirstActivePath(filteredRoutes);
   const parentPathMap = buildParentPathMap(filteredRoutes);
 

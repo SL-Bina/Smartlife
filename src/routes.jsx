@@ -35,7 +35,8 @@ import {
   ResidentTicketsPage, 
   ResidentMyInvaoicesPage, 
   ResidentProfilePage, 
-  ResidentMyPropertiesPage 
+  ResidentMyPropertiesPage,
+  ResidentMyServicesPage 
 } from "@/pages/resident";
 import MtkPage from "./pages/dashboard/management/mtk";
 import ComplexesPage from "./pages/dashboard/management/complexes";
@@ -348,7 +349,7 @@ export const routes = [
       },
       {
         icon: <DocumentTextIcon {...icon} />,
-        name: "sidebar.invoices",
+        name: "sidebar.myInvoices",
         path: "/invoices",
         element: <ResidentMyInvaoicesPage />,
       },
@@ -357,6 +358,12 @@ export const routes = [
         name: "sidebar.myProperties",
         path: "/my-properties",
         element: <ResidentMyPropertiesPage />,
+      },
+      {
+        icon: <CogIcon {...icon} />,
+        name: "sidebar.myServices",
+        path: "/my-services",
+        element: <ResidentMyServicesPage />,
       },
       {
         icon: <QuestionMarkCircleIcon {...icon} />,

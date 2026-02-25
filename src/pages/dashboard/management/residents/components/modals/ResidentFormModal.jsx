@@ -4,6 +4,7 @@ import { XMarkIcon, UserIcon } from "@heroicons/react/24/outline";
 import { CustomInput } from "@/components/ui/CustomInput";
 import { CustomSelect } from "@/components/ui/CustomSelect";
 import DynamicToast from "@/components/DynamicToast";
+import { useAppSelector } from "@/store/hooks";
 import propertyLookupsAPI from "../../../properties/api/lookups";
 import propertiesAPI from "../../../properties/api/index";
 import mtkAPI from "../../../mtk/api";
@@ -16,11 +17,14 @@ export function ResidentFormModal({
   mode = "create",
   onClose,
   form,
-  onSubmit,
-  mtkId = null,
-  complexId = null,
-  propertyId = null
+  onSubmit
 }) {
+  // Redux-dan filter ID-ləri al
+  const mtkId = useAppSelector((state) => state.mtk.selectedMtkId);
+  const complexId = useAppSelector((state) => state.complex.selectedComplexId);
+  const buildingId = useAppSelector((state) => state.building.selectedBuildingId);
+  const blockId = useAppSelector((state) => state.block.selectedBlockId);
+
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
   const [mtks, setMtks] = useState([]);
@@ -29,6 +33,9 @@ export function ResidentFormModal({
   const [loadingLookups, setLoadingLookups] = useState(false);
   const [loadingComplexes, setLoadingComplexes] = useState(false);
   const [loadingProperties, setLoadingProperties] = useState(false);
+  
+  const PER_PAGE = 30;
+  
   const showToast = (type, message, title = "") => {
     setToast({ open: true, type, message, title });
   };
@@ -57,7 +64,6 @@ export function ResidentFormModal({
   useEffect(() => {
     if (open) {
       setLoadingLookups(true);
-      // Use search endpoint for MTKs like ManagementActions
       mtkAPI.getAll({ per_page: 1000 })
         .then((res) => {
           const data = res?.data?.data?.data || [];
@@ -84,12 +90,6 @@ export function ResidentFormModal({
       form?.updateField("property.complex_id", complexId);
     }
   }, [open, mode, complexId, complexes.length, form]);
-
-  useEffect(() => {
-    if (open && mode === "create" && propertyId && properties.length > 0 && !form?.formData?.property?.property_id) {
-      form?.updateField("property.property_id", propertyId);
-    }
-  }, [open, mode, propertyId, properties.length, form]);
 
   useEffect(() => {
     if (open && formMtkId) {
@@ -119,17 +119,21 @@ export function ResidentFormModal({
   useEffect(() => {
     if (open && formComplexId) {
       setLoadingProperties(true);
-      setProperties([]);
+      console.log("Loading properties for complex:", formComplexId);
       // Use search endpoint for properties like ManagementActions
       propertiesAPI.search({ 
         complex_ids: [formComplexId], 
         per_page: 1000 
       })
         .then((response) => {
+          console.log("Properties loaded:", response);
           const data = response?.data?.data?.data || [];
           setProperties(data);
         })
-        .catch(() => setProperties([]))
+        .catch((error) => {
+          console.error("Error loading properties:", error);
+          setProperties([]);
+        })
         .finally(() => setLoadingProperties(false));
     } else if (open && !formComplexId) {
       setProperties([]);
@@ -172,17 +176,6 @@ export function ResidentFormModal({
     }
   };
 
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (propWrapperRef.current && !propWrapperRef.current.contains(e.target)) {
-        setPropOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   if (!open) return null;
 
@@ -232,7 +225,7 @@ export function ResidentFormModal({
                   <div className="w-1 h-6 rounded-full" style={{ backgroundColor: ACTIVE_COLOR }}></div>
                   Əsas Məlumatlar
                 </Typography>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <CustomInput
                     label="Ad *"
                     value={form.formData.name || ""}
@@ -244,6 +237,12 @@ export function ResidentFormModal({
                     value={form.formData.surname || ""}
                     onChange={(e) => form.updateField("surname", e.target.value)}
                     error={form.errors?.surname}
+                  />
+                  <CustomInput
+                    label="Ata Adı"
+                    value={form.formData.father_name || ""}
+                    onChange={(e) => form.updateField("father_name", e.target.value)}
+                    error={form.errors?.father_name}
                   />
                 </div>
               </div>
@@ -344,7 +343,6 @@ export function ResidentFormModal({
                     onChange={(value) => {
                       form.updateField("property.complex_id", value ? Number(value) : null);
                       form.updateField("property.property_id", null);
-                      setProperties([]);
                     }}
                     options={complexes.map(complex => ({ value: String(complex.id), label: complex.name }))}
                     disabled={loadingComplexes || !form.formData.property?.mtk_id}
@@ -355,13 +353,14 @@ export function ResidentFormModal({
                     label="Mənzil *"
                     value={form.formData.property?.property_id ? String(form.formData.property.property_id) : ""}
                     onChange={(value) => {
+                      console.log("Property selected:", value);
                       form.updateField("property.property_id", value ? Number(value) : null);
                     }}
                     options={[
                       { value: "", label: "-- Mənzil seçin --" },
                       ...properties.map((p) => ({
                         value: String(p.id),
-                        label: p.name || p.meta?.apartment_number || `Mənzil #${p.id}`,
+                        label: `${p.sub_data?.building?.name || 'Bina'} | ${p.sub_data?.block?.name || 'Blok'} | ${p.name || p.meta?.apartment_number || `Mənzil #${p.id}`}`,
                       })),
                     ]}
                     loading={loadingProperties}

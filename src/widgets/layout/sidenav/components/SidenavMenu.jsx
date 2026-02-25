@@ -1,14 +1,19 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { SidenavSection } from "./SidenavSection";
 import { SidenavMenuItem } from "./SidenavMenuItem";
 
 export function SidenavMenu({ routes, openMenus, setOpenMenus, collapsed = false, flatMenu = false, expandAll = false, isLowHeight = false }) {
   const location = useLocation();
-  
-  // MTK rəng kodunu al (localStorage-dən də oxuyur)
-  const colorCode = null;
-  const mtkColorCode = null;
+  const selectedProperty = useSelector((state) => state.property.selectedProperty);
+
+  // color code from selected property/complex
+  const colorCode =
+    selectedProperty?.sub_data?.complex?.meta?.color_code ||
+    selectedProperty?.sub_data?.mtk?.meta?.color_code ||
+    null;
+  const mtkColorCode = colorCode; // alias for existing logic
 
   React.useEffect(() => {
     if (expandAll) {

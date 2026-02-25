@@ -8,6 +8,7 @@ import { setOpenSidenav } from "@/store/slices/uiSlice";
 import { useAppDispatch } from "@/store/hooks";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/store/hooks/useAuth";
+import { useSelector } from "react-redux";
 
 export function SidenavHeader({ brandName, collapsed = false, isLowHeight = false, homePath = "/dashboard/home" }) {
   // homePath artıq tam absolute path-dir (məs: /resident/home və ya /dashboard/home)
@@ -15,6 +16,7 @@ export function SidenavHeader({ brandName, collapsed = false, isLowHeight = fals
   const { sidenavSize } = controller;
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
+  const selectedProperty = useSelector((state) => state.property.selectedProperty);
   const [isMobile, setIsMobile] = React.useState(false);
 
   const [now, setNow] = React.useState(() => new Date());
@@ -68,9 +70,19 @@ export function SidenavHeader({ brandName, collapsed = false, isLowHeight = fals
     return "px-3 py-3 xl:px-6 xl:py-5";
   };
 
+  // compute header gradient based on complex color if available
+  const complexColor =
+    selectedProperty?.sub_data?.complex?.meta?.color_code ||
+    selectedProperty?.sub_data?.mtk?.meta?.color_code ||
+    null;
+  const headerStyle = complexColor
+    ? { background: complexColor }
+    : null;
+
   return (
     <div
-      className={`relative flex-shrink-0 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-br from-red-600/5 via-red-500/3 to-transparent dark:from-red-600/10 dark:via-red-500/5 dark:to-transparent ${getHeaderPadding()}`}
+      className={`relative flex-shrink-0 border-b border-gray-200/50 dark:border-gray-700/50 ${getHeaderPadding()}`}
+      style={headerStyle}
     >
       <Link
         to={homePath}
@@ -85,7 +97,11 @@ export function SidenavHeader({ brandName, collapsed = false, isLowHeight = fals
               }`}
           >
             <img
-              src="/Vector_Logo/color_logo.svg"
+              src={
+                selectedProperty?.sub_data?.complex?.logo ||
+                selectedProperty?.sub_data?.complex?.meta?.logo ||
+                "/Vector_Logo/color_logo.svg"
+              }
               alt="Logo"
               className={`object-contain ${collapsed
                 ? getIconSize("w-7 h-7 xl:w-6 xl:h-6", "w-6 h-6 xl:w-7 xl:h-7", "w-7 h-7 xl:w-8 xl:h-8")

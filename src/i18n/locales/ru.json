@@ -60,6 +60,8 @@
     "electronicDocuments": "Электронные документы",
     "eDocuments": "Электронные документы",
     "myProperties": "Мои Квартиры",
+    "goTo": "Перейти",
+    "notFound": "Квартира не найдена",
     "buildingManagement": "Управление зданиями",
     "userRights": "Права пользователей",
     "profile": "Профиль"

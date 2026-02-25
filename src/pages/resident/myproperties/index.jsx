@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { Typography, Spinner } from "@material-tailwind/react";
 import { BuildingOfficeIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 import myPropertiesAPI from "./api";
 import { PropertyCard, PropertyDetailModal } from "./components";
+import { setSelectedProperty } from "@/store/slices/propertySlice";
 
 export default function MyPropertiesPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -22,7 +27,15 @@ export default function MyPropertiesPage() {
       setLoading(true);
       setError(null);
       const response = await myPropertiesAPI.getAll();
-      setProperties(response?.data?.data || response?.data || []);
+      const list = response?.data?.data || response?.data || [];
+      setProperties(list);
+
+      // if resident has exactly one property, select it and go home
+      if (list && list.length === 1) {
+        const single = list[0];
+        dispatch(setSelectedProperty({ id: single.id, property: single }));
+        navigate(`/resident/home`, { replace: true });
+      }
     } catch (err) {
       setError(err?.message || t("properties.loadError") || "Məlumat yüklənərkən xəta baş verdi");
       setProperties([]);

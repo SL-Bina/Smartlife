@@ -337,14 +337,18 @@ export const refreshUser = createAsyncThunk(
   }
 );
 
+import { clearSelectedProperty } from "@/store/slices/propertySlice";
+
 export const logoutUser = createAsyncThunk(
   'auth/logoutUser',
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, dispatch }) => {
     try {
       await authAPI.logout();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
+      // ensure property selection is cleared when user logs out
+      dispatch(clearSelectedProperty());
       removeCookie(TOKEN_COOKIE_NAME);
       removeCookie(IS_RESIDENT_COOKIE_NAME);
       if (window.location.pathname !== '/auth/sign-in') {

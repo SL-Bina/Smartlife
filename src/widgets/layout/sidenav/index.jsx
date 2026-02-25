@@ -6,10 +6,22 @@ import { SidenavHeader } from "./components/SidenavHeader";
 import { SidenavMenu } from "./components/SidenavMenu";
 import { getFirstActivePath } from "@/utils/getFirstActivePath";
 
+import { useSelector } from "react-redux";
+import { useAuth } from "@/store/hooks/useAuth";
+
 export function Sidenav({ brandImg, brandName, routes }) {
   const [controller, actions] = useMaterialTailwindController();
   const { sidenavType, openSidenav, sidenavCollapsed, sidenavFlatMenu, sidenavExpandAll, sidenavSize, sidenavPosition } = controller;
   
+  // determine resident branding based on selected property/complex
+  const { user } = useAuth();
+  const selectedProperty = useSelector((state) => state.property.selectedProperty);
+  let displayName = brandName;
+  if (user?.is_resident && selectedProperty) {
+    const complexName = selectedProperty.sub_data?.complex?.name;
+    if (complexName) displayName = complexName;
+  }
+
   const colorCode = null;
   const mtkColorCode = null;
 
@@ -117,7 +129,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
           isolation: 'isolate', // Yeni stacking context yaradır
         }}
       >
-        <SidenavHeader brandName={brandName} collapsed={sidenavCollapsed && !isHovered} isLowHeight={isLowHeight} homePath={homePath} />
+        <SidenavHeader brandName={displayName} collapsed={sidenavCollapsed && !isHovered} isLowHeight={isLowHeight} homePath={homePath} />
 
         <SidenavMenu
           routes={filteredRoutes}

@@ -73,11 +73,15 @@
     "services": "Xidmətlər",
     "electronicDocuments": "Elektron sənədlər",
     "eDocuments": "Elektron sənədlər",
-    "myProperties": "Mənim Mənzillərim",
+    "myProperties": "Mənzillərim",
+    "goTo": "Keçid et",
+    "notFound": "Mənzil tapılmadı",
+    "myServices": "Xidmətlərim",
     "buildingManagement": "idarə etmə",
     "permissions": "Hüquqlar",
     "profile": "Profil",
-    "users":"İstifadəçilər"
+    "users":"İstifadəçilər",
+    "myInvoices": "Fakturalarım"
   },
   "buttons": {
     "clear": "Təmizlə",
@@ -1328,7 +1332,7 @@
     }
   },
   "services": {
-    "pageTitle": "Təkrarlanan xidmətlər",
+    "pageTitle": "Xidmətlər",
     "loading": "Yüklənir...",
     "saving": "Yadda saxlanılır...",
     "deleting": "Silinir...",
@@ -2009,11 +2013,11 @@
       "welcome": "Xoş gəldiniz",
       "subtitle": "Sizin şəxsi paneliniz",
       "quickActions": "Tez Əməliyyatlar",
-      "myProperties": "Mənim Mənzillərim",
-      "invoices": "Fakturalar",
+      "myProperties": "Mənzillərim",
+      "invoices": "Fakturalarım",
       "unpaidInvoices": "Ödənilməmiş Fakturalar",
       "notifications": "Bildirişlər",
-      "tickets": "Biletlər",
+      "tickets": "Müraciətlər",
       "documents": "Elektron Sənədlər"
     },
     "invoices": {
@@ -2075,6 +2079,7 @@
     "fileName": "Fayl adı",
     "fileSize": "Fayl ölçüsü"
   },
+  
   "residents": {
     "pageTitle": "Sakinlər",
     "loading": "Yüklənir...",
@@ -2875,5 +2880,27 @@
         }
       }
     }
+  },
+  "services": {
+    "loading": "Xidmətlər yüklənir...",
+    "description": "Bina daxilindəki xidmətləri idarə edin",
+    "myServices": "Xidmətlərim",
+    "service": "xidmət",
+    "noServices": "Xidmət tapılmadı",
+    "noServicesDesc": "Hazırda heç bir aktiv xidmətiniz yoxdur",
+    "requestFirst": "İlk Xidməti Sifariş Et",
+    "requestService": "Xidmət Sifariş Et",
+    "cancelService": "Xidməti Ləğv Et",
+    "viewDetails": "Ətraflı Bax",
+    "active": "Aktiv",
+    "pending": "Gözləmədə",
+    "cancelled": "Ləğv edilib",
+    "price": "Qiymət",
+    "duration": "Müddət",
+    "nextService": "Növbəti xidmət",
+    "provider": "Xidmət təminatçısı",
+    "category": "Kateqoriya",
+    "aboutService": "Xidmət Haqqında",
+    "additionalInfo": "Əlavə Məlumat"
   }
 }

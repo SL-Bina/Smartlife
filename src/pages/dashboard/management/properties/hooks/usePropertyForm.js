@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 
 const initialFormData = {
-  id: null, // ID field-i əlavə edildi
+  id: null, 
   name: "",
   mtk_id: null,
   complex_id: null,
@@ -37,14 +37,13 @@ export function usePropertyForm() {
     }));
   }
 
-  // errors-u ayrı setErrors ilə təmizlə, dependency-dən çıxar
   setErrors((prev) => {
     if (!prev[field]) return prev;
     const newErrors = { ...prev };
     delete newErrors[field];
     return newErrors;
   });
-}, []); // ← boş dependency, errors-u götürmür
+}, []);
 
   const setFormFromProperty = useCallback((property) => {
     if (!property) {
@@ -53,7 +52,7 @@ export function usePropertyForm() {
     }
 
     setFormData({
-      id: property.id || null, // ID-ni saxla
+      id: property.id || null,
       name: property.name || "",
       mtk_id: property.sub_data?.mtk?.id || property.mtk_id || null,
       complex_id: property.sub_data?.complex?.id || property.complex_id || null,

@@ -1,13 +1,11 @@
 import api from "@/services/api";
 
+// no mock data; always hit the backend
+
 export const residentHomeAPI = {
-  getStats: async () => {
-    try {
-      const response = await api.get("/module/resident/config/home/stats");
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || error.message;
-    }
+  getInfo: async () => {
+    const response = await api.get("/module/resident/config/me");
+    return response.data;
   },
 };
 

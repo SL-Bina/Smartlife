@@ -45,11 +45,41 @@ const api = axios.create({
   }
 });
 
+
 api.interceptors.request.use(
-  (config) => {
+  async (config) => {
     const token = getCookie(TOKEN_COOKIE_NAME);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+    // attach apartmentId only when calling resident-specific endpoints
+    try {
+      const url = config.url || "";
+      if (!url.includes("/module/resident")) {
+        // skip non-resident APIs such as property management
+      } else {
+        // do NOT automatically attach apartmentId for endpoints that don't
+        // logically need it (e.g. /config/me which returns the current user).
+        // we only want to append the parameter when we're calling a resource
+        // that is scoped to a specific property.
+        const skipPaths = ["/module/resident/config/me"];
+        const shouldSkip = skipPaths.some((p) => url.endsWith(p));
+        if (!shouldSkip) {
+          // lazy import store to break cyclic dependency
+          const { store } = await import("@/store");
+          const aptId = store.getState()?.property?.selectedPropertyId;
+          if (aptId) {
+            config.params = config.params || {};
+            // don't overwrite if already specified
+            if (!config.params.apartmentId && !config.params.apartment_id) {
+              config.params.apartmentId = aptId;
+              config.params.property_id = aptId;
+            }
+          }
+        }
+      }
+    } catch (ex) {
+      console.warn("Failed to attach apartmentId to request", ex);
     }
     return config;
   },
