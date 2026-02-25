@@ -83,52 +83,15 @@ export function DashboardNavbar({ homePath, parentPathMap }) {
     return `rgba(${r}, ${g}, ${b}, ${opacity})`;
   };
 
+  // legacy background generator removed – we always want a glass/transparent navbar
   const getNavbarBackground = () => {
-    if (colorCode && sidenavType === "white") {
-      const color1 = getRgbaColor(colorCode, 0.1);
-      const color2 = getRgbaColor(colorCode, 0.05);
-      return {
-        background: `linear-gradient(to bottom, ${color1}, ${color2}, ${color1})`,
-      };
-    }
-    if (colorCode && sidenavType === "dark") {
-      const color1 = getRgbaColor(colorCode, 0.2);
-      const color2 = getRgbaColor(colorCode, 0.15);
-      return {
-        background: `linear-gradient(to bottom, ${color1}, ${color2}, ${color1})`,
-      };
-    }
-    return {};
+    return { background: 'transparent' };
   };
 
   // Navbar konfiqurasiyaları - Glass effect ilə
+  // navbar always has transparent glass background regardless of color selection
   const getNavbarColorClasses = () => {
-    if (colorCode) return ""; // MTK rəngi varsa default gradient-i sil
-    const transparency = getNavbarTransparency();
-    const colors = {
-      default: {
-        light: `bg-white/80 from-white/90 via-white/85 to-white/90`,
-        dark: `dark:bg-black/80 dark:from-black/90 dark:via-black/85 dark:to-black/90`,
-      },
-      red: {
-        light: `from-red-100/80 via-red-200/75 to-red-100/80`,
-        dark: `dark:bg-black/80 dark:from-black/90 dark:via-black/85 dark:to-black/90`,
-      },
-      blue: {
-        light: `from-blue-100/80 via-blue-200/75 to-blue-100/80`,
-        dark: `dark:bg-black/80 dark:from-black/90 dark:via-black/85 dark:to-black/90`,
-      },
-      green: {
-        light: `from-green-100/80 via-green-200/75 to-green-100/80`,
-        dark: `dark:bg-black/80 dark:from-black/90 dark:via-black/85 dark:to-black/90`,
-      },
-      purple: {
-        light: `from-purple-100/80 via-purple-200/75 to-purple-100/80`,
-        dark: `dark:bg-black/80 dark:from-black/90 dark:via-black/85 dark:to-black/90`,
-      },
-    };
-    const color = colors[navbarColor] || colors.default;
-    return `bg-gradient-to-br ${color.light} ${color.dark}`;
+    return "bg-transparent dark:bg-transparent";
   };
 
   const getNavbarHeightClasses = () => {
@@ -268,23 +231,24 @@ export function DashboardNavbar({ homePath, parentPathMap }) {
 
   return (
     <Navbar
-      color={fixedNavbar ? (isDarkMode ? "gray" : "white") : "transparent"}
+      // force transparent color so MaterialTailwind doesn't apply a solid fill
+      color="transparent"
       className={`${navbarClasses} ${getNavbarTextColor()}`}
       fullWidth
       blurred={fixedNavbar && navbarBlur === "enabled"}
-      style={{
-        ...getNavbarBackground(),
-        borderColor: colorCode ? getRgbaColor(colorCode, 0.3) : undefined,
-        position: 'relative',
-        zIndex: 1001,
-        ...(isDarkMode && fixedNavbar ? { 
-          backgroundColor: 'rgba(0, 0, 0, 0.85)',
-          color: '#ffffff',
-        } : fixedNavbar && !isDarkMode ? {
-          backgroundColor: 'rgba(255, 255, 255, 0.85)',
-          color: '#111827',
-        } : {}),
-      }}
+      style={(() => {
+        // always transparent background for glass effect
+        const base = {
+          background: 'transparent',
+          borderColor: colorCode ? getRgbaColor(colorCode, 0.3) : undefined,
+          position: 'relative',
+          zIndex: 1001,
+        };
+        if (fixedNavbar) {
+          base.color = isDarkMode ? '#ffffff' : '#111827';
+        }
+        return base;
+      })()}
     >
       <MobileNavbar pageTitle={displayTitle} navbarHoverEffects={navbarHoverEffects} />
       <DesktopNavbar 

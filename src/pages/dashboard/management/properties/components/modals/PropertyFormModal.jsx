@@ -146,14 +146,11 @@ export function PropertyFormModal({
       });
   }, [open, form?.formData?.building_id]);
 
-  // when modal opens in create mode, pick a sensible default property type
   useEffect(() => {
     if (!open || isEdit) return;
     if (propertyTypes.length === 0) return;
 
-    // if user hasn't already selected a type, choose a default
     if (!form?.formData?.property_type) {
-      // try to find a type whose name contains "apartment" (case‑insensitive)
       const aptType = propertyTypes.find((t) =>
         String(t.name || "").toLowerCase().includes("apartment")
       );

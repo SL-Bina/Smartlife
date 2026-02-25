@@ -1,21 +1,15 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Dialog, DialogHeader, DialogBody, DialogFooter,
   Button, Typography, Card, CardBody, Chip
 } from "@material-tailwind/react";
 import { 
   XMarkIcon, HomeIcon, LinkIcon, BuildingOfficeIcon,
-  MapPinIcon, UserIcon, Square3Stack3DIcon,
-  TrashIcon, PlusIcon, CheckCircleIcon, 
-  ArrowPathIcon
+  Square3Stack3DIcon, TrashIcon, PlusIcon, CheckCircleIcon
 } from "@heroicons/react/24/outline";
-import { CustomSelect } from "@/components/ui/CustomSelect";
+import { AsyncSearchSelect } from "@/components/ui/AsyncSearchSelect";
 import DynamicToast from "@/components/DynamicToast";
-import propertyLookupsAPI from "../../../properties/api/lookups";
-import propertiesAPI from "../../../properties/api";
 import residentAPI from "../../../residents/api";
-
-const ACTIVE_COLOR = "#3b82f6";
 
 export function PropertyBindModal({
   open,
@@ -29,16 +23,8 @@ export function PropertyBindModal({
   const [complexId, setComplexId] = useState(null);
   const [propertyId, setPropertyId] = useState(null);
 
-  const [mtks, setMtks] = useState([]);
-  const [complexes, setComplexes] = useState([]);
-  const [properties, setProperties] = useState([]);
-
-  const [loading, setLoading] = useState(false);
+  const [selectedLabels, setSelectedLabels] = useState({});
   const [saving, setSaving] = useState(false);
-  const [propertyPage, setPropertyPage] = useState(1);
-  const [hasMoreProperties, setHasMoreProperties] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-
   const [toast, setToast] = useState({ open: false });
 
   const showToast = (type, message, title = "") =>
@@ -46,126 +32,71 @@ export function PropertyBindModal({
 
   const canBind = mtkId && complexId && propertyId;
 
-  // load MTK
-  useEffect(() => {
-    if (!open) return;
-    setLoading(true);
-    propertyLookupsAPI.getMtks()
-      .then(data => {
-        setMtks(data || []);
-      })
-      .catch(error => {
-        console.error("MTK-lər yüklənərkən xəta:", error);
-        showToast("error", "MTK-lər yüklənərkən xəta baş verdi");
-      })
-      .finally(() => setLoading(false));
-  }, [open]);
-
-  // load complexes
-  useEffect(() => {
-    if (!mtkId) {
-      setComplexes([]);
-      setProperties([]);
-      return;
-    }
-    setLoading(true);
-    propertyLookupsAPI.getComplexes({ mtk_id: mtkId })
-      .then(data => {
-        setComplexes(data || []);
-        setProperties([]);
-        setComplexId(null);
-        setPropertyId(null);
-      })
-      .catch(error => {
-        console.error("Komplekslər yüklənərkən xəta:", error);
-        showToast("error", "Komplekslər yüklənərkən xəta baş verdi");
-      })
-      .finally(() => setLoading(false));
+  // Search params for cascading selects (same pattern as ManagementActions)
+  const complexSearchParams = useMemo(() => {
+    const params = {};
+    if (mtkId) params.mtk_ids = [mtkId];
+    return params;
   }, [mtkId]);
 
-  // load properties
-  useEffect(() => {
-    if (!complexId) {
-      setProperties([]);
-      setPropertyPage(1);
-      setHasMoreProperties(true);
-      return;
-    }
-    setLoading(true);
-    setPropertyPage(1);
-    setHasMoreProperties(true);
-    
-    // Use search endpoint for filtering like ManagementActions
-    propertiesAPI.search({ 
-      complex_id: complexId, 
-      page: 1, 
-      per_page: 20 
-    })
-      .then(res => {
-        const data = res?.data?.data?.data || [];
-        setProperties(data);
-        setPropertyId(null);
-        setHasMoreProperties(data.length === 20);
-      })
-      .catch(error => {
-        console.error("Mənzillər yüklənərkən xəta:", error);
-        showToast("error", "Mənzillər yüklənərkən xəta baş verdi");
-      })
-      .finally(() => setLoading(false));
-  }, [complexId]);
+  const propertySearchParams = useMemo(() => {
+    const params = {};
+    if (mtkId) params.mtk_ids = [mtkId];
+    if (complexId) params.complex_ids = [complexId];
+    return params;
+  }, [mtkId, complexId]);
 
-  // load more properties (infinite scroll)
-  const loadMoreProperties = async () => {
-    if (!complexId || loadingMore || !hasMoreProperties) return;
-    
-    setLoadingMore(true);
-    const nextPage = propertyPage + 1;
-    
-    try {
-      const res = await propertiesAPI.search({ 
-        complex_id: complexId, 
-        page: nextPage, 
-        per_page: 20 
-      });
-      const newProperties = res?.data?.data?.data || [];
-      
-      setProperties(prev => [...prev, ...newProperties]);
-      setPropertyPage(nextPage);
-      setHasMoreProperties(newProperties.length === 20);
-    } catch (error) {
-      console.error("Daha çox mənzil yüklənərkən xəta:", error);
-      showToast("error", "Daha çox mənzil yüklənərkən xəta baş verdi");
-    } finally {
-      setLoadingMore(false);
-    }
-  };
+  // Unique keys to force re-render when parent changes
+  const complexSelectKey = `complex-${mtkId || 'null'}`;
+  const propertySelectKey = `property-${mtkId || 'null'}-${complexId || 'null'}`;
 
-  // handle scroll for infinite scroll
-  const handleScroll = (e) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.target;
-    if (scrollHeight - scrollTop <= clientHeight + 100) {
-      loadMoreProperties();
-    }
-  };
-
-  // close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (complexId) {
-        const dropdown = document.getElementById(`property-dropdown-${complexId}`);
-        if (dropdown && !dropdown.contains(event.target) && !event.target.closest('button')) {
-          dropdown.classList.add('hidden');
-        }
+  const handleMtkChange = (val, option) => {
+    setMtkId(val || null);
+    setComplexId(null);
+    setPropertyId(null);
+    setSelectedLabels(prev => {
+      const next = { ...prev };
+      if (val && option) {
+        next.mtk = option.name || `#${val}`;
+      } else {
+        delete next.mtk;
       }
-    };
+      delete next.complex;
+      delete next.property;
+      return next;
+    });
+  };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [complexId]);
+  const handleComplexChange = (val, option) => {
+    setComplexId(val || null);
+    setPropertyId(null);
+    setSelectedLabels(prev => {
+      const next = { ...prev };
+      if (val && option) {
+        next.complex = option.name || `#${val}`;
+      } else {
+        delete next.complex;
+      }
+      delete next.property;
+      return next;
+    });
+  };
+
+  const handlePropertyChange = (val, option) => {
+    setPropertyId(val || null);
+    setSelectedLabels(prev => {
+      const next = { ...prev };
+      if (val && option) {
+        next.property = option.name || option.apartment_number || `#${val}`;
+      } else {
+        delete next.property;
+      }
+      return next;
+    });
+  };
 
   const bind = async () => {
+    if (!canBind || !residentId) return;
     try {
       setSaving(true);
       await residentAPI.bindProperty(residentId, {
@@ -175,6 +106,11 @@ export function PropertyBindModal({
       });
       showToast("success", "Bağlandı", "Uğurlu");
       onSuccess?.();
+      // Reset selections after successful bind
+      setMtkId(null);
+      setComplexId(null);
+      setPropertyId(null);
+      setSelectedLabels({});
     } catch (e) {
       showToast("error", "Xəta baş verdi", "Xəta");
     } finally {
@@ -183,12 +119,13 @@ export function PropertyBindModal({
   };
 
   const unbind = async (prop) => {
+    if (!residentId || !prop) return;
     try {
       setSaving(true);
       await residentAPI.unbindProperty(residentId, {
         mtk_id: prop.mtk_id,
         complex_id: prop.complex_id,
-        property_id: prop.id
+        property_id: prop.property_id
       });
       showToast("success", "Silindi", "Uğurlu");
       onSuccess?.();
@@ -243,126 +180,49 @@ export function PropertyBindModal({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-2">
-                <Typography variant="small" className="font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                  MTK
-                </Typography>
-                <div className="relative">
-                  <CustomSelect
-                    placeholder="MTK seçin"
-                    value={mtkId ? String(mtkId) : ""}
-                    onChange={v => {
-                      setMtkId(Number(v));
-                      setComplexId(null);
-                      setPropertyId(null);
-                    }}
-                    options={mtks.map(x => ({ value: String(x.id), label: x.name }))}
-                    className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600"
-                  />
-                  {loading && !mtkId && (
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                      <ArrowPathIcon className="h-5 w-5 text-blue-600 dark:text-blue-400 animate-spin" />
-                    </div>
-                  )}
-                </div>
+              {/* MTK Select */}
+              <div>
+                <AsyncSearchSelect
+                  label="MTK"
+                  value={mtkId}
+                  onChange={handleMtkChange}
+                  endpoint="/search/module/mtk"
+                  selectedLabel={selectedLabels.mtk}
+                  placeholder="MTK seçin"
+                  searchPlaceholder="MTK axtar..."
+                />
               </div>
 
-              <div className="space-y-2">
-                <Typography variant="small" className="font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                  Kompleks
-                </Typography>
-                <div className="relative">
-                  <CustomSelect
-                    placeholder="Kompleks seçin"
-                    value={complexId ? String(complexId) : ""}
-                    onChange={v => {
-                      setComplexId(Number(v));
-                      setPropertyId(null);
-                    }}
-                    disabled={!mtkId}
-                    options={complexes.map(x => ({ value: String(x.id), label: x.name }))}
-                    className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 disabled:opacity-50"
-                  />
-                  {loading && mtkId && !complexId && (
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                      <ArrowPathIcon className="h-5 w-5 text-blue-600 dark:text-blue-400 animate-spin" />
-                    </div>
-                  )}
-                </div>
+              {/* Complex Select */}
+              <div>
+                <AsyncSearchSelect
+                  key={complexSelectKey}
+                  label="Kompleks"
+                  value={complexId}
+                  onChange={handleComplexChange}
+                  endpoint="/search/module/complex"
+                  searchParams={complexSearchParams}
+                  selectedLabel={selectedLabels.complex}
+                  disabled={!mtkId}
+                  placeholder="Kompleks seçin"
+                  searchPlaceholder="Kompleks axtar..."
+                />
               </div>
 
-              <div className="space-y-2">
-                <Typography variant="small" className="font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                  Mənzil
-                </Typography>
-                <div className="relative">
-                  {/* Custom dropdown with infinite scroll */}
-                  <div className="relative">
-                    <button
-                      type="button"
-                      disabled={!complexId}
-                      onClick={() => {
-                        const dropdown = document.getElementById(`property-dropdown-${complexId}`);
-                        if (dropdown) {
-                          dropdown.classList.toggle('hidden');
-                        }
-                      }}
-                      className="w-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 disabled:opacity-50 px-4 py-2 text-left flex items-center justify-between"
-                    >
-                      <span className="text-gray-900 dark:text-white">
-                        {propertyId ? properties.find(p => p.id === propertyId)?.name || `Mənzil #${propertyId}` : "Mənzil seçin"}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        {loading && complexId && !propertyId && (
-                          <ArrowPathIcon className="h-5 w-5 text-blue-600 dark:text-blue-400 animate-spin" />
-                        )}
-                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </div>
-                    </button>
-                    
-                    {/* Dropdown with infinite scroll */}
-                    {complexId && (
-                      <div 
-                        id={`property-dropdown-${complexId}`}
-                        className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto hidden"
-                        onScroll={handleScroll}
-                      >
-                        {properties.length === 0 && !loading ? (
-                          <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                            Mənzil tapılmadı
-                          </div>
-                        ) : (
-                          <>
-                            {properties.map(property => (
-                              <div
-                                key={property.id}
-                                onClick={() => {
-                                  setPropertyId(property.id);
-                                  document.getElementById(`property-dropdown-${complexId}`).classList.add('hidden');
-                                }}
-                                className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-gray-900 dark:text-white"
-                              >
-                                {property.name || `Mənzil #${property.id}`}
-                              </div>
-                            ))}
-                            {loadingMore && (
-                              <div className="p-4 text-center">
-                                <ArrowPathIcon className="h-5 w-5 text-blue-600 dark:text-blue-400 animate-spin mx-auto" />
-                              </div>
-                            )}
-                            {!hasMoreProperties && properties.length > 0 && (
-                              <div className="p-2 text-center text-gray-500 dark:text-gray-400 text-sm">
-                                Bütün mənzillər yükləndi
-                              </div>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
+              {/* Property Select */}
+              <div>
+                <AsyncSearchSelect
+                  key={propertySelectKey}
+                  label="Mənzil"
+                  value={propertyId}
+                  onChange={handlePropertyChange}
+                  endpoint="/search/module/property"
+                  searchParams={propertySearchParams}
+                  selectedLabel={selectedLabels.property}
+                  disabled={!complexId}
+                  placeholder="Mənzil seçin"
+                  searchPlaceholder="Mənzil axtar..."
+                />
               </div>
             </div>
 
@@ -413,14 +273,14 @@ export function PropertyBindModal({
                             </div>
                             <div>
                               <Typography variant="h6" className="font-bold text-white">
-                                {p.name || `Mənzil #${p.id}`}
+                                {p.property?.name || `Mənzil #${p.property_id}`}
                               </Typography>
                               <Typography variant="small" className="text-green-100">
-                                ID: #{p.id}
+                                ID: #{p.property_id}
                               </Typography>
                             </div>
                           </div>
-                          <div className="px-3 py-1 bg-white/20 backdrop-blur-sm text-white rounded-full text-sm font-semibold border-0">
+                          <div className="px-3 py-1 bg-white/20 backdrop-blur-sm text-white rounded-full text-sm font-semibold border-0 flex items-center">
                             <CheckCircleIcon className="h-4 w-4 mr-1" />
                             Aktiv
                           </div>
@@ -432,6 +292,18 @@ export function PropertyBindModal({
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                              <Square3Stack3DIcon className="h-4 w-4" />
+                              <Typography variant="small" className="font-semibold uppercase tracking-wider">
+                                MTK
+                              </Typography>
+                            </div>
+                            <Typography variant="h6" className="text-gray-800 dark:text-white font-bold">
+                              {p.mtk?.name || "-"}
+                            </Typography>
+                          </div>
+
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                               <BuildingOfficeIcon className="h-4 w-4" />
                               <Typography variant="small" className="font-semibold uppercase tracking-wider">
                                 Kompleks
@@ -441,42 +313,6 @@ export function PropertyBindModal({
                               {p.complex?.name || "-"}
                             </Typography>
                           </div>
-
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                              <Square3Stack3DIcon className="h-4 w-4" />
-                              <Typography variant="small" className="font-semibold uppercase tracking-wider">
-                                Sahə
-                              </Typography>
-                            </div>
-                            <Typography variant="h6" className="text-gray-800 dark:text-white font-bold">
-                              {p.area ? `${p.area} m²` : "-"}
-                            </Typography>
-                          </div>
-
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                              <MapPinIcon className="h-4 w-4" />
-                              <Typography variant="small" className="font-semibold uppercase tracking-wider">
-                                Mərtəbə
-                              </Typography>
-                            </div>
-                            <Typography variant="h6" className="text-gray-800 dark:text-white font-bold">
-                              {p.floor ? `${p.floor}-ci mərtəbə` : "-"}
-                            </Typography>
-                          </div>
-
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                              <UserIcon className="h-4 w-4" />
-                              <Typography variant="small" className="font-semibold uppercase tracking-wider">
-                                Mənzil Nömrəsi
-                              </Typography>
-                            </div>
-                            <Typography variant="h6" className="text-gray-800 dark:text-white font-bold">
-                              {p.apartment_number || "-"}
-                            </Typography>
-                          </div>
                         </div>
 
                         <div className="border-t border-gray-200 dark:border-gray-700 my-4"></div>
@@ -484,7 +320,7 @@ export function PropertyBindModal({
                         <div className="flex justify-between items-center">
                           <div className="flex items-center gap-2">
                             <Chip 
-                              value={p.status || "Aktiv"} 
+                              value="Aktiv"
                               className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-0"
                             />
                           </div>

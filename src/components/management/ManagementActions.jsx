@@ -149,52 +149,37 @@ export function ManagementActions({
 }) {
   const config = LEVEL_CONFIG[entityLevel];
 
-  // Load saved selections from localStorage on mount
   const [savedSelections, setSavedSelections] = useState({});
 
-  // Initialize saved selections on component mount
+  const applySaved = async (filterType, savedValue) => {
+    if (savedValue && !getFilterValue(filterType)) {
+      await handleFilterChange(filterType, savedValue, { value: savedValue, label: '' });
+    }
+  };
+
   useEffect(() => {
     const saved = loadSavedSelections();
     setSavedSelections(saved);
-    
-    // Apply saved selections to Redux if they exist
-    if (saved.mtk && !mtkId) {
-      handleFilterChange('mtk', saved.mtk, { value: saved.mtk, label: '' });
-    }
-    if (saved.complex && !complexId) {
-      handleFilterChange('complex', saved.complex, { value: saved.complex, label: '' });
-    }
-    if (saved.building && !buildingId) {
-      handleFilterChange('building', saved.building, { value: saved.building, label: '' });
-    }
-    if (saved.block && !blockId) {
-      handleFilterChange('block', saved.block, { value: saved.block, label: '' });
-    }
-    if (saved.property && !propertyId) {
-      handleFilterChange('property', saved.property, { value: saved.property, label: '' });
-    }
-  }, []); // Empty dependency array - only run on mount
 
-  // Global filter state-dən oxu (Redux)
+    Object.entries(saved).forEach(([key, value]) => {
+      applySaved(key, value);
+    });
+  }, []); 
+
   const mtkId = useAppSelector((state) => state.mtk.selectedMtkId);
   const complexId = useAppSelector((state) => state.complex.selectedComplexId);
   const buildingId = useAppSelector((state) => state.building.selectedBuildingId);
   const blockId = useAppSelector((state) => state.block.selectedBlockId);
   const propertyId = useAppSelector((state) => state.property.selectedPropertyId);
-  
   const selectedMtk = useAppSelector((state) => state.mtk.selectedMtk);
   const selectedComplex = useAppSelector((state) => state.complex.selectedComplex);
   const selectedBuilding = useAppSelector((state) => state.building.selectedBuilding);
   const selectedBlock = useAppSelector((state) => state.block.selectedBlock);
   const selectedProperty = useAppSelector((state) => state.property.selectedProperty);
-  
   const dispatch = useAppDispatch();
-
-  // Selected labels for display when value exists but not in current options
   const [selectedLabels, setSelectedLabels] = useState({});
   const [localName, setLocalName] = useState(search?.name || "");
 
-  // Redux-dan gələn seçilmiş entity label-lərini yüklə
   useEffect(() => {
     const labels = {};
     if (selectedMtk?.name) labels.mtk = selectedMtk.name;
@@ -207,28 +192,36 @@ export function ManagementActions({
     setSelectedLabels(prev => ({ ...prev, ...labels }));
   }, [selectedMtk, selectedComplex, selectedBuilding, selectedBlock, selectedProperty]);
 
-  // Auto-select first option when filters are loaded
   useEffect(() => {
-    // Auto-select first MTK if none selected and MTKs are available
-    if (entityLevel === ENTITY_LEVELS.MTK && !mtkId && config.filters.length === 0) {
-      // Check if we have a saved MTK selection
-      if (savedSelections.mtk) {
-        handleFilterChange('mtk', savedSelections.mtk, { value: savedSelections.mtk, label: '' });
-      } else {
-        handleAutoSelectFirst('mtk');
+    const ensureValues = async () => {
+      for (const filterType of config.filters) {
+        if (isFilterDisabled(filterType)) continue;
+
+        const currentVal = getFilterValue(filterType);
+        if (currentVal) continue; 
+
+        const saved = savedSelections[filterType];
+        if (saved) {
+          await applySaved(filterType, saved);
+        } else {
+          await handleAutoSelectFirst(filterType);
+        }
       }
-    }
-  }, [entityLevel, mtkId, config.filters, savedSelections.mtk]);
+    };
+
+    ensureValues();
+  }, [entityLevel, config.filters, savedSelections]);
+
 
   const handleAutoSelectFirst = async (filterType) => {
     try {
-      const searchParams = {};
       const filterConfig = FILTER_CONFIG[filterType];
-      
-      // Get first option from search endpoint using API
-      const response = await api.get(`${filterConfig.endpoint}?per_page=1`);
+      const params = getParentSearchParams(filterType);
+      // enforce a single result
+      params.per_page = 1;
+
+      const response = await api.get(`${filterConfig.endpoint}`, { params });
       const firstItem = response?.data?.data?.data?.[0];
-      
       if (firstItem) {
         await handleFilterChange(filterType, firstItem.id, { value: firstItem.id, label: firstItem.name });
       }
@@ -403,11 +396,17 @@ export function ManagementActions({
         } else {
           dispatch(setSelectedMtk({ id: null, mtk: null }));
         }
-        // Clear dependent filters
-        if (filtersToReset.includes("complex")) dispatch(setSelectedComplex({ id: null, complex: null }));
+        // Clear dependent filters and auto-fill the immediate child
+        if (filtersToReset.includes("complex")) {
+          dispatch(setSelectedComplex({ id: null, complex: null }));
+        }
         if (filtersToReset.includes("building")) dispatch(setSelectedBuilding({ id: null, building: null }));
         if (filtersToReset.includes("block")) dispatch(setSelectedBlock({ id: null, block: null }));
         if (filtersToReset.includes("property")) dispatch(setSelectedProperty({ id: null, property: null }));
+        // after clearing, try autofilling next filter
+        if (filtersToReset.length && value) {
+          await handleAutoSelectFirst(filtersToReset[0]);
+        }
         break;
 
       case "complex":
@@ -423,6 +422,9 @@ export function ManagementActions({
         if (filtersToReset.includes("building")) dispatch(setSelectedBuilding({ id: null, building: null }));
         if (filtersToReset.includes("block")) dispatch(setSelectedBlock({ id: null, block: null }));
         if (filtersToReset.includes("property")) dispatch(setSelectedProperty({ id: null, property: null }));
+        if (filtersToReset.length && numValue) {
+          await handleAutoSelectFirst(filtersToReset[0]);
+        }
         break;
 
       case "building":
@@ -437,6 +439,9 @@ export function ManagementActions({
         // Clear dependent filters
         if (filtersToReset.includes("block")) dispatch(setSelectedBlock({ id: null, block: null }));
         if (filtersToReset.includes("property")) dispatch(setSelectedProperty({ id: null, property: null }));
+        if (filtersToReset.length && numValue) {
+          await handleAutoSelectFirst(filtersToReset[0]);
+        }
         break;
 
       case "block":
@@ -450,6 +455,9 @@ export function ManagementActions({
         }
         // Clear dependent filters
         if (filtersToReset.includes("property")) dispatch(setSelectedProperty({ id: null, property: null }));
+        if (filtersToReset.length && numValue) {
+          await handleAutoSelectFirst(filtersToReset[0]);
+        }
         break;
 
       case "property":
@@ -635,7 +643,6 @@ export function ManagementActions({
           />
         </div>
 
-        {/* Filter Selects */}
         {hasFilters && (
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">

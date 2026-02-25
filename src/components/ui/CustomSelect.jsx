@@ -11,6 +11,8 @@ export function CustomSelect({
   error = false,
   disabled = false,
   loading = false,
+  loadingMore = false,       // when additional results are being fetched
+  onScrollEnd,              // callback when user scrolls near bottom
   className = "",
   labelClassName = "",
 }) {
@@ -83,10 +85,21 @@ export function CustomSelect({
     setIsOpen(false);
   };
 
+  // optionally notify parent when the user scrolls near the bottom of the list
+  const handleDropdownScroll = (e) => {
+    if (typeof onScrollEnd === "function") {
+      const { scrollTop, scrollHeight, clientHeight } = e.target;
+      if (scrollHeight - scrollTop <= clientHeight + 50) {
+        onScrollEnd();
+      }
+    }
+  };
+
   const dropdown = isOpen
     ? createPortal(
         <div
           ref={dropdownRef}
+          onScroll={handleDropdownScroll}
           style={{
             position: "fixed",
             top: position.openAbove ? "auto" : position.top,
@@ -102,25 +115,32 @@ export function CustomSelect({
               Seçim yoxdur
             </div>
           ) : (
-            options.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  handleSelect(option);
-                }}
-                className={`
-                  w-full px-3 py-2.5 text-left text-sm transition-colors
-                  ${String(value) === String(option.value)
-                    ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium"
-                    : "text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                  }
-                `}
-              >
-                {option.label}
-              </button>
-            ))
+            <>
+              {options.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    handleSelect(option);
+                  }}
+                  className={`
+                    w-full px-3 py-2.5 text-left text-sm transition-colors
+                    ${String(value) === String(option.value)
+                      ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium"
+                      : "text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                    }
+                  `}
+                >
+                  {option.label}
+                </button>
+              ))}
+              {loadingMore && (
+                <div className="px-3 py-2.5 text-center text-sm text-gray-500 dark:text-gray-400">
+                  Yüklənir...
+                </div>
+              )}
+            </>
           )}
         </div>,
         document.body

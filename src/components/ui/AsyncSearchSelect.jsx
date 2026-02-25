@@ -19,40 +19,6 @@ function useDebounce(value, delay) {
   return debouncedValue;
 }
 
-const loadOptions = async (search, loadedOptions, { page }) => {
-  try {
-    const params = {
-      ...searchParamsRef.current,
-      search: search || "",
-      page: page || 1,
-      per_page: 20,
-    };
-
-    console.log("REQUEST:", endpoint, params);
-
-    const response = await api.get(endpoint, { params });
-
-    const result = response.data?.data;
-
-    return {
-      options:
-        result?.data?.map((item) => ({
-          value: item.id,
-          label: item.name,
-        })) || [],
-      hasMore: result?.current_page < result?.last_page,
-      additional: {
-        page: result?.current_page + 1,
-      },
-    };
-  } catch (error) {
-    console.error(error);
-    return {
-      options: [],
-      hasMore: false,
-    };
-  }
-};
 
 export function AsyncSearchSelect({
   label,
@@ -130,10 +96,9 @@ export function AsyncSearchSelect({
     return { data, lastPage };
   }, []);
 
-  const loadMoreData = useCallback(async (search, pageNum) => {
-    if (!endpoint || loadingMore) return;
-
-    setLoadingMore(true);
+  const fetchOptions = useCallback(async ({ search = "", pageNum = 1 } = {}) => {
+    if (!endpoint) return;
+    setLoading(true);
     try {
       const params = {
         ...searchParamsRef.current,
@@ -147,17 +112,34 @@ export function AsyncSearchSelect({
 
       const response = await api.get(endpoint, { params });
       const { data, lastPage } = parseResponse(response);
-
-      setOptions(prev => [...prev, ...data]);
+      if (pageNum === 1) {
+        setOptions(data);
+      } else {
+        setOptions((prev) => [...prev, ...data]);
+      }
       setPage(pageNum);
       setHasMore(pageNum < lastPage);
     } catch (error) {
-      console.error("AsyncSearchSelect load more error:", error);
+      console.error("AsyncSearchSelect fetch error:", error);
+      if (pageNum === 1) setOptions([]);
+      setHasMore(false);
+    } finally {
+      setLoading(false);
+    }
+  }, [endpoint, perPage, parseResponse]);
+
+  const loadMoreData = useCallback(async (search, pageNum) => {
+    if (!endpoint || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      await fetchOptions({ search, pageNum });
+    } catch (e) {
+      console.error("AsyncSearchSelect load more error:", e);
       setHasMore(false);
     } finally {
       setLoadingMore(false);
     }
-  }, [endpoint, perPage, loadingMore, parseResponse]);
+  }, [endpoint, loadingMore, fetchOptions]);
 
   const handleListScroll = useCallback((e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.target;
@@ -167,41 +149,17 @@ export function AsyncSearchSelect({
   }, [hasMore, loadingMore, loading, page, debouncedSearch, loadMoreData]);
 
   useEffect(() => {
-    if (isOpen && endpoint) {
+    if (!endpoint || disabled) return;
+    fetchOptions({ search: debouncedSearch, pageNum: 1 });
+  }, [endpoint, searchParamsKey, disabled, debouncedSearch, fetchOptions]);
+
+  useEffect(() => {
+    if (isOpen) {
       setPage(1);
       setHasMore(true);
-
-      const fetchData = async () => {
-        setLoading(true);
-        try {
-          const params = {
-            ...searchParamsRef.current,
-            per_page: perPage,
-            page: 1,
-          };
-
-          if (debouncedSearch && debouncedSearch.trim()) {
-            params.search = debouncedSearch.trim();
-          }
-
-          const response = await api.get(endpoint, { params });
-          const { data, lastPage } = parseResponse(response);
-
-          setOptions(data);
-          setPage(1);
-          setHasMore(1 < lastPage);
-        } catch (error) {
-          console.error("AsyncSearchSelect fetch error:", error);
-          setOptions([]);
-          setHasMore(false);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchData();
+      fetchOptions({ search: debouncedSearch, pageNum: 1 });
     }
-  }, [debouncedSearch, isOpen, endpoint, perPage, searchParamsKey, parseResponse]);
+  }, [debouncedSearch, isOpen, fetchOptions]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -377,7 +335,12 @@ export function AsyncSearchSelect({
           focus:outline-none
         `}
       >
-        <span className={displayLabel ? "" : "text-gray-400 dark:text-gray-500"}>
+        <span
+          className={`
+    flex-1 min-w-0 truncate
+    ${displayLabel ? "" : "text-gray-400 dark:text-gray-500"}
+  `}
+        >
           {displayLabel || placeholder}
         </span>
         <div className="flex items-center gap-1">

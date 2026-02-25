@@ -96,6 +96,7 @@ export default function PropertiesPage() {
   };
 
   const handleEdit = (property) => {
+    console.log("editing property:", property);
     form.setFormFromProperty(property);
     setMode("edit");
     setFormOpen(true);

@@ -33,6 +33,9 @@ export function ResidentFormModal({
   const [loadingLookups, setLoadingLookups] = useState(false);
   const [loadingComplexes, setLoadingComplexes] = useState(false);
   const [loadingProperties, setLoadingProperties] = useState(false);
+  const [propertyPage, setPropertyPage] = useState(1);
+  const [hasMoreProperties, setHasMoreProperties] = useState(true);
+  const [loadingMoreProperties, setLoadingMoreProperties] = useState(false);
   
   const PER_PAGE = 30;
   
@@ -115,28 +118,33 @@ export function ResidentFormModal({
     }
   }, [open, formMtkId]);
 
-  // Load properties when complex changes
+  // Load properties when complex changes (initial page)
   useEffect(() => {
     if (open && formComplexId) {
       setLoadingProperties(true);
-      console.log("Loading properties for complex:", formComplexId);
-      // Use search endpoint for properties like ManagementActions
-      propertiesAPI.search({ 
-        complex_ids: [formComplexId], 
-        per_page: 1000 
+      setPropertyPage(1);
+      setHasMoreProperties(true);
+      // Use search endpoint for properties
+      propertiesAPI.search({
+        complex_ids: [formComplexId],
+        page: 1,
+        per_page: PER_PAGE,
       })
         .then((response) => {
-          console.log("Properties loaded:", response);
           const data = response?.data?.data?.data || [];
           setProperties(data);
+          setHasMoreProperties(data.length === PER_PAGE);
         })
         .catch((error) => {
           console.error("Error loading properties:", error);
           setProperties([]);
+          setHasMoreProperties(false);
         })
         .finally(() => setLoadingProperties(false));
     } else if (open && !formComplexId) {
       setProperties([]);
+      setPropertyPage(1);
+      setHasMoreProperties(true);
     }
   }, [open, formComplexId]);
 
@@ -156,6 +164,36 @@ export function ResidentFormModal({
     const g = parseInt(hexClean.substring(2, 4), 16);
     const b = parseInt(hexClean.substring(4, 6), 16);
     return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
+
+  // load next page of properties when the dropdown scroll hits bottom
+  const loadMoreProperties = async () => {
+    if (!formComplexId || loadingMoreProperties || !hasMoreProperties) return;
+    setLoadingMoreProperties(true);
+    const nextPage = propertyPage + 1;
+    try {
+      const res = await propertiesAPI.search({
+        complex_ids: [formComplexId],
+        page: nextPage,
+        per_page: PER_PAGE,
+      });
+      const more = res?.data?.data?.data || [];
+      setProperties((prev) => [...prev, ...more]);
+      setPropertyPage(nextPage);
+      setHasMoreProperties(more.length === PER_PAGE);
+    } catch (err) {
+      console.error("Error loading additional properties:", err);
+      setHasMoreProperties(false);
+    } finally {
+      setLoadingMoreProperties(false);
+    }
+  };
+
+  // callback for CustomSelect's scroll event
+  const handlePropertyScrollEnd = () => {
+    if (hasMoreProperties && !loadingProperties) {
+      loadMoreProperties();
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -364,6 +402,8 @@ export function ResidentFormModal({
                       })),
                     ]}
                     loading={loadingProperties}
+                    loadingMore={loadingMoreProperties}
+                    onScrollEnd={handlePropertyScrollEnd}
                     disabled={loadingProperties || !form.formData.property?.complex_id}
                     placeholder="Mənzil seçin"
                     error={!!form.errors?.property?.property_id}

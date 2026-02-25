@@ -392,6 +392,7 @@ export default function ResidentsPage() {
         onEdit={handleEdit}
         onBind={(resident) => {
           dispatch(setSelectedResident({ id: resident.id, resident }));
+          dispatch(loadResidentById(resident.id));
           setBindModalOpen(true);
         }}
         onDelete={handleDelete}
@@ -427,7 +428,7 @@ export default function ResidentsPage() {
         open={bindModalOpen}
         onClose={() => setBindModalOpen(false)}
         residentId={selectedResidentId}
-        residentProperties={selectedResident?.properties}
+        residentProperties={selectedResident?.property_residents}
         onSuccess={() => {
           if (selectedResidentId) {
             dispatch(loadResidentById(selectedResidentId));

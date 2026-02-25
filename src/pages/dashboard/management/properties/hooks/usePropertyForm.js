@@ -51,6 +51,18 @@ export function usePropertyForm() {
       return;
     }
 
+    // property_type may come back as a plain id, a string, or an object
+    // (or even nested under sub_data depending on the API). normalize it
+    let typeVal = property.property_type;
+    if (typeVal && typeof typeVal === "object") {
+      typeVal = typeVal.id || typeVal.value || null;
+    }
+    if (typeVal == null && property.sub_data?.property_type) {
+      const pt = property.sub_data.property_type;
+      typeVal = typeof pt === "object" ? pt.id || null : pt;
+    }
+
+    console.log("normalized property_type for form:", typeVal);
     setFormData({
       id: property.id || null,
       name: property.name || "",
@@ -63,7 +75,7 @@ export function usePropertyForm() {
         floor: property.meta?.floor || "",
         area: property.meta?.area || "",
       },
-      property_type: property.property_type || null,
+      property_type: typeVal || null,
       status: property.status || "active",
     });
     setErrors({});
