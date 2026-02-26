@@ -6,7 +6,7 @@ import { HomeModernIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import DynamicToast from "@/components/DynamicToast";
 import buildingLookupsAPI from "../../api/lookups";
 
-const ACTIVE_COLOR = "#9333ea"; // Purple for buildings
+const ACTIVE_COLOR = "#9333ea";
 
 export function BuildingFormModal({ open, mode = "create", onClose, form, onSubmit, complexId = null, mtkId = null }) {
   const [saving, setSaving] = useState(false);
@@ -28,25 +28,23 @@ export function BuildingFormModal({ open, mode = "create", onClose, form, onSubm
     { value: "inactive", label: "Qeyri-aktiv" },
   ];
 
-  // Load MTKs when modal opens
-  useEffect(() => {
-    if (open) {
-      setLoadingMtks(true);
-      buildingLookupsAPI.getMtks()
-        .then((data) => {
-          setMtks(data || []);
-        })
-        .catch((error) => {
-          console.error("Error loading MTKs:", error);
-          setMtks([]);
-        })
-        .finally(() => {
-          setLoadingMtks(false);
-        });
-    }
-  }, [open]);
+  // useEffect(() => {
+  //   if (open) {
+  //     setLoadingMtks(true);
+  //     buildingLookupsAPI.getMtks()
+  //       .then((data) => {
+  //         setMtks(data || []);
+  //       })
+  //       .catch((error) => {
+  //         console.error("Error loading MTKs:", error);
+  //         setMtks([]);
+  //       })
+  //       .finally(() => {
+  //         setLoadingMtks(false);
+  //       });
+  //   }
+  // }, [open]);
 
-  // Load complexes when modal opens or MTK changes
   useEffect(() => {
     if (open) {
       setLoadingComplexes(true);
@@ -70,10 +68,8 @@ export function BuildingFormModal({ open, mode = "create", onClose, form, onSubm
     }
   }, [open, form?.formData?.mtk_id, mtkId]);
 
-  // Set complex_id from prop if provided (only for create mode)
   useEffect(() => {
     if (open && !isEdit && complexId && form?.updateField) {
-      // Modal açıldıqda və create mode-dadırsa, complex_id-ni set et
       const currentComplexId = form?.formData?.complex_id;
       if (!currentComplexId || currentComplexId !== complexId) {
         form.updateField("complex_id", complexId);
@@ -81,7 +77,6 @@ export function BuildingFormModal({ open, mode = "create", onClose, form, onSubm
     }
   }, [open, isEdit, complexId, form?.formData?.complex_id]);
 
-  // Clear complexes when MTK changes
   useEffect(() => {
     if (form?.formData?.mtk_id) {
       form?.updateField("complex_id", null);
@@ -176,12 +171,11 @@ export function BuildingFormModal({ open, mode = "create", onClose, form, onSubm
                   helperText={form?.errors?.name}
                 />
 
-                <CustomSelect
+                {/* <CustomSelect
                   label="MTK"
                   value={form?.formData?.mtk_id ? String(form.formData.mtk_id) : ""}
                   onChange={(value) => {
                     form?.updateField("mtk_id", value ? parseInt(value, 10) : null);
-                    // MTK dəyişəndə Complex-i təmizlə
                     form?.updateField("complex_id", null);
                   }}
                   options={[
@@ -193,7 +187,7 @@ export function BuildingFormModal({ open, mode = "create", onClose, form, onSubm
                   ]}
                   loading={loadingMtks}
                   disabled={loadingMtks && !isEdit}
-                />
+                /> */}
 
                 <CustomSelect
                   label="Complex *"
@@ -209,7 +203,7 @@ export function BuildingFormModal({ open, mode = "create", onClose, form, onSubm
                   error={!!form?.errors?.complex_id}
                   helperText={form?.errors?.complex_id}
                   loading={loadingComplexes}
-                  disabled={loadingComplexes || (!form?.formData?.mtk_id && !isEdit)}
+                  // disabled={loadingComplexes || (!form?.formData?.mtk_id )}
                 />
               </div>
 
@@ -223,7 +217,6 @@ export function BuildingFormModal({ open, mode = "create", onClose, form, onSubm
               </div>
             </div>
 
-            {/* Əlavə Məlumatlar */}
             <div>
               <Typography variant="h6" className="text-gray-900 dark:text-white mb-4 font-semibold flex items-center gap-2">
                 <div className="w-1 h-6 rounded-full" style={{ backgroundColor: ACTIVE_COLOR }}></div>
