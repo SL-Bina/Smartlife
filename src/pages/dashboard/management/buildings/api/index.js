@@ -77,7 +77,7 @@ export const buildingsAPI = {
       const searchParams = new URLSearchParams();
       Object.keys(formattedParams).forEach((key) => {
         // Array parameter: complex_ids[]
-        if (key === 'complex_ids' && Array.isArray(formattedParams[key]) && formattedParams[key].length > 0) {
+        if ((key === 'mtk_ids' || key === 'complex_ids') && Array.isArray(formattedParams[key]) && formattedParams[key].length > 0) {
           formattedParams[key].forEach((id) => {
             if (id !== null && id !== undefined && id !== '') {
               searchParams.append(`${key}[]`, String(id));

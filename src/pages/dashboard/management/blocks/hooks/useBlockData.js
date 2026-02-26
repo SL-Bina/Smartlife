@@ -30,30 +30,21 @@ export function useBlockData({ search = {}, complexId = null, buildingId = null,
         params.status = status.trim();
       }
 
-      // Add complexId, buildingId, and mtkId
-      if (complexId) {
-        params.complex_id = complexId;
-      }
-      if (buildingId) {
-        params.building_id = buildingId;
-      }
-      if (mtkId) {
-        params.mtk_id = mtkId;
-      }
-
       // Check if there are any advanced search parameters
       const hasAdvancedSearch = Object.keys(advancedSearch).length > 0;
+      const hasFilters = mtkId || complexId || buildingId;
 
       let response;
-      if (hasAdvancedSearch || name || status || complexId || buildingId) {
-        // Format complex_ids and building_ids as arrays if they exist for search endpoint
+      if (hasAdvancedSearch || name || status || hasFilters) {
+        // Format IDs as arrays for search endpoint
+        if (mtkId) {
+          params.mtk_ids = [mtkId];
+        }
         if (complexId) {
           params.complex_ids = [complexId];
-          delete params.complex_id;
         }
         if (buildingId) {
           params.building_ids = [buildingId];
-          delete params.building_id;
         }
         // Merge advanced search params
         if (hasAdvancedSearch) {

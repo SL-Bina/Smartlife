@@ -30,23 +30,18 @@ export function useBuildingData({ search = {}, complexId = null, mtkId = null } 
         params.status = status.trim();
       }
 
-      // Add complexId and mtkId
-      if (complexId) {
-        params.complex_id = complexId;
-      }
-      if (mtkId) {
-        params.mtk_id = mtkId;
-      }
-
       // Check if there are any advanced search parameters
       const hasAdvancedSearch = Object.keys(advancedSearch).length > 0;
+      const hasFilters = mtkId || complexId;
 
       let response;
-      if (hasAdvancedSearch || name || status || complexId) {
-        // Format complex_ids as array if it exists for search endpoint
+      if (hasAdvancedSearch || name || status || hasFilters) {
+        // Format IDs as arrays for search endpoint
+        if (mtkId) {
+          params.mtk_ids = [mtkId];
+        }
         if (complexId) {
           params.complex_ids = [complexId];
-          delete params.complex_id;
         }
         // Merge advanced search params
         if (hasAdvancedSearch) {
