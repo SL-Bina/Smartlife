@@ -232,7 +232,7 @@ export function AsyncSearchSelect({
   const dropdown = isOpen && createPortal(
     <div
       ref={dropdownRef}
-      className="fixed bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-xl overflow-hidden"
+      className="absolute bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-xl overflow-hidden"
       style={{
         top: dropdownPosition.top,
         left: dropdownPosition.left,

@@ -6,44 +6,11 @@ import { CustomSelect } from "@/components/ui/CustomSelect";
 import { AsyncSearchSelect } from "@/components/ui/AsyncSearchSelect";
 import AppSelect from "@/components/ui/AppSelect";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { setSelectedMtk, loadMtkById } from "@/store/slices/mtkSlice";
-import { setSelectedComplex, loadComplexById } from "@/store/slices/complexSlice";
-import { setSelectedBuilding, loadBuildingById } from "@/store/slices/buildingSlice";
-import { setSelectedBlock, loadBlockById } from "@/store/slices/blockSlice";
-import { setSelectedProperty, loadPropertyById } from "@/store/slices/propertySlice";
-import api from "@/services/api";
-
-// localStorage keys for persisting filter selections
-const STORAGE_KEYS = {
-  MTK: 'selected_mtk_id',
-  COMPLEX: 'selected_complex_id', 
-  BUILDING: 'selected_building_id',
-  BLOCK: 'selected_block_id',
-  PROPERTY: 'selected_property_id',
-};
-
-// Load saved selections from localStorage on mount
-const loadSavedSelections = () => {
-  const saved = {};
-  Object.values(STORAGE_KEYS).forEach(key => {
-    const value = localStorage.getItem(key);
-    if (value) {
-      const entityKey = Object.keys(STORAGE_KEYS).find(k => STORAGE_KEYS[k] === key);
-      saved[entityKey.toLowerCase()] = parseInt(value);
-    }
-  });
-  return saved;
-};
-
-// Save selection to localStorage
-const saveSelection = (entityType, id) => {
-  const storageKey = STORAGE_KEYS[entityType.toUpperCase()];
-  if (id) {
-    localStorage.setItem(storageKey, id.toString());
-  } else {
-    localStorage.removeItem(storageKey);
-  }
-};
+import { setSelectedMtk } from "@/store/slices/mtkSlice";
+import { setSelectedComplex } from "@/store/slices/complexSlice";
+import { setSelectedBuilding } from "@/store/slices/buildingSlice";
+import { setSelectedBlock } from "@/store/slices/blockSlice";
+import { setSelectedProperty } from "@/store/slices/propertySlice";
 
 const STANDARD_OPTIONS = [10, 20, 50, 75, 100];
 
@@ -148,24 +115,9 @@ export function ManagementActions({
   customFilterLabels = {},
 }) {
   const config = LEVEL_CONFIG[entityLevel];
+  const dispatch = useAppDispatch();
 
-  const [savedSelections, setSavedSelections] = useState({});
-
-  const applySaved = async (filterType, savedValue) => {
-    if (savedValue && !getFilterValue(filterType)) {
-      await handleFilterChange(filterType, savedValue, { value: savedValue, label: '' });
-    }
-  };
-
-  useEffect(() => {
-    const saved = loadSavedSelections();
-    setSavedSelections(saved);
-
-    Object.entries(saved).forEach(([key, value]) => {
-      applySaved(key, value);
-    });
-  }, []); 
-
+  // Read filter values from Redux
   const mtkId = useAppSelector((state) => state.mtk.selectedMtkId);
   const complexId = useAppSelector((state) => state.complex.selectedComplexId);
   const buildingId = useAppSelector((state) => state.building.selectedBuildingId);
@@ -176,10 +128,11 @@ export function ManagementActions({
   const selectedBuilding = useAppSelector((state) => state.building.selectedBuilding);
   const selectedBlock = useAppSelector((state) => state.block.selectedBlock);
   const selectedProperty = useAppSelector((state) => state.property.selectedProperty);
-  const dispatch = useAppDispatch();
+
   const [selectedLabels, setSelectedLabels] = useState({});
   const [localName, setLocalName] = useState(search?.name || "");
 
+  // Sync labels from Redux objects
   useEffect(() => {
     const labels = {};
     if (selectedMtk?.name) labels.mtk = selectedMtk.name;
@@ -189,81 +142,19 @@ export function ManagementActions({
     if (selectedProperty?.name || selectedProperty?.apartment_number) {
       labels.property = selectedProperty.name || selectedProperty.apartment_number;
     }
-    setSelectedLabels(prev => ({ ...prev, ...labels }));
+    if (Object.keys(labels).length > 0) {
+      setSelectedLabels(prev => ({ ...prev, ...labels }));
+    }
   }, [selectedMtk, selectedComplex, selectedBuilding, selectedBlock, selectedProperty]);
 
-  useEffect(() => {
-    const ensureValues = async () => {
-      for (const filterType of config.filters) {
-        if (isFilterDisabled(filterType)) continue;
-
-        const currentVal = getFilterValue(filterType);
-        if (currentVal) continue; 
-
-        const saved = savedSelections[filterType];
-        if (saved) {
-          await applySaved(filterType, saved);
-        } else {
-          await handleAutoSelectFirst(filterType);
-        }
-      }
-    };
-
-    ensureValues();
-  }, [entityLevel, config.filters, savedSelections]);
-
-
-  const handleAutoSelectFirst = async (filterType) => {
-    try {
-      const filterConfig = FILTER_CONFIG[filterType];
-      const params = getParentSearchParams(filterType);
-      // enforce a single result
-      params.per_page = 1;
-
-      const response = await api.get(`${filterConfig.endpoint}`, { params });
-      const firstItem = response?.data?.data?.data?.[0];
-      if (firstItem) {
-        await handleFilterChange(filterType, firstItem.id, { value: firstItem.id, label: firstItem.name });
-      }
-    } catch (error) {
-      console.error(`Error auto-selecting first ${filterType}:`, error);
-    }
-  };
-
-  // Refresh all filters
-  const handleRefreshFilters = async () => {
-    try {
-      // Clear all selections from Redux
-      dispatch(setSelectedMtk({ id: null, mtk: null }));
-      dispatch(setSelectedComplex({ id: null, complex: null }));
-      dispatch(setSelectedBuilding({ id: null, building: null }));
-      dispatch(setSelectedBlock({ id: null, block: null }));
-      dispatch(setSelectedProperty({ id: null, property: null }));
-      
-      // Clear all selections from localStorage
-      Object.values(STORAGE_KEYS).forEach(key => {
-        localStorage.removeItem(key);
-      });
-      
-      // Auto-select first options after a short delay
-      if (config.filters.includes('mtk')) {
-        setTimeout(() => handleAutoSelectFirst('mtk'), 100);
-      }
-      if (config.filters.includes('complex')) {
-        setTimeout(() => handleAutoSelectFirst('complex'), 200);
-      }
-      if (config.filters.includes('building')) {
-        setTimeout(() => handleAutoSelectFirst('building'), 300);
-      }
-      if (config.filters.includes('block')) {
-        setTimeout(() => handleAutoSelectFirst('block'), 400);
-      }
-      if (config.filters.includes('property')) {
-        setTimeout(() => handleAutoSelectFirst('property'), 500);
-      }
-    } catch (error) {
-      console.error('Error refreshing filters:', error);
-    }
+  // Refresh all filters - just clear everything
+  const handleRefreshFilters = () => {
+    dispatch(setSelectedMtk({ id: null, mtk: null }));
+    dispatch(setSelectedComplex({ id: null, complex: null }));
+    dispatch(setSelectedBuilding({ id: null, building: null }));
+    dispatch(setSelectedBlock({ id: null, block: null }));
+    dispatch(setSelectedProperty({ id: null, property: null }));
+    setSelectedLabels({});
   };
 
   useEffect(() => {
@@ -360,120 +251,69 @@ export function ManagementActions({
     return params;
   };
 
-  const handleFilterChange = async (filterType, numValue, selectedOption) => {
-    // Save to localStorage
-    saveSelection(filterType, numValue);
-    
+  const handleFilterChange = (filterType, numValue, selectedOption) => {
     const filterIndex = config.filters.indexOf(filterType);
     const filtersToReset = config.filters.slice(filterIndex + 1);
+    const value = numValue ? parseInt(numValue, 10) : null;
 
-    // Store selected label for display
-    if (selectedOption && numValue) {
+    // Update label
+    if (selectedOption && value) {
       setSelectedLabels(prev => ({
         ...prev,
-        [filterType]: selectedOption.name || selectedOption.apartment_number || `#${numValue}`
+        [filterType]: selectedOption.name || selectedOption.apartment_number || `#${value}`
       }));
     } else {
       setSelectedLabels(prev => {
         const newLabels = { ...prev };
         delete newLabels[filterType];
-        // Also clear child filter labels
         filtersToReset.forEach(f => delete newLabels[f]);
         return newLabels;
       });
     }
 
-    // Update Redux state directly
-    const value = numValue ? parseInt(numValue, 10) : null;
-    
+    // Update Redux directly from the select option (no extra API call)
     switch (filterType) {
       case "mtk":
-        if (value) {
-          const result = await dispatch(loadMtkById(value));
-          if (result.payload) {
-            dispatch(setSelectedMtk({ id: value, mtk: result.payload }));
-          }
-        } else {
-          dispatch(setSelectedMtk({ id: null, mtk: null }));
-        }
-        // Clear dependent filters and auto-fill the immediate child
-        if (filtersToReset.includes("complex")) {
-          dispatch(setSelectedComplex({ id: null, complex: null }));
-        }
-        if (filtersToReset.includes("building")) dispatch(setSelectedBuilding({ id: null, building: null }));
-        if (filtersToReset.includes("block")) dispatch(setSelectedBlock({ id: null, block: null }));
-        if (filtersToReset.includes("property")) dispatch(setSelectedProperty({ id: null, property: null }));
-        // after clearing, try autofilling next filter
-        if (filtersToReset.length && value) {
-          await handleAutoSelectFirst(filtersToReset[0]);
-        }
+        dispatch(setSelectedMtk(value
+          ? { id: value, mtk: selectedOption || { id: value } }
+          : { id: null, mtk: null }
+        ));
         break;
-
       case "complex":
-        if (numValue) {
-          const result = await dispatch(loadComplexById(numValue));
-          if (result.payload) {
-            dispatch(setSelectedComplex({ id: numValue, complex: result.payload }));
-          }
-        } else {
-          dispatch(setSelectedComplex({ id: null, complex: null }));
-        }
-        // Clear dependent filters
-        if (filtersToReset.includes("building")) dispatch(setSelectedBuilding({ id: null, building: null }));
-        if (filtersToReset.includes("block")) dispatch(setSelectedBlock({ id: null, block: null }));
-        if (filtersToReset.includes("property")) dispatch(setSelectedProperty({ id: null, property: null }));
-        if (filtersToReset.length && numValue) {
-          await handleAutoSelectFirst(filtersToReset[0]);
-        }
+        dispatch(setSelectedComplex(value
+          ? { id: value, complex: selectedOption || { id: value } }
+          : { id: null, complex: null }
+        ));
         break;
-
       case "building":
-        if (numValue) {
-          const result = await dispatch(loadBuildingById(numValue));
-          if (result.payload) {
-            dispatch(setSelectedBuilding({ id: numValue, building: result.payload }));
-          }
-        } else {
-          dispatch(setSelectedBuilding({ id: null, building: null }));
-        }
-        // Clear dependent filters
-        if (filtersToReset.includes("block")) dispatch(setSelectedBlock({ id: null, block: null }));
-        if (filtersToReset.includes("property")) dispatch(setSelectedProperty({ id: null, property: null }));
-        if (filtersToReset.length && numValue) {
-          await handleAutoSelectFirst(filtersToReset[0]);
-        }
+        dispatch(setSelectedBuilding(value
+          ? { id: value, building: selectedOption || { id: value } }
+          : { id: null, building: null }
+        ));
         break;
-
       case "block":
-        if (numValue) {
-          const result = await dispatch(loadBlockById(numValue));
-          if (result.payload) {
-            dispatch(setSelectedBlock({ id: numValue, block: result.payload }));
-          }
-        } else {
-          dispatch(setSelectedBlock({ id: null, block: null }));
-        }
-        // Clear dependent filters
-        if (filtersToReset.includes("property")) dispatch(setSelectedProperty({ id: null, property: null }));
-        if (filtersToReset.length && numValue) {
-          await handleAutoSelectFirst(filtersToReset[0]);
-        }
+        dispatch(setSelectedBlock(value
+          ? { id: value, block: selectedOption || { id: value } }
+          : { id: null, block: null }
+        ));
         break;
-
       case "property":
-        if (numValue) {
-          const result = await dispatch(loadPropertyById(numValue));
-          if (result.payload) {
-            dispatch(setSelectedProperty({ id: numValue, property: result.payload }));
-          }
-        } else {
-          dispatch(setSelectedProperty({ id: null, property: null }));
-        }
-        break;
-
-      default:
+        dispatch(setSelectedProperty(value
+          ? { id: value, property: selectedOption || { id: value } }
+          : { id: null, property: null }
+        ));
         break;
     }
+
+    // Clear all child filters (no auto-fill)
+    filtersToReset.forEach(f => {
+      switch (f) {
+        case "complex": dispatch(setSelectedComplex({ id: null, complex: null })); break;
+        case "building": dispatch(setSelectedBuilding({ id: null, building: null })); break;
+        case "block": dispatch(setSelectedBlock({ id: null, block: null })); break;
+        case "property": dispatch(setSelectedProperty({ id: null, property: null })); break;
+      }
+    });
   };
 
   const handleNameInputChange = (value) => {
