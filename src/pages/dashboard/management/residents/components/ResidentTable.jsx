@@ -186,25 +186,25 @@ export function ResidentTable({ items = [], loading, onView, onEdit, onBind, onD
                         </MenuItem>
                       )}
                       {onSelect && (
-                        <MenuItem onClick={() => onSelect(item)}>
+                        <MenuItem onClick={() => onSelect(item)} className="flex items-center">
                           <CheckCircleIcon className="h-4 w-4 mr-2" />
                           Seç
                         </MenuItem>
                       )}
                       {onBind && (
-                        <MenuItem onClick={() => onBind(item)}>
+                        <MenuItem onClick={() => onBind(item)} className="flex items-center">
                           <BlindsIcon className="h-4 w-4 mr-2" />
                           Mənzillər
                         </MenuItem>
                       )}
                       {onEdit && (
-                        <MenuItem onClick={() => onEdit(item)}>
+                        <MenuItem onClick={() => onEdit(item)} className="flex items-center">
                           <PencilIcon className="h-4 w-4 mr-2" />
                           Redaktə et
                         </MenuItem>
                       )}
                       {onDelete && (
-                        <MenuItem onClick={() => onDelete(item)} className="text-red-600">
+                        <MenuItem onClick={() => onDelete(item)} className="flex items-center text-red-500">
                           <TrashIcon className="h-4 w-4 mr-2" />
                           Sil
                         </MenuItem>
@@ -240,7 +240,7 @@ export function ResidentTable({ items = [], loading, onView, onEdit, onBind, onD
                   </MenuHandler>
                   <MenuList>
                     {onView && (
-                      <MenuItem onClick={() => onView(item)}>
+                      <MenuItem onClick={() => onView(item)} className="flex items-center">
                         <EyeIcon className="h-4 w-4 mr-2" />
                         Bax
                       </MenuItem>
@@ -248,25 +248,25 @@ export function ResidentTable({ items = [], loading, onView, onEdit, onBind, onD
 
 
                     {onSelect && (
-                      <MenuItem onClick={() => onSelect(item)}>
+                      <MenuItem onClick={() => onSelect(item)} className="flex items-center">
                         <CheckCircleIcon className="h-4 w-4 mr-2" />
                         Seç
                       </MenuItem>
                     )}
                     {onBind && (
-                      <MenuItem onClick={() => onBind(item)}>
+                      <MenuItem onClick={() => onBind(item)} className="flex items-center">
                         <BlindsIcon className="h-4 w-4 mr-2" />
                         Mənzillər
                       </MenuItem>
                     )}
                     {onEdit && (
-                      <MenuItem onClick={() => onEdit(item)}>
+                      <MenuItem onClick={() => onEdit(item)} className="flex items-center">
                         <PencilIcon className="h-4 w-4 mr-2" />
                         Redaktə et
                       </MenuItem>
                     )}
                     {onDelete && (
-                      <MenuItem onClick={() => onDelete(item)} className="text-red-600">
+                      <MenuItem onClick={() => onDelete(item)} className="flex items-center text-red-500">
                         <TrashIcon className="h-4 w-4 mr-2" />
                         Sil
                       </MenuItem>
