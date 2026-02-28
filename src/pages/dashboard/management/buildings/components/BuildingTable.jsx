@@ -85,8 +85,7 @@ export function BuildingTable({ items = [], loading, onView, onEdit, onDelete, o
   };
 
   return (
-    <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg border border-white/20 dark:border-gray-700/50 relative z-0">
-      {/* Desktop Table View */}
+    <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg border border-white/20 dark:border-gray-700/50">
       <div className="hidden lg:block overflow-x-auto">
         <table className="w-full">
           <thead>

@@ -14,7 +14,7 @@ const ServiceHeader = () => {
                     </div>
                     <div>
                         <Typography variant="h4" className="text-white font-bold">
-                            {t("services.myServices") || "Mənim Xidmətlərim"}
+                            {t("services.myServices") || " Xidmətlərim"}
                         </Typography>
                         <Typography variant="small" className="text-blue-100 dark:text-blue-200">
                             {t("services.service") || "xidmət"}

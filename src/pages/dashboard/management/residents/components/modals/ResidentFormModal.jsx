@@ -36,6 +36,7 @@ export function ResidentFormModal({
   const [propertyPage, setPropertyPage] = useState(1);
   const [hasMoreProperties, setHasMoreProperties] = useState(true);
   const [loadingMoreProperties, setLoadingMoreProperties] = useState(false);
+  const [propertySearch, setPropertySearch] = useState("");
   
   const PER_PAGE = 30;
   
@@ -131,9 +132,18 @@ export function ResidentFormModal({
         per_page: PER_PAGE,
       })
         .then((response) => {
-          const data = response?.data?.data?.data || [];
-          setProperties(data);
-          setHasMoreProperties(data.length === PER_PAGE);
+          // backend returns { data: { current_page, last_page, data: [...] }}
+          const meta = response?.data?.data || {};
+          const items = meta.data || [];
+          setProperties(items);
+          setPropertyPage(meta.current_page || 1);
+          // determine if more pages remain
+          if (typeof meta.current_page === "number" && typeof meta.last_page === "number") {
+            setHasMoreProperties(meta.current_page < meta.last_page);
+          } else {
+            // fallback to checking length
+            setHasMoreProperties(items.length === PER_PAGE);
+          }
         })
         .catch((error) => {
           console.error("Error loading properties:", error);
@@ -147,6 +157,83 @@ export function ResidentFormModal({
       setHasMoreProperties(true);
     }
   }, [open, formComplexId]);
+
+  // Search properties with debouncing
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (open && formComplexId) {
+        setLoadingProperties(true);
+        setPropertyPage(1);
+        setHasMoreProperties(true);
+        
+        // Use search endpoint for properties with sub_data search
+        propertiesAPI.search({
+          complex_ids: [formComplexId],
+          name: propertySearch || undefined,
+          building_name: propertySearch || undefined,  // Bina adına görə axtarış
+          block_name: propertySearch || undefined,    // Blok adına görə axtarış
+          page: 1,
+          per_page: PER_PAGE,
+        })
+          .then((response) => {
+            // backend returns { data: { current_page, last_page, data: [...] }}
+            const meta = response?.data?.data || {};
+            const items = meta.data || [];
+            setProperties(items);
+            setPropertyPage(meta.current_page || 1);
+            // determine if more pages remain
+            if (typeof meta.current_page === "number" && typeof meta.last_page === "number") {
+              setHasMoreProperties(meta.current_page < meta.last_page);
+            } else {
+              // fallback to checking length
+              setHasMoreProperties(items.length === PER_PAGE);
+            }
+          })
+          .catch((error) => {
+            console.error("Error searching properties:", error);
+            setProperties([]);
+            setHasMoreProperties(false);
+          })
+          .finally(() => setLoadingProperties(false));
+      }
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [open, formComplexId, propertySearch]);
+
+  // Load more properties on scroll
+  const handlePropertyScrollEnd = async () => {
+    if (!hasMoreProperties || loadingMoreProperties || !formComplexId) return;
+    
+    setLoadingMoreProperties(true);
+    try {
+      const nextPage = propertyPage + 1;
+      const response = await propertiesAPI.search({
+        complex_ids: [formComplexId],
+        name: propertySearch || undefined,
+        building_name: propertySearch || undefined,  // Bina adına görə axtarış
+        block_name: propertySearch || undefined,    // Blok adına görə axtarış
+        per_page: PER_PAGE,
+        page: nextPage
+      });
+      
+      const meta = response?.data?.data || {};
+      const newItems = meta.data || [];
+      
+      setProperties(prev => [...prev, ...newItems]);
+      setPropertyPage(nextPage);
+      
+      if (typeof meta.current_page === "number" && typeof meta.last_page === "number") {
+        setHasMoreProperties(meta.current_page < meta.last_page);
+      } else {
+        setHasMoreProperties(newItems.length === PER_PAGE);
+      }
+    } catch (error) {
+      console.error("Error loading more properties:", error);
+    } finally {
+      setLoadingMoreProperties(false);
+    }
+  };
 
   const errorText = useMemo(() => {
     if (!form?.formData?.name?.trim()) return "Ad mütləqdir";
@@ -164,36 +251,6 @@ export function ResidentFormModal({
     const g = parseInt(hexClean.substring(2, 4), 16);
     const b = parseInt(hexClean.substring(4, 6), 16);
     return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-  };
-
-  // load next page of properties when the dropdown scroll hits bottom
-  const loadMoreProperties = async () => {
-    if (!formComplexId || loadingMoreProperties || !hasMoreProperties) return;
-    setLoadingMoreProperties(true);
-    const nextPage = propertyPage + 1;
-    try {
-      const res = await propertiesAPI.search({
-        complex_ids: [formComplexId],
-        page: nextPage,
-        per_page: PER_PAGE,
-      });
-      const more = res?.data?.data?.data || [];
-      setProperties((prev) => [...prev, ...more]);
-      setPropertyPage(nextPage);
-      setHasMoreProperties(more.length === PER_PAGE);
-    } catch (err) {
-      console.error("Error loading additional properties:", err);
-      setHasMoreProperties(false);
-    } finally {
-      setLoadingMoreProperties(false);
-    }
-  };
-
-  // callback for CustomSelect's scroll event
-  const handlePropertyScrollEnd = () => {
-    if (hasMoreProperties && !loadingProperties) {
-      loadMoreProperties();
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -391,7 +448,6 @@ export function ResidentFormModal({
                     label="Mənzil *"
                     value={form.formData.property?.property_id ? String(form.formData.property.property_id) : ""}
                     onChange={(value) => {
-                      console.log("Property selected:", value);
                       form.updateField("property.property_id", value ? Number(value) : null);
                     }}
                     options={[
@@ -399,15 +455,22 @@ export function ResidentFormModal({
                       ...properties.map((p) => ({
                         value: String(p.id),
                         label: `${p.sub_data?.building?.name || 'Bina'} | ${p.sub_data?.block?.name || 'Blok'} | ${p.name || p.meta?.apartment_number || `Mənzil #${p.id}`}`,
+                        sub_data: p.sub_data,
+                        meta: p.meta,
+                        name: p.name,
                       })),
                     ]}
                     loading={loadingProperties}
                     loadingMore={loadingMoreProperties}
                     onScrollEnd={handlePropertyScrollEnd}
-                    disabled={loadingProperties || !form.formData.property?.complex_id}
+                    disabled={!form.formData.property?.complex_id}
                     placeholder="Mənzil seçin"
-                    error={!!form.errors?.property?.property_id}
-                    helperText={form.errors?.property?.property_id}
+                    error={form.errors?.property?.property_id || ""}
+                    helperText={properties.length > 0 ? `${properties.length} mənzil göstərilir` : ""}
+                    searchable={true}
+                    searchValue={propertySearch}
+                    onSearchChange={setPropertySearch}
+                    searchPlaceholder="Mənzil axtarın..."
                   />
                 </div>
               </div>

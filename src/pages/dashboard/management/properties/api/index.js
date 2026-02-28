@@ -83,6 +83,7 @@ export const propertiesAPI = {
           });
         } 
         // Single value parameters: name, property_type, area, floor, apartment_number, status
+        // Əlavə sub_data search parameters: building_name, block_name
         else if (formattedParams[key] !== null && formattedParams[key] !== undefined && formattedParams[key] !== '') {
           searchParams.append(key, String(formattedParams[key]));
         }

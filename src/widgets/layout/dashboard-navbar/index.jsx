@@ -124,7 +124,7 @@ export function DashboardNavbar({ homePath, parentPathMap }) {
 
   const getNavbarBorderClasses = () => {
     if (navbarBorder === "disabled") return "border-0";
-    if (colorCode) return "border-0 sm:border-2"; // MTK rəngi varsa border class-larını sil
+    if (colorCode) return "border-0 sm:border-2"; 
     const borderColors = {
       default: "border-0 sm:border-2 border-gray-200/50 dark:border-gray-800/50",
       red: "border-0 sm:border-2 border-red-200/50 dark:border-gray-800/50",
@@ -136,9 +136,8 @@ export function DashboardNavbar({ homePath, parentPathMap }) {
   };
 
   const getNavbarBlurClasses = () => {
-    // Glass effect üçün həmişə blur aktiv olmalıdır
     if (fixedNavbar) {
-      return "backdrop-blur-md sm:backdrop-blur-xl md:backdrop-blur-2xl backdrop-saturate-150";
+      return "backdrop-blur-md sm:backdrop-blur-xl md:backdrop-blur-xl backdrop-saturate-150";
     }
     if (navbarBlur === "disabled") return "";
     const blurIntensity = {
@@ -180,10 +179,9 @@ export function DashboardNavbar({ homePath, parentPathMap }) {
     getNavbarHoverClasses(),
     fixedNavbar
       ? `${getNavbarPositionClasses()} z-[1001] ${getNavbarHeightClasses()} ${getNavbarShadowClasses()} mb-4 sm:mb-6 md:mb-8`
-      : `px-2 sm:px-3 md:px-4 lg:px-6 ${getNavbarHeightClasses()} z-[1001] mb-4 sm:mb-6 md:mb-8`,
+      : `px-2 sm:px-3 md:px-4 lg:px-6 ${getNavbarHeightClasses()}  mb-4 sm:mb-6 md:mb-8`,
   ].filter(Boolean).join(" ");
 
-  // Navbar rənglərini düzgün təyin et
   const getNavbarTextColor = () => {
     if (!fixedNavbar) return '';
     if (isDarkMode) {
@@ -193,19 +191,16 @@ export function DashboardNavbar({ homePath, parentPathMap }) {
     }
   };
 
-  // Navbar-ın rənglərini inline style ilə təyin et
   useEffect(() => {
     if (fixedNavbar) {
       const navbarElement = document.querySelector('nav[class*="Navbar"]');
       if (navbarElement) {
         if (isDarkMode) {
           navbarElement.style.color = '#ffffff';
-          // Bütün child elementlərin rənglərini təyin et
           const allElements = navbarElement.querySelectorAll('*');
           allElements.forEach((el) => {
             if (el instanceof HTMLElement) {
               const computedStyle = window.getComputedStyle(el);
-              // Yalnız default rəngləri override et
               if (computedStyle.color === 'rgb(17, 24, 39)' || computedStyle.color === 'rgb(31, 41, 55)') {
                 el.style.color = '#ffffff';
               }
@@ -213,12 +208,10 @@ export function DashboardNavbar({ homePath, parentPathMap }) {
           });
         } else {
           navbarElement.style.color = '#111827';
-          // Bütün child elementlərin rənglərini təyin et
           const allElements = navbarElement.querySelectorAll('*');
           allElements.forEach((el) => {
             if (el instanceof HTMLElement) {
               const computedStyle = window.getComputedStyle(el);
-              // Yalnız default rəngləri override et
               if (computedStyle.color === 'rgb(255, 255, 255)' || computedStyle.color === 'rgb(243, 244, 246)') {
                 el.style.color = '#111827';
               }
@@ -231,18 +224,16 @@ export function DashboardNavbar({ homePath, parentPathMap }) {
 
   return (
     <Navbar
-      // force transparent color so MaterialTailwind doesn't apply a solid fill
       color="transparent"
       className={`${navbarClasses} ${getNavbarTextColor()}`}
       fullWidth
-      blurred={fixedNavbar && navbarBlur === "enabled"}
+      // blurred={fixedNavbar && navbarBlur === "enabled"}
       style={(() => {
-        // always transparent background for glass effect
         const base = {
           background: 'transparent',
           borderColor: colorCode ? getRgbaColor(colorCode, 0.3) : undefined,
-          position: 'relative',
-          zIndex: 1001,
+          position: 'sticky',
+          zIndex: 1,
         };
         if (fixedNavbar) {
           base.color = isDarkMode ? '#ffffff' : '#111827';

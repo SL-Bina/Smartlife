@@ -20,12 +20,10 @@ import { BuildingOfficeIcon, CheckCircleIcon, InformationCircleIcon } from "@her
 export default function BuildingsPage() {
   const dispatch = useAppDispatch();
   
-  // Redux-dan filter state (global) - table filtering üçün
   const mtkId = useAppSelector((state) => state.mtk.selectedMtkId);
   const complexId = useAppSelector((state) => state.complex.selectedComplexId);
   const selectedBuildingId = useAppSelector((state) => state.building.selectedBuildingId);
   const selectedBuilding = useAppSelector((state) => state.building.selectedBuilding);
-  
   const [search, setSearch] = useState({});
   const [formOpen, setFormOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
@@ -38,18 +36,15 @@ export default function BuildingsPage() {
   const [mode, setMode] = useState("create");
   const [selected, setSelected] = useState(null);
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
-
   const form = useBuildingForm();
   const { items, loading, page, lastPage, total, itemsPerPage, setItemsPerPage, goToPage, refresh } = useBuildingData({ search, complexId, mtkId });
 
-  // Load MTKs, Complexes and Buildings to Redux on mount
   useEffect(() => {
     dispatch(loadMtks({ page: 1, per_page: 1000 }));
     dispatch(loadComplexes({ page: 1, per_page: 1000 }));
     dispatch(loadBuildings({ page: 1, per_page: 1000 }));
   }, [dispatch]);
 
-  // Load selected Building if ID exists but Building data doesn't
   useEffect(() => {
     if (selectedBuildingId && !selectedBuilding) {
       dispatch(loadBuildingById(selectedBuildingId));
@@ -90,7 +85,6 @@ export default function BuildingsPage() {
 
   const handleCreate = () => {
     form.resetForm();
-    // Əgər Complex ID varsa, form-a əlavə et
     if (complexId) {
       form.updateField("complex_id", complexId);
     }
@@ -109,7 +103,6 @@ export default function BuildingsPage() {
     setViewModalOpen(true);
     try {
       const response = await buildingsAPI.getById(item.id);
-      // API returns { data: { success, message, data } } or { success, message, data }
       const apiData = response?.data?.data || response?.data || response;
       setItemToView(apiData);
     } catch (error) {
@@ -226,7 +219,6 @@ export default function BuildingsPage() {
         open={searchModalOpen}
         onClose={() => setSearchModalOpen(false)}
         onSearch={(searchParams) => {
-          // Keep name and status from current search, merge with advanced search params
           setSearch((prev) => ({
             ...(prev.name && { name: prev.name }),
             ...(prev.status && { status: prev.status }),

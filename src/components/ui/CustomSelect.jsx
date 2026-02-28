@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
 export function CustomSelect({
   label,
@@ -9,17 +9,24 @@ export function CustomSelect({
   options = [],
   placeholder = "Seçin",
   error = false,
+  helperText = "",         // helper text below the select
   disabled = false,
   loading = false,
   loadingMore = false,       // when additional results are being fetched
   onScrollEnd,              // callback when user scrolls near bottom
   className = "",
   labelClassName = "",
+  searchable = false,       // enable search functionality
+  searchValue = "",         // current search value
+  onSearchChange,           // search change handler
+  searchPlaceholder = "Axtarın...",
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0, width: 0, openAbove: false });
+  const [localSearchValue, setLocalSearchValue] = useState(searchValue || "");
   const buttonRef = useRef(null);
   const dropdownRef = useRef(null);
+  const searchInputRef = useRef(null);
 
   const calculatePosition = useCallback(() => {
     if (!buttonRef.current) return;
@@ -72,6 +79,7 @@ export function CustomSelect({
     };
   }, [isOpen, calculatePosition]);
 
+
   const selectedOption = options.find((opt) => String(opt.value) === String(value));
 
   const handleToggle = () => {
@@ -85,7 +93,7 @@ export function CustomSelect({
     setIsOpen(false);
   };
 
-  // optionally notify parent when the user scrolls near the bottom of the list
+  // notify parent when scrolling near bottom
   const handleDropdownScroll = (e) => {
     if (typeof onScrollEnd === "function") {
       const { scrollTop, scrollHeight, clientHeight } = e.target;
@@ -94,6 +102,34 @@ export function CustomSelect({
       }
     }
   };
+
+  // Handle search change
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setLocalSearchValue(value);
+    onSearchChange?.(value);
+  };
+
+  // Sync search value with prop
+  useEffect(() => {
+    setLocalSearchValue(searchValue || "");
+  }, [searchValue]);
+
+  // Focus search input when dropdown opens
+  useEffect(() => {
+    if (isOpen && searchable && searchInputRef.current) {
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 100);
+    }
+  }, [isOpen, searchable]);
+
+  // Filter options based on search
+  const filteredOptions = searchable && localSearchValue
+    ? options.filter(option => 
+        option.label.toLowerCase().includes(localSearchValue.toLowerCase())
+      )
+    : options;
 
   const dropdown = isOpen
     ? createPortal(
@@ -110,13 +146,30 @@ export function CustomSelect({
           }}
           className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-2xl max-h-60 overflow-y-auto"
         >
-          {options.length === 0 ? (
+          {/* Search Input */}
+          {searchable && (
+            <div className="p-2 border-b border-gray-200 dark:border-gray-600">
+              <div className="relative">
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={localSearchValue}
+                  onChange={handleSearchChange}
+                  placeholder={searchPlaceholder}
+                  className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                />
+              </div>
+            </div>
+          )}
+          
+          {filteredOptions.length === 0 ? (
             <div className="px-3 py-2.5 text-sm text-gray-500 dark:text-gray-400">
-              Seçim yoxdur
+              {localSearchValue ? "Nəticə tapılmadı" : "Seçim yoxdur"}
             </div>
           ) : (
             <>
-              {options.map((option) => (
+              {filteredOptions.map((option) => (
                 <button
                   key={option.value}
                   type="button"
@@ -180,6 +233,10 @@ export function CustomSelect({
 
       {error && typeof error === "string" && (
         <span className="text-xs text-red-500">{error}</span>
+      )}
+
+      {helperText && !error && (
+        <span className="text-xs text-gray-500 dark:text-gray-400">{helperText}</span>
       )}
 
       {dropdown}
