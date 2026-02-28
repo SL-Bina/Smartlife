@@ -11,7 +11,6 @@ import { useAuth } from "@/store/hooks/useAuth";
 import { useSelector } from "react-redux";
 
 export function SidenavHeader({ brandName, collapsed = false, isLowHeight = false, homePath = "/dashboard/home" }) {
-  // homePath artıq tam absolute path-dir (məs: /resident/home və ya /dashboard/home)
   const [controller, actions] = useMaterialTailwindController();
   const { sidenavSize } = controller;
   const { t, i18n } = useTranslation();
@@ -70,18 +69,39 @@ export function SidenavHeader({ brandName, collapsed = false, isLowHeight = fals
     return "px-3 py-3 xl:px-6 xl:py-5";
   };
 
+  const getRgbaColor = (hex, opacity = 1) => {
+    if (!hex || typeof hex !== "string") return null;
+    const cleaned = hex.trim().replace("#", "");
+    if (!/^[0-9a-fA-F]{6}$/.test(cleaned)) return null;
+    const r = parseInt(cleaned.substring(0, 2), 16);
+    const g = parseInt(cleaned.substring(2, 4), 16);
+    const b = parseInt(cleaned.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
+
   // compute header gradient based on complex color if available
   const complexColor =
     selectedProperty?.sub_data?.complex?.meta?.color_code ||
+    selectedProperty?.complex?.meta?.color_code ||
     selectedProperty?.sub_data?.mtk?.meta?.color_code ||
+    selectedProperty?.mtk?.meta?.color_code ||
     null;
-  const headerStyle = complexColor
-    ? { background: complexColor }
-    : null;
+
+  const colorTintStrong = getRgbaColor(complexColor, 0.22);
+  const colorTintSoft = getRgbaColor(complexColor, 0.1);
+
+  const headerStyle = {
+    background: complexColor
+      ? `linear-gradient(140deg, ${colorTintStrong} 0%, ${colorTintSoft} 42%, rgba(255,255,255,0.22) 100%)`
+      : "linear-gradient(140deg, rgba(255,255,255,0.38) 0%, rgba(255,255,255,0.2) 48%, rgba(255,255,255,0.12) 100%)",
+    boxShadow: complexColor
+      ? `inset 0 1px 0 ${getRgbaColor(complexColor, 0.28)}, inset 0 -1px 0 rgba(255,255,255,0.12)`
+      : "inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(255,255,255,0.08)",
+  };
 
   return (
     <div
-      className={`relative flex-shrink-0 border-b border-gray-200/50 dark:border-gray-700/50 ${getHeaderPadding()}`}
+      className={`relative flex-shrink-0 border-b border-gray-200/50 dark:border-gray-700/50 backdrop-blur-xl backdrop-saturate-150 ${getHeaderPadding()}`}
       style={headerStyle}
     >
       <Link

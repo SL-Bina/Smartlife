@@ -16,6 +16,8 @@ import { LanguageSelector } from "./LanguageSelector";
 import { NotificationsMenu } from "./NotificationsMenu";
 import { UserMenu } from "./UserMenu";
 import { BuildingOfficeIcon } from "@heroicons/react/24/outline";
+import PropertySelectorMenu from "./PropertySelectorMenu";
+
 
 /* --------------------------- Weather Pill (center, dynamic) --------------------------- */
 /**
@@ -312,6 +314,8 @@ function WeatherPillCenter() {
   );
 }
 
+
+
 /* ------------------------------ Desktop Navbar ------------------------------ */
 export function DesktopNavbar({ pathParts, pageTitle, fixedNavbar, navbarHoverEffects, homePath, parentPathMap }) {
   const [controller, dispatch] = useMaterialTailwindController();
@@ -404,6 +408,9 @@ export function DesktopNavbar({ pathParts, pageTitle, fixedNavbar, navbarHoverEf
 
       {/* RIGHT - Actions */}
       <div className="flex items-center justify-end gap-1 md:gap-1.5 lg:gap-2 flex-shrink-0">
+        <div className={navbarHoverEffects === "enabled" ? "hover:scale-125 hover:rotate-6 hover:brightness-110 active:scale-100 transition-all duration-300 ease-out cursor-pointer" : "active:scale-95"}>
+          <PropertySelectorMenu />
+        </div>
         <div className={navbarHoverEffects === "enabled" ? "hover:scale-125 hover:rotate-6 hover:brightness-110 active:scale-100 transition-all duration-300 ease-out cursor-pointer" : "active:scale-95"}>
           <DarkModeToggle />
         </div>

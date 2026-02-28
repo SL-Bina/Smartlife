@@ -65,13 +65,7 @@ function ProtectedRoute({ element, allowedRoles, moduleName, fallbackPath }) {
     }
   }
 
-  // require apartment selection if resident has multiple
-  if (isResident && properties && properties.length > 1 && !selectedPropertyId) {
-    // if user is not already on the selector page, redirect
-    if (!window.location.pathname.startsWith("/resident/my-properties")) {
-      return <Navigate to="/resident/my-properties" replace />;
-    }
-  }
+  // selected apartment is handled centrally (navbar/layout auto-selection)
 
   return element;
 }
@@ -228,11 +222,17 @@ export function Dashboard() {
       myPropertiesAPI.getAll()
         .then((resp) => {
           const list = resp?.data?.data || resp?.data || [];
-          setResidentPropertyCount(list.length);
+          const propertiesList = Array.isArray(list) ? list : [];
+          setResidentPropertyCount(propertiesList.length);
+
+          if (!selectedPropertyId && propertiesList.length > 0) {
+            const firstProperty = propertiesList[0];
+            dispatch(setSelectedProperty({ id: firstProperty?.id ?? null, property: firstProperty ?? null }));
+          }
         })
         .catch(() => setResidentPropertyCount(0));
     }
-  }, [user]);
+  }, [user, selectedPropertyId, dispatch]);
 
   const hasToken = typeof document !== 'undefined' && document.cookie.includes('smartlife_token=');
 
@@ -257,26 +257,14 @@ export function Dashboard() {
 
   let filteredRoutes = filterRoutesByRole(routes, user, hasModuleAccess);
 
-  // hide "my-properties" sidebar entry except if user is currently viewing it
-  const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
-  // hide entry only when resident really has exactly one apartment (not when they've selected one)
-  const hideMyProps = user?.is_resident && residentPropertyCount === 1 && !currentPath.startsWith("/resident/my-properties");
-  if (hideMyProps) {
-    filteredRoutes = filteredRoutes.map((route) => {
-      if (route.layout === "resident") {
-        const pages = route.pages.filter((page) => page.path !== "/my-properties");
-        return { ...route, pages };
-      }
-      return route;
-    });
-  }
+  // keep "my-property" entry visible as selected-apartment details page
   const firstActivePath = getFirstActivePath(filteredRoutes);
   const parentPathMap = buildParentPathMap(filteredRoutes);
 
   const showError = error && !user;
 
   return (
-    <div className="min-h-screen bg-blue-gray-50/50 dark:bg-gray-900 flex flex-col relative ">
+    <div className="min-h-screen bg-blue-gray-50/50 dark:bg-gray-900 flex flex-col relative pb-10">
       {showError && (
         <div className="bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800 px-4 py-3 relative z-10">
           <div className="max-w-7xl mx-auto flex items-center justify-between">

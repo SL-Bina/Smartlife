@@ -13,6 +13,15 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import residentHomeAPI from "./api";
 
+const colorClasses = {
+  blue: { bg: "bg-blue-100 dark:bg-blue-900/30", icon: "text-blue-600 dark:text-blue-300" },
+  green: { bg: "bg-green-100 dark:bg-green-900/30", icon: "text-green-600 dark:text-green-300" },
+  red: { bg: "bg-red-100 dark:bg-red-900/30", icon: "text-red-600 dark:text-red-300" },
+  yellow: { bg: "bg-yellow-100 dark:bg-yellow-900/30", icon: "text-yellow-600 dark:text-yellow-300" },
+  purple: { bg: "bg-purple-100 dark:bg-purple-900/30", icon: "text-purple-600 dark:text-purple-300" },
+  indigo: { bg: "bg-indigo-100 dark:bg-indigo-900/30", icon: "text-indigo-600 dark:text-indigo-300" },
+};
+
 
 const ResidentHomePage = () => {
   const { t } = useTranslation();
@@ -31,7 +40,7 @@ const ResidentHomePage = () => {
       setLoading(true);
       setError(null);
       const response = await residentHomeAPI.getInfo();
-      setInfo(response.data); // <-- FIX
+      setInfo(response?.data || response || null);
     } catch (err) {
       setError(err?.message || t("resident.home.infoLoadError") || "Məlumatlar yüklənərkən xəta baş verdi");
     } finally {
@@ -140,8 +149,8 @@ const ResidentHomePage = () => {
                       {stat.value}
                     </Typography>
                   </div>
-                  <div className={`p-3 rounded-lg bg-${stat.color}-100 dark:bg-${stat.color}-900/30`}>
-                    <stat.icon className={`h-6 w-6 sm:h-8 sm:w-8 text-${stat.color}-600 dark:text-${stat.color}-300`} />
+                  <div className={`p-3 rounded-lg ${colorClasses[stat.color]?.bg || colorClasses.blue.bg}`}>
+                    <stat.icon className={`h-6 w-6 sm:h-8 sm:w-8 ${colorClasses[stat.color]?.icon || colorClasses.blue.icon}`} />
                   </div>
                 </div>
               </CardBody>
@@ -149,6 +158,16 @@ const ResidentHomePage = () => {
           </motion.div>
         ))}
       </div>
+
+      {error && (
+        <Card className="border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 shadow-sm">
+          <CardBody className="py-3 px-4">
+            <Typography variant="small" className="text-red-700 dark:text-red-300">
+              {error}
+            </Typography>
+          </CardBody>
+        </Card>
+      )}
 
       <Card className="border border-blue-600 dark:border-gray-700 shadow-lg dark:bg-gray-800">
         <CardBody className="p-4 sm:p-6 dark:bg-gray-800">
@@ -166,7 +185,7 @@ const ResidentHomePage = () => {
                   className="flex flex-col items-center justify-center p-4 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:shadow-md transition-all"
                   onClick={stat.onClick}
                 >
-                  <stat.icon className={`h-6 w-6 sm:h-8 sm:w-8 text-${stat.color}-600 dark:text-${stat.color}-300 mb-2`} />
+                  <stat.icon className={`h-6 w-6 sm:h-8 sm:w-8 mb-2 ${colorClasses[stat.color]?.icon || colorClasses.blue.icon}`} />
                   <Typography variant="small" className="text-center text-xs text-gray-700 dark:text-gray-300">
                     {stat.title}
                   </Typography>
