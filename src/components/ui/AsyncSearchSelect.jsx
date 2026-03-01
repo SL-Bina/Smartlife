@@ -52,6 +52,8 @@ export function AsyncSearchSelect({
   const dropdownRef = useRef(null);
   const searchInputRef = useRef(null);
   const listRef = useRef(null);
+  // Ref guard prevents concurrent infinite-scroll fetches
+  const loadingMoreRef = useRef(false);
 
   const debouncedSearch = useDebounce(searchTerm, 300);
 
@@ -99,7 +101,8 @@ export function AsyncSearchSelect({
 
   const fetchOptions = useCallback(async ({ search = "", pageNum = 1 } = {}) => {
     if (!endpoint) return;
-    setLoading(true);
+    // Only show the full spinner for the first page; subsequent pages show loadingMore indicator
+    if (pageNum === 1) setLoading(true);
     try {
       const params = {
         ...searchParamsRef.current,
@@ -125,12 +128,13 @@ export function AsyncSearchSelect({
       if (pageNum === 1) setOptions([]);
       setHasMore(false);
     } finally {
-      setLoading(false);
+      if (pageNum === 1) setLoading(false);
     }
   }, [endpoint, perPage, parseResponse]);
 
   const loadMoreData = useCallback(async (search, pageNum) => {
-    if (!endpoint || loadingMore) return;
+    if (!endpoint || loadingMoreRef.current) return;
+    loadingMoreRef.current = true;
     setLoadingMore(true);
     try {
       await fetchOptions({ search, pageNum });
@@ -138,29 +142,26 @@ export function AsyncSearchSelect({
       console.error("AsyncSearchSelect load more error:", e);
       setHasMore(false);
     } finally {
+      loadingMoreRef.current = false;
       setLoadingMore(false);
     }
-  }, [endpoint, loadingMore, fetchOptions]);
+  }, [endpoint, fetchOptions]);
 
   const handleListScroll = useCallback((e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.target;
-    if (scrollHeight - scrollTop <= clientHeight + 50 && hasMore && !loadingMore && !loading) {
+    if (scrollHeight - scrollTop <= clientHeight + 50 && hasMore && !loadingMoreRef.current && !loading) {
       loadMoreData(debouncedSearch, page + 1);
     }
-  }, [hasMore, loadingMore, loading, page, debouncedSearch, loadMoreData]);
+  }, [hasMore, loading, page, debouncedSearch, loadMoreData]);
 
+  // Single effect: only fetch when dropdown is open (or params change while open)
   useEffect(() => {
-    if (!endpoint || disabled) return;
+    if (!endpoint || disabled || !isOpen) return;
+    setPage(1);
+    setHasMore(true);
+    setOptions([]);
     fetchOptions({ search: debouncedSearch, pageNum: 1 });
-  }, [endpoint, searchParamsKey, disabled, debouncedSearch, fetchOptions]);
-
-  useEffect(() => {
-    if (isOpen) {
-      setPage(1);
-      setHasMore(true);
-      fetchOptions({ search: debouncedSearch, pageNum: 1 });
-    }
-  }, [debouncedSearch, isOpen, fetchOptions]);
+  }, [endpoint, searchParamsKey, disabled, debouncedSearch, isOpen, fetchOptions]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {

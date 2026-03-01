@@ -246,6 +246,7 @@ export default function ResidentsPage() {
         open={bindModalOpen}
         onClose={() => setBindModalOpen(false)}
         residentId={selectedResidentId}
+        residentName={selectedResident ? `${selectedResident.name || ''} ${selectedResident.surname || ''}`.trim() : ""}
         residentProperties={selectedResident?.property_residents}
         onSuccess={() => {
           if (selectedResidentId) {

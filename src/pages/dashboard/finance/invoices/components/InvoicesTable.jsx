@@ -114,12 +114,12 @@ export function InvoicesTable({ invoices, loading, onView, onEdit, onDelete }) {
             </th>
             <th className="px-4 xl:px-6 py-3 xl:py-4 text-left">
               <Typography variant="small" className="font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider text-xs">
-                Başlama tarixi
+                Nə vaxtdan
               </Typography>
             </th>
             <th className="px-4 xl:px-6 py-3 xl:py-4 text-left">
               <Typography variant="small" className="font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider text-xs">
-                Son tarix
+                Nə vaxta 
               </Typography>
             </th>
             <th className="px-4 xl:px-6 py-3 xl:py-4 text-left">

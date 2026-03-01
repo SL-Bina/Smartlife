@@ -12,10 +12,8 @@ const residentsAPI = {
 
   search: async (params = {}) => {
     try {
-      // Build URLSearchParams to ensure proper formatting
       const searchParams = new URLSearchParams();
       Object.keys(params).forEach((key) => {
-        // Array parameters: mtk_ids[], complex_ids[]
         if ((key === 'mtk_ids' || key === 'complex_ids') && Array.isArray(params[key]) && params[key].length > 0) {
           params[key].forEach((id) => {
             if (id !== null && id !== undefined && id !== '') {
@@ -23,7 +21,6 @@ const residentsAPI = {
             }
           });
         } 
-        // Single value parameters: name, surname, email, phone, status
         else if (params[key] !== null && params[key] !== undefined && params[key] !== '') {
           searchParams.append(key, String(params[key]));
         }
@@ -105,18 +102,24 @@ const residentsAPI = {
   bindProperty: async (residentId, propertyData) => {
     try {
       const response = await api.post(`/module/resident/bind-property/${residentId}`, propertyData);
+      if (response.data?.success === false) {
+        throw response.data;
+      }
       return response;
     } catch (error) {
-      throw error.response?.data || error.message;
+      throw error.response?.data || error;
     }
   },
 
   unbindProperty: async (residentId, propertyData) => {
     try {
       const response = await api.post(`/module/resident/unbind-property/${residentId}`, propertyData);
+      if (response.data?.success === false) {
+        throw response.data;
+      }
       return response;
     } catch (error) {
-      throw error.response?.data || error.message;
+      throw error.response?.data || error;
     }
   },
 };

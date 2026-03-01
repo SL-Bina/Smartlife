@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography } from "@material-tailwind/react";
 import { XMarkIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
@@ -12,41 +12,6 @@ export function DeleteConfirmModal({
   entityName = "element",
   loading = false
 }) {
-  useEffect(() => {
-    if (open) {
-      const setDialogZIndex = () => {
-        const dialogs = document.querySelectorAll('div[role="dialog"]');
-        dialogs.forEach((dialog) => {
-          if (dialog instanceof HTMLElement) {
-            dialog.style.zIndex = '999999';
-          }
-          let parent = dialog.parentElement;
-          while (parent && parent !== document.body) {
-            if (parent instanceof HTMLElement) {
-              const computedStyle = window.getComputedStyle(parent);
-              if (computedStyle.position === 'fixed' || computedStyle.position === 'absolute') {
-                parent.style.zIndex = '999999';
-              }
-            }
-            parent = parent.parentElement;
-          }
-        });
-        
-        const backdrops = document.querySelectorAll('[class*="backdrop"]');
-        backdrops.forEach((backdrop) => {
-          if (backdrop instanceof HTMLElement) {
-            backdrop.style.zIndex = '999998';
-          }
-        });
-      };
-      
-      setDialogZIndex();
-      const timeout = setTimeout(setDialogZIndex, 10);
-      
-      return () => clearTimeout(timeout);
-    }
-  }, [open]);
-
   if (!open) return null;
 
   const displayMessage = itemName 
@@ -60,7 +25,6 @@ export function DeleteConfirmModal({
       size="sm" 
       className="dark:bg-gray-800 border border-red-200 dark:border-red-900/30"
       dismiss={{ enabled: false }}
-      style={{ zIndex: 999999 }}
     >
       <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">

@@ -9,59 +9,88 @@ import {
 } from "@heroicons/react/24/outline";
 import { AsyncSearchSelect } from "@/components/ui/AsyncSearchSelect";
 import DynamicToast from "@/components/DynamicToast";
+import { BindConfirmModal } from "./BindConfirmModal";
+import { UnbindConfirmModal } from "./UnbindConfirmModal";
 import residentAPI from "../../../residents/api";
 
 export function PropertyBindModal({
   open,
   onClose,
   residentId,
+  residentName = "",
   residentProperties = [],
   onSuccess
 }) {
 
   const [mtkId, setMtkId] = useState(null);
   const [complexId, setComplexId] = useState(null);
+  const [buildingId, setBuildingId] = useState(null);
+  const [blockId, setBlockId] = useState(null);
   const [propertyId, setPropertyId] = useState(null);
 
   const [selectedLabels, setSelectedLabels] = useState({});
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState({ open: false });
 
+  // Unbind confirmation state
+  const [unbindTarget, setUnbindTarget] = useState(null);
+  // Bind confirmation state
+  const [bindConfirm, setBindConfirm] = useState(false);
+
   const showToast = (type, message, title = "") =>
     setToast({ open: true, type, message, title });
 
-  const canBind = mtkId && complexId && propertyId;
+  const canBind = mtkId && complexId && buildingId && propertyId;
 
-  // Search params for cascading selects (same pattern as ManagementActions)
   const complexSearchParams = useMemo(() => {
     const params = {};
     if (mtkId) params.mtk_ids = [mtkId];
     return params;
   }, [mtkId]);
 
-  const propertySearchParams = useMemo(() => {
+  const buildingSearchParams = useMemo(() => {
     const params = {};
     if (mtkId) params.mtk_ids = [mtkId];
     if (complexId) params.complex_ids = [complexId];
     return params;
   }, [mtkId, complexId]);
 
+  const blockSearchParams = useMemo(() => {
+    const params = {};
+    if (mtkId) params.mtk_ids = [mtkId];
+    if (complexId) params.complex_ids = [complexId];
+    if (buildingId) params.building_ids = [buildingId];
+    return params;
+  }, [mtkId, complexId, buildingId]);
+
+  const propertySearchParams = useMemo(() => {
+    const params = {};
+    if (mtkId) params.mtk_ids = [mtkId];
+    if (complexId) params.complex_ids = [complexId];
+    if (buildingId) params.building_ids = [buildingId];
+    if (blockId) params.block_ids = [blockId];
+    return params;
+  }, [mtkId, complexId, buildingId, blockId]);
+
   // Unique keys to force re-render when parent changes
   const complexSelectKey = `complex-${mtkId || 'null'}`;
-  const propertySelectKey = `property-${mtkId || 'null'}-${complexId || 'null'}`;
+  const buildingSelectKey = `building-${mtkId || 'null'}-${complexId || 'null'}`;
+  const blockSelectKey = `block-${mtkId || 'null'}-${complexId || 'null'}-${buildingId || 'null'}`;
+  const propertySelectKey = `property-${mtkId || 'null'}-${complexId || 'null'}-${buildingId || 'null'}-${blockId || 'null'}`;
 
   const handleMtkChange = (val, option) => {
     setMtkId(val || null);
     setComplexId(null);
+    setBuildingId(null);
+    setBlockId(null);
     setPropertyId(null);
     setSelectedLabels(prev => {
       const next = { ...prev };
-      if (val && option) {
-        next.mtk = option.name || `#${val}`;
-      } else {
-        delete next.mtk;
-      }
+      if (val && option) next.mtk = option.name || `#${val}`;
+      else delete next.mtk;
       delete next.complex;
+      delete next.building;
+      delete next.block;
       delete next.property;
       return next;
     });
@@ -69,14 +98,41 @@ export function PropertyBindModal({
 
   const handleComplexChange = (val, option) => {
     setComplexId(val || null);
+    setBuildingId(null);
+    setBlockId(null);
     setPropertyId(null);
     setSelectedLabels(prev => {
       const next = { ...prev };
-      if (val && option) {
-        next.complex = option.name || `#${val}`;
-      } else {
-        delete next.complex;
-      }
+      if (val && option) next.complex = option.name || `#${val}`;
+      else delete next.complex;
+      delete next.building;
+      delete next.block;
+      delete next.property;
+      return next;
+    });
+  };
+
+  const handleBuildingChange = (val, option) => {
+    setBuildingId(val || null);
+    setBlockId(null);
+    setPropertyId(null);
+    setSelectedLabels(prev => {
+      const next = { ...prev };
+      if (val && option) next.building = option.name || `#${val}`;
+      else delete next.building;
+      delete next.block;
+      delete next.property;
+      return next;
+    });
+  };
+
+  const handleBlockChange = (val, option) => {
+    setBlockId(val || null);
+    setPropertyId(null);
+    setSelectedLabels(prev => {
+      const next = { ...prev };
+      if (val && option) next.block = option.name || `#${val}`;
+      else delete next.block;
       delete next.property;
       return next;
     });
@@ -86,11 +142,8 @@ export function PropertyBindModal({
     setPropertyId(val || null);
     setSelectedLabels(prev => {
       const next = { ...prev };
-      if (val && option) {
-        next.property = option.name || option.apartment_number || `#${val}`;
-      } else {
-        delete next.property;
-      }
+      if (val && option) next.property = option.name || option.apartment_number || `#${val}`;
+      else delete next.property;
       return next;
     });
   };
@@ -99,40 +152,48 @@ export function PropertyBindModal({
     if (!canBind || !residentId) return;
     try {
       setSaving(true);
-      await residentAPI.bindProperty(residentId, {
+      const payload = {
         mtk_id: mtkId,
         complex_id: complexId,
-        property_id: propertyId
-      });
+        building_id: buildingId,
+        property_id: propertyId,
+      };
+      if (blockId) payload.block_id = blockId;
+      await residentAPI.bindProperty(residentId, payload);
       showToast("success", "Bağlandı", "Uğurlu");
       onSuccess?.();
-      // Reset selections after successful bind
       setMtkId(null);
       setComplexId(null);
+      setBuildingId(null);
+      setBlockId(null);
       setPropertyId(null);
       setSelectedLabels({});
     } catch (e) {
-      showToast("error", "Xəta baş verdi", "Xəta");
+      const msg = e?.message || e?.data?.message || "Xəta baş verdi";
+      showToast("error", msg, "Xəta");
     } finally {
       setSaving(false);
+      setBindConfirm(false);
     }
   };
 
-  const unbind = async (prop) => {
-    if (!residentId || !prop) return;
+  const confirmUnbind = async () => {
+    if (!residentId || !unbindTarget) return;
     try {
       setSaving(true);
       await residentAPI.unbindProperty(residentId, {
-        mtk_id: prop.mtk_id,
-        complex_id: prop.complex_id,
-        property_id: prop.property_id
+        mtk_id: unbindTarget.mtk_id,
+        complex_id: unbindTarget.complex_id,
+        property_id: unbindTarget.property_id
       });
       showToast("success", "Silindi", "Uğurlu");
       onSuccess?.();
     } catch (e) {
-      showToast("error", "Xəta baş verdi", "Xəta");
+      const msg = e?.message || e?.data?.message || "Xəta baş verdi";
+      showToast("error", msg, "Xəta");
     } finally {
       setSaving(false);
+      setUnbindTarget(null);
     }
   };
 
@@ -140,7 +201,13 @@ export function PropertyBindModal({
 
   return (
     <>
-      <Dialog open={open} handler={onClose} size="xl" className="backdrop-blur-sm">
+      <Dialog
+        open={open}
+        handler={() => { if (!unbindTarget && !bindConfirm) onClose(); }}
+        size="xl"
+        className="backdrop-blur-sm"
+        dismiss={{ enabled: !unbindTarget && !bindConfirm }}
+      >
         <DialogHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-xl">
           <div className="flex justify-between items-center w-full">
             <div className="flex items-center gap-3">
@@ -179,57 +246,81 @@ export function PropertyBindModal({
               </Typography>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* MTK Select */}
-              <div>
-                <AsyncSearchSelect
-                  label="MTK"
-                  value={mtkId}
-                  onChange={handleMtkChange}
-                  endpoint="/search/module/mtk"
-                  selectedLabel={selectedLabels.mtk}
-                  placeholder="MTK seçin"
-                  searchPlaceholder="MTK axtar..."
-                />
-              </div>
+            {/* Row 1: MTK + Complex */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <AsyncSearchSelect
+                label="MTK"
+                value={mtkId}
+                onChange={handleMtkChange}
+                endpoint="/search/module/mtk"
+                selectedLabel={selectedLabels.mtk}
+                placeholder="MTK seçin"
+                searchPlaceholder="MTK axtar..."
+              />
 
-              {/* Complex Select */}
-              <div>
-                <AsyncSearchSelect
-                  key={complexSelectKey}
-                  label="Kompleks"
-                  value={complexId}
-                  onChange={handleComplexChange}
-                  endpoint="/search/module/complex"
-                  searchParams={complexSearchParams}
-                  selectedLabel={selectedLabels.complex}
-                  disabled={!mtkId}
-                  placeholder="Kompleks seçin"
-                  searchPlaceholder="Kompleks axtar..."
-                />
-              </div>
-
-              {/* Property Select */}
-              <div>
-                <AsyncSearchSelect
-                  key={propertySelectKey}
-                  label="Mənzil"
-                  value={propertyId}
-                  onChange={handlePropertyChange}
-                  endpoint="/search/module/property"
-                  searchParams={propertySearchParams}
-                  selectedLabel={selectedLabels.property}
-                  disabled={!complexId}
-                  placeholder="Mənzil seçin"
-                  searchPlaceholder="Mənzil axtar..."
-                />
-              </div>
+              <AsyncSearchSelect
+                key={complexSelectKey}
+                label="Kompleks"
+                value={complexId}
+                onChange={handleComplexChange}
+                endpoint="/search/module/complex"
+                searchParams={complexSearchParams}
+                selectedLabel={selectedLabels.complex}
+                disabled={!mtkId}
+                placeholder="Kompleks seçin"
+                searchPlaceholder="Kompleks axtar..."
+              />
             </div>
 
-            <div className="flex justify-end mt-6">
+            {/* Row 2: Building + Block */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <AsyncSearchSelect
+                key={buildingSelectKey}
+                label="Bina"
+                value={buildingId}
+                onChange={handleBuildingChange}
+                endpoint="/search/module/building"
+                searchParams={buildingSearchParams}
+                selectedLabel={selectedLabels.building}
+                disabled={!complexId}
+                placeholder="Bina seçin"
+                searchPlaceholder="Bina axtar..."
+              />
+
+              <AsyncSearchSelect
+                key={blockSelectKey}
+                label="Blok (istəyə bağlı)"
+                value={blockId}
+                onChange={handleBlockChange}
+                endpoint="/search/module/block"
+                searchParams={blockSearchParams}
+                selectedLabel={selectedLabels.block}
+                disabled={!buildingId}
+                placeholder="Blok seçin"
+                searchPlaceholder="Blok axtar..."
+              />
+            </div>
+
+            {/* Row 3: Property */}
+            <div className="mb-6">
+              <AsyncSearchSelect
+                key={propertySelectKey}
+                label="Mənzil"
+                value={propertyId}
+                onChange={handlePropertyChange}
+                endpoint="/search/module/property"
+                searchParams={propertySearchParams}
+                selectedLabel={selectedLabels.property}
+                disabled={!buildingId}
+                placeholder="Mənzil seçin"
+                searchPlaceholder="Mənzil axtar..."
+              />
+            </div>
+
+            <div className="flex justify-end">
               <Button
                 disabled={!canBind || saving}
-                onClick={bind}
+                onClick={() => setBindConfirm(true)}
                 className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-8 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
               >
                 <PlusIcon className="h-4 w-4" />
@@ -328,7 +419,7 @@ export function PropertyBindModal({
                             size="sm"
                             variant="gradient"
                             color="red"
-                            onClick={() => unbind(p)}
+                            onClick={() => setUnbindTarget(p)}
                             disabled={saving}
                             className="flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700"
                           >
@@ -355,6 +446,31 @@ export function PropertyBindModal({
           </Button>
         </DialogFooter>
       </Dialog>
+
+      {/* Bind confirmation */}
+      <BindConfirmModal
+        open={bindConfirm}
+        onClose={() => setBindConfirm(false)}
+        onConfirm={bind}
+        labels={{ ...selectedLabels, resident: residentName }}
+        loading={saving}
+      />
+
+      {/* Unbind confirmation */}
+      <UnbindConfirmModal
+        open={!!unbindTarget}
+        onClose={() => setUnbindTarget(null)}
+        onConfirm={confirmUnbind}
+        labels={{
+          resident: residentName,
+          mtk:      unbindTarget?.mtk?.name      || (unbindTarget?.mtk_id     ? `#${unbindTarget.mtk_id}`     : undefined),
+          complex:  unbindTarget?.complex?.name  || (unbindTarget?.complex_id  ? `#${unbindTarget.complex_id}`  : undefined),
+          building: unbindTarget?.building?.name || (unbindTarget?.building_id ? `#${unbindTarget.building_id}` : undefined),
+          block:    unbindTarget?.block?.name    || (unbindTarget?.block_id    ? `#${unbindTarget.block_id}`    : undefined),
+          property: unbindTarget?.property?.name || unbindTarget?.property?.apartment_number || (unbindTarget?.property_id ? `#${unbindTarget.property_id}` : undefined),
+        }}
+        loading={saving}
+      />
 
       <DynamicToast
         open={toast.open}
