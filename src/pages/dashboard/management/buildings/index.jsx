@@ -14,7 +14,8 @@ import { useBuildingData } from "./hooks/useBuildingData";
 import buildingsAPI from "./api";
 import DynamicToast from "@/components/DynamicToast";
 import { ViewModal } from "@/components/management/ViewModal";
-import { DeleteConfirmModal } from "@/components/management/DeleteConfirmModal";
+import { DeleteConfirmModal } from "./components/modals/DeleteConfirmModal";
+import { EditConfirmModal } from "./components/modals/EditConfirmModal";
 import { BuildingOfficeIcon, CheckCircleIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
 
 export default function BuildingsPage() {
@@ -32,6 +33,9 @@ export default function BuildingsPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [editConfirmOpen, setEditConfirmOpen] = useState(false);
+  const [editConfirmLoading, setEditConfirmLoading] = useState(false);
+  const [pendingFormData, setPendingFormData] = useState(null);
   const [itemToView, setItemToView] = useState(null);
   const [mode, setMode] = useState("create");
   const [selected, setSelected] = useState(null);
@@ -121,6 +125,30 @@ export default function BuildingsPage() {
     setMode("edit");
     setSelected(item);
     setFormOpen(true);
+  };
+
+  const handleEditRequest = (formData) => {
+    setPendingFormData(formData);
+    setEditConfirmOpen(true);
+  };
+
+  const confirmEdit = async () => {
+    if (!pendingFormData || !selected) return;
+    setEditConfirmLoading(true);
+    try {
+      await buildingsAPI.update(selected.id, pendingFormData);
+      showToast("success", "Bina uğurla yeniləndi", "Uğurlu");
+      refresh();
+      dispatch(loadBuildings({ page: 1, per_page: 1000 }));
+      setEditConfirmOpen(false);
+      setPendingFormData(null);
+      setFormOpen(false);
+      form.resetForm();
+    } catch (error) {
+      showToast("error", error.message || "Xəta baş verdi", "Xəta");
+    } finally {
+      setEditConfirmLoading(false);
+    }
   };
 
   const handleSelect = (item) => {
@@ -213,6 +241,7 @@ export default function BuildingsPage() {
         onSubmit={submitForm}
         complexId={complexId}
         mtkId={mtkId}
+        onEditRequest={handleEditRequest}
       />
 
       <BuildingSearchModal
@@ -279,7 +308,20 @@ export default function BuildingsPage() {
         entityName="bina"
         loading={deleteLoading}
       />
-
+      <EditConfirmModal
+        open={editConfirmOpen}
+        onClose={() => {
+          setEditConfirmOpen(false);
+          setPendingFormData(null);
+        }}
+        onConfirm={confirmEdit}
+        title="Binanı Redaktə et"
+        itemName={selected ? `"${selected.name}"` : ""}
+        entityName="bina"
+        loading={editConfirmLoading}
+        oldData={selected}
+        newData={pendingFormData}
+      />
       <DynamicToast
         open={toast.open}
         type={toast.type}

@@ -10,7 +10,7 @@ import { useMtkColor } from "@/store/exports";
 
 const DEFAULT_COLOR = "#dc2626";
 
-export function MtkFormModal({ open, mode = "create", onClose, form, onSubmit }) {
+export function MtkFormModal({ open, mode = "create", onClose, form, onSubmit, onEditRequest }) {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
   const [showMap, setShowMap] = useState(false);
@@ -260,6 +260,11 @@ export function MtkFormModal({ open, mode = "create", onClose, form, onSubmit })
   const submit = async () => {
     if (errorText) {
       showToast("error", errorText, "Xəta");
+      return;
+    }
+    // If edit mode and onEditRequest is provided, delegate to parent for confirmation
+    if (mode === "edit" && onEditRequest) {
+      onEditRequest(form.formData);
       return;
     }
     setSaving(true);

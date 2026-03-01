@@ -3,6 +3,7 @@ import { useState, useCallback } from "react";
 const initialFormData = {
   name: "",
   surname: "",
+  father_name: "",
   type: "owner",
   email: "",
   phone: "",
@@ -10,7 +11,6 @@ const initialFormData = {
     gender: "",
     personal_code: "",
     birth_date: "",
-    father_name: "",
   },
   property: {
     mtk_id: null,
@@ -66,22 +66,26 @@ export function useResidentForm() {
       return;
     }
 
+    // Property binding comes from property_residents array (list API)
+    // or from property object (direct assignment)
+    const boundProp = resident.property_residents?.[0];
+
     setFormData({
       name: resident.name || "",
       surname: resident.surname || "",
+      father_name: resident.father_name || resident.meta?.father_name || "",
       type: resident.type || "owner",
       email: resident.email || "",
       phone: resident.phone || "",
       meta: {
-        gender: resident.meta?.gender || "",
-        personal_code: resident.meta?.personal_code || "",
-        birth_date: resident.meta?.birth_date || "",
-        father_name: resident.meta?.father_name || "",
+        gender: resident.meta?.gender || resident.gender || "",
+        personal_code: resident.meta?.personal_code || resident.personal_code || "",
+        birth_date: resident.meta?.birth_date || resident.birth_date || "",
       },
       property: {
-        mtk_id: resident.property?.mtk_id || null,
-        complex_id: resident.property?.complex_id || null,
-        property_id: resident.property?.property_id || null,
+        mtk_id: boundProp?.mtk_id || resident.property?.mtk_id || null,
+        complex_id: boundProp?.complex_id || resident.property?.complex_id || null,
+        property_id: boundProp?.property_id || resident.property?.property_id || null,
       },
       bind_existing: resident.bind_existing || false,
       status: resident.status || "active",

@@ -14,7 +14,8 @@ import { useMtkData } from "./hooks/useMtkData";
 import mtkAPI from "./api";
 import DynamicToast from "@/components/DynamicToast";
 import { ViewModal } from "@/components/management/ViewModal";
-import { DeleteConfirmModal } from "@/components/management/DeleteConfirmModal";
+import { DeleteConfirmModal } from "./components/modals/DeleteConfirmModal";
+import { EditConfirmModal } from "./components/modals/EditConfirmModal";
 import { BuildingOfficeIcon, MapPinIcon, PhoneIcon, EnvelopeIcon, GlobeAltIcon, InformationCircleIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 
 export default function MtkPage() {
@@ -34,6 +35,9 @@ export default function MtkPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [editConfirmOpen, setEditConfirmOpen] = useState(false);
+  const [editConfirmLoading, setEditConfirmLoading] = useState(false);
+  const [pendingFormData, setPendingFormData] = useState(null);
   const [itemToView, setItemToView] = useState(null);
   const [mode, setMode] = useState("create");
   const [selected, setSelected] = useState(null);
@@ -126,6 +130,33 @@ export default function MtkPage() {
     setMode("edit");
     setSelected(item);
     setFormOpen(true);
+  };
+
+  const handleEditRequest = (formData) => {
+    setPendingFormData(formData);
+    setEditConfirmOpen(true);
+  };
+
+  const confirmEdit = async () => {
+    if (!pendingFormData || !selected) return;
+    setEditConfirmLoading(true);
+    try {
+      await mtkAPI.update(selected.id, pendingFormData);
+      showToast("success", "MTK uğurla yeniləndi", "Uğurlu");
+      dispatch(loadMtks({ page: 1, per_page: 1000 }));
+      if (selectedMtkId === selected.id) {
+        dispatch(loadMtkById(selected.id));
+      }
+      refresh();
+      setEditConfirmOpen(false);
+      setPendingFormData(null);
+      setFormOpen(false);
+      form.resetForm();
+    } catch (error) {
+      showToast("error", error.message || "Xəta baş verdi", "Xəta");
+    } finally {
+      setEditConfirmLoading(false);
+    }
   };
 
   const handleSelect = (item) => {
@@ -225,6 +256,7 @@ export default function MtkPage() {
         }}
         form={form}
         onSubmit={submitForm}
+        onEditRequest={handleEditRequest}
       />
 
       <MtkSearchModal
@@ -335,6 +367,21 @@ export default function MtkPage() {
         itemName={itemToDelete ? `"${itemToDelete.name}"` : ""}
         entityName="MTK"
         loading={deleteLoading}
+      />
+
+      <EditConfirmModal
+        open={editConfirmOpen}
+        onClose={() => {
+          setEditConfirmOpen(false);
+          setPendingFormData(null);
+        }}
+        onConfirm={confirmEdit}
+        title="MTK-nı Redaktə et"
+        itemName={selected ? `"${selected.name}"` : ""}
+        entityName="MTK"
+        loading={editConfirmLoading}
+        oldData={selected}
+        newData={pendingFormData}
       />
 
       <DynamicToast

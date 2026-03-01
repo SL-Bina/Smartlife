@@ -36,6 +36,7 @@ export function PropertyFormModal({
   complexId = null,
   buildingId = null,
   blockId = null,
+  onEditRequest,
 }) {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
@@ -171,6 +172,11 @@ export function PropertyFormModal({
   const submit = async () => {
     if (errorText) {
       showToast("error", errorText, "Xəta");
+      return;
+    }
+    // If edit mode and onEditRequest is provided, delegate to parent for confirmation
+    if (isEdit && onEditRequest) {
+      onEditRequest(form.formData);
       return;
     }
     setSaving(true);

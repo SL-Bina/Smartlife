@@ -9,7 +9,7 @@ import buildingsAPI from "../../../buildings/api";
 
 const ACTIVE_COLOR = "#6366f1"; // Indigo for blocks
 
-export function BlockFormModal({ open, mode = "create", onClose, form, onSubmit, complexId = null, buildingId = null, mtkId = null }) {
+export function BlockFormModal({ open, mode = "create", onClose, form, onSubmit, complexId = null, buildingId = null, mtkId = null, onEditRequest }) {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
   const [complexes, setComplexes] = useState([]);
@@ -111,6 +111,11 @@ export function BlockFormModal({ open, mode = "create", onClose, form, onSubmit,
   const submit = async () => {
     if (errorText) {
       showToast("error", errorText, "Xəta");
+      return;
+    }
+    // If edit mode and onEditRequest is provided, delegate to parent for confirmation
+    if (mode === "edit" && onEditRequest) {
+      onEditRequest(form.formData);
       return;
     }
     setSaving(true);

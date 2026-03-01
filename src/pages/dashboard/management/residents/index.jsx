@@ -12,7 +12,8 @@ import { useResidentData } from "./hooks/useResidentData";
 import residentsAPI from "./api";
 import DynamicToast from "@/components/DynamicToast";
 import { ViewModal } from "@/components/management/ViewModal";
-import { DeleteConfirmModal } from "@/components/management/DeleteConfirmModal";
+import { DeleteConfirmModal } from "./components/modals/DeleteConfirmModal";
+import { EditConfirmModal } from "./components/modals/EditConfirmModal";
 import { UserIcon, EnvelopeIcon, PhoneIcon, IdentificationIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import PropertyBindModal from "./components/modals/PropertyBindModal";
 
@@ -37,6 +38,9 @@ export default function ResidentsPage() {
   const [bindModalOpen, setBindModalOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [editConfirmOpen, setEditConfirmOpen] = useState(false);
+  const [editConfirmLoading, setEditConfirmLoading] = useState(false);
+  const [pendingFormData, setPendingFormData] = useState(null);
   const [itemToView, setItemToView] = useState(null);
   const [mode, setMode] = useState("create");
   const [selected, setSelected] = useState(null);
@@ -112,6 +116,29 @@ export default function ResidentsPage() {
     setMode("edit");
     setSelected(item);
     setFormOpen(true);
+  };
+
+  const handleEditRequest = (formData) => {
+    setPendingFormData(formData);
+    setEditConfirmOpen(true);
+  };
+
+  const confirmEdit = async () => {
+    if (!pendingFormData || !selected) return;
+    setEditConfirmLoading(true);
+    try {
+      await residentsAPI.update(selected.id, pendingFormData);
+      showToast("success", "Sakin uğurla yeniləndi", "Uğurlu");
+      refresh();
+      setEditConfirmOpen(false);
+      setPendingFormData(null);
+      setFormOpen(false);
+      form.resetForm();
+    } catch (error) {
+      showToast("error", error.message || "Xəta baş verdi", "Xəta");
+    } finally {
+      setEditConfirmLoading(false);
+    }
   };
 
   const handleDelete = (item) => {
@@ -211,6 +238,7 @@ export default function ResidentsPage() {
         mtkId={selectedMtkId}
         complexId={selectedComplexId}
         propertyId={selectedPropertyId}
+        onEditRequest={handleEditRequest}
       />
 
       <PropertyBindModal
@@ -284,6 +312,21 @@ export default function ResidentsPage() {
         itemName={itemToDelete ? `"${itemToDelete.name} ${itemToDelete.surname}"` : ""}
         entityName="sakin"
         loading={deleteLoading}
+      />
+
+      <EditConfirmModal
+        open={editConfirmOpen}
+        onClose={() => {
+          setEditConfirmOpen(false);
+          setPendingFormData(null);
+        }}
+        onConfirm={confirmEdit}
+        title="Sakini Redaktə et"
+        itemName={selected ? `"${selected.name} ${selected.surname}"` : ""}
+        entityName="sakin"
+        loading={editConfirmLoading}
+        oldData={selected}
+        newData={pendingFormData}
       />
 
       <DynamicToast

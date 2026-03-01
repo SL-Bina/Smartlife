@@ -11,7 +11,7 @@ import complexLookupsAPI from "../../api/lookups";
 const DEFAULT_COLOR = "#dc2626";
 const ACTIVE_COLOR = "#3b82f6"; // Blue for complexes
 
-export function ComplexFormModal({ open, mode = "create", onClose, form, onSubmit, mtkId = null }) {
+export function ComplexFormModal({ open, mode = "create", onClose, form, onSubmit, mtkId = null, onEditRequest }) {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
   const [showMap, setShowMap] = useState(false);
@@ -292,6 +292,11 @@ export function ComplexFormModal({ open, mode = "create", onClose, form, onSubmi
   const submit = async () => {
     if (errorText) {
       showToast("error", errorText, "Xəta");
+      return;
+    }
+    // If edit mode and onEditRequest is provided, delegate to parent for confirmation
+    if (mode === "edit" && onEditRequest) {
+      onEditRequest(form.formData);
       return;
     }
     setSaving(true);

@@ -14,7 +14,8 @@ import { useComplexData } from "./hooks/useComplexData";
 import complexesAPI from "./api";
 import DynamicToast from "@/components/DynamicToast";
 import { ViewModal } from "@/components/management/ViewModal";
-import { DeleteConfirmModal } from "@/components/management/DeleteConfirmModal";
+import { DeleteConfirmModal } from "./components/modals/DeleteConfirmModal";
+import { EditConfirmModal } from "./components/modals/EditConfirmModal";
 import { BuildingOfficeIcon, MapPinIcon, InformationCircleIcon, CheckCircleIcon, PhoneIcon, EnvelopeIcon, GlobeAltIcon, CubeIcon } from "@heroicons/react/24/outline";
 import ComplexSettingsModal from "./components/modals/ComplexSettingsModal";
 
@@ -45,6 +46,9 @@ export default function ComplexesPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [editConfirmOpen, setEditConfirmOpen] = useState(false);
+  const [editConfirmLoading, setEditConfirmLoading] = useState(false);
+  const [pendingFormData, setPendingFormData] = useState(null);
   const [itemToView, setItemToView] = useState(null);
   const [mode, setMode] = useState("create");
   const [selected, setSelected] = useState(null);
@@ -150,6 +154,30 @@ export default function ComplexesPage() {
     setFormOpen(true);
   };
 
+  const handleEditRequest = (formData) => {
+    setPendingFormData(formData);
+    setEditConfirmOpen(true);
+  };
+
+  const confirmEdit = async () => {
+    if (!pendingFormData || !selected) return;
+    setEditConfirmLoading(true);
+    try {
+      await complexesAPI.update(selected.id, pendingFormData);
+      showToast("success", "Complex uğurla yeniləndi", "Uğurlu");
+      refresh();
+      dispatch(loadComplexes({ page: 1, per_page: 1000 }));
+      setEditConfirmOpen(false);
+      setPendingFormData(null);
+      setFormOpen(false);
+      form.resetForm();
+    } catch (error) {
+      showToast("error", error.message || "Xəta baş verdi", "Xəta");
+    } finally {
+      setEditConfirmLoading(false);
+    }
+  };
+
   const handleDelete = (item) => {
     setItemToDelete(item);
     setDeleteModalOpen(true);
@@ -240,6 +268,7 @@ export default function ComplexesPage() {
         form={form}
         onSubmit={submitForm}
         mtkId={mtkId}
+        onEditRequest={handleEditRequest}
       />
 
       <ComplexSearchModal
@@ -451,6 +480,21 @@ export default function ComplexesPage() {
         itemName={itemToDelete ? `"${itemToDelete.name}"` : ""}
         entityName="complex"
         loading={deleteLoading}
+      />
+
+      <EditConfirmModal
+        open={editConfirmOpen}
+        onClose={() => {
+          setEditConfirmOpen(false);
+          setPendingFormData(null);
+        }}
+        onConfirm={confirmEdit}
+        title="Complex-i Redaktə et"
+        itemName={selected ? `"${selected.name}"` : ""}
+        entityName="complex"
+        loading={editConfirmLoading}
+        oldData={selected}
+        newData={pendingFormData}
       />
 
       <ComplexSettingsModal

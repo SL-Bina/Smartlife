@@ -12,7 +12,8 @@ import { useBlockData } from "./hooks/useBlockData";
 import blocksAPI from "./api";
 import DynamicToast from "@/components/DynamicToast";
 import { ViewModal } from "@/components/management/ViewModal";
-import { DeleteConfirmModal } from "@/components/management/DeleteConfirmModal";
+import { DeleteConfirmModal } from "./components/modals/DeleteConfirmModal";
+import { EditConfirmModal } from "./components/modals/EditConfirmModal";
 import { BuildingOfficeIcon, CheckCircleIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
 
 export default function BlocksPage() {
@@ -33,8 +34,12 @@ export default function BlocksPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [editConfirmOpen, setEditConfirmOpen] = useState(false);
+  const [editConfirmLoading, setEditConfirmLoading] = useState(false);
+  const [pendingFormData, setPendingFormData] = useState(null);
   const [itemToView, setItemToView] = useState(null);
   const [mode, setMode] = useState("create");
+  const [selected, setSelected] = useState(null);
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
 
   const form = useBlockForm();
@@ -70,7 +75,37 @@ export default function BlocksPage() {
   const handleEdit = (block) => {
     form.setFormFromBlock(block);
     setMode("edit");
+    setSelected(block);
     setFormOpen(true);
+  };
+
+  const handleEditRequest = (formData) => {
+    setPendingFormData(formData);
+    setEditConfirmOpen(true);
+  };
+
+  const confirmEdit = async () => {
+    if (!pendingFormData) return;
+    const blockId = pendingFormData.id || (selected && selected.id);
+    if (!blockId) {
+      showToast("error", "Blok ID tapılmadı", "Xəta");
+      return;
+    }
+    setEditConfirmLoading(true);
+    try {
+      await blocksAPI.update(blockId, pendingFormData);
+      showToast("success", "Blok uğurla yeniləndi", "Uğurlu");
+      refresh();
+      dispatch(loadBlocks({ page: 1, per_page: 1000 }));
+      setEditConfirmOpen(false);
+      setPendingFormData(null);
+      setFormOpen(false);
+      form.resetForm();
+    } catch (error) {
+      showToast("error", error.message || "Xəta baş verdi", "Xəta");
+    } finally {
+      setEditConfirmLoading(false);
+    }
   };
 
   const handleSelect = (item) => {
@@ -213,6 +248,7 @@ export default function BlocksPage() {
         complexId={complexId}
         buildingId={buildingId}
         mtkId={mtkId}
+        onEditRequest={handleEditRequest}
       />
 
       <BlockSearchModal
@@ -296,6 +332,21 @@ export default function BlocksPage() {
         itemName={itemToDelete ? `"${itemToDelete.name}"` : ""}
         entityName="blok"
         loading={deleteLoading}
+      />
+
+      <EditConfirmModal
+        open={editConfirmOpen}
+        onClose={() => {
+          setEditConfirmOpen(false);
+          setPendingFormData(null);
+        }}
+        onConfirm={confirmEdit}
+        title="Bloku Redaktə et"
+        itemName={selected ? `"${selected.name}"` : ""}
+        entityName="blok"
+        loading={editConfirmLoading}
+        oldData={selected}
+        newData={pendingFormData}
       />
 
       <DynamicToast

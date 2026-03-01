@@ -10,7 +10,6 @@ const DEFAULT_COLOR = "#dc2626";
 export function MtkTable({ items = [], loading, onView, onEdit, onDelete, onSelect, selectedMtkId }) {
   const navigate = useNavigate();
   const [controller] = useMaterialTailwindController();
-  const { sidenavType } = controller;
   const { colorCode, getRgba } = useMtkColor();
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 

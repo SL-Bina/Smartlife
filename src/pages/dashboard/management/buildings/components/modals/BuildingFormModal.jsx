@@ -8,7 +8,7 @@ import buildingLookupsAPI from "../../api/lookups";
 
 const ACTIVE_COLOR = "#9333ea";
 
-export function BuildingFormModal({ open, mode = "create", onClose, form, onSubmit, complexId = null, mtkId = null }) {
+export function BuildingFormModal({ open, mode = "create", onClose, form, onSubmit, complexId = null, mtkId = null, onEditRequest }) {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
   const [complexes, setComplexes] = useState([]);
@@ -101,6 +101,11 @@ export function BuildingFormModal({ open, mode = "create", onClose, form, onSubm
   const submit = async () => {
     if (errorText) {
       showToast("error", errorText, "Xəta");
+      return;
+    }
+    // If edit mode and onEditRequest is provided, delegate to parent for confirmation
+    if (mode === "edit" && onEditRequest) {
+      onEditRequest(form.formData);
       return;
     }
     setSaving(true);

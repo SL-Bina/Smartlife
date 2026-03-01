@@ -19,7 +19,8 @@ import { usePropertyData } from "./hooks/usePropertyData";
 import propertiesAPI from "./api";
 import DynamicToast from "@/components/DynamicToast";
 import { ViewModal } from "@/components/management/ViewModal";
-import { DeleteConfirmModal } from "@/components/management/DeleteConfirmModal";
+import { DeleteConfirmModal } from "./components/modals/DeleteConfirmModal";
+import { EditConfirmModal } from "./components/modals/EditConfirmModal";
 import { 
   HomeIcon, 
   IdentificationIcon, 
@@ -55,6 +56,9 @@ export default function PropertiesPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [editConfirmOpen, setEditConfirmOpen] = useState(false);
+  const [editConfirmLoading, setEditConfirmLoading] = useState(false);
+  const [pendingFormData, setPendingFormData] = useState(null);
   const [itemToView, setItemToView] = useState(null);
   const [selected, setSelected] = useState(null);
   const [mode, setMode] = useState("create");
@@ -98,7 +102,36 @@ export default function PropertiesPage() {
     console.log("editing property:", property);
     form.setFormFromProperty(property);
     setMode("edit");
+    setSelected(property);
     setFormOpen(true);
+  };
+
+  const handleEditRequest = (formData) => {
+    setPendingFormData(formData);
+    setEditConfirmOpen(true);
+  };
+
+  const confirmEdit = async () => {
+    if (!pendingFormData) return;
+    const propertyId = pendingFormData.id || (selected && selected.id);
+    if (!propertyId) {
+      showToast("error", "Mənzil ID tapılmadı", "Xəta");
+      return;
+    }
+    setEditConfirmLoading(true);
+    try {
+      await propertiesAPI.update(propertyId, pendingFormData);
+      showToast("success", "Mənzil uğurla yeniləndi", "Uğurlu");
+      refresh();
+      setEditConfirmOpen(false);
+      setPendingFormData(null);
+      setFormOpen(false);
+      form.resetForm();
+    } catch (error) {
+      showToast("error", error.message || "Xəta baş verdi", "Xəta");
+    } finally {
+      setEditConfirmLoading(false);
+    }
   };
 
   const handleSelect = (item) => {
@@ -311,6 +344,7 @@ export default function PropertiesPage() {
         complexId={complexId}
         buildingId={buildingId}
         blockId={blockId}
+        onEditRequest={handleEditRequest}
       />
 
       <PropertySearchModal
@@ -472,6 +506,21 @@ export default function PropertiesPage() {
         itemName={itemToDelete ? `"${itemToDelete.name}"` : ""}
         entityName="mənzil"
         loading={deleteLoading}
+      />
+
+      <EditConfirmModal
+        open={editConfirmOpen}
+        onClose={() => {
+          setEditConfirmOpen(false);
+          setPendingFormData(null);
+        }}
+        onConfirm={confirmEdit}
+        title="Mənzili Redaktə et"
+        itemName={selected ? `"${selected.name || selected.apartment_number || `Mənzil #${selected.id}`}"` : ""}
+        entityName="mənzil"
+        loading={editConfirmLoading}
+        oldData={selected}
+        newData={pendingFormData}
       />
 
       <DynamicToast

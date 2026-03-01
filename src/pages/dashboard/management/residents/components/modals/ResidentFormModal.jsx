@@ -17,7 +17,8 @@ export function ResidentFormModal({
   mode = "create",
   onClose,
   form,
-  onSubmit
+  onSubmit,
+  onEditRequest,
 }) {
   // Redux-dan filter ID-ləri al
   const mtkId = useAppSelector((state) => state.mtk.selectedMtkId);
@@ -201,6 +202,26 @@ export function ResidentFormModal({
     return () => clearTimeout(timeoutId);
   }, [open, formComplexId, propertySearch]);
 
+  // Ensure the resident's currently assigned property appears in options when editing
+  useEffect(() => {
+    if (open && mode === "edit" && form?.formData?.property?.property_id) {
+      const propertyId = form.formData.property.property_id;
+      propertiesAPI.getById(propertyId)
+        .then((res) => {
+          const prop = res?.data?.data || null;
+          if (prop) {
+            setProperties(prev => {
+              if (prev.some(p => String(p.id) === String(propertyId))) return prev;
+              return [prop, ...prev];
+            });
+          }
+        })
+        .catch((error) => {
+          console.error("Error loading current property for edit:", error);
+        });
+    }
+  }, [open, mode, form?.formData?.property?.property_id]);
+
   // Load more properties on scroll
   const handlePropertyScrollEnd = async () => {
     if (!hasMoreProperties || loadingMoreProperties || !formComplexId) return;
@@ -238,11 +259,14 @@ export function ResidentFormModal({
   const errorText = useMemo(() => {
     if (!form?.formData?.name?.trim()) return "Ad mütləqdir";
     if (!form?.formData?.surname?.trim()) return "Soyad mütləqdir";
-    if (!form?.formData?.property?.mtk_id) return "MTK mütləqdir";
-    if (!form?.formData?.property?.complex_id) return "Kompleks mütləqdir";
-    if (!form?.formData?.property?.property_id) return "Mənzil mütləqdir";
+    // Property fields only required when creating a new resident
+    if (mode === "create") {
+      if (!form?.formData?.property?.mtk_id) return "MTK mütləqdir";
+      if (!form?.formData?.property?.complex_id) return "Kompleks mütləqdir";
+      if (!form?.formData?.property?.property_id) return "Mənzil mütləqdir";
+    }
     return "";
-  }, [form?.formData]);
+  }, [form?.formData, mode]);
 
   const getRgbaColor = (hex, opacity = 1) => {
     if (!hex) return null;
@@ -257,6 +281,11 @@ export function ResidentFormModal({
     e.preventDefault();
     if (errorText) {
       showToast("error", errorText, "Xəta");
+      return;
+    }
+    // If edit mode and onEditRequest is provided, delegate to parent for confirmation
+    if (mode === "edit" && onEditRequest) {
+      onEditRequest(form.formData);
       return;
     }
     setSaving(true);
