@@ -40,7 +40,6 @@ import { Button } from "@material-tailwind/react";
 export default function PropertiesPage() {
   const dispatch = useAppDispatch();
 
-  // Redux-dan filter ID-ləri oxu (global state)
   const mtkId = useAppSelector((state) => state.mtk.selectedMtkId);
   const complexId = useAppSelector((state) => state.complex.selectedComplexId);
   const buildingId = useAppSelector((state) => state.building.selectedBuildingId);
@@ -211,7 +210,16 @@ export default function PropertiesPage() {
         onItemsPerPageChange={setItemsPerPage}
       />
 
-      <div className="flex items-center justify-end gap-2">
+      <div className="flex items-center justify-between gap-2">
+        {/* Total count */}
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-700/50 rounded-lg">
+          <HomeIcon className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+          <span className="text-sm font-medium text-teal-700 dark:text-teal-300">
+            Ümumi: <span className="font-bold">{total}</span> mənzil
+          </span>
+        </div>
+
+        {/* View mode toggle */}
         <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
           <Button
             variant={viewMode === "table" ? "filled" : "text"}

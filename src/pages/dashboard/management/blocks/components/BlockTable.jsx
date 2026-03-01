@@ -53,10 +53,63 @@ export function BlockTable({ items = [], loading, onView, onEdit, onDelete, onSe
 
   if (loading) {
     return (
-      <div className="text-center py-12">
-        <Typography className="text-sm text-gray-500 dark:text-gray-400">
-          Yüklənir...
-        </Typography>
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg border border-white/20 dark:border-gray-700/50 relative z-0">
+        <div className="hidden lg:block overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gray-50/80 dark:bg-gray-900/50 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">
+                <th className="px-4 xl:px-6 py-3 xl:py-4 text-left"><div className="h-3 w-6 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></th>
+                <th className="px-4 xl:px-6 py-3 xl:py-4 text-left"><div className="h-3 w-6 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></th>
+                <th className="px-4 xl:px-6 py-3 xl:py-4 text-left"><div className="h-3 w-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></th>
+                <th className="px-4 xl:px-6 py-3 xl:py-4 text-left"><div className="h-3 w-14 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></th>
+                <th className="px-4 xl:px-6 py-3 xl:py-4 text-left"><div className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></th>
+                <th className="px-4 xl:px-6 py-3 xl:py-4 text-left"><div className="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></th>
+                <th className="px-4 xl:px-6 py-3 xl:py-4 text-left"><div className="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></th>
+                <th className="px-4 xl:px-6 py-3 xl:py-4 text-left"><div className="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              {Array.from({ length: 20 }).map((_, i) => (
+                <tr key={i}>
+                  {/* Seç */}
+                  <td className="px-4 xl:px-6 py-3 xl:py-4 whitespace-nowrap">
+                    <div className="flex items-center justify-center">
+                      <div className="w-5 h-5 xl:w-6 xl:h-6 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
+                    </div>
+                  </td>
+                  {/* ID */}
+                  <td className="px-4 xl:px-6 py-3 xl:py-4 whitespace-nowrap">
+                    <div className="h-6 w-12 bg-gray-100 dark:bg-gray-700 rounded-md animate-pulse" />
+                  </td>
+                  {/* Ad */}
+                  <td className="px-4 xl:px-6 py-3 xl:py-4">
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" style={{ width: `${55 + (i % 5) * 12}px` }} />
+                  </td>
+                  {/* Complex */}
+                  <td className="px-4 xl:px-6 py-3 xl:py-4">
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" style={{ width: `${70 + (i % 4) * 15}px` }} />
+                  </td>
+                  {/* Building */}
+                  <td className="px-4 xl:px-6 py-3 xl:py-4">
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" style={{ width: `${65 + (i % 3) * 15}px` }} />
+                  </td>
+                  {/* Mərtəbə sayı */}
+                  <td className="px-4 xl:px-6 py-3 xl:py-4 whitespace-nowrap">
+                    <div className="h-4 w-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                  </td>
+                  {/* Mənzil sayı */}
+                  <td className="px-4 xl:px-6 py-3 xl:py-4 whitespace-nowrap">
+                    <div className="h-4 w-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                  </td>
+                  {/* Əməliyyatlar */}
+                  <td className="px-4 xl:px-6 py-3 xl:py-4 whitespace-nowrap">
+                    <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   }

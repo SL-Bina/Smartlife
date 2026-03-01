@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Button, Chip, Typography } from "@material-tailwind/react";
 import { PlusIcon, MagnifyingGlassIcon, FunnelIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 import { CustomInput } from "@/components/ui/CustomInput";
@@ -11,6 +11,7 @@ import { setSelectedComplex } from "@/store/slices/complexSlice";
 import { setSelectedBuilding } from "@/store/slices/buildingSlice";
 import { setSelectedBlock } from "@/store/slices/blockSlice";
 import { setSelectedProperty } from "@/store/slices/propertySlice";
+import api from "@/services/api";
 
 const STANDARD_OPTIONS = [10, 20, 50, 75, 100];
 
@@ -107,6 +108,7 @@ export function ManagementActions({
   onApplyNameSearch,
   onStatusChange,
   onRemoveFilter,
+  onResetFilters,
   onCreateClick,
   onSearchClick,
   totalItems = 0,
@@ -132,6 +134,86 @@ export function ManagementActions({
   const [selectedLabels, setSelectedLabels] = useState({});
   const [localName, setLocalName] = useState(search?.name || "");
 
+  // Helper to parse first item from API response
+  const parseFirstItem = (response) => {
+    const d = response.data?.data;
+    if (!d) return null;
+    const list = Array.isArray(d.data) ? d.data : Array.isArray(d) ? d : [];
+    return list[0] || null;
+  };
+
+  const filters = config.filters;
+
+  // Auto-select first MTK on mount (or after reset) if none selected
+  useEffect(() => {
+    if (!filters.includes("mtk") || mtkId) return;
+    api.get(FILTER_CONFIG.mtk.endpoint, { params: { per_page: 1, page: 1 } })
+      .then((res) => {
+        const item = parseFirstItem(res);
+        if (item) {
+          dispatch(setSelectedMtk({ id: item.id, mtk: item }));
+          setSelectedLabels((prev) => ({ ...prev, mtk: item.name }));
+        }
+      })
+      .catch(() => {});
+  }, [mtkId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-select first Complex when mtkId changes and no complex is selected
+  useEffect(() => {
+    if (!filters.includes("complex") || !mtkId || complexId) return;
+    api.get(FILTER_CONFIG.complex.endpoint, { params: { mtk_ids: [mtkId], per_page: 1, page: 1 } })
+      .then((res) => {
+        const item = parseFirstItem(res);
+        if (item) {
+          dispatch(setSelectedComplex({ id: item.id, complex: item }));
+          setSelectedLabels((prev) => ({ ...prev, complex: item.name }));
+        }
+      })
+      .catch(() => {});
+  }, [mtkId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-select first Building when complexId changes and no building selected
+  useEffect(() => {
+    if (!filters.includes("building") || !complexId || buildingId) return;
+    api.get(FILTER_CONFIG.building.endpoint, { params: { complex_ids: [complexId], per_page: 1, page: 1 } })
+      .then((res) => {
+        const item = parseFirstItem(res);
+        if (item) {
+          dispatch(setSelectedBuilding({ id: item.id, building: item }));
+          setSelectedLabels((prev) => ({ ...prev, building: item.name }));
+        }
+      })
+      .catch(() => {});
+  }, [complexId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-select first Block when buildingId changes and no block selected
+  useEffect(() => {
+    if (!filters.includes("block") || !buildingId || blockId) return;
+    api.get(FILTER_CONFIG.block.endpoint, { params: { building_ids: [buildingId], per_page: 1, page: 1 } })
+      .then((res) => {
+        const item = parseFirstItem(res);
+        if (item) {
+          dispatch(setSelectedBlock({ id: item.id, block: item }));
+          setSelectedLabels((prev) => ({ ...prev, block: item.name }));
+        }
+      })
+      .catch(() => {});
+  }, [buildingId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-select first Property when blockId changes and no property selected
+  useEffect(() => {
+    if (!filters.includes("property") || !blockId || propertyId) return;
+    api.get(FILTER_CONFIG.property.endpoint, { params: { block_ids: [blockId], per_page: 1, page: 1 } })
+      .then((res) => {
+        const item = parseFirstItem(res);
+        if (item) {
+          dispatch(setSelectedProperty({ id: item.id, property: item }));
+          setSelectedLabels((prev) => ({ ...prev, property: item.name || item.apartment_number }));
+        }
+      })
+      .catch(() => {});
+  }, [blockId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Sync labels from Redux objects
   useEffect(() => {
     const labels = {};
@@ -147,7 +229,7 @@ export function ManagementActions({
     }
   }, [selectedMtk, selectedComplex, selectedBuilding, selectedBlock, selectedProperty]);
 
-  // Refresh all filters - just clear everything
+  // Refresh all filters - clear Redux and notify parent
   const handleRefreshFilters = () => {
     dispatch(setSelectedMtk({ id: null, mtk: null }));
     dispatch(setSelectedComplex({ id: null, complex: null }));
@@ -155,6 +237,7 @@ export function ManagementActions({
     dispatch(setSelectedBlock({ id: null, block: null }));
     dispatch(setSelectedProperty({ id: null, property: null }));
     setSelectedLabels({});
+    onResetFilters?.();
   };
 
   useEffect(() => {
@@ -456,6 +539,7 @@ export function ManagementActions({
           disabled={disabled}
           placeholder={`${label} seçin`}
           searchPlaceholder={`${label} axtar...`}
+          allowClear={false}
         />
       </div>
     );
@@ -597,7 +681,7 @@ export function ManagementActions({
           <div className="flex-1" />
 
           {/* Items Per Page */}
-          {itemsPerPageOptions && (
+          {/* {itemsPerPageOptions && (
             <div className="w-[100px] flex-shrink-0">
               <AppSelect
                 items={itemsPerPageOptions}
@@ -607,7 +691,7 @@ export function ManagementActions({
                 allowAll={false}
               />
             </div>
-          )}
+          )} */}
 
           {/* Action Buttons */}
           <div className="flex gap-2 flex-shrink-0">

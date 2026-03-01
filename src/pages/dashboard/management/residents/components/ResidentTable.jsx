@@ -55,10 +55,49 @@ export function ResidentTable({ items = [], loading, onView, onEdit, onBind, onD
 
   if (loading) {
     return (
-      <div className="text-center py-12">
-        <Typography className="text-sm text-gray-500 dark:text-gray-400">
-          Yüklənir...
-        </Typography>
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg border border-white/20 dark:border-gray-700/50 relative z-0">
+        <div className="hidden lg:block overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gray-50/80 dark:bg-gray-900/50 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">
+                <th className="px-4 xl:px-6 py-3 xl:py-4 text-left"><div className="h-3 w-6 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></th>
+                <th className="px-4 xl:px-6 py-3 xl:py-4 text-left"><div className="h-3 w-18 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></th>
+                <th className="px-4 xl:px-6 py-3 xl:py-4 text-left"><div className="h-3 w-14 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></th>
+                <th className="px-4 xl:px-6 py-3 xl:py-4 text-left"><div className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></th>
+                <th className="px-4 xl:px-6 py-3 xl:py-4 text-left"><div className="h-3 w-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></th>
+                <th className="px-4 xl:px-6 py-3 xl:py-4 text-left"><div className="h-3 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" /></th>
+                <th className="px-4 xl:px-6 py-3 xl:py-4 text-right"><div className="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse ml-auto" /></th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: 20 }).map((_, i) => (
+                <tr key={i} className="border-b border-gray-200/50 dark:border-gray-700/50">
+                  <td className="px-4 xl:px-6 py-3 xl:py-4">
+                    <div className="h-4 w-10 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                  </td>
+                  <td className="px-4 xl:px-6 py-3 xl:py-4">
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" style={{ width: `${80 + (i % 5) * 18}px` }} />
+                  </td>
+                  <td className="px-4 xl:px-6 py-3 xl:py-4">
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" style={{ width: `${100 + (i % 4) * 20}px` }} />
+                  </td>
+                  <td className="px-4 xl:px-6 py-3 xl:py-4">
+                    <div className="h-4 w-28 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                  </td>
+                  <td className="px-4 xl:px-6 py-3 xl:py-4">
+                    <div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                  </td>
+                  <td className="px-4 xl:px-6 py-3 xl:py-4">
+                    <div className="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
+                  </td>
+                  <td className="px-4 xl:px-6 py-3 xl:py-4 text-right">
+                    <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse ml-auto" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   }
@@ -75,7 +114,6 @@ export function ResidentTable({ items = [], loading, onView, onEdit, onBind, onD
 
   return (
     <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg border border-white/20 dark:border-gray-700/50 relative z-0">
-      {/* Desktop Table View */}
       <div className="hidden lg:block overflow-x-auto">
         <table className="w-full">
           <thead>
@@ -218,7 +256,6 @@ export function ResidentTable({ items = [], loading, onView, onEdit, onBind, onD
         </table>
       </div>
 
-      {/* Mobile Card View */}
       <div className="lg:hidden space-y-3 p-3">
         {sortedItems.map((item) => (
           <Card key={item.id} className={`shadow-md ${selectedResidentId === item.id ? "ring-2 ring-blue-500" : ""}`}>

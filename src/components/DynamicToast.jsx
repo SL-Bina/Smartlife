@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import {
     CheckCircleIcon,
     XCircleIcon,
@@ -61,8 +62,8 @@ export default function DynamicToast({
     }, [type]);
 
 
-    return (
-        <div className="pointer-events-none fixed top-3 left-1/2 z-[999999999999] -translate-x-1/2 ">
+    return createPortal(
+        <div className="pointer-events-none fixed top-3 left-1/2 z-[2147483647] -translate-x-1/2 ">
             <div
                 className={[
                     "pointer-events-auto",
@@ -118,5 +119,5 @@ export default function DynamicToast({
                 </div>
             </div>
         </div>
-    );
+    , document.body);
 }

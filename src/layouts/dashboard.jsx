@@ -8,7 +8,7 @@ import {
   DashboardNavbar,
   Configurator,
 } from "@/widgets/layout";
-import myPropertiesAPI from "@/pages/resident/myproperties/api"; // resident API for property count
+import myPropertiesAPI from "@/pages/resident/myproperties/api";
 import routes from "@/routes";
 import { useAuth } from "@/store/hooks/useAuth";
 import { loadPropertyById, setSelectedProperty } from "@/store/slices/propertySlice";
@@ -65,7 +65,6 @@ function ProtectedRoute({ element, allowedRoles, moduleName, fallbackPath }) {
     }
   }
 
-  // selected apartment is handled centrally (navbar/layout auto-selection)
 
   return element;
 }
@@ -110,13 +109,10 @@ export const filterRoutesByRole = (routes, user) => {
       const isResidentLayout = route.layout === "resident";
       const filteredPages = route.pages
         .map((page) => {
-          // Resident layout pages don't have module-based access control
           if (isResidentLayout) return page;
 
           const isSpecial = page.path === "/profile" || page.path === "/settings";
 
-          // Children olan parent-larda əvvəlcə children-ları filtr et.
-          // Hər hansı child keçirsə parent-ı göstər (parent group/container kimi işləyir).
           if (page.children?.length) {
             const children = page.children.filter((child) => {
               if (!isRoot) {
@@ -139,7 +135,6 @@ export const filterRoutesByRole = (routes, user) => {
             return { ...page, children };
           }
 
-          // Normal page (children yoxdur)
           if (!isRoot && !isSpecial) {
             if (page.moduleName) {
               if (!userModules.has(page.moduleName.toLowerCase())) return null;
@@ -195,13 +190,9 @@ export function Dashboard() {
     }
   }, [user?.id, isInitialized, refreshUser]);
 
-  // no longer call admin list; resident point-of-truth is myPropertiesAPI
-
-  // if there's an apartment selected but we don't have its full object, load via resident API
   const selectedProperty = useSelector((state) => state.property.selectedProperty);
   useEffect(() => {
     if (user?.is_resident && selectedPropertyId && !selectedProperty) {
-      // fetch from resident endpoint and store in redux
       import("@/pages/resident/myproperties/api").then(({ default: myPropertiesAPI }) => {
         myPropertiesAPI.getById(selectedPropertyId)
           .then((resp) => {
@@ -210,13 +201,11 @@ export function Dashboard() {
             }
           })
           .catch(() => {
-            // ignore failure
           });
       });
     }
   }, [user, selectedPropertyId, selectedProperty, dispatch]);
 
-  // load resident property count to possibly hide sidebar entry when only one
   useEffect(() => {
     if (user?.is_resident) {
       myPropertiesAPI.getAll()
@@ -257,14 +246,13 @@ export function Dashboard() {
 
   let filteredRoutes = filterRoutesByRole(routes, user, hasModuleAccess);
 
-  // keep "my-property" entry visible as selected-apartment details page
   const firstActivePath = getFirstActivePath(filteredRoutes);
   const parentPathMap = buildParentPathMap(filteredRoutes);
 
   const showError = error && !user;
 
   return (
-    <div className="min-h-screen bg-blue-gray-50/50 dark:bg-gray-900 flex flex-col relative pb-10">
+    <div className=" bg-blue-gray-50/50 dark:bg-gray-900 flex flex-col relative min-h-screen pb-5">
       {showError && (
         <div className="bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800 px-4 py-3 relative z-10">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -308,7 +296,7 @@ export function Dashboard() {
         className="p-4 relative z-0 dashboard-content"
       >
         <DashboardNavbar homePath={firstActivePath} parentPathMap={parentPathMap} />
-        <div className="mt-4 sm:mt-6 md:mt-8">
+        <div className="mt-4 sm:mt-6 md:mt-8 min-h-screen-minus-footer">
           <Routes>
             <Route
               path="/"

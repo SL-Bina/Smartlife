@@ -19,10 +19,10 @@ export function useResidentData({ search = {}, mtkId = null, complexId = null, b
         per_page: itemsPerPage,
       };
 
-      // Separate name and status from other search params
+      // Separate named search fields from advanced search params
       const { name, surname, email, phone, status, ...advancedSearch } = search;
-      
-      // Add basic search params to params if they exist
+
+      // Add text search params if they exist
       if (name && name.trim()) {
         params.name = name.trim();
       }
@@ -39,35 +39,30 @@ export function useResidentData({ search = {}, mtkId = null, complexId = null, b
         params.status = status.trim();
       }
 
-      // Check if there are any advanced search parameters
-      const hasAdvancedSearch = Object.keys(advancedSearch).length > 0;
-
-      let response;
-      if (hasAdvancedSearch || name || surname || email || phone || status || mtkId || complexId || buildingId || blockId || propertyId) {
-        // Format array params if they exist for search endpoint
-        if (mtkId) {
-          params.mtk_ids = [mtkId];
-        }
-        if (complexId) {
-          params.complex_ids = [complexId];
-        }
-        if (buildingId) {
-          params.building_id = buildingId;
-        }
-        if (blockId) {
-          params.block_id = blockId;
-        }
-        if (propertyId) {
-          params.property_id = propertyId;
-        }
-        // Merge advanced search params
-        if (hasAdvancedSearch) {
-          Object.assign(params, advancedSearch);
-        }
-        response = await residentsAPI.search(params);
-      } else {
-        response = await residentsAPI.getAll(params);
+      // Always use the search endpoint: /search/module/resident
+      // Pass mtk_ids[] and complex_ids[] as arrays, others as single values
+      if (mtkId) {
+        params.mtk_ids = [mtkId];
       }
+      if (complexId) {
+        params.complex_ids = [complexId];
+      }
+      if (buildingId) {
+        params.building_id = buildingId;
+      }
+      if (blockId) {
+        params.block_id = blockId;
+      }
+      if (propertyId) {
+        params.property_id = propertyId;
+      }
+
+      // Merge any remaining advanced search params
+      if (Object.keys(advancedSearch).length > 0) {
+        Object.assign(params, advancedSearch);
+      }
+
+      const response = await residentsAPI.search(params);
       
       const data = response?.data?.data || {};
       

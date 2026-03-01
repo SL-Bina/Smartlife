@@ -36,6 +36,7 @@ export function AsyncSearchSelect({
   valueKey = "id",
   selectedLabel = null,
   perPage = 20,
+  allowClear = true,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -260,19 +261,21 @@ export function AsyncSearchSelect({
         className="max-h-52 overflow-y-auto"
         onScroll={handleListScroll}
       >
-        <button
-          type="button"
-          onClick={() => handleSelect({ [valueKey]: "", [labelKey]: "Hamısı" })}
-          className={`
-            w-full px-3 py-2 text-left text-sm transition-colors
-            ${!value
-              ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-              : "text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
-            }
-          `}
-        >
-          Hamısı
-        </button>
+        {allowClear && (
+          <button
+            type="button"
+            onClick={() => handleSelect({ [valueKey]: "", [labelKey]: "Hamısı" })}
+            className={`
+              w-full px-3 py-2 text-left text-sm transition-colors
+              ${!value
+                ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                : "text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
+              }
+            `}
+          >
+            Hamısı
+          </button>
+        )}
 
         {loading ? (
           <div className="px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">
@@ -344,7 +347,7 @@ export function AsyncSearchSelect({
           {displayLabel || placeholder}
         </span>
         <div className="flex items-center gap-1">
-          {value && (
+          {value && allowClear && (
             <XMarkIcon
               className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               onClick={handleClear}

@@ -160,5 +160,5 @@
 }
 
 .min-h-screen-minus-footer {
-  min-height: calc(100vh - 36px);
+  min-height: calc(100vh - 240px);
 }
