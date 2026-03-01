@@ -72,8 +72,8 @@ export function PropertyTable({ items = [], loading, onView, onEdit, onDelete, o
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {Array.from({ length: 20 }).map((_, i) => (
-                <tr key={i} className="transition-all duration-200">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <tr key={i} className="transition-all duration-200" style={{ opacity: 1 - (i / 3) * 0.9 }}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="h-6 w-12 bg-gray-100 dark:bg-gray-700 rounded-md animate-pulse" />
                   </td>

@@ -84,8 +84,8 @@ export function ComplexTable({ items = [], loading, onView, onEdit, onDelete, on
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {Array.from({ length: 20 }).map((_, i) => (
-                <tr key={i}>
+              {Array.from({ length: 3 }).map((_, i) => (
+                <tr key={i} style={{ opacity: 1 - (i / 3) * 0.9 }}>
                   {/* Seç */}
                   <td className="px-4 xl:px-6 py-3 xl:py-4 whitespace-nowrap">
                     <div className="flex items-center justify-center">

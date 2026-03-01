@@ -70,8 +70,8 @@ export function ResidentTable({ items = [], loading, onView, onEdit, onBind, onD
               </tr>
             </thead>
             <tbody>
-              {Array.from({ length: 20 }).map((_, i) => (
-                <tr key={i} className="border-b border-gray-200/50 dark:border-gray-700/50">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <tr key={i} className="border-b border-gray-200/50 dark:border-gray-700/50" style={{ opacity: 1 - (i / 3) * 0.9 }}>
                   <td className="px-4 xl:px-6 py-3 xl:py-4">
                     <div className="h-4 w-10 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
                   </td>
