@@ -26,6 +26,7 @@ import { motion } from "framer-motion";
 import residentInvoicesAPI from "@/pages/resident/myinvoices/api";
 import residentNotificationsAPI from "@/pages/resident/notifications/api";
 import residentTicketsAPI from "@/pages/resident/tickets/api";
+import myServicesAPI from "@/pages/resident/myservices/api";
 import { useComplexColor } from "@/hooks/useComplexColor";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -71,6 +72,7 @@ const ResidentHomePage = () => {
   const [invoices, setInvoices]           = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [tickets, setTickets]             = useState([]);
+  const [services, setServices]           = useState([]);
 
   useEffect(() => {
     fetchAll();
@@ -79,20 +81,23 @@ const ResidentHomePage = () => {
   const fetchAll = async () => {
     setLoading(true);
     const params = selectedPropertyId ? { property_id: selectedPropertyId } : {};
-    const [, invRes, notifRes, tickRes] = await Promise.allSettled([
+    const [, invRes, notifRes, tickRes, svcRes] = await Promise.allSettled([
       new Promise((r) => setTimeout(r, 1400)),
       (selectedPropertyId ? residentInvoicesAPI.getByProperty(selectedPropertyId) : residentInvoicesAPI.getAll()).catch(() => null),
       residentNotificationsAPI.getAll(params).catch(() => null),
       residentTicketsAPI.getAll(params).catch(() => null),
+      myServicesAPI.getAll(params).catch(() => null),
     ]);
 
     const invList   = invRes.value?.data?.data?.data   ?? invRes.value?.data?.data   ?? invRes.value?.data   ?? [];
     const notifList = notifRes.value?.data?.data?.data ?? notifRes.value?.data?.data ?? notifRes.value?.data ?? [];
     const tickList  = tickRes.value?.data?.data?.data  ?? tickRes.value?.data?.data  ?? tickRes.value?.data  ?? [];
+    const svcList   = svcRes.value?.data?.data?.data   ?? svcRes.value?.data?.data   ?? svcRes.value?.data   ?? [];
 
     setInvoices(Array.isArray(invList) ? invList : []);
     setNotifications(Array.isArray(notifList) ? notifList : []);
     setTickets(Array.isArray(tickList) ? tickList : []);
+    setServices(Array.isArray(svcList) ? svcList : []);
     setLoading(false);
   };
 
@@ -388,71 +393,130 @@ const ResidentHomePage = () => {
           </Card>
         </motion.div>
 
-        {/* Recent notifications */}
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4, delay: 0.25 }}>
-          <Card className="shadow-md dark:bg-gray-800 border" style={{ borderColor: getRgba(0.25) }}>
-            <CardBody className="p-0">
-              <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-700">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg" style={{ backgroundColor: getRgba(0.12) }}>
-                    <BellIcon className="h-4 w-4" style={{ color }} />
+        {/* Right column: notifications + services */}
+        <div className="flex flex-col gap-5">
+
+          {/* Recent notifications */}
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4, delay: 0.25 }}>
+            <Card className="shadow-md dark:bg-gray-800 border" style={{ borderColor: getRgba(0.25) }}>
+              <CardBody className="p-0">
+                <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-700">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg" style={{ backgroundColor: getRgba(0.12) }}>
+                      <BellIcon className="h-4 w-4" style={{ color }} />
+                    </div>
+                    <Typography variant="h6" className="font-bold text-gray-800 dark:text-white text-sm">Son Bildirişlər</Typography>
+                    {unreadNotifs.length > 0 && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white" style={{ backgroundColor: color }}>
+                        {unreadNotifs.length}
+                      </span>
+                    )}
                   </div>
-                  <Typography variant="h6" className="font-bold text-gray-800 dark:text-white text-sm">Son Bildirişlər</Typography>
-                  {unreadNotifs.length > 0 && (
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white" style={{ backgroundColor: color }}>
-                      {unreadNotifs.length}
-                    </span>
-                  )}
+                  <Button variant="text" size="sm" className="flex items-center gap-1 normal-case text-xs p-1" style={{ color }} onClick={() => navigate("/resident/notifications")}>
+                    Hamısı <ArrowRightIcon className="h-3 w-3" />
+                  </Button>
                 </div>
-                <Button variant="text" size="sm" className="flex items-center gap-1 normal-case text-xs p-1" style={{ color }} onClick={() => navigate("/resident/notifications")}>
-                  Hamısı <ArrowRightIcon className="h-3 w-3" />
-                </Button>
-              </div>
-              {notifications.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-10 text-center px-4">
-                  <BellIcon className="h-10 w-10 text-gray-300 dark:text-gray-600 mb-2" />
-                  <Typography variant="small" className="text-gray-400 dark:text-gray-500">Bildiriş tapılmadı</Typography>
-                </div>
-              ) : (
-                <div className="divide-y divide-gray-50 dark:divide-gray-700/60">
-                  {notifications.slice(0, 5).map((notif, i) => {
-                    const isRead = notif?.is_read || notif?.read_at;
-                    return (
-                      <div
-                        key={notif?.id || i}
-                        className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50/80 dark:hover:bg-gray-700/30 transition-colors cursor-pointer"
-                        onClick={() => navigate("/resident/notifications")}
-                      >
-                        <div className="flex-shrink-0 mt-1.5">
-                          {isRead
-                            ? <div className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600" />
-                            : <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
-                          }
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <Typography className={`text-sm truncate ${isRead ? "text-gray-500 dark:text-gray-400 font-normal" : "text-gray-800 dark:text-white font-semibold"}`}>
-                            {notif?.title || notif?.subject || "Bildiriş"}
-                          </Typography>
-                          {(notif?.message || notif?.body) && (
-                            <Typography variant="small" className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 line-clamp-2">
-                              {notif.message || notif.body}
+                {notifications.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-10 text-center px-4">
+                    <BellIcon className="h-10 w-10 text-gray-300 dark:text-gray-600 mb-2" />
+                    <Typography variant="small" className="text-gray-400 dark:text-gray-500">Bildiriş tapılmadı</Typography>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-50 dark:divide-gray-700/60">
+                    {notifications.slice(0, 5).map((notif, i) => {
+                      const isRead = notif?.is_read || notif?.read_at;
+                      return (
+                        <div
+                          key={notif?.id || i}
+                          className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50/80 dark:hover:bg-gray-700/30 transition-colors cursor-pointer"
+                          onClick={() => navigate("/resident/notifications")}
+                        >
+                          <div className="flex-shrink-0 mt-1.5">
+                            {isRead
+                              ? <div className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600" />
+                              : <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+                            }
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <Typography className={`text-sm truncate ${isRead ? "text-gray-500 dark:text-gray-400 font-normal" : "text-gray-800 dark:text-white font-semibold"}`}>
+                              {notif?.title || notif?.subject || "Bildiriş"}
                             </Typography>
-                          )}
-                          <div className="flex items-center gap-1 mt-1">
-                            <CalendarIcon className="h-3 w-3 text-gray-300 dark:text-gray-600" />
-                            <Typography variant="small" className="text-[10px] text-gray-400 dark:text-gray-500">
-                              {formatDate(notif?.created_at || notif?.date)}
-                            </Typography>
+                            {(notif?.message || notif?.body) && (
+                              <Typography variant="small" className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 line-clamp-2">
+                                {notif.message || notif.body}
+                              </Typography>
+                            )}
+                            <div className="flex items-center gap-1 mt-1">
+                              <CalendarIcon className="h-3 w-3 text-gray-300 dark:text-gray-600" />
+                              <Typography variant="small" className="text-[10px] text-gray-400 dark:text-gray-500">
+                                {formatDate(notif?.created_at || notif?.date)}
+                              </Typography>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
+                )}
+              </CardBody>
+            </Card>
+          </motion.div>
+
+          {/* Recent services */}
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4, delay: 0.3 }}>
+            <Card className="shadow-md dark:bg-gray-800 border" style={{ borderColor: getRgba(0.25) }}>
+              <CardBody className="p-0">
+                <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-gray-100 dark:border-gray-700">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg" style={{ backgroundColor: getRgba(0.12) }}>
+                      <WrenchScrewdriverIcon className="h-4 w-4" style={{ color }} />
+                    </div>
+                    <Typography variant="h6" className="font-bold text-gray-800 dark:text-white text-sm">Xidmətlərim</Typography>
+                  </div>
+                  <Button variant="text" size="sm" className="flex items-center gap-1 normal-case text-xs p-1" style={{ color }} onClick={() => navigate("/resident/my-services")}>
+                    Hamısı <ArrowRightIcon className="h-3 w-3" />
+                  </Button>
                 </div>
-              )}
-            </CardBody>
-          </Card>
-        </motion.div>
+                {services.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-10 text-center px-4">
+                    <WrenchScrewdriverIcon className="h-10 w-10 text-gray-300 dark:text-gray-600 mb-2" />
+                    <Typography variant="small" className="text-gray-400 dark:text-gray-500">Xidmət tapılmadı</Typography>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-50 dark:divide-gray-700/60 p-6">
+                    {services.slice(0, 5).map((svc, i) => (
+                      <div
+                        key={svc?.id || i}
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50/80 dark:hover:bg-gray-700/30 transition-colors cursor-pointer"
+                        onClick={() => navigate("/resident/my-services")}
+                      >
+                        <div className="p-1.5 rounded-lg flex-shrink-0" style={{ backgroundColor: getRgba(0.12) }}>
+                          <WrenchScrewdriverIcon className="h-4 w-4" style={{ color }} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <Typography className="text-sm font-semibold text-gray-800 dark:text-white truncate">
+                            {typeof svc?.service === "string" ? svc.service : svc?.service?.name || svc?.name || `Xidmət #${svc?.id}`}
+                          </Typography>
+                          {(svc?.description || svc?.service?.description) && (
+                            <Typography variant="small" className="text-xs text-gray-400 dark:text-gray-500 line-clamp-1">
+                              {svc?.description || svc?.service?.description}
+                            </Typography>
+                          )}
+                        </div>
+                        {svc?.status && (
+                          <span className="flex-shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                            {svc.status}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardBody>
+            </Card>
+          </motion.div>
+
+        </div>
       </div>
 
       {/* ── Recent tickets ── */}

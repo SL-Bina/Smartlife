@@ -20,7 +20,6 @@ export function ResidentFormModal({
   onSubmit,
   onEditRequest,
 }) {
-  // Redux-dan filter ID-ləri al
   const mtkId = useAppSelector((state) => state.mtk.selectedMtkId);
   const complexId = useAppSelector((state) => state.complex.selectedComplexId);
   const buildingId = useAppSelector((state) => state.building.selectedBuildingId);
@@ -120,29 +119,24 @@ export function ResidentFormModal({
     }
   }, [open, formMtkId]);
 
-  // Load properties when complex changes (initial page)
   useEffect(() => {
     if (open && formComplexId) {
       setLoadingProperties(true);
       setPropertyPage(1);
       setHasMoreProperties(true);
-      // Use search endpoint for properties
       propertiesAPI.search({
         complex_ids: [formComplexId],
         page: 1,
         per_page: PER_PAGE,
       })
         .then((response) => {
-          // backend returns { data: { current_page, last_page, data: [...] }}
           const meta = response?.data?.data || {};
           const items = meta.data || [];
           setProperties(items);
           setPropertyPage(meta.current_page || 1);
-          // determine if more pages remain
           if (typeof meta.current_page === "number" && typeof meta.last_page === "number") {
             setHasMoreProperties(meta.current_page < meta.last_page);
           } else {
-            // fallback to checking length
             setHasMoreProperties(items.length === PER_PAGE);
           }
         })
@@ -159,7 +153,6 @@ export function ResidentFormModal({
     }
   }, [open, formComplexId]);
 
-  // Search properties with debouncing
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (open && formComplexId) {
@@ -167,26 +160,22 @@ export function ResidentFormModal({
         setPropertyPage(1);
         setHasMoreProperties(true);
         
-        // Use search endpoint for properties with sub_data search
         propertiesAPI.search({
           complex_ids: [formComplexId],
           name: propertySearch || undefined,
-          building_name: propertySearch || undefined,  // Bina adına görə axtarış
-          block_name: propertySearch || undefined,    // Blok adına görə axtarış
+          building_name: propertySearch || undefined,  
+          block_name: propertySearch || undefined,    
           page: 1,
           per_page: PER_PAGE,
         })
           .then((response) => {
-            // backend returns { data: { current_page, last_page, data: [...] }}
             const meta = response?.data?.data || {};
             const items = meta.data || [];
             setProperties(items);
             setPropertyPage(meta.current_page || 1);
-            // determine if more pages remain
             if (typeof meta.current_page === "number" && typeof meta.last_page === "number") {
               setHasMoreProperties(meta.current_page < meta.last_page);
             } else {
-              // fallback to checking length
               setHasMoreProperties(items.length === PER_PAGE);
             }
           })
@@ -197,12 +186,11 @@ export function ResidentFormModal({
           })
           .finally(() => setLoadingProperties(false));
       }
-    }, 500); // 500ms debounce
+    }, 500); 
 
     return () => clearTimeout(timeoutId);
   }, [open, formComplexId, propertySearch]);
 
-  // Ensure the resident's currently assigned property appears in options when editing
   useEffect(() => {
     if (open && mode === "edit" && form?.formData?.property?.property_id) {
       const propertyId = form.formData.property.property_id;
@@ -222,7 +210,6 @@ export function ResidentFormModal({
     }
   }, [open, mode, form?.formData?.property?.property_id]);
 
-  // Load more properties on scroll
   const handlePropertyScrollEnd = async () => {
     if (!hasMoreProperties || loadingMoreProperties || !formComplexId) return;
     
@@ -232,8 +219,8 @@ export function ResidentFormModal({
       const response = await propertiesAPI.search({
         complex_ids: [formComplexId],
         name: propertySearch || undefined,
-        building_name: propertySearch || undefined,  // Bina adına görə axtarış
-        block_name: propertySearch || undefined,    // Blok adına görə axtarış
+        building_name: propertySearch || undefined,  
+        block_name: propertySearch || undefined,   
         per_page: PER_PAGE,
         page: nextPage
       });
@@ -259,7 +246,6 @@ export function ResidentFormModal({
   const errorText = useMemo(() => {
     if (!form?.formData?.name?.trim()) return "Ad mütləqdir";
     if (!form?.formData?.surname?.trim()) return "Soyad mütləqdir";
-    // Property fields only required when creating a new resident
     if (mode === "create") {
       if (!form?.formData?.property?.mtk_id) return "MTK mütləqdir";
       if (!form?.formData?.property?.complex_id) return "Kompleks mütləqdir";
@@ -283,7 +269,6 @@ export function ResidentFormModal({
       showToast("error", errorText, "Xəta");
       return;
     }
-    // If edit mode and onEditRequest is provided, delegate to parent for confirmation
     if (mode === "edit" && onEditRequest) {
       onEditRequest(form.formData);
       return;
