@@ -16,9 +16,11 @@ import {
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 import residentEDocumentsAPI from "../api";
+import { useComplexColor } from "@/hooks/useComplexColor";
 
 export function DocumentViewModal({ open, onClose, documentId }) {
   const { t } = useTranslation();
+  const { color, getRgba } = useComplexColor();
   const [document, setDocument] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -131,9 +133,11 @@ export function DocumentViewModal({ open, onClose, documentId }) {
       className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
       dismiss={{ enabled: false }}
     >
-      <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 flex items-center justify-between">
+      <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 flex items-center justify-between"
+        style={{ background: `linear-gradient(135deg, ${getRgba(0.12)}, ${getRgba(0.06)})` }}
+      >
         <div className="flex items-center gap-2">
-          <BookOpenIcon className="h-5 w-5 text-indigo-500" />
+          <BookOpenIcon className="h-5 w-5" style={{ color }} />
           <Typography variant="h5" className="font-bold">
             {t("resident.documents.pageTitle") || "Sənəd Detalları"}
           </Typography>
@@ -160,7 +164,7 @@ export function DocumentViewModal({ open, onClose, documentId }) {
         ) : document ? (
           <div className="space-y-6">
             {/* Document Header */}
-            <div className="bg-gradient-to-r from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 p-4 rounded-xl">
+            <div className="p-4 rounded-xl" style={{ background: `linear-gradient(135deg, ${getRgba(0.12)}, ${getRgba(0.06)})` }}>
               <div className="flex items-center justify-between">
                 <div>
                   <Typography variant="h5" className="font-bold text-gray-800 dark:text-white mb-1">
@@ -172,8 +176,8 @@ export function DocumentViewModal({ open, onClose, documentId }) {
                     </Typography>
                   )}
                 </div>
-                <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-                  <BookOpenIcon className="h-8 w-8 text-indigo-600 dark:text-indigo-300" />
+                <div className="p-3 rounded-lg" style={{ backgroundColor: getRgba(0.15) }}>
+                  <BookOpenIcon className="h-8 w-8" style={{ color }} />
                 </div>
               </div>
             </div>

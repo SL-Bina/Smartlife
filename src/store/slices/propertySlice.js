@@ -37,10 +37,33 @@ const COOKIE_KEYS = {
   PROPERTY_ID: 'smartlife_property_id',
 };
 
+const LS_PROPERTY_KEY = 'smartlife_selected_property';
+
+const getStoredProperty = () => {
+  try {
+    const raw = localStorage.getItem(LS_PROPERTY_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+const savePropertyToStorage = (property) => {
+  try {
+    if (property) {
+      localStorage.setItem(LS_PROPERTY_KEY, JSON.stringify(property));
+    } else {
+      localStorage.removeItem(LS_PROPERTY_KEY);
+    }
+  } catch {
+    // ignore
+  }
+};
+
 // Initial state
 const initialState = {
   selectedPropertyId: getCookie(COOKIE_KEYS.PROPERTY_ID) ? parseInt(getCookie(COOKIE_KEYS.PROPERTY_ID), 10) : null,
-  selectedProperty: null,
+  selectedProperty: getStoredProperty(),
   properties: [],
   loading: false,
   error: null,
@@ -86,11 +109,13 @@ const propertySlice = createSlice({
       } else {
         removeCookie(COOKIE_KEYS.PROPERTY_ID);
       }
+      savePropertyToStorage(property ?? null);
     },
     clearSelectedProperty: (state) => {
       state.selectedPropertyId = null;
       state.selectedProperty = null;
       removeCookie(COOKIE_KEYS.PROPERTY_ID);
+      savePropertyToStorage(null);
     },
   },
   extraReducers: (builder) => {
@@ -111,6 +136,7 @@ const propertySlice = createSlice({
       .addCase(loadPropertyById.fulfilled, (state, action) => {
         if (action.payload) {
           state.selectedProperty = action.payload;
+          savePropertyToStorage(action.payload);
         }
       });
   },

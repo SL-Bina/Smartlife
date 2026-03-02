@@ -18,9 +18,11 @@ import {
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 import myPropertiesAPI from "../api";
+import { useComplexColor } from "@/hooks/useComplexColor";
 
 export function PropertyDetailModal({ open, onClose, propertyId }) {
   const { t } = useTranslation();
+  const { color, getRgba } = useComplexColor();
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -106,9 +108,11 @@ export function PropertyDetailModal({ open, onClose, propertyId }) {
       className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
       dismiss={{ enabled: false }}
     >
-      <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 flex items-center justify-between">
+      <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 flex items-center justify-between"
+        style={{ background: `linear-gradient(135deg, ${getRgba(0.12)}, ${getRgba(0.06)})` }}
+      >
         <div className="flex items-center gap-2">
-          <HomeIcon className="h-5 w-5 text-blue-500" />
+          <HomeIcon className="h-5 w-5" style={{ color }} />
           <Typography variant="h5" className="font-bold">
             {t("properties.details") || "Əmlak Detalları"}
           </Typography>
@@ -135,11 +139,11 @@ export function PropertyDetailModal({ open, onClose, propertyId }) {
         ) : property ? (
           <div className="space-y-6">
             {/* Property Name & Status */}
-            <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-4 rounded-xl">
+            <div className="p-4 rounded-xl" style={{ background: `linear-gradient(135deg, ${getRgba(0.12)}, ${getRgba(0.06)})` }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-600 rounded-lg">
-                    <HomeIcon className="h-6 w-6 text-white" />
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: getRgba(0.15) }}>
+                    <HomeIcon className="h-6 w-6 text-white" style={{ color }} />
                   </div>
                   <div>
                     <Typography variant="h5" className="font-bold text-gray-800 dark:text-white">

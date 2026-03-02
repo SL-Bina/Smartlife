@@ -7,8 +7,10 @@ import {
   CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import residentNotificationsAPI from "./api";
+import { useComplexColor } from "@/hooks/useComplexColor";
 
 // Mock data
 const mockNotifications = [
@@ -56,19 +58,22 @@ const mockNotifications = [
 
 const ResidentNotificationsPage = () => {
   const { t } = useTranslation();
+  const selectedPropertyId = useSelector((state) => state.property.selectedPropertyId);
+  const { headerStyle } = useComplexColor();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchNotifications();
-  }, []);
+  }, [selectedPropertyId]);
 
   const fetchNotifications = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await residentNotificationsAPI.getAll();
+      const params = selectedPropertyId ? { property_id: selectedPropertyId } : {};
+      const response = await residentNotificationsAPI.getAll(params);
       setNotifications(response?.data?.data || response?.data || mockNotifications);
     } catch (err) {
       // Use mock data on error
@@ -137,7 +142,7 @@ const ResidentNotificationsPage = () => {
   return (
     <div className="space-y-6" style={{ position: 'relative', zIndex: 0 }}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-yellow-600 to-yellow-800 dark:from-yellow-700 dark:to-yellow-900 p-4 sm:p-6 rounded-xl shadow-lg border border-yellow-500 dark:border-yellow-700">
+      <div className="p-4 sm:p-6 rounded-xl shadow-lg border" style={headerStyle}>
         <div className="flex items-center gap-3">
           <div className="p-2 bg-white/20 rounded-lg">
             <BellIcon className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
@@ -146,7 +151,7 @@ const ResidentNotificationsPage = () => {
             <Typography variant="h4" className="text-white font-bold">
               {t("resident.notifications.pageTitle") || t("sidebar.notifications") || "Bildirişlər"}
             </Typography>
-            <Typography variant="small" className="text-yellow-100 dark:text-yellow-200">
+            <Typography variant="small" className="text-white/80">
               {notifications.length} {t("resident.notifications.notification") || "bildiriş"}
             </Typography>
           </div>

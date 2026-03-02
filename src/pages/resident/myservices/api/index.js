@@ -1,9 +1,9 @@
 import api from "@/services/api";
 
 const myServicesAPI = {
-  getAll: async () => {
+  getAll: async (params = {}) => {
     try {
-      const response = await api.get("/module/resident/config/my/services");
+      const response = await api.get("/module/resident/config/my/services", { params });
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;

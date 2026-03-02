@@ -7,9 +7,11 @@ import {
   ClockIcon,
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import residentTicketsAPI from "./api";
 import { TicketDetailModal } from "./components";
+import { useComplexColor } from "@/hooks/useComplexColor";
 
 // Mock data
 const mockTickets = [
@@ -33,6 +35,8 @@ const mockTickets = [
 
 const ResidentTicketsPage = () => {
   const { t } = useTranslation();
+  const selectedPropertyId = useSelector((state) => state.property.selectedPropertyId);
+  const { headerStyle } = useComplexColor();
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -41,13 +45,14 @@ const ResidentTicketsPage = () => {
 
   useEffect(() => {
     fetchTickets();
-  }, []);
+  }, [selectedPropertyId]);
 
   const fetchTickets = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await residentTicketsAPI.getAll();
+      const params = selectedPropertyId ? { property_id: selectedPropertyId } : {};
+      const response = await residentTicketsAPI.getAll(params);
       setTickets(response?.data?.data || response?.data || mockTickets);
     } catch (err) {
       // Use mock data on error
@@ -117,7 +122,7 @@ const ResidentTicketsPage = () => {
   return (
     <div className="space-y-6" style={{ position: 'relative', zIndex: 0 }}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-purple-800 dark:from-purple-700 dark:to-purple-900 p-4 sm:p-6 rounded-xl shadow-lg border border-purple-500 dark:border-purple-700">
+      <div className="p-4 sm:p-6 rounded-xl shadow-lg border" style={headerStyle}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-white/20 rounded-lg">
@@ -127,7 +132,7 @@ const ResidentTicketsPage = () => {
               <Typography variant="h4" className="text-white font-bold">
                 {t("resident.tickets.pageTitle") || t("sidebar.applicationsList") || "Biletlər"}
               </Typography>
-              <Typography variant="small" className="text-purple-100 dark:text-purple-200">
+              <Typography variant="small" className="text-white/80">
                 {tickets.length} {t("resident.tickets.ticket") || "bilet"}
               </Typography>
             </div>

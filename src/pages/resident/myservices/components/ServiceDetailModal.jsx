@@ -2,8 +2,10 @@ import React from "react";
 import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography } from "@material-tailwind/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
+import { useComplexColor } from "@/hooks/useComplexColor";
 
 export function ServiceDetailModal({ service, open, onClose, onRequest, onCancel }) {
+  const { color, getRgba } = useComplexColor();
   if (!service) return null;
 
   const handleRequest = () => {
@@ -18,7 +20,9 @@ export function ServiceDetailModal({ service, open, onClose, onRequest, onCancel
 
   return (
     <Dialog open={open} handler={onClose} size="lg" className="dark:bg-gray-800">
-      <DialogHeader className="border-b border-gray-200 dark:border-gray-700">
+      <DialogHeader className="border-b border-gray-200 dark:border-gray-700"
+        style={{ background: `linear-gradient(135deg, ${getRgba(0.12)}, ${getRgba(0.06)})` }}
+      >
         <div className="flex items-center justify-between w-full">
           <Typography variant="h5" className="text-gray-900 dark:text-white">
             Xidmət Detalları
@@ -142,25 +146,7 @@ export function ServiceDetailModal({ service, open, onClose, onRequest, onCancel
           >
             Bağla
           </Button>
-          
-          {service.status === "active" ? (
-            <Button
-              variant="outlined"
-              color="red"
-              onClick={handleCancel}
-              className="flex-1 dark:border-red-600 dark:text-red-400 dark:hover:bg-red-900/20"
-            >
-              Xidməti Ləğv Et
-            </Button>
-          ) : (
-            <Button
-              variant="filled"
-              onClick={handleRequest}
-              className="flex-1"
-            >
-              Xidmət Sifariş Et
-            </Button>
-          )}
+        
         </div>
       </DialogFooter>
     </Dialog>

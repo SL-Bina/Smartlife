@@ -18,9 +18,11 @@ import {
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 import residentInvoicesAPI from "../api";
+import { useComplexColor } from "@/hooks/useComplexColor";
 
 export function InvoiceDetailModal({ open, onClose, invoiceId }) {
   const { t } = useTranslation();
+  const { color, getRgba } = useComplexColor();
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -38,7 +40,7 @@ export function InvoiceDetailModal({ open, onClose, invoiceId }) {
     setLoading(true);
     setError(null);
     try {
-      const response = await residentInvoicesAPI.getById(invoiceId);
+      const response = await residentInvoicesAPI.getDetail(invoiceId);
       if (response?.success && response?.data) {
         setInvoice(response.data);
       } else {
@@ -146,9 +148,11 @@ export function InvoiceDetailModal({ open, onClose, invoiceId }) {
       className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
       dismiss={{ enabled: false }}
     >
-      <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 flex items-center justify-between">
+      <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 flex items-center justify-between"
+        style={{ background: `linear-gradient(135deg, ${getRgba(0.12)}, ${getRgba(0.06)})` }}
+      >
         <div className="flex items-center gap-2">
-          <DocumentTextIcon className="h-5 w-5 text-green-500" />
+          <DocumentTextIcon className="h-5 w-5" style={{ color }} />
           <Typography variant="h5" className="font-bold">
             {t("resident.invoices.pageTitle") || t("invoices.pageTitle") || "Faktura Detalları"}
           </Typography>
@@ -175,11 +179,11 @@ export function InvoiceDetailModal({ open, onClose, invoiceId }) {
         ) : invoice ? (
           <div className="space-y-6">
             {/* Invoice Header */}
-            <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-4 rounded-xl">
+            <div className="p-4 rounded-xl" style={{ background: `linear-gradient(135deg, ${getRgba(0.12)}, ${getRgba(0.06)})`, borderColor: getRgba(0.2) }}>
               <div className="flex items-center justify-between">
                 <div>
                   <Typography variant="h5" className="font-bold text-gray-800 dark:text-white mb-1">
-                    {invoice.service?.name || t("resident.invoices.service") || "Xidmət"}
+                    {typeof invoice.service === "string" ? invoice.service : (invoice.service?.name || "Xidmət")}
                   </Typography>
                   <Typography variant="small" className="text-gray-600 dark:text-gray-400">
                     {t("invoices.table.id") || "ID"}: {invoice.id}
@@ -199,7 +203,9 @@ export function InvoiceDetailModal({ open, onClose, invoiceId }) {
                   {t("properties.pageTitle") || "Mənzil"}
                 </Typography>
                 <Typography variant="h6" className="font-semibold text-gray-800 dark:text-white">
-                  {invoice.property.name || invoice.property.apartment_number || `Mənzil #${invoice.property.id}`}
+                  {typeof invoice.property === "string"
+                    ? invoice.property
+                    : invoice.property?.name || invoice.property?.apartment_number || `Mənzil #${invoice.property?.id || ""}`}
                 </Typography>
               </div>
             )}
@@ -280,7 +286,9 @@ export function InvoiceDetailModal({ open, onClose, invoiceId }) {
                   {t("invoices.table.paymentMethod") || "Ödəniş üsulu"}
                 </Typography>
                 <Typography variant="small" className="text-gray-600 dark:text-gray-400">
-                  {invoice.payment_method.name || invoice.payment_method}
+                  {typeof invoice.payment_method === "string"
+                    ? invoice.payment_method
+                    : invoice.payment_method?.name || invoice.payment_method?.title || "-"}
                 </Typography>
               </div>
             )}

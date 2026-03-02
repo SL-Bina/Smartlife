@@ -8,9 +8,11 @@ import {
 	PhotoIcon,
 	SparklesIcon,
 	ClockIcon,
+	BuildingOfficeIcon,
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 import residentComplexDashboardAPI from "./api";
+import { useComplexColor } from "@/hooks/useComplexColor";
 
 const fallbackStories = [
 	{ id: 1, name: "İdarə", color: "#3b82f6" },
@@ -47,13 +49,6 @@ const fallbackPosts = [
 	},
 ];
 
-function normalizeHexColor(value, fallback = "#3b82f6") {
-	if (typeof value !== "string") return fallback;
-	const cleaned = value.trim().replace("#", "");
-	if (!/^[0-9a-fA-F]{6}$/.test(cleaned)) return fallback;
-	return `#${cleaned}`;
-}
-
 function toRgba(hex, opacity = 1) {
 	const cleaned = hex.replace("#", "");
 	const r = parseInt(cleaned.substring(0, 2), 16);
@@ -65,11 +60,11 @@ function toRgba(hex, opacity = 1) {
 export default function ResidentComplexDashboardPage() {
 	const { t } = useTranslation();
 	const selectedProperty = useSelector((state) => state.property.selectedProperty);
+	const { color, getRgba, headerStyle } = useComplexColor();
 	const [loading, setLoading] = React.useState(true);
 	const [context, setContext] = React.useState({
 		complexName: "Kompleks",
 		mtkName: "MTK",
-		color: "#3b82f6",
 	});
 
 	React.useEffect(() => {
@@ -91,18 +86,11 @@ export default function ResidentComplexDashboardPage() {
 				sourceProperty?.sub_data?.mtk?.name ||
 				sourceProperty?.mtk?.name ||
 				"MTK";
-			const complexColor =
-				sourceProperty?.sub_data?.complex?.meta?.color_code ||
-				sourceProperty?.complex?.meta?.color_code ||
-				sourceProperty?.sub_data?.mtk?.meta?.color_code ||
-				sourceProperty?.mtk?.meta?.color_code ||
-				"#3b82f6";
 
 			if (!active) return;
 			setContext({
 				complexName,
 				mtkName,
-				color: normalizeHexColor(complexColor),
 			});
 			setLoading(false);
 		};
@@ -128,22 +116,22 @@ export default function ResidentComplexDashboardPage() {
 
 	return (
 		<div className="space-y-5" style={{ position: "relative", zIndex: 0 }}>
-			<Card
-				className="border dark:border-gray-700 shadow-lg"
-				style={{
-					borderColor: toRgba(context.color, 0.35),
-					background: `linear-gradient(135deg, ${toRgba(context.color, 0.2)}, ${toRgba(context.color, 0.08)})`,
-				}}
-			>
-				<CardBody className="py-4 px-5">
-					<Typography variant="h5" className="font-bold text-gray-900 dark:text-white">
-						{context.complexName}
-					</Typography>
-					<Typography variant="small" className="text-gray-700 dark:text-gray-300 mt-1">
-						{context.mtkName} • Social Feed
-					</Typography>
-				</CardBody>
-			</Card>
+			{/* Standard page header banner */}
+			<div className="p-4 sm:p-6 rounded-xl shadow-lg border" style={headerStyle}>
+				<div className="flex items-center gap-3">
+					<div className="p-2 bg-white/20 rounded-lg">
+						<BuildingOfficeIcon className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+					</div>
+					<div>
+						<Typography variant="h4" className="text-white font-bold">
+							{context.complexName}
+						</Typography>
+						<Typography variant="small" className="text-white/80">
+							{context.mtkName} • Social Feed
+						</Typography>
+					</div>
+				</div>
+			</div>
 
 			<Card className="border border-gray-200 dark:border-gray-700 shadow-sm dark:bg-gray-800">
 				<CardBody className="py-3 px-4">
@@ -156,7 +144,7 @@ export default function ResidentComplexDashboardPage() {
 
 					<div className="flex items-center gap-3 overflow-x-auto pb-1">
 						{fallbackStories.map((story) => {
-							const storyColor = story.color || context.color;
+							const storyColor = story.color || color;
 							return (
 								<div key={story.id} className="flex-shrink-0 text-center w-20">
 									<div
@@ -215,7 +203,7 @@ export default function ResidentComplexDashboardPage() {
 					<Typography variant="small" className="font-medium text-gray-700 dark:text-gray-300">
 						Story paylaşımı üçün hazırlıq bölməsi
 					</Typography>
-					<Button size="sm" className="normal-case flex items-center gap-1" style={{ backgroundColor: context.color }}>
+					<Button size="sm" className="normal-case flex items-center gap-1" style={{ backgroundColor: color }}>
 						<PhotoIcon className="h-4 w-4" /> Story əlavə et
 					</Button>
 				</CardBody>

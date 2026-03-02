@@ -2,14 +2,18 @@ import React, { useState, useEffect } from "react";
 import { Typography, Spinner, Button } from "@material-tailwind/react";
 import { PlusIcon, CogIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import myServicesAPI from "./api";
 import { ServiceCard, ServiceDetailModal } from "./components";
 import ServiceHeader from "./components/ServiceHeader";
+import { useComplexColor } from "@/hooks/useComplexColor";
 
 
 export default function MyServicesPage() {
   const { t } = useTranslation();
+  const selectedPropertyId = useSelector((state) => state.property.selectedPropertyId);
+  const { color, getRgba, headerStyle } = useComplexColor();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -18,21 +22,20 @@ export default function MyServicesPage() {
 
   useEffect(() => {
     fetchServices();
-  }, []);
+  }, [selectedPropertyId]);
 
   const fetchServices = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await myServicesAPI.getAll();
-      // Backend-dən gələn format: response.data.data.data
+      const params = selectedPropertyId ? { property_id: selectedPropertyId } : {};
+      const response = await myServicesAPI.getAll(params);
       const servicesData = response?.data?.data?.data || response?.data?.data ;
       setServices(servicesData);
       console.log("Services loaded:", servicesData);
     } catch (err) {
       console.error("Error fetching services:", err);
-      // Use mock data on error
-      setError(null); // Don't show error, just use mock data
+      setError(null);
     } finally {
       setLoading(false);
     }
@@ -46,7 +49,6 @@ export default function MyServicesPage() {
   const handleRequest = async (service) => {
     try {
       await myServicesAPI.requestService({ service_id: service.id });
-      // Refresh services list
       fetchServices();
     } catch (err) {
       console.error("Error requesting service:", err);
@@ -56,7 +58,6 @@ export default function MyServicesPage() {
   const handleCancel = async (service) => {
     try {
       await myServicesAPI.cancelService(service.id);
-      // Refresh services list
       fetchServices();
     } catch (err) {
       console.error("Error cancelling service:", err);
@@ -83,7 +84,7 @@ export default function MyServicesPage() {
 
   return (
     <div className="space-y-6" style={{ position: 'relative', zIndex: 0 }}>
-        <ServiceHeader/>
+        <ServiceHeader color={color} getRgba={getRgba} />
       
 
       {services.length > 0 ? (

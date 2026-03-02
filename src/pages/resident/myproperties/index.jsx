@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import myPropertiesAPI from "./api";
 import residentInvoicesAPI from "@/pages/resident/myinvoices/api";
 import { setSelectedProperty } from "@/store/slices/propertySlice";
+import { useComplexColor } from "@/hooks/useComplexColor";
 
 export default function MyPropertiesPage() {
   const { t } = useTranslation();
@@ -14,6 +15,7 @@ export default function MyPropertiesPage() {
   const dispatch = useDispatch();
   const selectedPropertyId = useSelector((state) => state.property.selectedPropertyId);
   const selectedProperty = useSelector((state) => state.property.selectedProperty);
+  const { headerStyle } = useComplexColor();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [invoices, setInvoices] = useState([]);
@@ -132,7 +134,7 @@ export default function MyPropertiesPage() {
 
   return (
     <div className="space-y-6" style={{ position: 'relative', zIndex: 0 }}>
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 dark:from-blue-700 dark:to-blue-900 p-4 sm:p-6 rounded-xl shadow-lg border border-blue-500 dark:border-blue-700">
+      <div className="p-4 sm:p-6 rounded-xl shadow-lg border" style={headerStyle}>
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-white/20 rounded-lg">
@@ -142,7 +144,7 @@ export default function MyPropertiesPage() {
               <Typography variant="h4" className="text-white font-bold">
                 Mənzilim
               </Typography>
-              <Typography variant="small" className="text-blue-100 dark:text-blue-200">
+              <Typography variant="small" className="text-white/80">
                 {propertyTitle}
               </Typography>
             </div>

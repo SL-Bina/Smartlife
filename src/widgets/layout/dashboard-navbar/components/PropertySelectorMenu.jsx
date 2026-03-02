@@ -141,6 +141,7 @@ function PropertySelectorMenu() {
   const handleSelect = (property) => {
     const normalizedProperty = normalizePropertyForStore(property);
     dispatch(setSelectedProperty({ id: normalizedProperty?.id ?? null, property: normalizedProperty }));
+    window.location.href = "/resident/home";
   };
 
   if (!isResident || (!loading && properties.length === 0)) {

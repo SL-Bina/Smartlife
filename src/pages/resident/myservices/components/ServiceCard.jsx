@@ -39,7 +39,6 @@ export function ServiceCard({ service, onView, onRequest, onCancel }) {
   };
 
   const getServiceIcon = (name) => {
-    // Backend-də gələn name-ə görə ikon seçirik
     const serviceName = (name || "").toLowerCase();
     if (serviceName.includes("servis") || serviceName.includes("service")) {
       return <CogIcon className="h-8 w-8 text-blue-500" />;
@@ -126,26 +125,6 @@ export function ServiceCard({ service, onView, onRequest, onCancel }) {
               Ətraflı
             </Button>
             
-            {service.status === "active" ? (
-              <Button
-                variant="outlined"
-                size="sm"
-                color="red"
-                onClick={() => onCancel(service)}
-                className="flex-1 dark:border-red-600 dark:text-red-400 dark:hover:bg-red-900/20"
-              >
-                Ləğv et
-              </Button>
-            ) : (
-              <Button
-                variant="filled"
-                size="sm"
-                onClick={() => onRequest(service)}
-                className="flex-1"
-              >
-                Sifariş et
-              </Button>
-            )}
           </div>
         </CardBody>
       </Card>

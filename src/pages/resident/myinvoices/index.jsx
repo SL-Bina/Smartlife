@@ -7,9 +7,11 @@ import {
   CalendarIcon,
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import residentInvoicesAPI from "./api";
 import { InvoiceDetailModal } from "./components";
+import { useComplexColor } from "@/hooks/useComplexColor";
 
 // Mock data
 const mockInvoices = [
@@ -57,6 +59,8 @@ const mockInvoices = [
 
 const ResidentMyInvaoicesPage = () => {
   const { t } = useTranslation();
+  const selectedPropertyId = useSelector((state) => state.property.selectedPropertyId);
+  const { headerStyle } = useComplexColor();
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -65,13 +69,15 @@ const ResidentMyInvaoicesPage = () => {
 
   useEffect(() => {
     fetchInvoices();
-  }, []);
+  }, [selectedPropertyId]);
 
   const fetchInvoices = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await residentInvoicesAPI.getAll();
+      const response = selectedPropertyId
+        ? await residentInvoicesAPI.getByProperty(selectedPropertyId)
+        : await residentInvoicesAPI.getAll();
       const list = response?.data?.data ?? response?.data;
       const useMock = !response?.success && (!list || (Array.isArray(list) && list.length === 0));
       setInvoices(useMock ? mockInvoices : (list || mockInvoices));
@@ -140,7 +146,7 @@ const ResidentMyInvaoicesPage = () => {
   return (
     <div className="space-y-6" style={{ position: 'relative', zIndex: 0 }}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-green-600 to-green-800 dark:from-green-700 dark:to-green-900 p-4 sm:p-6 rounded-xl shadow-lg border border-green-500 dark:border-green-700">
+      <div className="p-4 sm:p-6 rounded-xl shadow-lg border" style={headerStyle}>
         <div className="flex items-center gap-3">
           <div className="p-2 bg-white/20 rounded-lg">
             <DocumentTextIcon className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
@@ -149,7 +155,7 @@ const ResidentMyInvaoicesPage = () => {
             <Typography variant="h4" className="text-white font-bold">
               {t("resident.invoices.pageTitle") || t("invoices.pageTitle") || "Fakturalar"}
             </Typography>
-            <Typography variant="small" className="text-green-100 dark:text-green-200">
+            <Typography variant="small" className="text-white/80">
               {invoices.length} {t("resident.invoices.invoice") || t("invoices.invoice") || "faktura"}
             </Typography>
           </div>

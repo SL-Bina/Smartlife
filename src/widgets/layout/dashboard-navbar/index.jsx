@@ -7,6 +7,8 @@ import { pageTitleKeyMap } from "./utils/pageTitleMap";
 import { MobileNavbar } from "./components/MobileNavbar";
 import { DesktopNavbar } from "./components/DesktopNavbar";
 import { useSelector } from "react-redux";
+import { useAuth } from "@/store/hooks/useAuth";
+import { useComplexColor } from "@/hooks/useComplexColor";
 
 export function DashboardNavbar({ homePath, parentPathMap }) {
   const [controller] = useMaterialTailwindController();
@@ -24,12 +26,14 @@ export function DashboardNavbar({ homePath, parentPathMap }) {
     navbarHoverEffects,
     sidenavType,
   } = controller;
-  // obtain color from currently selected property (resident side)
+  const { user } = useAuth();
+  const isResident = user?.is_resident === true;
+  // obtain complex color via the same hook used on resident pages
+  const { color: complexColor, getRgba: getComplexRgba } = useComplexColor();
+  // only apply complex color on the resident panel
+  const colorCode = isResident ? complexColor : null;
+  // keep selectedProperty for display title
   const selectedProperty = useSelector((state) => state.property.selectedProperty);
-  const colorCode =
-    selectedProperty?.sub_data?.complex?.meta?.color_code ||
-    selectedProperty?.sub_data?.mtk?.meta?.color_code ||
-    null;
   const { pathname } = useLocation();
   const { t } = useTranslation();
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -231,7 +235,7 @@ export function DashboardNavbar({ homePath, parentPathMap }) {
       style={(() => {
         const base = {
           background: 'transparent',
-          borderColor: colorCode ? getRgbaColor(colorCode, 0.3) : undefined,
+          borderColor: colorCode ? getComplexRgba(0.35) : undefined,
           position: 'sticky',
           zIndex: 1,
         };

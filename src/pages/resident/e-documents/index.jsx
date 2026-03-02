@@ -7,9 +7,11 @@ import {
   CalendarIcon,
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import residentEDocumentsAPI from "./api";
 import { DocumentViewModal } from "./components";
+import { useComplexColor } from "@/hooks/useComplexColor";
 
 // Mock data
 const mockDocuments = [
@@ -49,6 +51,8 @@ const mockDocuments = [
 
 const ResidentEDocumentsPage = () => {
   const { t } = useTranslation();
+  const selectedPropertyId = useSelector((state) => state.property.selectedPropertyId);
+  const { headerStyle } = useComplexColor();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -57,13 +61,14 @@ const ResidentEDocumentsPage = () => {
 
   useEffect(() => {
     fetchDocuments();
-  }, []);
+  }, [selectedPropertyId]);
 
   const fetchDocuments = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await residentEDocumentsAPI.getAll();
+      const params = selectedPropertyId ? { property_id: selectedPropertyId } : {};
+      const response = await residentEDocumentsAPI.getAll(params);
       setDocuments(response?.data?.data || response?.data || mockDocuments);
     } catch (err) {
       // Use mock data on error
@@ -121,7 +126,7 @@ const ResidentEDocumentsPage = () => {
   return (
     <div className="space-y-6" style={{ position: 'relative', zIndex: 0 }}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-indigo-800 dark:from-indigo-700 dark:to-indigo-900 p-4 sm:p-6 rounded-xl shadow-lg border border-indigo-500 dark:border-indigo-700">
+      <div className="p-4 sm:p-6 rounded-xl shadow-lg border" style={headerStyle}>
         <div className="flex items-center gap-3">
           <div className="p-2 bg-white/20 rounded-lg">
             <BookOpenIcon className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
@@ -130,7 +135,7 @@ const ResidentEDocumentsPage = () => {
             <Typography variant="h4" className="text-white font-bold">
               {t("resident.documents.pageTitle") || t("sidebar.electronicDocuments") || "Elektron Sənədlər"}
             </Typography>
-            <Typography variant="small" className="text-indigo-100 dark:text-indigo-200">
+            <Typography variant="small" className="text-white/80">
               {documents.length} {t("resident.documents.document") || "sənəd"}
             </Typography>
           </div>

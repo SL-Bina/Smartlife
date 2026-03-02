@@ -17,9 +17,11 @@ import {
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 import residentTicketsAPI from "../api";
+import { useComplexColor } from "@/hooks/useComplexColor";
 
 export function TicketDetailModal({ open, onClose, ticketId }) {
   const { t } = useTranslation();
+  const { color, getRgba } = useComplexColor();
   const [ticket, setTicket] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -145,9 +147,11 @@ export function TicketDetailModal({ open, onClose, ticketId }) {
       className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
       dismiss={{ enabled: false }}
     >
-      <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 flex items-center justify-between">
+      <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 flex items-center justify-between"
+        style={{ background: `linear-gradient(135deg, ${getRgba(0.12)}, ${getRgba(0.06)})` }}
+      >
         <div className="flex items-center gap-2">
-          <QuestionMarkCircleIcon className="h-5 w-5 text-purple-500" />
+          <QuestionMarkCircleIcon className="h-5 w-5" style={{ color }} />
           <Typography variant="h5" className="font-bold">
             {t("resident.tickets.pageTitle") || "Bilet Detalları"}
           </Typography>
