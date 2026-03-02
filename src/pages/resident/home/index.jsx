@@ -28,6 +28,7 @@ import residentNotificationsAPI from "@/pages/resident/notifications/api";
 import residentTicketsAPI from "@/pages/resident/tickets/api";
 import myServicesAPI from "@/pages/resident/myservices/api";
 import { useComplexColor } from "@/hooks/useComplexColor";
+import { DEMO_STORY_GROUPS, StoriesBar } from "@/pages/resident/components/StoriesBar";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const formatDate = (dateStr) => {
@@ -73,6 +74,7 @@ const ResidentHomePage = () => {
   const [notifications, setNotifications] = useState([]);
   const [tickets, setTickets]             = useState([]);
   const [services, setServices]           = useState([]);
+  const [storyGroups]                     = useState(DEMO_STORY_GROUPS);
 
   useEffect(() => {
     fetchAll();
@@ -188,6 +190,9 @@ const ResidentHomePage = () => {
           </div>
         </div>
       </motion.div>
+
+      {/* ── Stories ── */}
+      <StoriesBar groups={storyGroups} height={160} />
 
       {/* ── Property card ── */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.05 }}>
