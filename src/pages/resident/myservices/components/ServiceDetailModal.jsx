@@ -1,156 +1,133 @@
 import React from "react";
-import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography } from "@material-tailwind/react";
-import { XMarkIcon } from "@heroicons/react/24/outline";
-import { motion } from "framer-motion";
+import { Dialog, DialogBody, Typography } from "@material-tailwind/react";
+import {
+  XMarkIcon,
+  WrenchScrewdriverIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  XCircleIcon,
+  CurrencyDollarIcon,
+  CalendarIcon,
+  InformationCircleIcon,
+} from "@heroicons/react/24/outline";
+import { CheckCircleIcon as CheckCircleSolid } from "@heroicons/react/24/solid";
 import { useComplexColor } from "@/hooks/useComplexColor";
 
-export function ServiceDetailModal({ service, open, onClose, onRequest, onCancel }) {
+const STATUS_CFG = {
+  active:    { label: "Aktiv",       cls: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",     icon: CheckCircleSolid },
+  pending:   { label: "Gözləmədə",   cls: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400", icon: ClockIcon },
+  cancelled: { label: "Ləğv edilib", cls: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",            icon: XCircleIcon },
+};
+
+function Row({ icon: Icon, label, value }) {
+  return (
+    <div className="flex items-center justify-between py-2.5 border-b border-gray-100 dark:border-gray-700 last:border-0">
+      <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
+        {Icon && <Icon className="h-4 w-4 shrink-0" />}
+        {label}
+      </div>
+      <span className="text-sm font-medium text-gray-800 dark:text-gray-200 text-right max-w-[60%]">{value || "-"}</span>
+    </div>
+  );
+}
+
+const fmtDate = (d) => {
+  if (!d) return "-";
+  try { return new Date(d).toLocaleDateString("az-AZ", { year: "numeric", month: "short", day: "numeric" }); }
+  catch { return d; }
+};
+
+export function ServiceDetailModal({ service, open, onClose }) {
   const { color, getRgba } = useComplexColor();
   if (!service) return null;
 
-  const handleRequest = () => {
-    onRequest(service);
-    onClose();
-  };
-
-  const handleCancel = () => {
-    onCancel(service);
-    onClose();
-  };
+  const st = STATUS_CFG[service.status] || { label: service.status || "-", cls: "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300", icon: null };
+  const StIcon = st.icon;
+  const price = service.price || service.amount;
 
   return (
-    <Dialog open={open} handler={onClose} size="lg" className="dark:bg-gray-800">
-      <DialogHeader className="border-b border-gray-200 dark:border-gray-700"
-        style={{ background: `linear-gradient(135deg, ${getRgba(0.12)}, ${getRgba(0.06)})` }}
+    <Dialog open={open} handler={onClose} size="md" className="dark:bg-gray-800 !max-w-lg">
+      {/* ── Compact gradient header ── */}
+      <div
+        className="flex items-center justify-between px-5 py-4 rounded-t-xl"
+        style={{ background: `linear-gradient(135deg, ${color}, ${getRgba(0.75)})` }}
       >
-        <div className="flex items-center justify-between w-full">
-          <Typography variant="h5" className="text-gray-900 dark:text-white">
-            Xidmət Detalları
-          </Typography>
-          <Button
-            variant="text"
-            color="gray"
-            onClick={onClose}
-            className="p-2 dark:text-gray-400 dark:hover:bg-gray-700"
-          >
-            <XMarkIcon className="h-5 w-5" />
-          </Button>
-        </div>
-      </DialogHeader>
-
-      <DialogBody className="p-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="space-y-6"
-        >
-          {/* Service Header */}
-          <div className="flex items-center space-x-4">
-            <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-              <div className="h-8 w-8 text-blue-600 dark:text-blue-300">
-                <svg fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
-                </svg>
-              </div>
-            </div>
-            <div className="flex-1">
-              <Typography variant="h4" className="font-bold text-gray-900 dark:text-white">
-                {service.name || "Xidmət"}
-              </Typography>
-              <Typography variant="small" className="text-gray-500 dark:text-gray-400">
-                {service.description || "Xidmət təsviri"}
-              </Typography>
-            </div>
-            <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-              service.status === "active" 
-                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-            }`}>
-              {service.status === "active" ? "Aktiv" : "Gözləmədə"}
-            </div>
+        <div className="flex items-center gap-3">
+          <div className="p-1.5 bg-white/20 rounded-lg">
+            <WrenchScrewdriverIcon className="h-5 w-5 text-white" />
           </div>
-
-          {/* Service Description */}
           <div>
-            <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white mb-2">
-              Xidmət Haqqında
-            </Typography>
-            <Typography variant="paragraph" className="text-gray-600 dark:text-gray-300">
-              {service.description || "Bu xidmət haqqında ətraflı məlumat mövcud deyil."}
-            </Typography>
+            <p className="text-white font-semibold text-sm leading-tight">Xidmət Detalları</p>
+            <p className="text-white/70 text-xs">#{service.id}</p>
           </div>
+        </div>
+        <button
+          onClick={onClose}
+          className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+        >
+          <XMarkIcon className="h-4 w-4" />
+        </button>
+      </div>
 
-          {/* Service Details Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-              <Typography variant="small" className="text-gray-500 dark:text-gray-400 mb-1">
-                Qiymət
-              </Typography>
-              <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white">
-                {service.price ? `${service.price} AZN` : service.amount ? `${service.amount} AZN` : "Müəyyən edilməyib"}
-              </Typography>
-            </div>
-
-            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-              <Typography variant="small" className="text-gray-500 dark:text-gray-400 mb-1">
-                Status
-              </Typography>
-              <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white">
-                {service.status === "active" ? "Aktiv" : service.status === "pending" ? "Gözləmədə" : "Ləğv edilib"}
-              </Typography>
-            </div>
-
-            {service.next_date && (
-              <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                <Typography variant="small" className="text-gray-500 dark:text-gray-400 mb-1">
-                  Növbəti ödəniş
-                </Typography>
-                <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white">
-                  {new Date(service.next_date).toLocaleDateString("az-AZ")}
-                </Typography>
-              </div>
-            )}
-
-            {service.start_date && (
-              <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                <Typography variant="small" className="text-gray-500 dark:text-gray-400 mb-1">
-                  Başlanğıc tarixi
-                </Typography>
-                <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white">
-                  {new Date(service.start_date).toLocaleDateString("az-AZ")}
-                </Typography>
-              </div>
-            )}
-
-            {service.last_date && (
-              <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                <Typography variant="small" className="text-gray-500 dark:text-gray-400 mb-1">
-                  Son ödəniş
-                </Typography>
-                <Typography variant="h6" className="font-semibold text-gray-900 dark:text-white">
-                  {new Date(service.last_date).toLocaleDateString("az-AZ")}
-                </Typography>
-              </div>
+      <DialogBody className="p-5 space-y-4">
+        {/* Service name + status banner */}
+        <div
+          className="rounded-xl p-4 flex items-center justify-between gap-3"
+          style={{ background: getRgba(0.06), border: `1px solid ${getRgba(0.15)}` }}
+        >
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-gray-900 dark:text-white text-base truncate">{service.name || "Xidmət"}</p>
+            {service.description && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">{service.description}</p>
             )}
           </div>
-        </motion.div>
-      </DialogBody>
+          <span className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap ${st.cls}`}>
+            {StIcon && <StIcon className="h-3.5 w-3.5" />}
+            {st.label}
+          </span>
+        </div>
 
-      <DialogFooter className="border-t border-gray-200 dark:border-gray-700 pt-4">
-        <div className="flex space-x-3 w-full">
-          <Button
-            variant="outlined"
+        {/* Stat mini-cards */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-lg p-3 bg-gray-50 dark:bg-gray-700/50 text-center">
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">Qiymət</p>
+            <p className="font-bold text-gray-900 dark:text-white text-lg leading-tight">
+              {price ? `${price}` : "—"}
+            </p>
+            {price && <p className="text-[10px] text-gray-400">AZN</p>}
+          </div>
+          <div className="rounded-lg p-3 bg-gray-50 dark:bg-gray-700/50 text-center">
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide mb-0.5">Status</p>
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold ${st.cls}`}>
+              {StIcon && <StIcon className="h-3 w-3" />}
+              {st.label}
+            </span>
+          </div>
+        </div>
+
+        {/* Detail rows */}
+        <div className="bg-gray-50 dark:bg-gray-700/30 rounded-xl px-4 py-1">
+          <Row icon={CalendarIcon}      label="Başlanğıc tarixi"  value={fmtDate(service.start_date)} />
+          <Row icon={CalendarIcon}      label="Növbəti ödəniş"    value={fmtDate(service.next_date)} />
+          <Row icon={CalendarIcon}      label="Son ödəniş tarixi" value={fmtDate(service.last_date)} />
+          {service.description && (
+            <Row icon={InformationCircleIcon} label="Təsvir" value={service.description} />
+          )}
+        </div>
+
+        {/* Footer close button */}
+        <div className="pt-1">
+          <button
             onClick={onClose}
-            className="flex-1 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+            className="w-full py-2.5 rounded-xl text-sm font-semibold border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             Bağla
-          </Button>
-        
+          </button>
         </div>
-      </DialogFooter>
+      </DialogBody>
     </Dialog>
   );
 }
 
+// Keep default export alias for backward compatibility
 export default ServiceDetailModal;

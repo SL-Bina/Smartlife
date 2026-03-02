@@ -30,7 +30,6 @@ import myServicesAPI from "@/pages/resident/myservices/api";
 import { useComplexColor } from "@/hooks/useComplexColor";
 import { DEMO_STORY_GROUPS, StoriesBar } from "@/pages/resident/components/StoriesBar";
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
   try {
@@ -61,7 +60,6 @@ const ticketStatusConfig = {
   resolved:    { label: "Həll edildi", cls: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",     icon: CheckCircleIcon },
 };
 
-// ─── Component ────────────────────────────────────────────────────────────────
 const ResidentHomePage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -103,13 +101,11 @@ const ResidentHomePage = () => {
     setLoading(false);
   };
 
-  // ── Computed stats ─────────────────────────────────────────────────────────
   const unpaidInvoices = invoices.filter((i) => ["unpaid", "not_paid", "overdue"].includes(i?.status));
   const totalDebt      = unpaidInvoices.reduce((s, i) => s + parseFloat(i?.amount || i?.remaining || 0), 0);
   const unreadNotifs   = notifications.filter((n) => !n?.is_read && !n?.read_at);
   const openTickets    = tickets.filter((t) => ["open", "in_progress"].includes(t?.status));
 
-  // ── Quick action tiles ─────────────────────────────────────────────────────
   const quickActions = [
     { label: "Fakturalar",  icon: DocumentTextIcon,       color: "#10b981", path: "/resident/invoices",       badge: unpaidInvoices.length || null },
     { label: "Bildirişlər", icon: BellIcon,               color: "#f59e0b", path: "/resident/notifications",  badge: unreadNotifs.length || null },
@@ -119,14 +115,12 @@ const ResidentHomePage = () => {
     { label: "Profil",      icon: UserCircleIcon,          color: "#64748b", path: "/resident/profile",         badge: null },
   ];
 
-  // ── Property meta ──────────────────────────────────────────────────────────
   const propName    = selectedProperty?.name
     || (selectedProperty?.meta?.apartment_number ? `Mənzil ${selectedProperty.meta.apartment_number}` : null)
     || (selectedProperty?.id ? `Mənzil #${selectedProperty.id}` : "Mənzil");
   const complexName = selectedProperty?.sub_data?.complex?.name || selectedProperty?.complex?.name || "";
   const mtkName     = selectedProperty?.sub_data?.mtk?.name     || selectedProperty?.mtk?.name     || "";
 
-  // ── Loading screen ─────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-5" style={{ position: "relative", zIndex: 0 }}>
@@ -155,11 +149,9 @@ const ResidentHomePage = () => {
     );
   }
 
-  // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="space-y-5" style={{ position: "relative", zIndex: 0 }}>
 
-      {/* ── Header banner ── */}
       <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <div className="p-4 sm:p-6 rounded-xl shadow-lg border" style={headerStyle}>
           <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -191,10 +183,8 @@ const ResidentHomePage = () => {
         </div>
       </motion.div>
 
-      {/* ── Stories ── */}
       <StoriesBar groups={storyGroups} height={160} />
 
-      {/* ── Property card ── */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.05 }}>
         {selectedProperty ? (
           <Card
@@ -264,7 +254,6 @@ const ResidentHomePage = () => {
         )}
       </motion.div>
 
-      {/* ── 4 stat cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
           {
@@ -335,10 +324,8 @@ const ResidentHomePage = () => {
         ))}
       </div>
 
-      {/* ── Recent invoices + notifications ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
-        {/* Recent invoices */}
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4, delay: 0.2 }}>
           <Card className="shadow-md dark:bg-gray-800 border" style={{ borderColor: getRgba(0.25) }}>
             <CardBody className="p-0">
@@ -398,10 +385,8 @@ const ResidentHomePage = () => {
           </Card>
         </motion.div>
 
-        {/* Right column: notifications + services */}
         <div className="flex flex-col gap-5">
 
-          {/* Recent notifications */}
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4, delay: 0.25 }}>
             <Card className="shadow-md dark:bg-gray-800 border" style={{ borderColor: getRgba(0.25) }}>
               <CardBody className="p-0">
@@ -467,7 +452,6 @@ const ResidentHomePage = () => {
             </Card>
           </motion.div>
 
-          {/* Recent services */}
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4, delay: 0.3 }}>
             <Card className="shadow-md dark:bg-gray-800 border" style={{ borderColor: getRgba(0.25) }}>
               <CardBody className="p-0">
@@ -524,7 +508,6 @@ const ResidentHomePage = () => {
         </div>
       </div>
 
-      {/* ── Recent tickets ── */}
       {tickets.length > 0 && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3 }}>
           <Card className="shadow-md dark:bg-gray-800 border" style={{ borderColor: getRgba(0.25) }}>
@@ -576,7 +559,6 @@ const ResidentHomePage = () => {
         </motion.div>
       )}
 
-      {/* ── Quick access grid ── */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.35 }}>
         <Card className="shadow-md dark:bg-gray-800 border" style={{ borderColor: getRgba(0.2) }}>
           <CardBody className="p-4 sm:p-5">

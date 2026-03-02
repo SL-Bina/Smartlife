@@ -2,7 +2,18 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Card, CardBody, Typography, Spinner, Chip, Button } from "@material-tailwind/react";
-import { BuildingOfficeIcon, DocumentTextIcon, CurrencyDollarIcon } from "@heroicons/react/24/outline";
+import {
+  BuildingOfficeIcon,
+  DocumentTextIcon,
+  HomeModernIcon,
+  MapPinIcon,
+  IdentificationIcon,
+  ExclamationCircleIcon,
+  CheckCircleIcon,
+  ArrowRightIcon,
+  ClockIcon,
+  KeyIcon,
+} from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 import myPropertiesAPI from "./api";
 import residentInvoicesAPI from "@/pages/resident/myinvoices/api";
@@ -15,7 +26,7 @@ export default function MyPropertiesPage() {
   const dispatch = useDispatch();
   const selectedPropertyId = useSelector((state) => state.property.selectedPropertyId);
   const selectedProperty = useSelector((state) => state.property.selectedProperty);
-  const { headerStyle } = useComplexColor();
+  const { color, getRgba, headerStyle } = useComplexColor();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [invoices, setInvoices] = useState([]);
@@ -93,7 +104,7 @@ export default function MyPropertiesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12" style={{ position: 'relative', zIndex: 0 }}>
+      <div className="flex items-center justify-center py-20" style={{ position: 'relative', zIndex: 0 }}>
         <div className="text-center">
           <Spinner className="h-8 w-8 mx-auto mb-4" />
           <Typography className="text-sm text-gray-500 dark:text-gray-400">
@@ -107,9 +118,8 @@ export default function MyPropertiesPage() {
   if (error) {
     return (
       <div className="text-center py-12" style={{ position: 'relative', zIndex: 0 }}>
-        <Typography className="text-sm text-red-500 dark:text-red-400">
-          {error}
-        </Typography>
+        <ExclamationCircleIcon className="h-12 w-12 mx-auto text-red-400 mb-3" />
+        <Typography className="text-sm text-red-500 dark:text-red-400">{error}</Typography>
       </div>
     );
   }
@@ -118,13 +128,13 @@ export default function MyPropertiesPage() {
     return (
       <div className="space-y-6" style={{ position: 'relative', zIndex: 0 }}>
         <Card className="border border-gray-200 dark:border-gray-700 dark:bg-gray-800">
-          <CardBody className="text-center py-12">
-            <BuildingOfficeIcon className="h-14 w-14 mx-auto text-gray-400 dark:text-gray-600 mb-4" />
+          <CardBody className="text-center py-16">
+            <BuildingOfficeIcon className="h-14 w-14 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
             <Typography className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
               Mənzil seçilməyib
             </Typography>
-            <Typography variant="small" className="text-gray-500 dark:text-gray-400 mb-4">
-              Yuxarıdakı navbar-dan mənzil seçin və bu səhifə avtomatik yenilənəcək.
+            <Typography variant="small" className="text-gray-500 dark:text-gray-400">
+              Yuxarıdakı navbar-dan mənzil seçin.
             </Typography>
           </CardBody>
         </Card>
@@ -132,8 +142,31 @@ export default function MyPropertiesPage() {
     );
   }
 
+  const complexName = selectedProperty?.sub_data?.complex?.name || selectedProperty?.complex?.name || "-";
+  const buildingName = selectedProperty?.sub_data?.building?.name || selectedProperty?.building?.name || "-";
+  const blockName = selectedProperty?.sub_data?.block?.name || selectedProperty?.block?.name || "-";
+  const mtkName = selectedProperty?.sub_data?.mtk?.name || selectedProperty?.mtk?.name || "-";
+  const apartmentNo = selectedProperty?.meta?.apartment_number || selectedProperty?.name || `#${selectedProperty?.id}`;
+  const floor = selectedProperty?.meta?.floor || selectedProperty?.floor || "-";
+  const area = selectedProperty?.meta?.area || selectedProperty?.area || null;
+  const statusActive = selectedProperty?.status === "active";
+
+  const statusColor = (s) => {
+    if (["paid"].includes(s)) return "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800";
+    if (["unpaid", "not_paid"].includes(s)) return "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800";
+    if (["overdue"].includes(s)) return "bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800";
+    return "bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600";
+  };
+  const statusLabel = (s) => {
+    if (s === "paid") return "Ödənilib";
+    if (s === "unpaid" || s === "not_paid") return "Ödənilməyib";
+    if (s === "overdue") return "Vaxtı keçib";
+    return s || "-";
+  };
+
   return (
-    <div className="space-y-6" style={{ position: 'relative', zIndex: 0 }}>
+    <div className="space-y-5" style={{ position: 'relative', zIndex: 0 }}>
+      {/* ── Header ── */}
       <div className="p-4 sm:p-6 rounded-xl shadow-lg border" style={headerStyle}>
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -141,100 +174,168 @@ export default function MyPropertiesPage() {
               <BuildingOfficeIcon className="h-8 w-8 text-white" />
             </div>
             <div>
-              <Typography variant="h4" className="text-white font-bold">
-                Mənzilim
-              </Typography>
-              <Typography variant="small" className="text-white/80">
-                {propertyTitle}
-              </Typography>
+              <Typography variant="h4" className="text-white font-bold">Mənzilim</Typography>
+              <Typography variant="small" className="text-white/80">{propertyTitle}</Typography>
             </div>
           </div>
-          <div className="text-right">
-            <Button
-              size="sm"
-              variant="filled"
-              className="normal-case bg-white/20 hover:bg-white/30 text-white"
-              onClick={() => navigate("/resident/invoices")}
-            >
-              Fakturalara keç
-            </Button>
-          </div>
+          <Button
+            size="sm"
+            variant="filled"
+            className="normal-case bg-white/20 hover:bg-white/30 text-white hidden sm:inline-flex"
+            onClick={() => navigate("/resident/invoices")}
+          >
+            Fakturalara keç
+          </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border border-gray-200 dark:border-gray-700 dark:bg-gray-800">
-          <CardBody>
-            <Typography variant="small" className="text-gray-500 dark:text-gray-400">Kompleks</Typography>
-            <Typography className="font-semibold text-gray-800 dark:text-white mt-1">
-              {selectedProperty?.sub_data?.complex?.name || selectedProperty?.complex?.name || "-"}
-            </Typography>
-          </CardBody>
-        </Card>
-        <Card className="border border-gray-200 dark:border-gray-700 dark:bg-gray-800">
-          <CardBody>
-            <Typography variant="small" className="text-gray-500 dark:text-gray-400">Bina / Blok</Typography>
-            <Typography className="font-semibold text-gray-800 dark:text-white mt-1">
-              {(selectedProperty?.sub_data?.building?.name || selectedProperty?.building?.name || `Bina #${selectedProperty?.building_id || "-"}`)} / {(selectedProperty?.sub_data?.block?.name || selectedProperty?.block?.name || `Blok #${selectedProperty?.block_id || "-"}`)}
-            </Typography>
-          </CardBody>
-        </Card>
-        <Card className="border border-gray-200 dark:border-gray-700 dark:bg-gray-800">
-          <CardBody>
-            <Typography variant="small" className="text-gray-500 dark:text-gray-400">Borclar</Typography>
-            <Typography className="font-semibold text-gray-800 dark:text-white mt-1">{totalDebt.toFixed(2)} ₼</Typography>
-            <Typography variant="small" className="text-red-500 mt-1">{unpaidCount} ödənilməmiş faktura</Typography>
-          </CardBody>
-        </Card>
+      {/* ── Status + quick stats ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          {
+            icon: <KeyIcon className="h-5 w-5" style={{ color }} />,
+            label: "Status",
+            value: statusActive ? "Aktiv" : "Qeyri-aktiv",
+            sub: null,
+            bg: statusActive ? getRgba(0.1) : "rgba(239,68,68,0.08)",
+            valueClass: statusActive ? "text-green-600 dark:text-green-400" : "text-red-500",
+          },
+          {
+            icon: <HomeModernIcon className="h-5 w-5" style={{ color }} />,
+            label: "Mənzil №",
+            value: apartmentNo,
+            sub: floor !== "-" ? `${floor}-ci mərtəbə` : null,
+            bg: getRgba(0.08),
+            valueClass: "text-gray-800 dark:text-white",
+          },
+          {
+            icon: <ExclamationCircleIcon className="h-5 w-5 text-red-500" />,
+            label: "Ödənilməmiş",
+            value: `${unpaidCount} faktura`,
+            sub: totalDebt > 0 ? `${totalDebt.toFixed(2)} ₼ borc` : "Borc yoxdur",
+            bg: unpaidCount > 0 ? "rgba(239,68,68,0.07)" : "rgba(34,197,94,0.07)",
+            valueClass: unpaidCount > 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400",
+          },
+          {
+            icon: <DocumentTextIcon className="h-5 w-5" style={{ color }} />,
+            label: "Cəmi faktura",
+            value: `${invoices.length}`,
+            sub: "bu mənzilə aid",
+            bg: getRgba(0.08),
+            valueClass: "text-gray-800 dark:text-white",
+          },
+        ].map((item, i) => (
+          <Card key={i} className="border dark:bg-gray-800" style={{ borderColor: getRgba(0.2), background: item.bg }}>
+            <CardBody className="p-3 sm:p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-1.5 rounded-lg bg-white/60 dark:bg-gray-700/60 shadow-sm">{item.icon}</div>
+                <Typography variant="small" className="text-gray-500 dark:text-gray-400 text-xs font-medium">{item.label}</Typography>
+              </div>
+              <Typography className={`font-bold text-base leading-tight ${item.valueClass}`}>{item.value}</Typography>
+              {item.sub && <Typography variant="small" className="text-gray-400 dark:text-gray-500 text-xs mt-0.5">{item.sub}</Typography>}
+            </CardBody>
+          </Card>
+        ))}
       </div>
 
-      <Card className="border border-gray-200 dark:border-gray-700 dark:bg-gray-800">
-        <CardBody>
+      {/* ── Property details ── */}
+      <Card className="border dark:bg-gray-800" style={{ borderColor: getRgba(0.25) }}>
+        <CardBody className="p-4 sm:p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="p-1.5 rounded-lg" style={{ background: getRgba(0.12) }}>
+              <IdentificationIcon className="h-5 w-5" style={{ color }} />
+            </div>
+            <Typography className="font-semibold text-gray-900 dark:text-white">Mənzil məlumatları</Typography>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {[
+              { label: "MTK", value: mtkName, icon: <MapPinIcon className="h-4 w-4" /> },
+              { label: "Kompleks", value: complexName, icon: <HomeModernIcon className="h-4 w-4" /> },
+              { label: "Bina", value: buildingName, icon: <BuildingOfficeIcon className="h-4 w-4" /> },
+              { label: "Blok", value: blockName, icon: <BuildingOfficeIcon className="h-4 w-4" /> },
+              { label: "Mərtəbə", value: floor !== "-" ? `${floor}-ci mərtəbə` : "-", icon: <ClockIcon className="h-4 w-4" /> },
+              ...(area ? [{ label: "Sahə", value: `${area} m²`, icon: <HomeModernIcon className="h-4 w-4" /> }] : []),
+            ].map((row, i) => (
+              <div key={i} className="flex items-center gap-3 p-3 rounded-xl border dark:border-gray-700 bg-gray-50 dark:bg-gray-700/40">
+                <div className="p-1.5 rounded-lg flex-shrink-0" style={{ background: getRgba(0.1), color }}>
+                  {row.icon}
+                </div>
+                <div className="min-w-0">
+                  <Typography variant="small" className="text-gray-400 dark:text-gray-500 text-xs">{row.label}</Typography>
+                  <Typography className="font-semibold text-gray-800 dark:text-white text-sm truncate">{row.value}</Typography>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardBody>
+      </Card>
+
+      {/* ── Invoices ── */}
+      <Card className="border dark:bg-gray-800" style={{ borderColor: getRgba(0.25) }}>
+        <CardBody className="p-4 sm:p-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <DocumentTextIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-              <Typography className="font-semibold text-gray-900 dark:text-white">Bu mənzilə aid fakturalar</Typography>
+              <div className="p-1.5 rounded-lg" style={{ background: getRgba(0.12) }}>
+                <DocumentTextIcon className="h-5 w-5" style={{ color }} />
+              </div>
+              <Typography className="font-semibold text-gray-900 dark:text-white">Son fakturalar</Typography>
             </div>
-            <Chip value={`${invoices.length} faktura`} size="sm" className="normal-case" />
+            <button
+              onClick={() => navigate("/resident/invoices")}
+              className="flex items-center gap-1 text-xs font-semibold hover:opacity-80 transition-opacity"
+              style={{ color }}
+            >
+              Hamısı <ArrowRightIcon className="h-3.5 w-3.5" />
+            </button>
           </div>
 
           {invoices.length === 0 ? (
-            <Typography variant="small" className="text-gray-500 dark:text-gray-400">Bu mənzil üçün faktura tapılmadı.</Typography>
+            <div className="text-center py-8">
+              <CheckCircleIcon className="h-10 w-10 mx-auto text-green-400 mb-2" />
+              <Typography variant="small" className="text-gray-500 dark:text-gray-400">
+                Bu mənzil üçün faktura tapılmadı.
+              </Typography>
+            </div>
           ) : (
             <div className="space-y-2">
-              {invoices.slice(0, 5).map((invoice) => (
-                <div key={invoice.id} className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <Typography variant="small" className="font-semibold text-gray-800 dark:text-white truncate">
-                      {invoice?.service?.name || "Xidmət"}
-                    </Typography>
-                    <Typography variant="small" className="text-gray-500 dark:text-gray-400 text-xs truncate">
-                      #{invoice?.id} • {invoice?.due_date || "Tarix yoxdur"}
-                    </Typography>
+              {invoices.slice(0, 6).map((invoice) => {
+                const unpaid = ["unpaid", "not_paid", "overdue"].includes(invoice?.status);
+                return (
+                  <div
+                    key={invoice.id}
+                    className="rounded-xl border p-3 flex items-center justify-between gap-3 dark:border-gray-700 hover:shadow-sm transition-shadow"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`p-2 rounded-lg flex-shrink-0 ${unpaid ? "bg-red-50 dark:bg-red-900/20" : "bg-green-50 dark:bg-green-900/20"}`}>
+                        {unpaid
+                          ? <ExclamationCircleIcon className="h-4 w-4 text-red-500" />
+                          : <CheckCircleIcon className="h-4 w-4 text-green-500" />}
+                      </div>
+                      <div className="min-w-0">
+                        <Typography variant="small" className="font-semibold text-gray-800 dark:text-white truncate">
+                          {invoice?.service?.name || "Xidmət"}
+                        </Typography>
+                        <Typography variant="small" className="text-gray-400 dark:text-gray-500 text-xs">
+                          #{invoice?.id}{invoice?.due_date ? ` • ${invoice.due_date}` : ""}
+                        </Typography>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                      <Typography variant="small" className="font-bold text-gray-900 dark:text-white">
+                        {Number(invoice?.amount || 0).toFixed(2)} ₼
+                      </Typography>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${statusColor(invoice?.status)}`}>
+                        {statusLabel(invoice?.status)}
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <Typography variant="small" className="font-semibold text-gray-900 dark:text-white">
-                      <CurrencyDollarIcon className="h-4 w-4 inline mr-1" />{Number(invoice?.amount || 0).toFixed(2)} ₼
-                    </Typography>
-                    <Typography variant="small" className="text-xs text-gray-500 dark:text-gray-400">
-                      {invoice?.status || "status"}
-                    </Typography>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardBody>
       </Card>
-
-      {/* <Card className="border border-dashed border-gray-300 dark:border-gray-700 dark:bg-gray-800">
-        <CardBody className="flex items-center justify-between gap-3">
-          <Typography variant="small" className="text-gray-600 dark:text-gray-300">
-            Mənzil seçimi navbar-dan idarə olunur. Seçim dəyişəndə bu səhifə avtomatik yenilənir.
-          </Typography>
-          <Button size="sm" variant="outlined" className="normal-case" onClick={() => navigate("/resident/home")}>Panelə qayıt</Button>
-        </CardBody>
-      </Card> */}
     </div>
   );
 }
