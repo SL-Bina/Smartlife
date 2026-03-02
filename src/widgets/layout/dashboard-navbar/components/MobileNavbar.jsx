@@ -5,6 +5,7 @@ import { DarkModeToggle } from "./DarkModeToggle";
 import { LanguageSelector } from "./LanguageSelector";
 import { NotificationsMenu } from "./NotificationsMenu";
 import { UserMenu } from "./UserMenu";
+import PropertySelectorMenu from "./PropertySelectorMenu";
 
 export function MobileNavbar({ pageTitle, navbarHoverEffects }) {
   const [controller, dispatch] = useMaterialTailwindController();
@@ -84,6 +85,9 @@ export function MobileNavbar({ pageTitle, navbarHoverEffects }) {
 
       {/* Right: Actions */}
       <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+        <div className="flex items-center">
+          <PropertySelectorMenu isMobile={true} />
+        </div>
         <div className="flex items-center">
           <DarkModeToggle isMobile={true} />
         </div>

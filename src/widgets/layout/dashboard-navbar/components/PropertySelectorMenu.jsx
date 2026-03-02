@@ -7,7 +7,7 @@ import { IconButton, Typography, Menu, MenuHandler, MenuList } from "@material-t
 import { CheckIcon } from "@heroicons/react/24/solid";
 import { Squares2X2Icon, BuildingOfficeIcon, HomeModernIcon } from "@heroicons/react/24/outline";
 
-function PropertySelectorMenu() {
+function PropertySelectorMenu({ isMobile = false }) {
   const dispatch = useDispatch();
   const { user } = useAuth();
   const selectedPropertyId = useSelector((state) => state.property.selectedPropertyId);
@@ -160,7 +160,7 @@ function PropertySelectorMenu() {
           <Squares2X2Icon className="h-6 w-6 text-gray-700 dark:text-gray-300" />
         </IconButton>
       </MenuHandler>
-      <MenuList className="w-[700px] max-h-[520px] overflow-y-auto dark:bg-gray-800 dark:border-gray-700 rounded-2xl shadow-2xl p-0">
+      <MenuList className={`${isMobile ? 'w-[95vw] max-w-[420px]' : 'w-[700px]'} max-h-[520px] overflow-y-auto dark:bg-gray-800 dark:border-gray-700 rounded-2xl shadow-2xl p-0`}>
         <div className="px-4 py-3 border-b border-gray-200/60 dark:border-gray-700/60 bg-gray-50/70 dark:bg-gray-900/30 rounded-t-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -184,7 +184,7 @@ function PropertySelectorMenu() {
             </Typography>
           </div>
         ) : (
-          <div className="p-4 grid grid-cols-2 gap-4">
+          <div className={`p-4 grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
             {properties.map((property) => {
               const isSelected = Number(selectedPropertyId) === Number(property.id);
               const color = getComplexColor(property);
