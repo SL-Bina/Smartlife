@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 
 const initialFormData = {
   name: "",
@@ -17,13 +17,14 @@ const initialFormData = {
     complex_id: null,
     property_id: null,
   },
-  bind_existing: false,
+  // bind_existing: false,
   status: "active",
 };
 
 export function useResidentForm() {
   const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
+  const originalDataRef = useRef(null);
 
   const updateField = useCallback((field, value) => {
     if (field.startsWith("meta.")) {
@@ -87,16 +88,48 @@ export function useResidentForm() {
         complex_id: boundProp?.complex_id || resident.property?.complex_id || null,
         property_id: boundProp?.property_id || resident.property?.property_id || null,
       },
-      bind_existing: resident.bind_existing || false,
+      // bind_existing: resident.bind_existing || false,
       status: resident.status || "active",
     });
+    originalDataRef.current = {
+      name: resident.name || "",
+      surname: resident.surname || "",
+      type: resident.type || "owner",
+      email: resident.email || "",
+      phone: resident.phone || "",
+      meta: {
+        father_name: resident.meta?.father_name || resident.father_name || "",
+        gender: resident.meta?.gender || resident.gender || "",
+        personal_code: resident.meta?.personal_code || resident.personal_code || "",
+        birth_date: resident.meta?.birth_date || resident.birth_date || "",
+      },
+      status: resident.status || "active",
+    };
     setErrors({});
   }, []);
 
   const resetForm = useCallback(() => {
     setFormData(initialFormData);
+    originalDataRef.current = null;
     setErrors({});
   }, []);
+
+  const hasChanges = (() => {
+    if (!originalDataRef.current) return true; // create mode — always allow
+    const orig = originalDataRef.current;
+    return (
+      formData.name !== orig.name ||
+      formData.surname !== orig.surname ||
+      formData.type !== orig.type ||
+      formData.email !== orig.email ||
+      formData.phone !== orig.phone ||
+      formData.status !== orig.status ||
+      formData.meta?.father_name !== orig.meta?.father_name ||
+      formData.meta?.gender !== orig.meta?.gender ||
+      formData.meta?.personal_code !== orig.meta?.personal_code ||
+      formData.meta?.birth_date !== orig.meta?.birth_date
+    );
+  })();
 
   const setFormErrors = useCallback((newErrors) => {
     setErrors(newErrors);
@@ -105,6 +138,7 @@ export function useResidentForm() {
   return {
     formData,
     errors,
+    hasChanges,
     updateField,
     setFormFromResident,
     resetForm,

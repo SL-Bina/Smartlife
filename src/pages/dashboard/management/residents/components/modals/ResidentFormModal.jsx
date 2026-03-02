@@ -425,6 +425,7 @@ export function ResidentFormModal({
                 </div>
               </div>
 
+              {!isEdit && (
               <div>
                 <Typography variant="h6" className="text-gray-900 dark:text-white mb-4 font-semibold flex items-center gap-2">
                   <div className="w-1 h-6 rounded-full" style={{ backgroundColor: ACTIVE_COLOR }}></div>
@@ -488,6 +489,7 @@ export function ResidentFormModal({
                   />
                 </div>
               </div>
+              )}
             </div>
           </DialogBody>
 
@@ -501,7 +503,7 @@ export function ResidentFormModal({
             </Button>
             <Button
               type="submit"
-              disabled={saving || !!errorText}
+              disabled={saving || !!errorText || (isEdit && !form.hasChanges)}
               className="text-white"
               style={{ backgroundColor: ACTIVE_COLOR }}
             >
