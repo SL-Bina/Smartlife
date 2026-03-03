@@ -50,7 +50,6 @@ export function UserMenu({ isMobile = false, showButton = false }) {
     );
   }
 
-  // Get user initials for avatar
   const getInitials = (name) => {
     if (!name) return "U";
     const parts = name.trim().split(" ");
@@ -120,7 +119,7 @@ export function UserMenu({ isMobile = false, showButton = false }) {
                 <span className="font-semibold">{t("header.settings")}</span>
               </NavLink>
             </MenuItem>
-            <MenuItem onClick={logout} className="dark:hover:bg-gray-800/50 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 text-red-600 dark:text-red-400 rounded-lg mt-1">
+            <MenuItem onClick={logout} className="dark:hover:bg-gray-800/50 hover:bg-red-50  flex items-center gap-3 text-red-600 dark:text-red-400 rounded-lg mt-1">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-red-500/10 to-rose-500/10 dark:from-red-500/20 dark:to-rose-500/20 flex items-center justify-center">
                 <span className="text-red-600 dark:text-red-400 font-bold text-lg">→</span>
               </div>
@@ -152,7 +151,6 @@ export function UserMenu({ isMobile = false, showButton = false }) {
                     </span>
                   )}
                 </div>
-                {/* Pink stripe indicator - like in the image */}
                 {isMobile && (
                   <div className="absolute -right-0.5 top-1/2 -translate-y-1/2 w-1 h-6 bg-pink-400 dark:bg-pink-500 rounded-full z-10"></div>
                 )}
@@ -186,7 +184,7 @@ export function UserMenu({ isMobile = false, showButton = false }) {
                 <span className="font-semibold">{t("header.settings")}</span>
               </NavLink>
             </MenuItem>
-            <MenuItem onClick={logout} className="dark:hover:bg-gray-800/50 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 text-red-600 dark:text-red-400 rounded-lg mt-1">
+            <MenuItem onClick={logout} className="dark:hover:bg-gray-800/50 hover:bg-red-50 flex items-center gap-3 text-red-600 dark:text-red-400 rounded-lg mt-1">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-red-500/10 to-rose-500/10 dark:from-red-500/20 dark:to-rose-500/20 flex items-center justify-center">
                 <span className="text-red-600 dark:text-red-400 font-bold text-lg">→</span>
               </div>

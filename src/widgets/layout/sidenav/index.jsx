@@ -13,7 +13,6 @@ export function Sidenav({ brandImg, brandName, routes }) {
   const [controller, actions] = useMaterialTailwindController();
   const { sidenavType, openSidenav, sidenavCollapsed, sidenavFlatMenu, sidenavExpandAll, sidenavSize, sidenavPosition } = controller;
   
-  // determine resident branding based on selected property/complex
   const { user } = useAuth();
   const selectedProperty = useSelector((state) => state.property.selectedProperty);
   let displayName = brandName;
@@ -125,8 +124,8 @@ export function Sidenav({ brandImg, brandName, routes }) {
         style={{
           ...getSidenavBackground(),
           borderColor: mtkColorCode ? getRgbaColor(mtkColorCode, 0.3) : undefined,
-          zIndex: 1000, // Sidebar z-index - modallardan aşağı olmalıdır
-          isolation: 'isolate', // Yeni stacking context yaradır
+          zIndex: 1000, 
+          isolation: 'isolate', 
         }}
       >
         <SidenavHeader brandName={displayName} collapsed={sidenavCollapsed && !isHovered} isLowHeight={isLowHeight} homePath={homePath} />

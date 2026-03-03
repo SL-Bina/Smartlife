@@ -24,21 +24,16 @@ export function DashboardNavbar({ homePath, parentPathMap }) {
     navbarPosition,
     navbarAnimations,
     navbarHoverEffects,
-    sidenavType,
   } = controller;
   const { user } = useAuth();
   const isResident = user?.is_resident === true;
-  // obtain complex color via the same hook used on resident pages
   const { color: complexColor, getRgba: getComplexRgba } = useComplexColor();
-  // only apply complex color on the resident panel
   const colorCode = isResident ? complexColor : null;
-  // keep selectedProperty for display title
   const selectedProperty = useSelector((state) => state.property.selectedProperty);
   const { pathname } = useLocation();
   const { t } = useTranslation();
   const [isDarkMode, setIsDarkMode] = useState(false);
 
-  // Dark mode yoxlaması
   useEffect(() => {
     const checkDarkMode = () => {
       const isDark = document.documentElement.classList.contains('dark') || 
@@ -48,7 +43,6 @@ export function DashboardNavbar({ homePath, parentPathMap }) {
     
     checkDarkMode();
     
-    // Watch for dark mode changes
     const observer = new MutationObserver(checkDarkMode);
     observer.observe(document.documentElement, {
       attributes: true,
@@ -73,7 +67,6 @@ export function DashboardNavbar({ homePath, parentPathMap }) {
     : pageTitleKeyMap[page]
       ? t(pageTitleKeyMap[page])
       : page;
-  // append property name for resident side
   const displayTitle = selectedProperty && selectedProperty.name
     ? `${pageTitle} (${selectedProperty.name})`
     : pageTitle;
@@ -87,13 +80,10 @@ export function DashboardNavbar({ homePath, parentPathMap }) {
     return `rgba(${r}, ${g}, ${b}, ${opacity})`;
   };
 
-  // legacy background generator removed – we always want a glass/transparent navbar
   const getNavbarBackground = () => {
     return { background: 'transparent' };
   };
 
-  // Navbar konfiqurasiyaları - Glass effect ilə
-  // navbar always has transparent glass background regardless of color selection
   const getNavbarColorClasses = () => {
     return "bg-transparent dark:bg-transparent";
   };
@@ -231,7 +221,6 @@ export function DashboardNavbar({ homePath, parentPathMap }) {
       color="transparent"
       className={`${navbarClasses} ${getNavbarTextColor()}`}
       fullWidth
-      // blurred={fixedNavbar && navbarBlur === "enabled"}
       style={(() => {
         const base = {
           background: 'transparent',

@@ -3,6 +3,7 @@ import { Spinner, Typography } from "@material-tailwind/react";
 import { useTranslation } from "react-i18next";
 import { useInvoicesData } from "./hooks/useInvoicesData";
 import { useInvoicesForm } from "./hooks/useInvoicesForm";
+import { useInvoicesFilters } from "./hooks/useInvoicesFilters";
 import { createInvoice, updateInvoice, deleteInvoice, fetchInvoiceById } from "./api";
 import propertiesAPI from "@/pages/dashboard/management/properties/api";
 import { InvoicesHeader } from "./components/InvoicesHeader";
@@ -29,10 +30,20 @@ import {
 
 const InvoicesPage = () => {
   const { t } = useTranslation();
-  const [search, setSearch] = useState({});
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const {
+    filters,
+    apiParams,
+    hasActiveFilters,
+    applyFilters,
+    applyStatus,
+    applyName,
+    removeFilter,
+    clearFilters,
+  } = useInvoicesFilters();
   
   const [formOpen, setFormOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
@@ -50,7 +61,7 @@ const InvoicesPage = () => {
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
 
   const { invoices, totalPaid, totalConsumption, loading, error, pagination } = useInvoicesData(
-    search,
+    apiParams,
     page,
     refreshKey,
     itemsPerPage
@@ -68,40 +79,27 @@ const InvoicesPage = () => {
   };
 
   const handleApplyNameSearch = (value) => {
-    setSearch((prev) => ({
-      ...prev,
-      name: value && value.trim() ? value.trim() : undefined,
-    }));
+    applyName(value);
     setPage(1);
   };
 
   const handleStatusChange = (value) => {
-    setSearch((prev) => ({
-      ...prev,
-      status: value || undefined,
-    }));
+    applyStatus(value);
     setPage(1);
   };
 
   const handleRemoveFilter = (filterKey) => {
-    setSearch((prev) => {
-      const newSearch = { ...prev };
-      delete newSearch[filterKey];
-      Object.keys(newSearch).forEach((key) => {
-        if (!newSearch[key] || (typeof newSearch[key] === 'string' && !newSearch[key].trim())) {
-          delete newSearch[key];
-        }
-      });
-      return newSearch;
-    });
+    removeFilter(filterKey);
     setPage(1);
   };
 
-  const handleSearch = (searchParams) => {
-    setSearch((prev) => ({
-      ...prev,
-      ...searchParams,
-    }));
+  const handleSearch = (newFilters) => {
+    applyFilters(newFilters);
+    setPage(1);
+  };
+
+  const handleClearAll = () => {
+    clearFilters();
     setPage(1);
   };
 
@@ -440,12 +438,13 @@ const InvoicesPage = () => {
 
       <ManagementActions
         entityLevel="invoice"
-        search={search}
+        search={apiParams}
         onCreateClick={handleCreate}
         onApplyNameSearch={handleApplyNameSearch}
         onStatusChange={handleStatusChange}
         onRemoveFilter={handleRemoveFilter}
         onSearchClick={handleSearchClick}
+        hasActiveFilters={hasActiveFilters}
         totalItems={pagination.total || 0}
         itemsPerPage={itemsPerPage}
         onItemsPerPageChange={setItemsPerPage}
@@ -538,7 +537,7 @@ const InvoicesPage = () => {
         open={searchModalOpen}
         onClose={() => setSearchModalOpen(false)}
         onSearch={handleSearch}
-        currentSearch={search}
+        currentFilters={filters}
       />
 
       <DynamicToast

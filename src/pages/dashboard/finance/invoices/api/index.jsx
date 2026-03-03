@@ -7,22 +7,39 @@ import api from "@/services/api";
  * @param {number} itemsPerPage - Hər səhifədə element sayı
  * @returns {Promise<Object>} Faturaların siyahısı və pagination məlumatları
  */
+// ─── URL builder (handles arrays + range formats) ──────────────────────────
+const buildParams = (filters = {}, page = 1, perPage = 20) => {
+  const p = new URLSearchParams();
+  p.append('page', String(page));
+  p.append('per_page', String(perPage));
+
+  if (filters.status)     p.append('status',     filters.status);
+  if (filters.type)       p.append('type',        filters.type);
+  if (filters.invoice_id) p.append('invoice_id',  filters.invoice_id);
+
+  // Arrays: service_ids[] / property_ids[]
+  (filters['service_ids[]']  || []).forEach((id) => p.append('service_ids[]',  id));
+  (filters['property_ids[]'] || []).forEach((id) => p.append('property_ids[]', id));
+
+  // Range: paid_at=2026-02-01_2026-02-14
+  if (filters.paid_at)       p.append('paid_at',      filters.paid_at);
+  // Range: amount=44.2_32.4 / amount_paid=44.2_32.4
+  if (filters.amount)        p.append('amount',        filters.amount);
+  if (filters.amount_paid)   p.append('amount_paid',   filters.amount_paid);
+
+  return p;
+};
+
 export const fetchInvoices = async (filters = {}, page = 1, itemsPerPage = 20) => {
   try {
-    const queryParams = new URLSearchParams({
-      page: page.toString(),
-      per_page: itemsPerPage.toString(),
-      ...filters,
-    });
-    
-    const response = await api.get(`/module/finance/invoices?${queryParams}`);
+    const queryParams = buildParams(filters, page, itemsPerPage);
+    const response = await api.get(`/search/module/finance/invoice?${queryParams}`);
     
     if (response.data.success) {
       const payload = response.data.data;
       const rawData = Array.isArray(payload)
         ? payload
         : (payload?.data ?? payload?.invoices ?? payload?.items ?? []);
-      // Mənzil məlumatı: property, apartment, flat, unit və ya yalnız property_id olanda da göstərik
       const getPropertyName = (p) => p && (p.name ?? p.meta?.apartment_number ?? p.apartment_number ?? (p.id != null ? `Mənzil #${p.id}` : null));
       const data = rawData.map((inv) => {
         const prop = inv.property || inv.apartment || inv.flat || inv.unit || inv.real_estate;
@@ -63,8 +80,8 @@ export const fetchInvoices = async (filters = {}, page = 1, itemsPerPage = 20) =
  */
 export const fetchTotalPaid = async (filters = {}) => {
   try {
-    const queryParams = new URLSearchParams(filters);
-    const response = await api.get(`/module/finance/invoices?${queryParams}`);
+    const queryParams = buildParams(filters, 1, 9999);
+    const response = await api.get(`/search/module/finance/invoice?${queryParams}`);
     
     if (response.data.success) {
       const invoices = response.data.data.data || [];
@@ -88,8 +105,8 @@ export const fetchTotalPaid = async (filters = {}) => {
  */
 export const fetchTotalConsumption = async (filters = {}) => {
   try {
-    const queryParams = new URLSearchParams(filters);
-    const response = await api.get(`/module/finance/invoices?${queryParams}`);
+    const queryParams = buildParams(filters, 1, 9999);
+    const response = await api.get(`/search/module/finance/invoice?${queryParams}`);
     
     if (response.data.success) {
       const invoices = response.data.data.data || [];

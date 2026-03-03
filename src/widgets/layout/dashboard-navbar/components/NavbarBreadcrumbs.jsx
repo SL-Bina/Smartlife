@@ -12,7 +12,6 @@ export function NavbarBreadcrumbs({ pathParts, fixedNavbar, navbarHoverEffects, 
     ? t(layoutTitleKeyMap[layout])
     : layout;
 
-  // Layout link — sidebar-dakı ilk aktiv səhifəyə yönləndirir
   const layoutHomePath = homePath || `/${layout}/home`;
 
   const translatePathSegment = (segment) => {
@@ -24,7 +23,6 @@ export function NavbarBreadcrumbs({ pathParts, fixedNavbar, navbarHoverEffects, 
 
   const breadcrumbItems = [];
 
-  // "home" seqmentini çıxar — layout adı artıq home-u əks etdirir
   const filteredParts = pathParts.slice(1).filter((seg) => seg !== "home");
 
   if (filteredParts.length > 0) {
@@ -48,7 +46,6 @@ export function NavbarBreadcrumbs({ pathParts, fixedNavbar, navbarHoverEffects, 
         translatedLabel = translatePathSegment(segment);
       }
 
-      // Parent segment (məs. "management") → ilk aktiv child-a yönləndir
       let itemPath = `/${layout}/${currentPath}`;
       if (!isLast && parentPathMap[segment]) {
         itemPath = `/${layout}${parentPathMap[segment]}`;
@@ -61,7 +58,6 @@ export function NavbarBreadcrumbs({ pathParts, fixedNavbar, navbarHoverEffects, 
       });
     }
   } else {
-    // home səhifəsində və ya layout root-unda yalnız layout adını göstər
     breadcrumbItems.push({
       label: layoutTitle,
       path: layoutHomePath,
@@ -69,7 +65,6 @@ export function NavbarBreadcrumbs({ pathParts, fixedNavbar, navbarHoverEffects, 
     });
   }
 
-  // Responsive hover effects
   const hoverClass = navbarHoverEffects === "enabled" 
     ? "transition-all duration-300 hover:scale-110 hover:brightness-110 active:scale-105" 
     : "active:scale-95";

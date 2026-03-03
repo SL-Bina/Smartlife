@@ -27,9 +27,7 @@ export function MobileNavbar({ pageTitle, navbarHoverEffects }) {
         zIndex: 1001,
       }}
     >
-      {/* Left: Hamburger + MTK + Title */}
       <div className="flex items-center gap-2 sm:gap-2.5 flex-1 min-w-0 overflow-hidden">
-        {/* Hamburger Button */}
         <button
           type="button"
           onClick={handleMenuClick}

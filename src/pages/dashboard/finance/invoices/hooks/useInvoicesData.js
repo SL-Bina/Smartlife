@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { fetchInvoices, fetchTotalPaid, fetchTotalConsumption } from "../api";
+import { useState, useEffect, useMemo } from "react";
+import { fetchInvoices } from "../api";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -16,24 +16,26 @@ export function useInvoicesData(filters = {}, page = 1, refreshKey = 0, itemsPer
     totalPages: 0,
   });
 
+  // JSON.stringify — object reference deyil, dəyər müqayisəsi edir
+  const filtersKey = useMemo(() => JSON.stringify(filters), [filters]);
+
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        const [invoicesResult, totalPaidResult, totalConsumptionResult] = await Promise.all([
-          fetchInvoices(filters, page, itemsPerPage),
-          fetchTotalPaid(filters),
-          fetchTotalConsumption(filters),
-        ]);
-
-        const invoicesData = invoicesResult.data || [];
+        const invoicesResult = await fetchInvoices(filters, page, itemsPerPage);
+        const invoicesData   = invoicesResult.data || [];
 
         setInvoices(invoicesData);
         setPagination(invoicesResult.pagination);
-        setTotalPaid(totalPaidResult);
-        setTotalConsumption(totalConsumptionResult);
+
+        // Cəmi məbləğləri gələn datadan hesablayırıq (əlavə API sorğusu lazım deyil)
+        const paid = invoicesData.reduce((s, inv) => s + parseFloat(inv.amount_paid || 0), 0);
+        const cons = invoicesData.reduce((s, inv) => s + parseFloat(inv.amount       || 0), 0);
+        setTotalPaid(parseFloat(paid.toFixed(2)));
+        setTotalConsumption(parseFloat(cons.toFixed(2)));
       } catch (err) {
         console.error("Error loading invoices data:", err);
         setError(err.message);
@@ -43,7 +45,8 @@ export function useInvoicesData(filters = {}, page = 1, refreshKey = 0, itemsPer
     };
 
     loadData();
-  }, [filters, page, refreshKey, itemsPerPage]);
+  // filtersKey — JSON string, reference problemi yoxdur
+  }, [filtersKey, page, refreshKey, itemsPerPage]);
 
   return {
     invoices,

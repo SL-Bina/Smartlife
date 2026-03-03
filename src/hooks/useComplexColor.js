@@ -1,6 +1,5 @@
 import { useSelector } from 'react-redux';
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
 
 const PALETTE_FALLBACK = [
   '#3b82f6',
@@ -62,36 +61,16 @@ const toRgba = (hex, opacity = 1) => {
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 };
 
-// ─── hook ─────────────────────────────────────────────────────────────────────
-
-/**
- * useComplexColor – returns the primary color of the resident's selected
- * property complex together with utility helpers so every resident page / modal
- * can apply a consistent brand colour without duplicating logic.
- *
- * Usage:
- *   const { color, getRgba, headerStyle } = useComplexColor();
- */
 export function useComplexColor() {
   const selectedProperty = useSelector((state) => state.property.selectedProperty);
   const color = extractComplexColor(selectedProperty);
 
-  /** Get rgba string for the complex colour at a given opacity */
   const getRgba = (opacity = 1) => toRgba(color, opacity);
 
-  /**
-   * Inline style object for full-width gradient page headers that should follow
-   * the complex colour (replaces the hardcoded Tailwind from-*-600 to-*-800
-   * classes used across resident pages).
-   */
   const headerStyle = {
     background: `linear-gradient(135deg, ${getRgba(1)}, ${getRgba(0.8)})`,
     borderColor: getRgba(0.5),
   };
-
-  /**
-   * Lighter style for modal / card headers.
-   */
   const modalHeaderStyle = {
     background: `linear-gradient(135deg, ${getRgba(0.15)}, ${getRgba(0.08)})`,
     borderColor: getRgba(0.25),

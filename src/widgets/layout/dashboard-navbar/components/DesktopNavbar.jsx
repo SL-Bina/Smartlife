@@ -40,8 +40,6 @@ function WeatherPillCenter() {
   const abortRef = React.useRef(null);
 
   const getUiByCode = (code) => {
-    // Open-Meteo weathercode mapping (simplified)
-    // 0 clear, 1-3 partly/cloudy, 45-48 fog, 51-67 drizzle/rain, 71-77 snow, 80-82 showers, 95-99 thunder
     if (code === 0)
       return {
         label: "Açıq",
@@ -102,14 +100,10 @@ function WeatherPillCenter() {
     };
   };
 
-  // Fallback function to get approximate city name
   const getCityNameFromCoordinates = React.useCallback((lat, lon) => {
-    // Approximate city detection based on coordinates
-    // This is a simple fallback - you can enhance it with a local database
     if (lat >= 40.0 && lat <= 41.0 && lon >= 49.0 && lon <= 50.0) {
       return "Baku, Azerbaijan";
     }
-    // Add more regions as needed
     return "Nearby";
   }, []);
 
@@ -136,7 +130,6 @@ function WeatherPillCenter() {
 
   const fetchPlace = React.useCallback(async (lat, lon) => {
     try {
-      // Try using CORS proxy or direct API call
       const url =
         `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${encodeURIComponent(lat)}` +
         `&longitude=${encodeURIComponent(lon)}&language=en`;
@@ -150,7 +143,6 @@ function WeatherPillCenter() {
       });
 
       if (!res.ok) {
-        // If API fails, try to get city name from coordinates using alternative method
         return getCityNameFromCoordinates(lat, lon);
       }
 
@@ -161,10 +153,8 @@ function WeatherPillCenter() {
       const admin = best?.admin1 || best?.admin2;
       const country = best?.country;
 
-      // Short pretty label
       return [name, admin, country].filter(Boolean).join(", ") || "Nearby";
     } catch (error) {
-      // If CORS or network error, use fallback
       console.warn("Geocoding API error:", error);
       return getCityNameFromCoordinates(lat, lon);
     }
@@ -190,12 +180,7 @@ function WeatherPillCenter() {
           try {
             const lat = pos.coords.latitude;
             const lon = pos.coords.longitude;
-
-            // Fetch weather first (this usually works)
             const w = await fetchWeather(lat, lon);
-            
-            // Try to get place name, but don't fail if it doesn't work
-            // fetchPlace already has error handling and fallback
             const place = await fetchPlace(lat, lon);
 
             if (!mounted) return;
@@ -248,7 +233,6 @@ function WeatherPillCenter() {
 
   return (
     <div className="hidden lg:flex items-center justify-center w-full">
-      {/* Center pill: responsive */}
       <div
         className={`
           relative
@@ -306,7 +290,6 @@ function WeatherPillCenter() {
           </div>
         </div>
 
-        {/* gloss */}
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(600px_180px_at_25%_10%,rgba(255,255,255,.18),transparent_55%)]" />
         <div className="pointer-events-none absolute -bottom-8 left-1/2 h-20 w-60 -translate-x-1/2 rounded-full bg-white/8 blur-2xl" />
       </div>
@@ -316,17 +299,14 @@ function WeatherPillCenter() {
 
 
 
-/* ------------------------------ Desktop Navbar ------------------------------ */
 export function DesktopNavbar({ pathParts, pageTitle, fixedNavbar, navbarHoverEffects, homePath, parentPathMap }) {
   const [controller, dispatch] = useMaterialTailwindController();
   const { openSidenav } = controller;
   const mtk = null;
   const colorCode = null;
   
-  // MTK rəng kodunu al (mtk-dan və ya context-dən)
   const mtkColorCode = null;
   
-  // Rəng kodunu rgba-ya çevir
   const getRgbaColor = (hex, opacity = 1) => {
     if (!hex) return null;
     const hexClean = hex.replace("#", "");
@@ -336,14 +316,13 @@ export function DesktopNavbar({ pathParts, pageTitle, fixedNavbar, navbarHoverEf
     return `rgba(${r}, ${g}, ${b}, ${opacity})`;
   };
 
-  const getHoverClasses = () => {
-    if (navbarHoverEffects === "disabled") return "";
-    return "hover:scale-110 hover:shadow-lg hover:brightness-110 transition-all duration-300 ease-out";
-  };
+  // const getHoverClasses = () => {
+  //   if (navbarHoverEffects === "disabled") return "";
+  //   return "hover:scale-110 hover:shadow-lg hover:brightness-110 transition-all duration-300 ease-out";
+  // };
 
   return (
     <div className="hidden md:flex items-center justify-between gap-2 lg:gap-3 xl:gap-4 w-full">
-      {/* LEFT */}
       <div className="flex items-center gap-2 md:gap-2.5 lg:gap-3 flex-1 min-w-0">
         <IconButton
           variant="text"
@@ -363,7 +342,6 @@ export function DesktopNavbar({ pathParts, pageTitle, fixedNavbar, navbarHoverEf
           </div>
         </IconButton>
 
-        {/* MTK Badge */}
         {mtk && (
           <div 
             className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border flex-shrink-0"
@@ -399,14 +377,12 @@ export function DesktopNavbar({ pathParts, pageTitle, fixedNavbar, navbarHoverEf
         </div>
       </div>
 
-      {/* CENTER - Weather (hidden for now) */}
       {/* <div className="hidden lg:flex items-center justify-center flex-1 mx-2 xl:mx-4 max-w-[600px]">
         <div className={`w-full ${getHoverClasses()}`}>
           <WeatherPillCenter />
         </div>
       </div> */}
 
-      {/* RIGHT - Actions */}
       <div className="flex items-center justify-end gap-1 md:gap-1.5 lg:gap-2 flex-shrink-0">
         <div className={navbarHoverEffects === "enabled" ? "hover:scale-125 hover:rotate-6 hover:brightness-110 active:scale-100 transition-all duration-300 ease-out cursor-pointer" : "active:scale-95"}>
           <PropertySelectorMenu />
