@@ -14,7 +14,7 @@ import { useUserAddLookups } from "./hooks/useUserAddLookups";
 import { useUsersData } from "./hooks/useUsersData";
 import usersAPI from "./api";
 import DynamicToast from "@/components/DynamicToast";
-import { ViewModal } from "@/components/management/ViewModal";tt
+import { ViewModal } from "@/components/management/ViewModal";
 import { DeleteConfirmModal } from "@/components/management/DeleteConfirmModal";
 import { 
   UserIcon, 
