@@ -328,7 +328,23 @@
       "serviceName": "Service name",
       "owner": "Apartment owner",
       "status": "Status",
-      "enter": "Enter"
+      "enter": "Enter",
+      "select": "Select",
+      "selectWithDots": "Select...",
+      "all": "All",
+      "paid": "Paid",
+      "unpaid": "Unpaid",
+      "dateRange": "Date range",
+      "paymentDateRange": "Payment date range",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "building": "Building",
+      "block": "Block",
+      "apartment": "Apartment",
+      "floor": "Floor",
+      "loading": "Loading...",
+      "selectBuildingFirst": "Select building first",
+      "selectBlockFirst": "Select block first"
     },
     "create": {
       "title": "Add new invoice",
@@ -355,16 +371,24 @@
     },
     "table": {
       "id": "ID",
+      "service": "Service",
       "serviceName": "Service name",
+      "property": "Apartment",
+      "complex": "Complex",
+      "residents": "Residents",
       "owner": "Apartment owner",
       "apartmentInfo": "Apartment information",
       "amount": "Amount",
       "paidAmount": "Paid amount",
       "remaining": "Remaining",
       "status": "Status",
+      "type": "Type",
+      "startDate": "Start date",
+      "dueDate": "Due date",
       "invoiceDate": "Invoice date",
       "paymentDate": "Payment date",
       "paymentMethod": "Payment method",
+      "description": "Description",
       "operations": "Operations"
     },
     "mobile": {
@@ -383,7 +407,12 @@
     },
     "status": {
       "paid": "Paid",
-      "unpaid": "Unpaid"
+      "unpaid": "Unpaid",
+      "pending": "Pending",
+      "overdue": "Overdue",
+      "declined": "Declined",
+      "draft": "Draft",
+      "pre_paid": "Pre-paid"
     },
     "paymentMethod": {
       "balance": "Balance",
@@ -453,14 +482,24 @@
     },
     "searchModal": {
       "title": "Advanced Search",
-      "serviceName": "Service Name",
-      "propertyName": "Apartment Name",
-      "complexName": "Complex Name",
+      "serviceName": "Service name",
+      "propertyName": "Apartment name",
+      "complexName": "Complex name",
       "status": "Status",
-      "minAmount": "Min Amount",
-      "maxAmount": "Max Amount",
-      "startDate": "Start Date",
-      "dueDate": "Due Date"
+      "minAmount": "Min amount",
+      "maxAmount": "Max amount",
+      "startDate": "Start date",
+      "dueDate": "Due date"
+    },
+    "pageSubtitle": "Invoice list, create / edit / delete / view",
+    "types": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "yearly": "Yearly",
+      "one_time": "One-time",
+      "biannually": "Biannually"
     }
   },
   "paymentHistory": {

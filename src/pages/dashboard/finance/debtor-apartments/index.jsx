@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardHeader, CardBody, Spinner, Typography } from "@material-tailwind/react";
+import { Spinner, Typography } from "@material-tailwind/react";
 import { useTranslation } from "react-i18next";
 import { useDebtorApartmentsData } from "./hooks/useDebtorApartmentsData";
 import { useDebtorApartmentsFilters } from "./hooks/useDebtorApartmentsFilters";
 import { usePaymentForm } from "./hooks/usePaymentForm";
-import { payDebt, exportToExcel } from "./api";
+import { payInvoices, exportToExcel } from "./api";
 import { DebtorApartmentsHeader } from "./components/DebtorApartmentsHeader";
+import { DebtorApartmentsActions } from "./components/DebtorApartmentsActions";
 import { DebtorApartmentsTable } from "./components/DebtorApartmentsTable";
 import { DebtorApartmentsCardList } from "./components/DebtorApartmentsCardList";
 import { DebtorApartmentsPagination } from "./components/DebtorApartmentsPagination";
@@ -29,8 +30,11 @@ const DebtorApartmentsPage = () => {
   const {
     amount,
     note,
-    paymentMethod,
+    paymentMethodId,
     paymentDate,
+    paymentMethods,
+    methodsLoading,
+    loadPaymentMethods,
     setAmountValue,
     setPaymentField,
     resetForm,
@@ -66,6 +70,7 @@ const DebtorApartmentsPage = () => {
   const openPayModal = (item) => {
     setSelectedItem(item);
     resetForm();
+    loadPaymentMethods();
     setPayOpen(true);
   };
 
@@ -76,20 +81,37 @@ const DebtorApartmentsPage = () => {
 
   const handlePaySave = async () => {
     try {
-      if (selectedItem && amount) {
-        await payDebt(selectedItem.id, {
-          amount: parseFloat(amount),
-          note,
-          payment_method: paymentMethod,
-          payment_date: paymentDate,
-          invoices: selectedItem.selectedInvoices || [],
-        });
+      if (selectedItem && amount && paymentMethodId) {
+        // Build invoice payload: one entry per selected invoice, or a single entry
+        const selectedInvoices = selectedItem.selectedInvoices || [];
+        const selectedInvoicesData = selectedItem.selectedInvoicesData || [];
+        const invoices = selectedInvoices.length > 0
+          ? selectedInvoices.map((invoiceId, idx) => ({
+              id: invoiceId,
+              amount_paid: parseFloat(
+                selectedInvoicesData[idx]?.amount_paid ??
+                selectedInvoicesData[idx]?.amount ??
+                amount
+              ),
+              payment_method_id: paymentMethodId,
+              ...(note ? { desc: note } : {}),
+              ...(paymentDate ? { paid_at: paymentDate } : {}),
+            }))
+          : [{
+              id: selectedItem.id,
+              amount_paid: parseFloat(amount),
+              payment_method_id: paymentMethodId,
+              ...(note ? { desc: note } : {}),
+              ...(paymentDate ? { paid_at: paymentDate } : {}),
+            }];
+
+        await payInvoices(invoices);
         setPayOpen(false);
         resetForm();
         setRefreshKey((prev) => prev + 1);
       }
     } catch (error) {
-      console.error("Error paying debt:", error);
+      console.error("Error paying invoices:", error);
     }
   };
 
@@ -129,14 +151,17 @@ const DebtorApartmentsPage = () => {
   };
 
   return (
-    <div className="">
-      <DebtorApartmentsHeader
-        onFilterClick={() => setFilterOpen(true)}
-        onExportClick={handleExport}
-      />
+    <div className="space-y-4" style={{ position: 'relative', zIndex: 0 }}>
+      <DebtorApartmentsHeader />
 
-      <Card className="border border-red-600 dark:border-gray-700 shadow-sm dark:bg-gray-800">
-        <CardBody className="px-0 pt-0 pb-2 dark:bg-gray-800">
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg border border-white/20 dark:border-gray-700/50 overflow-hidden">
+        <div className="p-4 sm:p-6 border-b border-gray-100 dark:border-gray-700/50">
+          <DebtorApartmentsActions
+            onFilterClick={() => setFilterOpen(true)}
+            onExportClick={handleExport}
+          />
+        </div>
+        <div>
           {loading ? (
             <div className="flex flex-col items-center justify-center py-10">
               <Spinner className="h-6 w-6 dark:text-blue-400" />
@@ -173,8 +198,8 @@ const DebtorApartmentsPage = () => {
               />
             </>
           )}
-        </CardBody>
-      </Card>
+        </div>
+      </div>
 
       {/* Modals */}
       <DebtorApartmentsFilterModal
@@ -195,7 +220,7 @@ const DebtorApartmentsPage = () => {
           setSelectedItem(data);
           resetForm();
           setAmountValue(String(data?.selectedAmount || ""));
-          setPaymentField("paymentMethod", "cash");
+          loadPaymentMethods();
           const today = new Date();
           setPaymentField("paymentDate", today.toISOString().split("T")[0]);
           setPaymentField("note", "");
@@ -212,7 +237,9 @@ const DebtorApartmentsPage = () => {
         amount={amount}
         onAmountChange={setAmountValue}
         note={note}
-        paymentMethod={paymentMethod}
+        paymentMethodId={paymentMethodId}
+        paymentMethods={paymentMethods}
+        methodsLoading={methodsLoading}
         paymentDate={paymentDate}
         onFieldChange={setPaymentField}
         onSave={handlePaySave}

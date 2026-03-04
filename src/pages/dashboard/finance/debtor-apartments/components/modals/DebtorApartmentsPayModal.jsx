@@ -1,5 +1,5 @@
 import React from "react";
-import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Input, Typography, Select, Option } from "@material-tailwind/react";
+import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Input, Typography, Select, Option, Spinner } from "@material-tailwind/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
@@ -10,8 +10,10 @@ export function DebtorApartmentsPayModal({
   amount,
   onAmountChange,
   note,
-  paymentMethod,
+  paymentMethodId,
   paymentDate,
+  paymentMethods,
+  methodsLoading,
   onFieldChange,
   onSave,
 }) {
@@ -88,16 +90,30 @@ export function DebtorApartmentsPayModal({
           <Typography variant="small" color="blue-gray" className="mb-2 font-semibold dark:text-gray-300">
             {t("debtorApartments.pay.method") || "Ödəniş üsulu"} *
           </Typography>
-          <Select
-            value={paymentMethod}
-            onChange={(val) => onFieldChange("paymentMethod", val)}
-            className="dark:text-white border-2 focus:border-blue-500"
-            labelProps={{ className: "dark:text-gray-400" }}
-          >
-            <Option value="cash">{t("debtorApartments.pay.method.cash") || "Nağd"}</Option>
-            <Option value="card">{t("debtorApartments.pay.method.card") || "Kart"}</Option>
-            <Option value="bank">{t("debtorApartments.pay.method.bank") || "Bank"}</Option>
-          </Select>
+          {methodsLoading ? (
+            <div className="flex items-center gap-2 py-2">
+              <Spinner className="h-4 w-4 text-blue-500" />
+              <span className="text-sm text-gray-500 dark:text-gray-400">{t("common.loading") || "Yüklənir..."}</span>
+            </div>
+          ) : (
+            <Select
+              value={paymentMethodId != null ? String(paymentMethodId) : ""}
+              onChange={(val) => onFieldChange("paymentMethodId", Number(val))}
+              className="dark:text-white border-2 focus:border-blue-500"
+              labelProps={{ className: "dark:text-gray-400" }}
+            >
+              {(paymentMethods || []).map((m) => (
+                <Option key={m.id} value={String(m.id)}>
+                  {m.name}
+                </Option>
+              ))}
+              {(!paymentMethods || paymentMethods.length === 0) && (
+                <Option disabled value="">
+                  {t("common.noData") || "Məlumat yoxdur"}
+                </Option>
+              )}
+            </Select>
+          )}
         </div>
 
         <div>

@@ -289,25 +289,25 @@ const InvoicesPage = () => {
     { key: "id", label: "ID", icon: DocumentTextIcon },
     { 
       key: "service.name", 
-      label: "Xidmət", 
+      label: t("invoices.table.service") || "Xidmət",
       icon: BuildingOfficeIcon,
       getValue: (item) => item?.service?.name || "-"
     },
     { 
       key: "property.name", 
-      label: "Mənzil", 
+      label: t("invoices.table.property") || "Mənzil",
       icon: BuildingOfficeIcon,
       getValue: (item) => item?.property?.name || "-"
     },
     { 
       key: "property.complex.name", 
-      label: "Kompleks", 
+      label: t("invoices.table.complex") || "Kompleks",
       icon: BuildingOfficeIcon,
       getValue: (item) => item?.property?.complex?.name || "-"
     },
     { 
       key: "residents", 
-      label: "Sakinlər", 
+      label: t("invoices.table.residents") || "Sakinlər",
       icon: UserGroupIcon,
       customRender: (item) => {
         const residents = item?.residents || [];
@@ -323,19 +323,19 @@ const InvoicesPage = () => {
     },
     { 
       key: "amount", 
-      label: "Məbləğ", 
+      label: t("invoices.table.amount") || "Məbləğ",
       icon: CurrencyDollarIcon,
       format: (value) => `${parseFloat(value || 0).toFixed(2)} ₼`
     },
     { 
       key: "amount_paid", 
-      label: "Ödənilmiş məbləğ", 
+      label: t("invoices.table.paidAmount") || "Ödənilmiş məbləğ",
       icon: CurrencyDollarIcon,
       format: (value) => `${parseFloat(value || 0).toFixed(2)} ₼`
     },
     { 
       key: "remaining", 
-      label: "Qalıq", 
+      label: t("invoices.table.remaining") || "Qalıq",
       icon: CurrencyDollarIcon,
       getValue: (item) => {
         const remaining = parseFloat(item?.amount || 0) - parseFloat(item?.amount_paid || 0);
@@ -345,41 +345,19 @@ const InvoicesPage = () => {
     },
     { 
       key: "status", 
-      label: "Status", 
+      label: t("invoices.table.status") || "Status",
       icon: CheckCircleIcon,
-      format: (value) => {
-        const statusMap = {
-          paid: "Ödənilib",
-          not_paid: "Ödənilməmiş",
-          pending: "Gözləyir",
-          overdue: "Gecikmiş",
-          declined: "Rədd edilib",
-          draft: "Qaralama",
-          pre_paid: "Ön ödəniş",
-        };
-        return statusMap[value] || value;
-      }
+      format: (value) => t(`invoices.status.${value}`) || value
     },
     { 
       key: "type", 
-      label: "Növ", 
+      label: t("invoices.table.type") || "Növ",
       icon: DocumentTextIcon,
-      format: (value) => {
-        const typeMap = {
-          daily: "Günlük",
-          monthly: "Aylıq",
-          yearly: "İllik",
-          one_time: "Bir dəfəlik",
-          weekly: "Həftəlik",
-          quarterly: "Rüblük",
-          biannually: "Yarımillik",
-        };
-        return typeMap[value] || value;
-      }
+      format: (value) => t(`invoices.types.${value}`) || value
     },
     { 
       key: "start_date", 
-      label: "Başlama tarixi", 
+      label: t("invoices.table.startDate") || "Başlama tarixi",
       icon: CalendarIcon,
       format: (value) => {
         if (!value) return "-";
@@ -392,7 +370,7 @@ const InvoicesPage = () => {
     },
     { 
       key: "due_date", 
-      label: "Son tarix", 
+      label: t("invoices.table.dueDate") || "Son tarix",
       icon: CalendarIcon,
       format: (value) => {
         if (!value) return "-";
@@ -405,7 +383,7 @@ const InvoicesPage = () => {
     },
     { 
       key: "paid_at", 
-      label: "Ödəniş tarixi", 
+      label: t("invoices.table.paymentDate") || "Ödəniş tarixi",
       icon: CalendarIcon,
       format: (value) => {
         if (!value) return "-";
@@ -418,15 +396,15 @@ const InvoicesPage = () => {
     },
     { 
       key: "payment_method.name", 
-      label: "Ödəniş metodu", 
+      label: t("invoices.table.paymentMethod") || "Ödəniş metodu",
       icon: CreditCardIcon,
       getValue: (item) => item?.payment_method?.name || "-"
     },
     { 
-      key: "meta.desc", 
-      label: "Təsvir", 
+      key: "meta.description", 
+      label: t("invoices.table.description") || "Təsvir",
       icon: DocumentTextIcon,
-      getValue: (item) => item?.meta?.desc || "-",
+      getValue: (item) => item?.meta?.description || item?.meta?.desc || "-",
       fullWidth: true
     },
   ] : [];
@@ -434,7 +412,7 @@ const InvoicesPage = () => {
   return (
     <div className="space-y-6" style={{ position: 'relative', zIndex: 0 }}>
       <InvoicesHeader />
-      {/* <InvoicesSummaryCard totalPaid={totalPaid} totalConsumption={totalConsumption} /> */}
+      <InvoicesSummaryCard totalPaid={totalPaid} totalConsumption={totalConsumption} />
 
       <ManagementActions
         entityLevel="invoice"

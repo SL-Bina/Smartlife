@@ -327,7 +327,23 @@
       "serviceName": "Название услуги",
       "owner": "Владелец квартиры",
       "status": "Статус",
-      "enter": "Введите"
+      "enter": "Введите",
+      "select": "Выберите",
+      "selectWithDots": "Выберите...",
+      "all": "Все",
+      "paid": "Оплачено",
+      "unpaid": "Не оплачено",
+      "dateRange": "Диапазон дат",
+      "paymentDateRange": "Диапазон дат оплаты",
+      "startDate": "Дата начала",
+      "endDate": "Дата окончания",
+      "building": "Здание",
+      "block": "Блок",
+      "apartment": "Квартира",
+      "floor": "Этаж",
+      "loading": "Загрузка...",
+      "selectBuildingFirst": "Сначала выберите здание",
+      "selectBlockFirst": "Сначала выберите блок"
     },
     "create": {
       "title": "Добавить новый счет",
@@ -354,16 +370,24 @@
     },
     "table": {
       "id": "ID",
+      "service": "Услуга",
       "serviceName": "Название услуги",
+      "property": "Квартира",
+      "complex": "Комплекс",
+      "residents": "Жители",
       "owner": "Владелец квартиры",
       "apartmentInfo": "Информация о квартире",
       "amount": "Сумма",
       "paidAmount": "Оплаченная сумма",
       "remaining": "Остаток",
       "status": "Статус",
+      "type": "Тип",
+      "startDate": "Дата начала",
+      "dueDate": "Срок оплаты",
       "invoiceDate": "Дата счета",
       "paymentDate": "Дата оплаты",
       "paymentMethod": "Способ оплаты",
+      "description": "Описание",
       "operations": "Операции"
     },
     "mobile": {
@@ -382,7 +406,12 @@
     },
     "status": {
       "paid": "Оплачено",
-      "unpaid": "Не оплачено"
+      "unpaid": "Не оплачено",
+      "pending": "В ожидании",
+      "overdue": "Просрочено",
+      "declined": "Отклонено",
+      "draft": "Черновик",
+      "pre_paid": "Предоплата"
     },
     "paymentMethod": {
       "balance": "Баланс",
@@ -459,7 +488,17 @@
       "minAmount": "Минимальная сумма",
       "maxAmount": "Максимальная сумма",
       "startDate": "Дата начала",
-      "dueDate": "Срок погашения"
+      "dueDate": "Срок оплаты"
+    },
+    "pageSubtitle": "Список счетов, создать / редактировать / удалить / просмотреть",
+    "types": {
+      "daily": "Ежедневно",
+      "weekly": "Еженедельно",
+      "monthly": "Ежемесячно",
+      "quarterly": "Ежеквартально",
+      "yearly": "Ежегодно",
+      "one_time": "Одноразово",
+      "biannually": "Дважды в год"
     }
   },
   "paymentHistory": {

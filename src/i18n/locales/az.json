@@ -434,16 +434,24 @@
     },
     "table": {
       "id": "ID",
+      "service": "Xidmət",
       "serviceName": "Xidmət adı",
+      "property": "Mənzil",
+      "complex": "Kompleks",
+      "residents": "Sakinlər",
       "owner": "Mənzil sahibi",
       "apartmentInfo": "Mənzil məlumatları",
       "amount": "Məbləğ",
       "paidAmount": "Ödənilən məbləğ",
       "remaining": "Qalıq",
       "status": "Status",
+      "type": "Növ",
+      "startDate": "Başlama tarixi",
+      "dueDate": "Son tarix",
       "invoiceDate": "Faktura tarixi",
       "paymentDate": "Ödəniş tarixi",
-      "paymentMethod": "Ödəniş üsulu",
+      "paymentMethod": "Ödəniş metodu",
+      "description": "Təsvir",
       "operations": "Əməliyyatlar"
     },
     "mobile": {
@@ -462,7 +470,12 @@
     },
     "status": {
       "paid": "Ödənilib",
-      "unpaid": "Ödənilməmiş"
+      "unpaid": "Ödənilməmiş",
+      "pending": "Gözləyir",
+      "overdue": "Gecikmiş",
+      "declined": "Rədd edilib",
+      "draft": "Qaralama",
+      "pre_paid": "Ön ödəniş"
     },
     "paymentMethod": {
       "balance": "Balans",
@@ -482,6 +495,16 @@
       "maxAmount": "Maksimum Məbləğ",
       "startDate": "Başlama Tarixi",
       "dueDate": "Son Tarix"
+    },
+    "pageSubtitle": "Faktura siyahısı, yarat / redaktə et / sil / bax",
+    "types": {
+      "daily": "Günlük",
+      "weekly": "Həftəlik",
+      "monthly": "Aylıq",
+      "quarterly": "Rüblük",
+      "yearly": "İllik",
+      "one_time": "Bir dəfəlik",
+      "biannually": "Yarımillik"
     }
   },
   "paymentHistory": {

@@ -9,6 +9,7 @@ export function InvoicesTable({ invoices, loading, onView, onEdit, onDelete }) {
   const getStatusColor = (status) => {
     const statusMap = {
       paid: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+      unpaid: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
       not_paid: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
       pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
       overdue: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
@@ -16,21 +17,14 @@ export function InvoicesTable({ invoices, loading, onView, onEdit, onDelete }) {
       draft: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
       pre_paid: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
     };
-    return statusMap[status] || statusMap.not_paid;
+    return statusMap[status] || statusMap.unpaid;
   };
 
-  const getStatusLabel = (status) => {
-    const statusMap = {
-      paid: "Ödənilib",
-      not_paid: "Ödənilməmiş",
-      pending: "Gözləyir",
-      overdue: "Gecikmiş",
-      declined: "Rədd edilib",
-      draft: "Qaralama",
-      pre_paid: "Ön ödəniş",
-    };
-    return statusMap[status] || status;
-  };
+  const getStatusLabel = (status) =>
+    t(`invoices.status.${status}`) || status;
+
+  const getTypeLabel = (type) =>
+    t(`invoices.types.${type}`) || type;
 
   const formatDate = (dateString) => {
     if (!dateString) return "-";
@@ -51,7 +45,7 @@ export function InvoicesTable({ invoices, loading, onView, onEdit, onDelete }) {
     return (
       <div className="flex items-center justify-center py-10">
         <Typography variant="small" className="text-gray-500 dark:text-gray-400">
-          Yüklənir...
+          {t("invoices.actions.loading") || "Yüklənir..."}
         </Typography>
       </div>
     );
@@ -72,75 +66,35 @@ export function InvoicesTable({ invoices, loading, onView, onEdit, onDelete }) {
       <table className="w-full table-auto min-w-[1200px]">
         <thead>
           <tr className="bg-gray-50 dark:bg-gray-900/50">
-            <th className="px-4 xl:px-6 py-3 xl:py-4 text-left">
-              <Typography variant="small" className="font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider text-xs">
-                ID
-              </Typography>
-            </th>
-            <th className="px-4 xl:px-6 py-3 xl:py-4 text-left">
-              <Typography variant="small" className="font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider text-xs">
-                Xidmət
-              </Typography>
-            </th>
-            <th className="px-4 xl:px-6 py-3 xl:py-4 text-left">
-              <Typography variant="small" className="font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider text-xs">
-                Mənzil
-              </Typography>
-            </th>
-            <th className="px-4 xl:px-6 py-3 xl:py-4 text-left">
-              <Typography variant="small" className="font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider text-xs">
-                Sakinlər
-              </Typography>
-            </th>
-            <th className="px-4 xl:px-6 py-3 xl:py-4 text-right">
-              <Typography variant="small" className="font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider text-xs">
-                Məbləğ
-              </Typography>
-            </th>
-            <th className="px-4 xl:px-6 py-3 xl:py-4 text-right">
-              <Typography variant="small" className="font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider text-xs">
-                Ödənilmiş
-              </Typography>
-            </th>
-            <th className="px-4 xl:px-6 py-3 xl:py-4 text-right">
-              <Typography variant="small" className="font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider text-xs">
-                Qalıq
-              </Typography>
-            </th>
-            <th className="px-4 xl:px-6 py-3 xl:py-4 text-center">
-              <Typography variant="small" className="font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider text-xs">
-                Status
-              </Typography>
-            </th>
-            <th className="px-4 xl:px-6 py-3 xl:py-4 text-left">
-              <Typography variant="small" className="font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider text-xs">
-                Nə vaxtdan
-              </Typography>
-            </th>
-            <th className="px-4 xl:px-6 py-3 xl:py-4 text-left">
-              <Typography variant="small" className="font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider text-xs">
-                Nə vaxta 
-              </Typography>
-            </th>
-            <th className="px-4 xl:px-6 py-3 xl:py-4 text-left">
-              <Typography variant="small" className="font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider text-xs">
-                Ödəniş metodu
-              </Typography>
-            </th>
-            <th className="px-4 xl:px-6 py-3 xl:py-4 text-left">
-              <Typography variant="small" className="font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider text-xs">
-                Əməliyyatlar
-              </Typography>
-            </th>
+            {[
+              { label: t("invoices.table.id") || "ID", align: "text-left" },
+              { label: t("invoices.table.service") || "Xidmət", align: "text-left" },
+              { label: t("invoices.table.property") || "Mənzil", align: "text-left" },
+              { label: t("invoices.table.residents") || "Sakinlər", align: "text-left" },
+              { label: t("invoices.table.type") || "Növ", align: "text-left" },
+              { label: t("invoices.table.amount") || "Məbləğ", align: "text-right" },
+              { label: t("invoices.table.paidAmount") || "Ödənilmiş", align: "text-right" },
+              { label: t("invoices.table.remaining") || "Qalıq", align: "text-right" },
+              { label: t("invoices.table.status") || "Status", align: "text-center" },
+              { label: t("invoices.table.startDate") || "Başlama tarixi", align: "text-left" },
+              { label: t("invoices.table.dueDate") || "Son tarix", align: "text-left" },
+              { label: t("invoices.table.paymentMethod") || "Ödəniş metodu", align: "text-left" },
+              { label: t("invoices.table.operations") || "Əməliyyatlar", align: "text-left" },
+            ].map(({ label, align }) => (
+              <th key={label} className={`px-4 xl:px-6 py-3 xl:py-4 ${align}`}>
+                <Typography variant="small" className="font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider text-xs">
+                  {label}
+                </Typography>
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-          {invoices.map((invoice, index) => {
+          {invoices.map((invoice) => {
             const remaining = calculateRemaining(invoice.amount, invoice.amount_paid);
-            
             return (
-              <tr 
-                key={invoice.id} 
+              <tr
+                key={invoice.id}
                 className="transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50"
               >
                 <td className="px-4 xl:px-6 py-3 xl:py-4 whitespace-nowrap text-left">
@@ -155,7 +109,14 @@ export function InvoicesTable({ invoices, loading, onView, onEdit, onDelete }) {
                 </td>
                 <td className="px-4 xl:px-6 py-3 xl:py-4 text-left">
                   <Typography variant="small" className="text-gray-700 dark:text-gray-300">
-                    {invoice.property?.name || invoice.property?.meta?.apartment_number || invoice.property?.apartment_number || (invoice.property?.id != null ? `Mənzil #${invoice.property.id}` : invoice.property_id != null ? `Mənzil #${invoice.property_id}` : "-")}
+                    {invoice.property?.name ||
+                      invoice.property?.meta?.apartment_number ||
+                      invoice.property?.apartment_number ||
+                      (invoice.property?.id != null
+                        ? `Mənzil #${invoice.property.id}`
+                        : invoice.property_id != null
+                        ? `Mənzil #${invoice.property_id}`
+                        : "-")}
                   </Typography>
                   {invoice.property?.complex?.name && (
                     <Typography variant="small" className="text-xs text-gray-500 dark:text-gray-400">
@@ -178,10 +139,13 @@ export function InvoicesTable({ invoices, loading, onView, onEdit, onDelete }) {
                       )}
                     </div>
                   ) : (
-                    <Typography variant="small" className="text-gray-500 dark:text-gray-400">
-                      -
-                    </Typography>
+                    <Typography variant="small" className="text-gray-500 dark:text-gray-400">-</Typography>
                   )}
+                </td>
+                <td className="px-4 xl:px-6 py-3 xl:py-4 whitespace-nowrap text-left">
+                  <Typography variant="small" className="text-gray-700 dark:text-gray-300">
+                    {getTypeLabel(invoice.type)}
+                  </Typography>
                 </td>
                 <td className="px-4 xl:px-6 py-3 xl:py-4 whitespace-nowrap text-right">
                   <Typography variant="small" className="text-gray-700 dark:text-gray-300 font-semibold">
@@ -233,13 +197,13 @@ export function InvoicesTable({ invoices, loading, onView, onEdit, onDelete }) {
                     <MenuList className="dark:bg-gray-800 dark:border-gray-800">
                       <MenuItem onClick={() => onView(invoice)} className="dark:text-gray-300 dark:hover:bg-gray-700 flex items-center gap-2">
                         <EyeIcon className="h-4 w-4" />
-                        Bax
+                        {t("invoices.actions.view") || "Bax"}
                       </MenuItem>
                       <MenuItem onClick={() => onEdit(invoice)} className="dark:text-gray-300 dark:hover:bg-gray-700">
-                        Redaktə et
+                        {t("invoices.actions.edit") || "Redaktə et"}
                       </MenuItem>
                       <MenuItem onClick={() => onDelete(invoice)} className="dark:text-gray-300 dark:hover:bg-gray-700">
-                        Sil
+                        {t("invoices.actions.delete") || "Sil"}
                       </MenuItem>
                     </MenuList>
                   </Menu>

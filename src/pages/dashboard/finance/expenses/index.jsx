@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardHeader, CardBody, Spinner, Typography, Dialog, DialogBody } from "@material-tailwind/react";
+import { Spinner, Typography, Dialog, DialogBody } from "@material-tailwind/react";
 import { useTranslation } from "react-i18next";
 import { useExpensesData } from "./hooks/useExpensesData";
 import { useExpensesFilters } from "./hooks/useExpensesFilters";
 import { useExpensesForm } from "./hooks/useExpensesForm";
 import { createExpense, updateExpense, deleteExpense, exportToExcel } from "./api";
 import { ExpensesHeader } from "./components/ExpensesHeader";
+import { ExpensesActions } from "./components/ExpensesActions";
 import { ExpensesSummaryCard } from "./components/ExpensesSummaryCard";
 import { ExpensesTable } from "./components/ExpensesTable";
 import { ExpensesCardList } from "./components/ExpensesCardList";
@@ -151,17 +152,20 @@ const ExpensesPage = () => {
   };
 
   return (
-    <div className="">
-      <ExpensesHeader
-        onFilterClick={() => setFilterOpen(true)}
-        onExportClick={handleExport}
-        onCategoryClick={handleCategoryClick}
-        onCreateClick={openCreateModal}
-      />
+    <div className="space-y-4" style={{ position: 'relative', zIndex: 0 }}>
+      <ExpensesHeader />
       <ExpensesSummaryCard totalExpenses={totalExpenses} bankTotal={bankTotal} cashTotal={cashTotal} />
 
-      <Card className="border border-gray-200 dark:border-gray-700 shadow-sm dark:bg-gray-800">
-        <CardBody className="px-0 pt-0 pb-2 dark:bg-gray-800">
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg border border-white/20 dark:border-gray-700/50 overflow-hidden">
+        <div className="p-4 sm:p-6 border-b border-gray-100 dark:border-gray-700/50">
+          <ExpensesActions
+            onFilterClick={() => setFilterOpen(true)}
+            onExportClick={handleExport}
+            onCategoryClick={handleCategoryClick}
+            onCreateClick={openCreateModal}
+          />
+        </div>
+        <div>
           {loading ? (
             <div className="flex flex-col items-center justify-center py-10">
               <Spinner className="h-6 w-6 dark:text-blue-400" />
@@ -195,8 +199,8 @@ const ExpensesPage = () => {
               />
             </>
           )}
-        </CardBody>
-      </Card>
+        </div>
+      </div>
 
       <ExpensesFilterModal
         open={filterOpen}

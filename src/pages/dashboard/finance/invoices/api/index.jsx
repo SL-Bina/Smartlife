@@ -1,6 +1,46 @@
 import api from "@/services/api";
 
 /**
+ * Ödəniş metodlarını API-dən gətirir
+ * GET /module/finance/payment/methods
+ * @param {number} page - Səhifə nömrəsi
+ * @param {number} perPage - Hər səhifədə element sayı
+ * @returns {Promise<Array>} Ödəniş metodlarının siyahısı
+ */
+export const fetchPaymentMethods = async (page = 1, perPage = 100) => {
+  try {
+    const response = await api.get(`/module/finance/payment/methods?page=${page}&per_page=${perPage}`);
+    if (response.data.success) {
+      const payload = response.data.data;
+      return Array.isArray(payload) ? payload : (payload?.data ?? []);
+    }
+    throw new Error(response.data.message || "Failed to fetch payment methods");
+  } catch (error) {
+    console.error("Error fetching payment methods:", error);
+    throw error;
+  }
+};
+
+/**
+ * Fakturalar üçün ödəniş edir
+ * POST /module/finance/invoice/pay
+ * @param {Array} invoices - [{id, amount_paid, payment_method_id, desc?, paid_at?}]
+ * @returns {Promise<Object>} API cavabı
+ */
+export const payInvoices = async (invoices) => {
+  try {
+    const response = await api.post("/module/finance/invoice/pay", { invoices });
+    if (response.data.success) {
+      return response.data;
+    }
+    throw new Error(response.data.message || "Failed to pay invoices");
+  } catch (error) {
+    console.error("Error paying invoices:", error);
+    throw error;
+  }
+};
+
+/**
  * Faturaların siyahısını API-dən gətirir
  * @param {Object} filters - Filter parametrləri
  * @param {number} page - Səhifə nömrəsi
@@ -33,7 +73,7 @@ const buildParams = (filters = {}, page = 1, perPage = 20) => {
 export const fetchInvoices = async (filters = {}, page = 1, itemsPerPage = 20) => {
   try {
     const queryParams = buildParams(filters, page, itemsPerPage);
-    const response = await api.get(`/search/module/finance/invoice?${queryParams}`);
+    const response = await api.get(`/module/finance/invoices?${queryParams}`);
     
     if (response.data.success) {
       const payload = response.data.data;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardHeader, CardBody, Spinner, Typography } from "@material-tailwind/react";
+import { Spinner, Typography } from "@material-tailwind/react";
 import { useTranslation } from "react-i18next";
 import { usePaymentHistoryData } from "./hooks/usePaymentHistoryData";
 import { usePaymentHistoryFilters } from "./hooks/usePaymentHistoryFilters";
@@ -115,20 +115,15 @@ const PaymentHistoryPage = () => {
   };
 
   return (
-    <div className="">
+    <div className="space-y-4" style={{ position: 'relative', zIndex: 0 }}>
       <PaymentHistoryHeader />
       <PaymentHistorySummaryCard totalAmount={totalAmount} />
 
-      <Card className="border border-red-600 dark:border-gray-700 shadow-sm dark:bg-gray-800">
-        <CardHeader
-          floated={false}
-          shadow={false}
-          color="transparent"
-          className="m-0 flex items-center justify-between p-6 dark:bg-gray-800"
-        >
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg border border-white/20 dark:border-gray-700/50 overflow-hidden">
+        <div className="p-4 sm:p-6 border-b border-gray-100 dark:border-gray-700/50">
           <PaymentHistoryActions onFilterClick={() => setFilterOpen(true)} />
-        </CardHeader>
-        <CardBody className="px-0 pt-0 pb-2 dark:bg-gray-800">
+        </div>
+        <div>
           {loading ? (
             <div className="flex flex-col items-center justify-center py-10">
               <Spinner className="h-6 w-6 dark:text-blue-400" />
@@ -162,8 +157,8 @@ const PaymentHistoryPage = () => {
               />
             </>
           )}
-        </CardBody>
-      </Card>
+        </div>
+      </div>
 
       {/* Modals */}
       <PaymentHistoryFilterModal
