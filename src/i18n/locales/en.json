@@ -11,7 +11,22 @@
     "showing": "Showing",
     "of": "of",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "noData": "No data found",
+    "all": "All",
+    "active": "Active",
+    "inactive": "Inactive",
+    "yes": "Yes",
+    "no": "No",
+    "search": "Search",
+    "clear": "Clear",
+    "success": "Success",
+    "error": "Error",
+    "somethingWentWrong": "Something went wrong",
+    "loading": "Loading...",
+    "select": "Select...",
+    "min": "Min",
+    "max": "Max"
   },
   "header": {
     "search": "Search",
@@ -1214,8 +1229,18 @@
     "deleting": "Deleting...",
     "noData": "No data found",
     "add": "Add",
-    "edit": "Edit",
-    "delete": "Delete",
+    "edit": {
+      "title": "Edit service information",
+      "success": "Service updated successfully",
+      "error": "Error updating service"
+    },
+    "delete": {
+      "title": "Delete Service",
+      "message": "Are you sure you want to delete this service?",
+      "warning": "This action cannot be undone.",
+      "success": "Service deleted successfully",
+      "error": "Error deleting service"
+    },
     "cancel": "Cancel",
     "save": "Save",
     "table": {
@@ -1236,18 +1261,6 @@
       "title": "Add new service",
       "success": "Service created successfully",
       "error": "Error creating service"
-    },
-    "edit": {
-      "title": "Edit service information",
-      "success": "Service updated successfully",
-      "error": "Error updating service"
-    },
-    "delete": {
-      "title": "Delete Service",
-      "message": "Are you sure you want to delete this service?",
-      "warning": "This action cannot be undone.",
-      "success": "Service deleted successfully",
-      "error": "Error deleting service"
     },
     "view": {
       "title": "Service Details",
@@ -1734,8 +1747,7 @@
       "prev": "Previous",
       "next": "Next"
     },
-
-     "form": {
+    "form": {
       "fields": {
         "name": "Name",
         "mtk": "MTK",
@@ -1860,7 +1872,6 @@
     "fileName": "File Name",
     "fileSize": "File Size"
   },
-  
   "residents": {
     "pageTitle": "Residents",
     "loading": "Loading...",
@@ -2448,7 +2459,8 @@
       "device": "Device",
       "userStatus": "User Status",
       "actions": "Actions",
-      "serial": "Serial"
+      "serial": "Serial",
+      "total": "Total"
     },
     "filter": {
       "title": "Filter",
@@ -2525,7 +2537,8 @@
       "offline": "Offline",
       "enabled": "Enabled",
       "disabled": "Disabled"
-    }
+    },
+    "pageSubtitle": "Device list, access rules, users, logs"
   },
   "settings": {
     "title": "Settings",

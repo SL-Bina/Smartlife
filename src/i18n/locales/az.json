@@ -25,7 +25,8 @@
     "all": "Hamısı",
     "success": "Uğurlu",
     "error": "Xəta",
-    "somethingWentWrong": "Xəta baş verdi"
+    "somethingWentWrong": "Xəta baş verdi",
+    "noData": "Məlumat tapılmadı"
   },
   "header": {
     "search": "Axtarış",
@@ -81,7 +82,7 @@
     "buildingManagement": "idarə etmə",
     "permissions": "Hüquqlar",
     "profile": "Profil",
-    "users":"İstifadəçilər",
+    "users": "İstifadəçilər",
     "myInvoices": "Fakturalarım"
   },
   "buttons": {
@@ -1333,73 +1334,26 @@
     }
   },
   "services": {
-    "pageTitle": "Xidmətlər",
-    "loading": "Yüklənir...",
-    "saving": "Yadda saxlanılır...",
-    "deleting": "Silinir...",
-    "noData": "Məlumat tapılmadı",
-    "add": "Əlavə et",
-    "cancel": "Ləğv et",
-    "save": "Yadda saxla",
-    "table": {
-      "id": "ID",
-      "name": "Ad",
-      "description": "Təsvir",
-      "price": "Qiymət",
-      "createdAt": "Yaradılma tarixi",
-      "updatedAt": "Yenilənmə tarixi",
-      "actions": "Əməliyyatlar"
-    },
-    "actions": {
-      "view": "Bax",
-      "edit": "Düzəliş et",
-      "delete": "Sil"
-    },
-    "create": {
-      "title": "Yeni xidmət əlavə et",
-      "success": "Servis uğurla yaradıldı",
-      "error": "Servis yaradılarkən xəta baş verdi"
-    },
-    "edit": {
-      "title": "Xidmət məlumatlarını dəyiş",
-      "success": "Servis uğurla yeniləndi",
-      "error": "Servis yenilənərkən xəta baş verdi"
-    },
-    "delete": {
-      "title": "Servis Sil",
-      "message": "Bu servisi silmək istədiyinizə əminsiniz?",
-      "warning": "Bu əməliyyat geri alına bilməz.",
-      "success": "Servis uğurla silindi",
-      "error": "Servis silinərkən xəta baş verdi"
-    },
-    "view": {
-      "title": "Servis Məlumatları",
-      "close": "Bağla",
-      "notProvided": "Təmin edilməyib",
-      "createdAt": "Yaradılma tarixi",
-      "updatedAt": "Yenilənmə tarixi"
-    },
-    "filter": {
-      "title": "Servis filter",
-      "name": "Servis adı",
-      "enterName": "Daxil et",
-      "apply": "Tətbiq et",
-      "clear": "Təmizlə",
-      "close": "Bağla"
-    },
-    "form": {
-      "basicInfo": "Əsas Məlumatlar",
-      "name": "Ad",
-      "enterName": "Ad daxil edin",
-      "description": "Təsvir",
-      "enterDescription": "Təsvir daxil edin",
-      "price": "Qiymət",
-      "enterPrice": "Qiymət daxil edin"
-    },
-    "pagination": {
-      "prev": "Əvvəlki",
-      "next": "Növbəti"
-    }
+    "loading": "Xidmətlər yüklənir...",
+    "description": "Bina daxilindəki xidmətləri idarə edin",
+    "myServices": "Xidmətlərim",
+    "service": "xidmət",
+    "noServices": "Xidmət tapılmadı",
+    "noServicesDesc": "Hazırda heç bir aktiv xidmətiniz yoxdur",
+    "requestFirst": "İlk Xidməti Sifariş Et",
+    "requestService": "Xidmət Sifariş Et",
+    "cancelService": "Xidməti Ləğv Et",
+    "viewDetails": "Ətraflı Bax",
+    "active": "Aktiv",
+    "pending": "Gözləmədə",
+    "cancelled": "Ləğv edilib",
+    "price": "Qiymət",
+    "duration": "Müddət",
+    "nextService": "Növbəti xidmət",
+    "provider": "Xidmət təminatçısı",
+    "category": "Kateqoriya",
+    "aboutService": "Xidmət Haqqında",
+    "additionalInfo": "Əlavə Məlumat"
   },
   "electronicDocuments": {
     "pageTitle": "Elektron sənədlər",
@@ -1850,7 +1804,7 @@
   "properties": {
     "pageTitle": "Mənzillər",
     "loading": "Yüklənir...",
-     "view": {
+    "view": {
       "title": "Mənzil məlumatı",
       "subtitle": "Detallara baxış",
       "sections": {
@@ -1859,7 +1813,6 @@
       }
     },
     "viewSections": {},
-    
     "fields": {
       "name": "Ad",
       "apartmentNumber": "Mənzil nömrəsi",
@@ -1951,7 +1904,7 @@
       "prev": "Geri",
       "next": "İrəli"
     },
-     "delete": {
+    "delete": {
       "title": "Mənzili sil",
       "confirm": "Bu mənzili silmək istədiyinizə əminsiniz?"
     },
@@ -2080,7 +2033,6 @@
     "fileName": "Fayl adı",
     "fileSize": "Fayl ölçüsü"
   },
-  
   "residents": {
     "pageTitle": "Sakinlər",
     "loading": "Yüklənir...",
@@ -2658,7 +2610,8 @@
       "device": "Cihaz",
       "userStatus": "İstifadəçi Status",
       "actions": "Əməliyyatlar",
-      "serial": "Serial"
+      "serial": "Serial",
+      "total": "Cəm"
     },
     "filter": {
       "title": "Filter",
@@ -2735,7 +2688,8 @@
       "offline": "Oflayn",
       "enabled": "Aktiv",
       "disabled": "Deaktiv"
-    }
+    },
+    "pageSubtitle": "Cihaz siyahısı, icazə qaydaları, istifadəçilər, loglar"
   },
   "settings": {
     "title": "Parametrlər",
@@ -2881,27 +2835,5 @@
         }
       }
     }
-  },
-  "services": {
-    "loading": "Xidmətlər yüklənir...",
-    "description": "Bina daxilindəki xidmətləri idarə edin",
-    "myServices": "Xidmətlərim",
-    "service": "xidmət",
-    "noServices": "Xidmət tapılmadı",
-    "noServicesDesc": "Hazırda heç bir aktiv xidmətiniz yoxdur",
-    "requestFirst": "İlk Xidməti Sifariş Et",
-    "requestService": "Xidmət Sifariş Et",
-    "cancelService": "Xidməti Ləğv Et",
-    "viewDetails": "Ətraflı Bax",
-    "active": "Aktiv",
-    "pending": "Gözləmədə",
-    "cancelled": "Ləğv edilib",
-    "price": "Qiymət",
-    "duration": "Müddət",
-    "nextService": "Növbəti xidmət",
-    "provider": "Xidmət təminatçısı",
-    "category": "Kateqoriya",
-    "aboutService": "Xidmət Haqqında",
-    "additionalInfo": "Əlavə Məlumat"
   }
 }
