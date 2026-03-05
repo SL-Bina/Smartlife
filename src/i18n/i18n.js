@@ -1,6 +1,5 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import LanguageDetector from "i18next-browser-languagedetector";
 import az from "./locales/az.json";
 import en from "./locales/en.json";
 import ru from "./locales/ru.json";
@@ -18,19 +17,14 @@ const resources = {
 };
 
 i18n
-  .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources,
+    lng: "az",
     fallbackLng: "az",
     supportedLngs: ["az", "en", "ru"],
     interpolation: {
       escapeValue: false,
-    },
-    detection: {
-      order: ["cookie", "localStorage", "navigator", "htmlTag"],
-      caches: ["cookie", "localStorage"],
-      lookupCookie: "i18nextLng",
     },
   });
 

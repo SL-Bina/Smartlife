@@ -82,8 +82,27 @@ const ResidentNotificationsPage = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20" style={{ position: "relative", zIndex: 0 }}>
-        <Spinner className="h-8 w-8" style={{ color }} />
+      <div className="space-y-5 animate-pulse" style={{ position: "relative", zIndex: 0 }}>
+        {/* Header */}
+        <div className="h-[80px] rounded-xl bg-gray-200 dark:bg-gray-700" />
+        {/* Filter tabs */}
+        <div className="h-10 w-56 rounded-xl bg-gray-200 dark:bg-gray-700" />
+        {/* Notification rows */}
+        <div className="space-y-2">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="flex items-start gap-3 rounded-xl p-4 border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
+              <div className="h-9 w-9 rounded-lg bg-gray-200 dark:bg-gray-700 shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="h-3.5 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
+                  <div className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded" />
+                </div>
+                <div className="h-3 w-full bg-gray-200 dark:bg-gray-700 rounded" />
+                <div className="h-3 w-3/4 bg-gray-200 dark:bg-gray-700 rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
