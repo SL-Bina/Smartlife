@@ -20,7 +20,7 @@ export function GradientPageHeader({
 
   return (
     <div
-      className={`relative w-full overflow-hidden rounded-xl shadow-lg p-3 sm:p-4 md:p-5 lg:p-6 mt-2 sm:mt-3 md:mt-4 mb-6 ${className}`}
+      className={`relative w-full overflow-hidden rounded-xl shadow-lg p-3 sm:p-4 md:p-5 lg:p-6 mt-2 sm:mt-3 md:mt-4 ${className}`}
       style={{
         background: `linear-gradient(to right, ${getRgba(0.95)}, ${getRgba(0.75)})`,
         border: `1px solid ${getRgba(0.35)}`,

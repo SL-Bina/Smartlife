@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardHeader, CardBody, Spinner, Typography, Alert } from "@material-tailwind/react";
+import { Spinner, Typography } from "@material-tailwind/react";
 import { useTranslation } from "react-i18next";
 import { servicesAPI } from "./api";
 import { useServicesData } from "./hooks/useServicesData";
@@ -15,10 +15,16 @@ import { ServicesFormModal } from "./components/modals/ServicesFormModal";
 import { ServicesDeleteModal } from "./components/modals/ServicesDeleteModal";
 import { ServicesViewModal } from "./components/modals/ServicesViewModal";
 import { useMtkColor } from "@/store/hooks/useMtkColor";
+import DynamicToast from "@/components/DynamicToast";
 
 const ServicesPage = () => {
-  const { getRgba: getMtkRgba } = useMtkColor();
+  const { getRgba, getActiveGradient } = useMtkColor();
   const { t } = useTranslation();
+  const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
+
+  const showToast = (type, message, title = "") => {
+    setToast({ open: true, type, message, title });
+  };
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -28,7 +34,6 @@ const ServicesPage = () => {
   const [itemToView, setItemToView] = useState(null);
   const [page, setPage] = useState(1);
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -74,30 +79,25 @@ const ServicesPage = () => {
     try {
       setSaving(true);
       setError(null);
-      setSuccess(null);
       const response = await servicesAPI.create(formData);
       if (response.success) {
-        setSuccess(t("services.create.success") || "Servis uğurla yaradıldı");
+        showToast("success", t("services.create.success") || "Servis uğurla yaradıldı");
         setCreateOpen(false);
         resetForm();
         setRefreshKey((prev) => prev + 1);
-        setTimeout(() => setSuccess(null), 3000);
       }
     } catch (err) {
       console.error("Create Service Error:", err);
-      
       let errorMessage = t("services.create.error") || "Servis yaradılarkən xəta baş verdi";
-      
       if (err.allErrors && Array.isArray(err.allErrors)) {
         errorMessage = err.allErrors.join(", ");
       } else if (err.errors) {
-        const errorMessages = Object.values(err.errors).flat();
-        errorMessage = errorMessages.join(", ");
+        errorMessage = Object.values(err.errors).flat().join(", ");
       } else if (err.message) {
         errorMessage = err.message;
       }
-      
       setError(errorMessage);
+      showToast("error", errorMessage);
     } finally {
       setSaving(false);
     }
@@ -108,19 +108,18 @@ const ServicesPage = () => {
       try {
         setSaving(true);
         setError(null);
-        setSuccess(null);
         const response = await servicesAPI.update(selectedItem.id, formData);
         if (response.success) {
-          setSuccess(t("services.edit.success") || "Servis uğurla yeniləndi");
+          showToast("success", t("services.edit.success") || "Servis u\u011furla yenil\u0259ndi");
           setEditOpen(false);
           setSelectedItem(null);
           resetForm();
           setRefreshKey((prev) => prev + 1);
-          setTimeout(() => setSuccess(null), 3000);
         }
       } catch (err) {
-        const errorMessage = err.message || err.errors || (t("services.edit.error") || "Servis yenilənərkən xəta baş verdi");
+        const errorMessage = err.message || err.errors || (t("services.edit.error") || "Servis yenil\u0259n\u0259rk\u0259n x\u0259ta ba\u015f verdi");
         setError(errorMessage);
+        showToast("error", errorMessage);
       } finally {
         setSaving(false);
       }
@@ -138,18 +137,17 @@ const ServicesPage = () => {
     try {
       setDeleting(true);
       setError(null);
-      setSuccess(null);
       const response = await servicesAPI.delete(itemToDelete.id);
       if (response.success) {
-        setSuccess(t("services.delete.success") || "Servis uğurla silindi");
+        showToast("success", t("services.delete.success") || "Servis uğurla silindi");
         setDeleteOpen(false);
         setItemToDelete(null);
         setRefreshKey((prev) => prev + 1);
-        setTimeout(() => setSuccess(null), 3000);
       }
     } catch (err) {
       const errorMessage = err.message || (t("services.delete.error") || "Servis silinərkən xəta baş verdi");
       setError(errorMessage);
+      showToast("error", errorMessage);
     } finally {
       setDeleting(false);
     }
@@ -174,63 +172,52 @@ const ServicesPage = () => {
   };
 
   return (
-    <div className="mt-12 mb-8">
+    <div className="space-y-6" style={{ position: "relative", zIndex: 0 }}>
       <ServicesHeader />
 
-      {error && (
-        <Alert color="red" className="mb-4" onClose={() => setError(null)}>
-          {typeof error === "string" ? error : JSON.stringify(error)}
-        </Alert>
-      )}
-      {success && (
-        <Alert color="green" className="mb-4" onClose={() => setSuccess(null)}>
-          {success}
-        </Alert>
-      )}
-      {dataError && (
-        <Alert color="red" className="mb-4">
-          {dataError}
-        </Alert>
-      )}
+      <DynamicToast
+        open={toast.open}
+        type={toast.type}
+        message={toast.message}
+        title={toast.title}
+        onClose={() => setToast((p) => ({ ...p, open: false }))}
+      />
 
-      <Card className="border dark:border-gray-700 shadow-sm dark:bg-gray-800" style={{ borderColor: getMtkRgba(0.7) }}>
-        <CardHeader
-          floated={false}
-          shadow={false}
-          color="transparent"
-          className="m-0 flex items-center justify-between p-6 dark:bg-gray-800"
-        >
-          <ServicesActions onFilterClick={() => setFilterOpen(true)} onCreateClick={openCreateModal} />
-        </CardHeader>
-        <CardBody className="px-0 pt-0 pb-2 dark:bg-gray-800">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-10">
-              <Spinner className="h-6 w-6" />
-              <Typography variant="small" className="mt-2 text-blue-gray-400 dark:text-gray-400">
-                {t("services.loading")}
-              </Typography>
-            </div>
-          ) : services.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10">
-              <Typography variant="h6" className="text-blue-gray-400 dark:text-gray-400">
-                {t("services.noData") || "Məlumat tapılmadı"}
-              </Typography>
-            </div>
-          ) : (
-            <>
-              <ServicesTable services={services} onView={openViewModal} onEdit={openEditModal} onDelete={handleDelete} />
-              <ServicesCardList services={services} onView={openViewModal} onEdit={openEditModal} onDelete={handleDelete} />
-              <ServicesPagination
-                page={page}
-                totalPages={pagination.totalPages}
-                onPageChange={goToPage}
-                onPrev={goToPrev}
-                onNext={goToNext}
-              />
-            </>
-          )}
-        </CardBody>
-      </Card>
+      <ServicesActions
+        onFilterClick={() => setFilterOpen(true)}
+        onCreateClick={openCreateModal}
+        total={pagination?.total}
+      />
+
+      {/* Table / cards card */}
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg border border-white/20 dark:border-gray-700/50 relative z-0 overflow-hidden">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-16">
+            <Spinner className="h-8 w-8" style={{ color: getRgba(1) }} />
+            <Typography variant="small" className="mt-3 text-gray-400 dark:text-gray-500">
+              {t("services.loading") || "Yüklənir..."}
+            </Typography>
+          </div>
+        ) : services.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 gap-2">
+            <Typography variant="h6" className="text-gray-400 dark:text-gray-500">
+              {t("services.noData") || "Məlumat tapılmadı"}
+            </Typography>
+          </div>
+        ) : (
+          <>
+            <ServicesTable services={services} onView={openViewModal} onEdit={openEditModal} onDelete={handleDelete} />
+            <ServicesCardList services={services} onView={openViewModal} onEdit={openEditModal} onDelete={handleDelete} />
+            <ServicesPagination
+              page={page}
+              totalPages={pagination.totalPages}
+              onPageChange={goToPage}
+              onPrev={goToPrev}
+              onNext={goToNext}
+            />
+          </>
+        )}
+      </div>
 
       <ServicesFilterModal
         open={filterOpen}

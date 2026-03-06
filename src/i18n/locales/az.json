@@ -1387,7 +1387,18 @@
     }
   },
   "services": {
-    "loading": "Xidmətlər yüklənir...",
+    "pageTitle": "Xidmətlərin İdarəetməsi",
+    "pageSubtitle": "Xidmətləri yarat, redaktə et, sil və izlə",
+    "list": "Xidmət siyahısı",
+    "add": "Yeni xidmət",
+    "filter": "Filter",
+    "searchByName": "Ada görə axtar...",
+    "loading": "Yüklənir...",
+    "noData": "Məlumat tapılmadı",
+    "saving": "Yadda saxlanılır...",
+    "deleting": "Silinir...",
+    "cancel": "Ləğv et",
+    "save": "Yadda saxla",
     "description": "Bina daxilindəki xidmətləri idarə edin",
     "myServices": "Xidmətlərim",
     "service": "xidmət",
@@ -1406,7 +1417,67 @@
     "provider": "Xidmət təminatçısı",
     "category": "Kateqoriya",
     "aboutService": "Xidmət Haqqında",
-    "additionalInfo": "Əlavə Məlumat"
+    "additionalInfo": "Əlavə Məlumat",
+    "create": {
+      "title": "Yeni xidmət əlavə et",
+      "success": "Xidmət uğurla yaradıldı",
+      "error": "Xidmət yaradılarkən xəta baş verdi"
+    },
+    "edit": {
+      "title": "Xidmət məlumatlarını redaktə et",
+      "success": "Xidmət uğurla yeniləndi",
+      "error": "Xidmət yenilənərkən xəta baş verdi"
+    },
+    "delete": {
+      "title": "Xidməti Sil",
+      "message": "Bu xidməti silmək istədiyinizə əminsiniz?",
+      "warning": "Bu əməliyyat geri alına bilməz.",
+      "success": "Xidmət uğurla silindi",
+      "error": "Xidmət silinərkən xəta baş verdi"
+    },
+    "table": {
+      "id": "ID",
+      "name": "Ad",
+      "description": "Təsvir",
+      "price": "Qiymət",
+      "complex": "Kompleks",
+      "createdAt": "Yaradılma",
+      "updatedAt": "Yenilənmə",
+      "actions": "Əməliyyatlar"
+    },
+    "actions": {
+      "view": "Bax",
+      "edit": "Redaktə et",
+      "delete": "Sil"
+    },
+    "filter": {
+      "title": "Filter",
+      "name": "Ad",
+      "enterName": "Ad daxil edin...",
+      "clear": "Təmizlə",
+      "close": "Bağla",
+      "apply": "Tətbiq et"
+    },
+    "pagination": {
+      "prev": "Əvvəlki",
+      "next": "Növbəti"
+    },
+    "form": {
+      "basicInfo": "Əsas Məlumatlar",
+      "name": "Ad",
+      "enterName": "Ad daxil edin",
+      "description": "Təsvir",
+      "enterDescription": "Təsvir daxil edin",
+      "price": "Qiymət",
+      "enterPrice": "Qiymət daxil edin"
+    },
+    "view": {
+      "title": "Xidmət Məlumatları",
+      "close": "Bağla",
+      "notProvided": "Daxil edilməyib",
+      "createdAt": "Yaradılma tarixi",
+      "updatedAt": "Yenilənmə tarixi"
+    }
   },
   "electronicDocuments": {
     "pageTitle": "Elektron sənədlər",

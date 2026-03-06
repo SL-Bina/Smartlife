@@ -90,9 +90,9 @@ export function DashboardNavbar({ homePath, parentPathMap }) {
 
   const getNavbarHeightClasses = () => {
     const heights = {
-      compact: "py-1 sm:py-1.5 md:py-2 min-h-[44px] sm:min-h-[48px] md:min-h-[52px]",
-      normal: "py-2 sm:py-3 md:py-4 min-h-[56px] sm:min-h-[64px] md:min-h-[72px]",
-      large: "py-3 sm:py-5 md:py-7 min-h-[72px] sm:min-h-[88px] md:min-h-[104px]",
+      compact: "py-1 sm:py-1.5 md:py-1.5 min-h-[40px] sm:min-h-[44px] md:min-h-[48px]",
+      normal: "py-1.5 sm:py-2 md:py-2.5 min-h-[48px] sm:min-h-[52px] md:min-h-[56px]",
+      large: "py-3 sm:py-4 md:py-5 min-h-[64px] sm:min-h-[76px] md:min-h-[88px]",
     };
     return heights[navbarHeight] || heights.normal;
   };
@@ -172,8 +172,8 @@ export function DashboardNavbar({ homePath, parentPathMap }) {
     getNavbarBorderClasses(),
     getNavbarHoverClasses(),
     fixedNavbar
-      ? `${getNavbarPositionClasses()} z-[1001] ${getNavbarHeightClasses()} ${getNavbarShadowClasses()} mb-4 sm:mb-6 md:mb-8`
-      : `px-2 sm:px-3 md:px-4 lg:px-6 ${getNavbarHeightClasses()}  mb-4 sm:mb-6 md:mb-8`,
+      ? `${getNavbarPositionClasses()} z-[1001] ${getNavbarHeightClasses()} ${getNavbarShadowClasses()} mb-2 sm:mb-3 md:mb-4`
+      : `px-2 sm:px-3 md:px-4 lg:px-6 ${getNavbarHeightClasses()}  mb-2 sm:mb-3 md:mb-4`,
   ].filter(Boolean).join(" ");
 
   const getNavbarTextColor = () => {
