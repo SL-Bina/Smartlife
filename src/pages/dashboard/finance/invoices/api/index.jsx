@@ -73,7 +73,7 @@ const buildParams = (filters = {}, page = 1, perPage = 20) => {
 export const fetchInvoices = async (filters = {}, page = 1, itemsPerPage = 20) => {
   try {
     const queryParams = buildParams(filters, page, itemsPerPage);
-    const response = await api.get(`/module/finance/invoices?${queryParams}`);
+    const response = await api.get(`/search/module/finance/invoice?${queryParams}`);
     
     if (response.data.success) {
       const payload = response.data.data;
