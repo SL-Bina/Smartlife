@@ -9,74 +9,13 @@ import {
   BellIcon,
   ArrowUpIcon,
   ArrowDownIcon,
+  CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
+import { useDispatch, useSelector } from "react-redux";
+import { selectNotifications, markAllRead } from "@/store/slices/notificationsSlice";
 import { NotificationsViewModal } from "./components/NotificationsViewModal";
 import { useMtkColor } from "@/store/hooks/useMtkColor";
-
-// Mock data - şəkillərdə göründüyü kimi
-const initialNotifications = [
-  {
-    id: 1,
-    title: "Yeni Ticket #695 yaradıldı",
-    description: "test",
-    message: "test",
-    priority: "important",
-    type: "warning",
-    date: "2025-12-26",
-    fullDate: "2025-12-26 23:52",
-    read: false,
-    image: null,
-  },
-  {
-    id: 2,
-    title: "Test 100",
-    description: "Test 100",
-    message: "Test 100",
-    priority: "normal",
-    type: "info",
-    date: "2025-12-26",
-    fullDate: "2025-12-26 23:50",
-    read: false,
-    image: null,
-  },
-  {
-    id: 3,
-    title: "dfvdfvd",
-    description: "dfvdfvd",
-    message: "dfvdfvd",
-    priority: "normal",
-    type: "info",
-    date: "2025-11-28",
-    fullDate: "2025-11-28 17:37",
-    read: false,
-    image: null,
-  },
-  {
-    id: 4,
-    title: "TEst",
-    description: "TEst",
-    message: "TEst",
-    priority: "normal",
-    type: "info",
-    date: "2025-11-27",
-    fullDate: "2025-11-27 10:30",
-    read: false,
-    image: null,
-  },
-  {
-    id: 5,
-    title: "test",
-    description: "test",
-    message: "test",
-    priority: "normal",
-    type: "info",
-    date: "2025-11-25",
-    fullDate: "2025-11-25 14:20",
-    read: false,
-    image: null,
-  },
-];
 
 // Natural sort utility
 const naturalSort = (a, b) => {
@@ -107,7 +46,8 @@ const ITEMS_PER_PAGE = 5;
 export function Notifications() {
   const { getRgba: getMtkRgba } = useMtkColor();
   const { t } = useTranslation();
-  const [notifications] = useState(initialNotifications);
+  const dispatch = useDispatch();
+  const notifications = useSelector(selectNotifications);
   const [sortConfig, setSortConfig] = useState({ column: "date", direction: "desc" });
   const [displayCount, setDisplayCount] = useState(ITEMS_PER_PAGE);
   const [selectedNotification, setSelectedNotification] = useState(null);
@@ -121,13 +61,13 @@ export function Notifications() {
       let aValue, bValue;
 
       if (sortConfig.column === "description") {
-        aValue = a.description || "";
-        bValue = b.description || "";
+        aValue = a.message || a.description || "";
+        bValue = b.message || b.description || "";
         const result = naturalSort(aValue, bValue);
         return sortConfig.direction === "asc" ? result : -result;
       } else if (sortConfig.column === "date") {
-        aValue = new Date(a.date || 0).getTime();
-        bValue = new Date(b.date || 0).getTime();
+        aValue = new Date(a.receivedAt || a.date || 0).getTime();
+        bValue = new Date(b.receivedAt || b.date || 0).getTime();
         return sortConfig.direction === "asc" ? aValue - bValue : bValue - aValue;
       }
 
@@ -175,8 +115,20 @@ export function Notifications() {
   return (
     <div className="">
       {/* Səhifə başlığı */}
-      <div className="w-full bg-gray-900 dark:bg-gray-800 my-4 p-4 rounded-lg shadow-lg mb-6 border dark:border-gray-700" style={{ border: `1px solid ${getMtkRgba(0.7)}` }}>
+      <div className="w-full bg-gray-900 dark:bg-gray-800 my-4 p-4 rounded-lg shadow-lg mb-6 border dark:border-gray-700 flex items-center justify-between" style={{ border: `1px solid ${getMtkRgba(0.7)}` }}>
         <h3 className="text-white font-bold">{t("notifications.pageTitle") || "Bildirişlər"}</h3>
+        {notifications.some((n) => !n.read) && (
+          <Button
+            size="sm"
+            variant="outlined"
+            color="white"
+            className="flex items-center gap-1.5 text-xs border-white/40 text-white hover:bg-white/10"
+            onClick={() => dispatch(markAllRead())}
+          >
+            <CheckCircleIcon className="h-4 w-4" />
+            {t("notifications.markAllRead") || "Hamısını oxunmuş et"}
+          </Button>
+        )}
       </div>
 
       {/* Table Card */}
@@ -230,16 +182,30 @@ export function Notifications() {
                     {paginatedNotifications.map((notification) => (
                       <tr
                         key={notification.id}
-                        className="border-b border-blue-gray-100 dark:border-gray-800 hover:bg-blue-gray-50/40 dark:hover:bg-gray-700/50 transition-colors"
+                        className={`border-b border-blue-gray-100 dark:border-gray-800 hover:bg-blue-gray-50/40 dark:hover:bg-gray-700/50 transition-colors ${!notification.read ? "bg-blue-50/30 dark:bg-blue-900/10" : ""}`}
                       >
                         <td className="py-3 px-4">
-                          <Typography variant="small" className="font-normal text-blue-gray-900 dark:text-white">
-                            {notification.description || notification.message || "-"}
-                          </Typography>
+                          <div className="flex items-start gap-2">
+                            {!notification.read && (
+                              <span className="mt-1 h-2 w-2 rounded-full bg-blue-500 flex-shrink-0" />
+                            )}
+                            <div>
+                              {notification.title && (
+                                <Typography variant="small" className="font-semibold text-blue-gray-900 dark:text-white leading-tight">
+                                  {notification.title}
+                                </Typography>
+                              )}
+                              <Typography variant="small" className="font-normal text-blue-gray-600 dark:text-gray-300">
+                                {notification.message || notification.description || "-"}
+                              </Typography>
+                            </div>
+                          </div>
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-3 px-4 whitespace-nowrap">
                           <Typography variant="small" className="font-normal text-blue-gray-900 dark:text-white">
-                            {notification.date || "-"}
+                            {notification.receivedAt
+                              ? new Date(notification.receivedAt).toLocaleString("az-AZ")
+                              : notification.date || "-"}
                           </Typography>
                         </td>
                         <td className="py-3 px-4">

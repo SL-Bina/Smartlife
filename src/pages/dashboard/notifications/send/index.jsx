@@ -9,7 +9,11 @@ import {
   Checkbox,
   Select,
   Option,
+  Spinner,
 } from "@material-tailwind/react";
+import api from "@/services/api";
+import { useDynamicToast } from "@/hooks/useDynamicToast";
+import DynamicToast from "@/components/DynamicToast";
 import { useTranslation } from "react-i18next";
 import {
   BuildingOfficeIcon,
@@ -22,27 +26,49 @@ import { useMtkColor } from "@/store/hooks/useMtkColor";
 const SendNotificationPage = () => {
   const { getRgba: getMtkRgba } = useMtkColor();
   const { t } = useTranslation();
+  const { toast, showToast, closeToast } = useDynamicToast();
   const [selectedBuilding, setSelectedBuilding] = useState("");
   const [selectedBlock, setSelectedBlock] = useState("");
   const [selectedApartment, setSelectedApartment] = useState("");
+  const [userId, setUserId] = useState("");
   const [notificationType, setNotificationType] = useState({
     internal: true,
     sms: false,
   });
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
 
-  const handleSubmit = () => {
-    // TODO: Implement notification sending logic
-    console.log("Sending notification:", {
-      selectedBuilding,
-      selectedBlock,
-      selectedApartment,
-      notificationType,
-      title,
-      message,
-    });
-    // Add API call here
+  const handleSubmit = async () => {
+    if (!title.trim() || !message.trim()) {
+      showToast({ type: "error", title: "Xəta", message: "Başlıq və mesaj daxil edin" });
+      return;
+    }
+    setSending(true);
+    try {
+      await api.post("/notify/user", {
+        user_id: userId ? Number(userId) : undefined,
+        property_id: selectedApartment || undefined,
+        title: title.trim(),
+        message: message.trim(),
+        type: "info",
+        channel: {
+          internal: notificationType.internal,
+          sms: notificationType.sms,
+        },
+      });
+      showToast({ type: "success", title: "Uğurlu", message: t("notifications.send.sentSuccess") || "Bildiriş göndərildi" });
+      setTitle("");
+      setMessage("");
+    } catch (err) {
+      showToast({
+        type: "error",
+        title: "Xəta",
+        message: err?.response?.data?.message || err?.message || "Xəta baş verdi",
+      });
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -190,6 +216,18 @@ const SendNotificationPage = () => {
             />
           </div>
 
+          {/* User ID */}
+          <div>
+            <Input
+              type="number"
+              label={t("notifications.send.userId") || "İstifadəçi ID (user_id)"}
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
+              className="dark:text-white"
+              labelProps={{ className: "dark:text-gray-400" }}
+            />
+          </div>
+
           {/* Mesaj */}
           <div>
             <Typography variant="small" color="blue-gray" className="mb-2 dark:text-gray-300">
@@ -209,13 +247,24 @@ const SendNotificationPage = () => {
             <Button
               color="blue"
               onClick={handleSubmit}
-              className="dark:bg-blue-600 dark:hover:bg-blue-700"
+              disabled={sending}
+              className="flex items-center gap-2 dark:bg-blue-600 dark:hover:bg-blue-700"
             >
+              {sending && <Spinner className="h-4 w-4" />}
               {t("notifications.send.sendButton")}
             </Button>
           </div>
         </CardBody>
       </Card>
+
+      <DynamicToast
+        open={toast.open}
+        type={toast.type}
+        title={toast.title}
+        message={toast.message}
+        duration={toast.duration}
+        onClose={closeToast}
+      />
     </div>
   );
 };

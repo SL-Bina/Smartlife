@@ -13,6 +13,8 @@ export function DeleteConfirmModal({
   entityName = "element",
   loading = false
 }) {
+  const { getRgba: getMtkRgba } = useMtkColor();
+
   if (!open) return null;
 
   const displayMessage = itemName 

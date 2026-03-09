@@ -1,6 +1,6 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/solid";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { motion } from "framer-motion";
 import {
@@ -18,6 +18,9 @@ import AiChat from "@/widgets/layout/ai-chat";
 import Footer from "@/widgets/layout/footer";
 import { NotFound } from "@/pages/404";
 import { getFirstActivePath, buildParentPathMap } from "@/utils/getFirstActivePath";
+import { useNotificationsSocket } from "@/hooks/useNotificationsSocket";
+import { useDynamicToast } from "@/hooks/useDynamicToast";
+import DynamicToast from "@/components/DynamicToast";
 import "./dashboard.css";
 
 function ProtectedRoute({ element, allowedRoles, moduleName, fallbackPath }) {
@@ -168,7 +171,32 @@ export function Dashboard() {
   const [residentReady, setResidentReady] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
 
+  const { toast: wsToast, showToast: showWsToast, closeToast: closeWsToast } = useDynamicToast();
+  const navigate = useNavigate();
+
   useDocumentTitle();
+
+  // Real-time WebSocket notifications
+  useNotificationsSocket(
+    user,
+    useCallback((notif) => {
+      showWsToast({
+        type: notif.type === "warning" ? "info" : (notif.type || "info"),
+        title: notif.title,
+        message: notif.message,
+        duration: 5000,
+      });
+    }, [showWsToast]),
+    useCallback(() => {
+      const name = user?.firstName || user?.name || "İstifadəçi";
+      showWsToast({
+        type: "success",
+        title: `Xoş gəldiniz, ${name}!`,
+        message: "Sistem bildirişləriniz aktivdir.",
+        duration: 4000,
+      });
+    }, [user?.id, showWsToast])
+  );
 
   useEffect(() => {
     const checkDesktop = () => {
@@ -367,6 +395,16 @@ export function Dashboard() {
         <AiChat />
         <Footer />
       </div>
+
+      {/* Global real-time notification toast */}
+      <DynamicToast
+        open={wsToast.open}
+        type={wsToast.type}
+        title={wsToast.title}
+        message={wsToast.message}
+        duration={wsToast.duration}
+        onClose={closeWsToast}
+      />
     </div>
   );
 }
