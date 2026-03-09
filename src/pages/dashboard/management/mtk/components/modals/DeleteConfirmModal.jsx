@@ -55,6 +55,8 @@ export function DeleteConfirmModal({
     }
   }, [open]);
 
+  const { getRgba: getMtkRgba } = useMtkColor();
+
   if (!open) return null;
 
   const displayMessage = itemName 
@@ -66,9 +68,9 @@ export function DeleteConfirmModal({
       open={open} 
       handler={onClose} 
       size="sm" 
-      className="dark:bg-gray-800 border" style={{ borderColor: getMtkRgba(0.35) }}
+      className="dark:bg-gray-800 border"
       dismiss={{ enabled: false }}
-      style={{ zIndex: 999999 }}
+      style={{ borderColor: getMtkRgba(0.35), zIndex: 999999 }}
     >
       <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">

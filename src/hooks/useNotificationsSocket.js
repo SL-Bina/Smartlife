@@ -1,10 +1,31 @@
 import { useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
+import Pusher from "pusher-js";
 import { addNotification } from "@/store/slices/notificationsSlice";
-import api from "@/services/api";
 
-const WS_URL = "wss://api.smartlife.az:8080/app/rv_k8Xp2mNqL5vRtY9wZjH3sBcD";
-const AUTH_URL = "http://api.smartlife.az/api/broadcasting/auth";
+/**
+ * WS_HOST / WS_PORT:
+ *   Currently port 8080 is firewalled from the internet.
+ *   To make this work in production, add a Nginx proxy on api.smartlife.az:
+ *
+ *   location /ws/ {
+ *       proxy_pass http://127.0.0.1:8080/;
+ *       proxy_http_version 1.1;
+ *       proxy_set_header Upgrade $http_upgrade;
+ *       proxy_set_header Connection "upgrade";
+ *       proxy_set_header Host $host;
+ *       proxy_read_timeout 3600;
+ *   }
+ *
+ *   Then change WS_HOST to 'api.smartlife.az', WS_PORT to 80, WS_PATH to '/ws'
+ *   and set FORCE_TLS to false (or port 443, FORCE_TLS true for HTTPS).
+ */
+const WS_HOST = "api.smartlife.az";
+const WS_PORT = 8080;
+const WS_PATH = "/app";
+const AUTH_ENDPOINT = "http://api.smartlife.az/api/broadcasting/auth";
+const APP_KEY = "rv_k8Xp2mNqL5vRtY9wZjH3sBcD";
+const FORCE_TLS = false;
 
 const getCookie = (name) => {
   const value = `; ${document.cookie}`;
@@ -14,7 +35,7 @@ const getCookie = (name) => {
 };
 
 /**
- * Connects to the Pusher-compatible WebSocket server and listens for
+ * Connects via Pusher.js to the Soketi-compatible server and listens for
  * `notification.sent` events on the user's private channel.
  *
  * @param {Object|null} user           – Redux auth user ({ id, is_resident })
@@ -23,7 +44,7 @@ const getCookie = (name) => {
  */
 export function useNotificationsSocket(user, onNotification, onConnected) {
   const dispatch = useDispatch();
-  const wsRef = useRef(null);
+  const pusherRef = useRef(null);
   const onNotificationRef = useRef(onNotification);
   const onConnectedRef = useRef(onConnected);
   onNotificationRef.current = onNotification;
@@ -38,98 +59,64 @@ export function useNotificationsSocket(user, onNotification, onConnected) {
     const accountType = user.is_resident ? "resident" : "user";
     const channelName = `private-notifications.${accountType}.${user.id}`;
 
-    let active = true;
+    // Initialize Pusher client (Soketi-compatible)
+    const pusher = new Pusher(APP_KEY, {
+      wsHost: WS_HOST,
+      wsPort: WS_PORT,
+      wssPort: WS_PORT,
+      wsPath: "",
+      forceTLS: FORCE_TLS,
+      disableStats: true,
+      enabledTransports: ["ws", "wss"],
+      cluster: "mt1",
+      authEndpoint: AUTH_ENDPOINT,
+      auth: {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      },
+    });
 
-    const ws = new WebSocket(WS_URL);
-    wsRef.current = ws;
+    pusherRef.current = pusher;
 
-    ws.onopen = () => {
-      // Pusher will immediately send pusher:connection_established
-    };
+    // Subscribe to private channel
+    const channel = pusher.subscribe(channelName);
 
-    ws.onmessage = async (event) => {
-      if (!active) return;
+    channel.bind("pusher:subscription_succeeded", () => {
+      onConnectedRef.current?.();
+    });
 
-      let message;
-      try {
-        message = JSON.parse(event.data);
-      } catch {
-        return;
-      }
+    channel.bind("pusher:subscription_error", (err) => {
+      // Auth failed or server unreachable — silent fail, retry handled by Pusher.js
+      console.warn("[WS] Subscription error:", err);
+    });
 
-      // Step 1: connection established → authenticate & subscribe
-      if (message.event === "pusher:connection_established") {
-        let socketId;
-        try {
-          socketId = JSON.parse(message.data).socket_id;
-        } catch {
-          return;
-        }
+    channel.bind("notification.sent", (data) => {
+      const payload = typeof data === "string" ? JSON.parse(data) : data;
+      const notif = {
+        title: payload.title || "Bildiriş",
+        message: payload.message || "",
+        type: payload.type || "info",
+        data: payload.data || null,
+        receivedAt: new Date().toISOString(),
+      };
+      dispatch(addNotification(notif));
+      onNotificationRef.current?.(notif);
+    });
 
-        try {
-          const res = await api.post(AUTH_URL, {
-            socket_id: socketId,
-            channel_name: channelName,
-          });
-          const auth = res.data?.auth;
-          if (!auth || !active) return;
-
-          ws.send(
-            JSON.stringify({
-              event: "pusher:subscribe",
-              data: { channel: channelName, auth },
-            })
-          );
-        } catch (err) {
-          console.warn("[WS] Channel auth failed:", err?.message);
-        }
-      }
-
-      // Step 2: subscription confirmed → fire login toast
-      if (message.event === "pusher_internal:subscription_succeeded") {
-        onConnectedRef.current?.();
-      }
-
-      // Step 2: new notification event
-      if (message.event === "notification.sent") {
-        let payload;
-        try {
-          payload =
-            typeof message.data === "string"
-              ? JSON.parse(message.data)
-              : message.data;
-        } catch {
-          payload = {};
-        }
-
-        const notif = {
-          title: payload.title || "Bildiriş",
-          message: payload.message || "",
-          type: payload.type || "info",
-          data: payload.data || null,
-          receivedAt: new Date().toISOString(),
-        };
-
-        dispatch(addNotification(notif));
-        onNotificationRef.current?.(notif);
-      }
-    };
-
-    ws.onerror = () => {
-      // WebSocket connection failed (likely port not exposed externally).
-      // Backend needs to proxy port 8080 via Nginx for browser access.
-    };
-
-    ws.onclose = () => {
-      // Intentionally no auto-reconnect — the layout remounts when user changes
-    };
+    pusher.connection.bind("error", () => {
+      // Silently ignore — port not yet exposed via Nginx proxy
+    });
 
     return () => {
-      active = false;
       try {
-        ws.close();
+        channel.unbind_all();
+        pusher.unsubscribe(channelName);
+        pusher.disconnect();
       } catch {}
-      wsRef.current = null;
+      pusherRef.current = null;
     };
-  }, [user?.id, user?.is_resident]); // reconnect only when the user identity changes
+  }, [user?.id, user?.is_resident]);
 }
+

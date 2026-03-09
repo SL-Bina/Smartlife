@@ -35,7 +35,7 @@ function InfoRow({ icon: Icon, label, value, accent = false }) {
 }
 
 export function UnbindConfirmModal({ open, onClose, onConfirm, labels = {}, loading = false }) {
-  const { getActiveGradient } = useMtkColor();
+  const { getRgba: getMtkRgba, getActiveGradient } = useMtkColor();
   if (!open) return null;
 
   return (
