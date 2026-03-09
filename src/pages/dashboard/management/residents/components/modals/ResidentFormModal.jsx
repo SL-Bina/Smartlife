@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography } from "@material-tailwind/react";
-import { XMarkIcon, UserIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon, UserIcon, ExclamationTriangleIcon, LinkIcon, UserPlusIcon } from "@heroicons/react/24/outline";
 import { CustomInput } from "@/components/ui/CustomInput";
 import { CustomSelect } from "@/components/ui/CustomSelect";
 import DynamicToast from "@/components/DynamicToast";
@@ -26,6 +26,8 @@ export function ResidentFormModal({
   const blockId = useAppSelector((state) => state.block.selectedBlockId);
 
   const [saving, setSaving] = useState(false);
+  const [existsPrompt, setExistsPrompt] = useState(false); // 426 — resident already exists
+  const [lastFormData, setLastFormData] = useState(null);
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
   const [mtks, setMtks] = useState([]);
   const [complexes, setComplexes] = useState([]);
@@ -276,7 +278,31 @@ export function ResidentFormModal({
     setSaving(true);
     try {
       await onSubmit(form.formData);
-      showToast("success", mode === "create" ? "Sakin uğurla əlavə edildi" : "Sakin uğurla yeniləndi", "Uğurlu");
+      showToast("success", "Sakin uğurla əlavə edildi", "Uğurlu");
+      setExistsPrompt(false);
+      setLastFormData(null);
+      onClose();
+    } catch (error) {
+      // 426 — resident already exists in the system
+      if (error?.status === 426 || error?.code === 426 || error?.response?.status === 426) {
+        setLastFormData(form.formData);
+        setExistsPrompt(true);
+      } else {
+        showToast("error", error.message || "Xəta baş verdi", "Xəta");
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleBindExists = async (bindExists) => {
+    if (!lastFormData) return;
+    setSaving(true);
+    try {
+      await onSubmit({ ...lastFormData, bind_exists: bindExists });
+      showToast("success", "Sakin uğurla əlavə edildi", "Uğurlu");
+      setExistsPrompt(false);
+      setLastFormData(null);
       onClose();
     } catch (error) {
       showToast("error", error.message || "Xəta baş verdi", "Xəta");
@@ -493,22 +519,63 @@ export function ResidentFormModal({
             </div>
           </DialogBody>
 
+          {/* 426 — Resident already exists prompt */}
+          {existsPrompt && (
+            <div className="mx-6 mb-4 rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-700 p-4">
+              <div className="flex items-start gap-3 mb-3">
+                <ExclamationTriangleIcon className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <Typography variant="small" className="font-bold text-amber-800 dark:text-amber-300">
+                    Sakin artıq sistemdə mövcuddur
+                  </Typography>
+                  <Typography variant="small" className="text-amber-700 dark:text-amber-400 mt-0.5">
+                    Bu məlumatlarla uyğun sakin tapıldı. Nə etmək istəyirsiniz?
+                  </Typography>
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  size="sm"
+                  variant="outlined"
+                  disabled={saving}
+                  className="flex items-center gap-2 border-blue-500 text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-400 flex-1 justify-center"
+                  onClick={() => handleBindExists(true)}
+                >
+                  <LinkIcon className="h-4 w-4" />
+                  Qeyd etdiyiniz mənzilə bağlayaq
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outlined"
+                  disabled={saving}
+                  className="flex items-center gap-2 border-green-500 text-green-600 hover:bg-green-50 dark:border-green-400 dark:text-green-400 flex-1 justify-center"
+                  onClick={() => handleBindExists(false)}
+                >
+                  <UserPlusIcon className="h-4 w-4" />
+                  Bu məlumatlara uyğun yeni sakin əlavə et
+                </Button>
+              </div>
+            </div>
+          )}
+
           <DialogFooter className="border-t border-gray-200 dark:border-gray-700 pt-4 flex justify-between">
             <Button
               variant="outlined"
-              onClick={onClose}
+              onClick={() => { setExistsPrompt(false); setLastFormData(null); onClose(); }}
               className="border-gray-600 text-gray-600 hover:bg-gray-600 hover:text-white dark:border-gray-400 dark:text-gray-400 dark:hover:bg-gray-400"
             >
               Ləğv et
             </Button>
-            <Button
-              type="submit"
-              disabled={saving || !!errorText || (isEdit && !form.hasChanges)}
-              className="text-white"
-              style={{ backgroundColor: ACTIVE_COLOR }}
-            >
-              {saving ? "Yadda saxlanılır..." : isEdit ? "Yenilə" : "Əlavə et"}
-            </Button>
+            {!existsPrompt && (
+              <Button
+                type="submit"
+                disabled={saving || !!errorText || (isEdit && !form.hasChanges)}
+                className="text-white"
+                style={{ backgroundColor: ACTIVE_COLOR }}
+              >
+                {saving ? "Yadda saxlanılır..." : isEdit ? "Yenilə" : "Əlavə et"}
+              </Button>
+            )}
           </DialogFooter>
         </form>
       </Dialog>

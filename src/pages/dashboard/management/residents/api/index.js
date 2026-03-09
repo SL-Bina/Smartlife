@@ -55,7 +55,16 @@ const residentsAPI = {
       const response = await api.put("/module/resident/add", residentData);
       return response;
     } catch (error) {
+      const status = error.response?.status;
       const errorData = error.response?.data;
+
+      // 426 — resident already exists; preserve status so caller can handle it
+      if (status === 426) {
+        const err = new Error(errorData?.message || "Sakin artıq mövcuddur");
+        err.status = 426;
+        throw err;
+      }
+
       if (errorData?.errors) {
         let errorMessage = "";
         try {
