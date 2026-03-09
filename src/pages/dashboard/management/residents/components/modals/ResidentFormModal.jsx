@@ -299,7 +299,7 @@ export function ResidentFormModal({
     if (!lastFormData) return;
     setSaving(true);
     try {
-      await onSubmit({ ...lastFormData, bind_exists: bindExists });
+      await onSubmit({ ...lastFormData, bind_existing: bindExists });
       showToast("success", "Sakin uğurla əlavə edildi", "Uğurlu");
       setExistsPrompt(false);
       setLastFormData(null);
