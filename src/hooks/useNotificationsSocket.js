@@ -4,10 +4,9 @@ import Pusher from "pusher-js";
 import { addNotification } from "@/store/slices/notificationsSlice";
 
 /**
- * WS_HOST / WS_PORT:
- *   Currently port 8080 is firewalled from the internet.
- *   To make this work in production, add a Nginx proxy on api.smartlife.az:
+ * WebSocket Soketi üçün konfiqurasiya.
  *
+ * Server tərəfində Nginx-də /ws/ location block lazımdır:
  *   location /ws/ {
  *       proxy_pass http://127.0.0.1:8080/;
  *       proxy_http_version 1.1;
@@ -15,17 +14,17 @@ import { addNotification } from "@/store/slices/notificationsSlice";
  *       proxy_set_header Connection "upgrade";
  *       proxy_set_header Host $host;
  *       proxy_read_timeout 3600;
+ *       proxy_send_timeout 3600;
  *   }
  *
- *   Then change WS_HOST to 'api.smartlife.az', WS_PORT to 80, WS_PATH to '/ws'
- *   and set FORCE_TLS to false (or port 443, FORCE_TLS true for HTTPS).
+ *   Bax: nginx-ws-proxy.conf
  */
 const WS_HOST = "api.smartlife.az";
-const WS_PORT = 80;
+const WS_PORT = 443;
 const WS_PATH = "/ws";
-const AUTH_ENDPOINT = "http://api.smartlife.az/api/broadcasting/auth";
+const AUTH_ENDPOINT = "https://api.smartlife.az/api/broadcasting/auth";
 const APP_KEY = "rv_k8Xp2mNqL5vRtY9wZjH3sBcD";
-const FORCE_TLS = false;
+const FORCE_TLS = true;
 
 const getCookie = (name) => {
   const value = `; ${document.cookie}`;
@@ -76,6 +75,9 @@ export function useNotificationsSocket(user, onNotification, onConnected) {
           Accept: "application/json",
         },
       },
+      // Reconnect strategiyası
+      activityTimeout: 120000,
+      pongTimeout: 30000,
     });
 
     pusherRef.current = pusher;
@@ -88,8 +90,7 @@ export function useNotificationsSocket(user, onNotification, onConnected) {
     });
 
     channel.bind("pusher:subscription_error", (err) => {
-      // Auth failed or server unreachable — silent fail, retry handled by Pusher.js
-      console.warn("[WS] Subscription error:", err);
+      console.warn("[WS] Subscription error:", err?.status || err);
     });
 
     channel.bind("notification.sent", (data) => {
@@ -105,8 +106,16 @@ export function useNotificationsSocket(user, onNotification, onConnected) {
       onNotificationRef.current?.(notif);
     });
 
-    pusher.connection.bind("error", () => {
-      // Silently ignore — port not yet exposed via Nginx proxy
+    pusher.connection.bind("error", (err) => {
+      console.warn("[WS] Connection error:", err?.error?.data || err);
+    });
+
+    pusher.connection.bind("state_change", ({ current }) => {
+      if (current === "connected") {
+        console.log("[WS] Connected");
+      } else if (current === "disconnected" || current === "unavailable") {
+        console.warn("[WS] Disconnected, reconnecting...");
+      }
     });
 
     return () => {

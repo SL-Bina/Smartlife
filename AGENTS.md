@@ -83,6 +83,6 @@ i18next with three locales: Azerbaijani (`az`, default/fallback), English (`en`)
 
 Routes can specify `moduleName` and `moduleId` for module-based access, or `allowedRoles` for role-based restrictions. The `root` role bypasses all permission checks. Module access is checked via `user.role_access_modules` (preferred) or `user.modules` (fallback). Resident users (`user.is_resident === true`) are restricted to `/resident/*` routes; non-resident users are restricted to `/dashboard/*` routes. Module/role permission checks only apply to dashboard routes — resident routes have no module gating.
 
-### Deployment
+### Deploy
 
 Genezio deployment configured in `genezio.yaml` — deploys the `dist/` folder to `us-east-1`.
