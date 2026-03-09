@@ -21,8 +21,8 @@ import { addNotification } from "@/store/slices/notificationsSlice";
  *   and set FORCE_TLS to false (or port 443, FORCE_TLS true for HTTPS).
  */
 const WS_HOST = "api.smartlife.az";
-const WS_PORT = 8080;
-const WS_PATH = "/app";
+const WS_PORT = 80;
+const WS_PATH = "/ws";
 const AUTH_ENDPOINT = "http://api.smartlife.az/api/broadcasting/auth";
 const APP_KEY = "rv_k8Xp2mNqL5vRtY9wZjH3sBcD";
 const FORCE_TLS = false;
@@ -64,7 +64,7 @@ export function useNotificationsSocket(user, onNotification, onConnected) {
       wsHost: WS_HOST,
       wsPort: WS_PORT,
       wssPort: WS_PORT,
-      wsPath: "",
+      wsPath: WS_PATH,
       forceTLS: FORCE_TLS,
       disableStats: true,
       enabledTransports: ["ws", "wss"],

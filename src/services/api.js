@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://api.smartlife.az/api/v1";
+const API_BASE_URL = "https://api.smartlife.az/api/v1";
 const TOKEN_COOKIE_NAME = "smartlife_token";
 
 const getCookie = (name) => {
