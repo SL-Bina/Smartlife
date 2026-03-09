@@ -30,9 +30,7 @@ export function ResidentFormModal({
   const [existsPrompt, setExistsPrompt] = useState(false); // 426 — resident already exists
   const [lastFormData, setLastFormData] = useState(null);
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
-  // Track whether we've already auto-populated from Redux; reset each time modal opens
   const autoPopulatedRef = useRef({ mtk: false, complex: false });
-  // Keep updateField callable in effects without adding 'form' to their deps
   const updateFieldRef = useRef(null);
   useEffect(() => {
     updateFieldRef.current = form?.updateField;
@@ -116,7 +114,6 @@ export function ResidentFormModal({
   useEffect(() => {
     if (open && formMtkId) {
       setLoadingComplexes(true);
-      // Use search endpoint for complexes like ManagementActions
       complexesAPI.search({ 
         mtk_ids: [formMtkId],
         per_page: 1000 
@@ -299,7 +296,6 @@ export function ResidentFormModal({
       setLastFormData(null);
       onClose();
     } catch (error) {
-      // 426 — resident already exists in the system
       if (error?.status === 426 || error?.code === 426 || error?.response?.status === 426) {
         setLastFormData(form.formData);
         setExistsPrompt(true);
