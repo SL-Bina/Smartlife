@@ -378,7 +378,7 @@ export function DesktopNavbar({ pathParts, pageTitle, fixedNavbar, navbarHoverEf
       </div>
 
       {/* <div className="hidden lg:flex items-center justify-center flex-1 mx-2 xl:mx-4 max-w-[600px]">
-        <div className={`w-full ${getHoverClasses()}`}>
+        <div className="w-full">
           <WeatherPillCenter />
         </div>
       </div> */}

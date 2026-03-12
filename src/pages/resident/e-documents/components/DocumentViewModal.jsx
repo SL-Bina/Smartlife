@@ -52,7 +52,6 @@ export function DocumentViewModal({ open, onClose, document: doc }) {
 
   return (
     <Dialog open={open} handler={onClose} size="md" className="dark:bg-gray-800 !max-w-lg">
-      {/* ── Compact gradient header ── */}
       <div
         className="flex items-center justify-between px-5 py-4 rounded-t-xl"
         style={{ background: `linear-gradient(135deg, ${color}, ${getRgba(0.75)})` }}

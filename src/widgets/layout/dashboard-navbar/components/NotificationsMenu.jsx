@@ -37,7 +37,6 @@ export function NotificationsMenu({ isMobile = false }) {
   const isResident = user?.is_resident === true;
   const notificationsPath = isResident ? "/resident/notifications" : "/dashboard/notifications";
 
-  // Fetch first page of notifications on mount (if store is empty)
   const fetchInitial = useCallback(async () => {
     try {
       const res = await notificationsAPI.getMyNotifications(1);
@@ -50,7 +49,6 @@ export function NotificationsMenu({ isMobile = false }) {
         lastPage: paginatedData?.last_page ?? 1,
       }));
     } catch {
-      // silently ignore
     }
   }, [dispatch]);
 
@@ -103,7 +101,7 @@ export function NotificationsMenu({ isMobile = false }) {
           variant="text"
           color="blue-gray"
           className={buttonClass}
-          size="sm"
+          size="md"
         >
           <BellIcon className={`${isMobile ? "h-5 w-5" : "h-6 w-6"} text-gray-700 dark:text-gray-300`} />
           {unreadCount > 0 && (
@@ -111,12 +109,12 @@ export function NotificationsMenu({ isMobile = false }) {
               className="absolute flex items-center justify-center rounded-full text-white font-bold leading-none border-2 border-white dark:border-gray-800"
               style={{
                 backgroundColor: getMtkRgba(1),
-                top: isMobile ? '1px' : '-2px',
-                right: isMobile ? '1px' : '-4px',
+                top: isMobile ? '1px' : '-6px',
+                right: isMobile ? '1px' : '-8px',
                 height: isMobile ? '16px' : '18px',
                 minWidth: isMobile ? '16px' : '18px',
                 fontSize: isMobile ? '9px' : '10px',
-                padding: '0 4px',
+                padding: '0 5px',
               }}
             >
               {unreadCount > 99 ? "99+" : unreadCount}
@@ -125,7 +123,6 @@ export function NotificationsMenu({ isMobile = false }) {
         </IconButton>
       </MenuHandler>
       <MenuList className={`${menuWidth} dark:bg-gray-800 dark:border-gray-700 max-h-[440px] overflow-y-auto rounded-xl shadow-2xl p-0`}>
-        {/* Header */}
         <div className="px-4 py-3 border-b border-gray-200/50 dark:border-gray-700/50 flex items-center justify-between">
           <Typography variant="h6" className={`text-gray-900 dark:text-white font-bold ${isMobile ? "text-sm" : "text-base"}`}>
             {t("header.notifications") || "Bildirişlər"}
@@ -140,7 +137,6 @@ export function NotificationsMenu({ isMobile = false }) {
           )}
         </div>
 
-        {/* Notification items */}
         {visibleNotifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 px-4">
             <BellIcon className="h-8 w-8 text-gray-300 dark:text-gray-600 mb-2" />
@@ -200,7 +196,6 @@ export function NotificationsMenu({ isMobile = false }) {
           </div>
         )}
 
-        {/* See All button */}
         <div
           className="px-4 py-2.5 border-t border-gray-200/50 dark:border-gray-700/50 cursor-pointer hover:bg-gray-100/50 dark:hover:bg-gray-700/50 transition-colors"
           onClick={handleSeeAll}

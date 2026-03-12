@@ -105,18 +105,15 @@ const ResidentHomePage = () => {
     setLoading(false);
   };
 
-  // Calculate balance from invoices
   const calculateBalance = () => {
     const totalInvoiced = invoices.reduce((sum, inv) => sum + parseFloat(inv?.amount || 0), 0);
     const totalPaid = invoices.reduce((sum, inv) => sum + parseFloat(inv?.amount_paid || 0), 0);
     const calculatedBalance = totalPaid - totalInvoiced;
-    // Balance cannot be negative, minimum is 0
     return Math.max(0, calculatedBalance);
   };
 
   const balance = calculateBalance();
   
-  // Calculate actual debt for display purposes
   const calculateDebt = () => {
     const totalInvoiced = invoices.reduce((sum, inv) => sum + parseFloat(inv?.amount || 0), 0);
     const totalPaid = invoices.reduce((sum, inv) => sum + parseFloat(inv?.amount_paid || 0), 0);
@@ -131,10 +128,8 @@ const ResidentHomePage = () => {
     
     setDoorUnlocking(true);
     try {
-      // Demo üçün sadəcə animasiya
       await new Promise(resolve => setTimeout(resolve, 2000));
       // console.log("Qapı açıldı - Mənzil ID:", selectedPropertyId);
-      // Burada real API çağrısı olacaq
       // await fetch(`/api/properties/${selectedPropertyId}/unlock`, { method: 'POST' });
     } catch (error) {
       console.error("Qapı açılarkən xəta:", error);
@@ -173,6 +168,7 @@ const ResidentHomePage = () => {
     { label: "E-Sənədlər",  icon: BookOpenIcon,           color: "#06b6d4", path: "/resident/e-documents",    badge: null },
     { label: "Xidmətlər",   icon: WrenchScrewdriverIcon,  color: "#f97316", path: "/resident/my-services",    badge: null },
     { label: "Profil",      icon: UserCircleIcon,          color: "#64748b", path: "/resident/profile",         badge: null },
+    { label: "Ödəniş tarixçəsi", icon: CreditCardIcon,        color: "#3b82f6", path: "/resident/payment-history", badge: null },
   ];
 
   const propName    = selectedProperty?.name
@@ -188,10 +184,7 @@ const ResidentHomePage = () => {
   if (loading) {
     return (
       <div className="space-y-5">
-        {/* Header banner skeleton */}
         <Sk className="h-24" />
-
-        {/* Stories skeleton */}
         <div className="flex gap-3 px-1 overflow-hidden">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="flex-shrink-0 flex flex-col items-center gap-1.5">
@@ -201,15 +194,12 @@ const ResidentHomePage = () => {
           ))}
         </div>
 
-        {/* Property card skeleton */}
         <Sk className="h-36" />
 
-        {/* Stats cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {[...Array(4)].map((_, i) => <Sk key={i} className="h-28" />)}
         </div>
 
-        {/* 2-col grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           <Sk className="h-72" />
           <div className="flex flex-col gap-5">
@@ -218,7 +208,6 @@ const ResidentHomePage = () => {
           </div>
         </div>
 
-        {/* Quick actions skeleton */}
         <Sk className="h-32" />
       </div>
     );
@@ -297,7 +286,6 @@ const ResidentHomePage = () => {
                 </div>
               </div>
               
-              {/* Balance Section */}
               <div className="rounded-xl p-3 mb-3" style={{ background: `linear-gradient(135deg, ${getRgba(0.08)}, ${getRgba(0.03)})`, border: `1px solid ${getRgba(0.15)}` }}>
                 <div className="flex items-center justify-between">
                   <div>
@@ -360,7 +348,6 @@ const ResidentHomePage = () => {
         )}
       </motion.div>
 
-      {/* Cihazlar bölməsi */}
       {selectedProperty && (
         <motion.div 
           initial={{ opacity: 0, y: 20 }} 
@@ -377,7 +364,6 @@ const ResidentHomePage = () => {
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Qapı açma düyməsi */}
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -421,7 +407,6 @@ const ResidentHomePage = () => {
                   </Button>
                 </motion.div>
 
-                {/* Lift çağırma düyməsi */}
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -804,7 +789,7 @@ const ResidentHomePage = () => {
                         className="absolute -top-1 -right-1 text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center text-white"
                         style={{ backgroundColor: action.color }}
                       >
-                        {action.badge > 9 ? "9+" : action.badge}
+                        {action.badge > 10 ? "10+" : action.badge}
                       </span>
                     )}
                   </button>

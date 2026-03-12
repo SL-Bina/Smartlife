@@ -27,39 +27,31 @@ const SendNotificationPage = () => {
   const { getRgba: getMtkRgba } = useMtkColor();
   const { t } = useTranslation();
   const { toast, showToast, closeToast } = useDynamicToast();
-  const [selectedBuilding, setSelectedBuilding] = useState("");
-  const [selectedBlock, setSelectedBlock] = useState("");
-  const [selectedApartment, setSelectedApartment] = useState("");
-  const [userId, setUserId] = useState("");
-  const [notificationType, setNotificationType] = useState({
-    internal: true,
-    sms: false,
-  });
+  const [accountId, setAccountId] = useState("");
+  const [accountType, setAccountType] = useState("user");
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
+  const [type, setType] = useState("success");
   const [sending, setSending] = useState(false);
 
   const handleSubmit = async () => {
-    if (!title.trim() || !message.trim()) {
-      showToast({ type: "error", title: "Xəta", message: "Başlıq və mesaj daxil edin" });
+    if (!title.trim() || !message.trim() || !accountId.trim()) {
+      showToast({ type: "error", title: "Xəta", message: "Başlıq, mesaj və account_id daxil edin" });
       return;
     }
     setSending(true);
     try {
-      await api.post("/notify/user", {
-        user_id: userId ? Number(userId) : undefined,
-        property_id: selectedApartment || undefined,
+      await api.post("/notify/send", {
+        account_id: Number(accountId),
+        account_type: accountType,
         title: title.trim(),
         message: message.trim(),
-        type: "info",
-        channel: {
-          internal: notificationType.internal,
-          sms: notificationType.sms,
-        },
+        type: type,
       });
       showToast({ type: "success", title: "Uğurlu", message: t("notifications.send.sentSuccess") || "Bildiriş göndərildi" });
       setTitle("");
       setMessage("");
+      setAccountId("");
     } catch (err) {
       showToast({
         type: "error",
@@ -83,165 +75,78 @@ const SendNotificationPage = () => {
           <div className="flex items-center gap-2">
             <BellIcon className="h-5 w-5 text-blue-500 dark:text-blue-400" />
             <Typography variant="h6" color="blue-gray" className="dark:text-white">
-              {t("notifications.send.pageTitle")}
+              {t("notifications.send.pageTitle") || "Bildiriş göndər"}
             </Typography>
           </div>
           <Typography
             variant="small"
             className="font-normal text-blue-gray-500 dark:text-gray-400 mt-1"
           >
-            {t("notifications.send.pageSubtitle")}
+            {t("notifications.send.pageSubtitle") || "Bildiriş göndərmək üçün formu doldurun"}
           </Typography>
         </CardHeader>
         <CardBody className="px-6 pb-6 dark:bg-gray-800 space-y-6">
-          {/* Müvafiq xanaları seçin */}
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-4 dark:text-gray-300">
-              {t("notifications.send.selectFields")} <span className="text-red-500">*</span>
-            </Typography>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Bina */}
-              <Card className="bg-gradient-to-br from-purple-500 to-purple-600 p-4 dark:from-purple-600 dark:to-purple-700">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 bg-white/20 rounded-lg">
-                    <BuildingOfficeIcon className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <Typography variant="h6" className="text-white font-bold">
-                      {t("notifications.send.building")}
-                    </Typography>
-                    <Typography variant="small" className="text-white/80">
-                      {t("notifications.send.residentialBuilding")}
-                    </Typography>
-                  </div>
-                </div>
-                <Select
-                  label={t("notifications.send.select")}
-                  value={selectedBuilding}
-                  onChange={(val) => setSelectedBuilding(val)}
-                  className="bg-white dark:bg-gray-800"
-                >
-                  <Option value="1">Bina 1</Option>
-                  <Option value="2">Bina 2</Option>
-                </Select>
-              </Card>
-
-              {/* Blok */}
-              <Card className="bg-gradient-to-br from-orange-500 to-orange-600 p-4 dark:from-orange-600 dark:to-orange-700">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 bg-white/20 rounded-lg">
-                    <RectangleStackIcon className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <Typography variant="h6" className="text-white font-bold">
-                      {t("notifications.send.block")}
-                    </Typography>
-                    <Typography variant="small" className="text-white/80">
-                      {t("notifications.send.buildingBlock")}
-                    </Typography>
-                  </div>
-                </div>
-                <Select
-                  label={t("notifications.send.select")}
-                  value={selectedBlock}
-                  onChange={(val) => setSelectedBlock(val)}
-                  className="bg-white dark:bg-gray-800"
-                >
-                  <Option value="1">Blok A</Option>
-                  <Option value="2">Blok B</Option>
-                </Select>
-              </Card>
-
-              {/* Mənzil */}
-              <Card className="bg-gradient-to-br from-green-500 to-green-600 p-4 dark:from-green-600 dark:to-green-700">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 bg-white/20 rounded-lg">
-                    <HomeModernIcon className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <Typography variant="h6" className="text-white font-bold">
-                      {t("notifications.send.apartment")}
-                    </Typography>
-                    <Typography variant="small" className="text-white/80">
-                      {t("notifications.send.residentialApartment")}
-                    </Typography>
-                  </div>
-                </div>
-                <Select
-                  label={t("notifications.send.select")}
-                  value={selectedApartment}
-                  onChange={(val) => setSelectedApartment(val)}
-                  className="bg-white dark:bg-gray-800"
-                >
-                  <Option value="1">Mənzil 101</Option>
-                  <Option value="2">Mənzil 102</Option>
-                </Select>
-              </Card>
-            </div>
-          </div>
-
-          {/* Bildiriş növü */}
-          <div>
-            <Typography variant="small" color="blue-gray" className="mb-2 dark:text-gray-300">
-              {t("notifications.send.notificationType")}
-            </Typography>
-            <div className="flex gap-4">
-              <Checkbox
-                label={t("notifications.send.internal")}
-                checked={notificationType.internal}
-                onChange={(e) =>
-                  setNotificationType({ ...notificationType, internal: e.target.checked })
-                }
-                className="dark:text-white"
-              />
-              <Checkbox
-                label="SMS"
-                checked={notificationType.sms}
-                onChange={(e) =>
-                  setNotificationType({ ...notificationType, sms: e.target.checked })
-                }
-                className="dark:text-white"
-              />
-            </div>
-          </div>
-
-          {/* Başlıq */}
+          {/* Account ID */}
           <div>
             <Input
-              label={t("notifications.send.title")}
+              type="number"
+              label={t("notifications.send.accountId") || "Account ID (account_id)"}
+              value={accountId}
+              onChange={(e) => setAccountId(e.target.value)}
+              className="dark:text-white"
+              labelProps={{ className: "dark:text-gray-400" }}
+            />
+          </div>
+          {/* Account Type */}
+          <div>
+            <Select
+              label={t("notifications.send.accountType") || "Account Type (account_type)"}
+              value={accountType}
+              onChange={setAccountType}
+              className="bg-white dark:bg-gray-800"
+            >
+              <Option value="user">user</Option>
+              <Option value="admin">admin</Option>
+              <Option value="manager">manager</Option>
+            </Select>
+          </div>
+          {/* Title */}
+          <div>
+            <Input
+              label={t("notifications.send.title") || "Başlıq (title)"}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="dark:text-white"
               labelProps={{ className: "dark:text-gray-400" }}
             />
           </div>
-
-          {/* User ID */}
-          <div>
-            <Input
-              type="number"
-              label={t("notifications.send.userId") || "İstifadəçi ID (user_id)"}
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              className="dark:text-white"
-              labelProps={{ className: "dark:text-gray-400" }}
-            />
-          </div>
-
-          {/* Mesaj */}
+          {/* Message */}
           <div>
             <Typography variant="small" color="blue-gray" className="mb-2 dark:text-gray-300">
-              {t("notifications.send.message")}
+              {t("notifications.send.message") || "Mesaj (message)"}
             </Typography>
             <textarea
-              placeholder={t("notifications.send.message")}
+              placeholder={t("notifications.send.message") || "Mesaj (message)"}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               className="w-full px-3 py-2 border border-blue-gray-200 rounded-lg focus:border-blue-500 focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-400"
               rows={4}
             />
           </div>
-
+          {/* Type */}
+          <div>
+            <Select
+              label={t("notifications.send.type") || "Bildiriş tipi (type)"}
+              value={type}
+              onChange={setType}
+              className="bg-white dark:bg-gray-800"
+            >
+              <Option value="success">success</Option>
+              <Option value="danger">danger</Option>
+              <Option value="info">info</Option>
+              <Option value="warning">warning</Option>
+            </Select>
+          </div>
           {/* Submit Button */}
           <div className="flex justify-end">
             <Button
@@ -251,7 +156,7 @@ const SendNotificationPage = () => {
               className="flex items-center gap-2 dark:bg-blue-600 dark:hover:bg-blue-700"
             >
               {sending && <Spinner className="h-4 w-4" />}
-              {t("notifications.send.sendButton")}
+              {t("notifications.send.sendButton") || "Göndər"}
             </Button>
           </div>
         </CardBody>
