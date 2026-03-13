@@ -1,17 +1,48 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
-import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography } from "@material-tailwind/react";
-import { XMarkIcon, UserIcon } from "@heroicons/react/24/outline";
-import { ResidentExistsModal } from "./ResidentExistsModal";
+import React, { useMemo, useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+  Button,
+  Typography,
+} from "@material-tailwind/react";
 import { CustomInput } from "@/components/ui/CustomInput";
 import { CustomSelect } from "@/components/ui/CustomSelect";
+import { UserIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import DynamicToast from "@/components/DynamicToast";
-import { useAppSelector } from "@/store/hooks";
-import propertyLookupsAPI from "../../../properties/api/lookups";
-import propertiesAPI from "../../../properties/api/index";
+import { ResidentExistsModal } from "./ResidentExistsModal";
 import mtkAPI from "../../../mtk/api";
 import complexesAPI from "../../../complexes/api";
+import buildingsAPI from "../../../buildings/api";
+import blocksAPI from "../../../blocks/api";
+import propertiesAPI from "../../../properties/api";
 
 const ACTIVE_COLOR = "#3b82f6";
+
+const getRgbaColor = (hex, opacity = 1) => {
+  if (!hex) return null;
+  const hexClean = hex.replace("#", "");
+  const r = parseInt(hexClean.substring(0, 2), 16);
+  const g = parseInt(hexClean.substring(2, 4), 16);
+  const b = parseInt(hexClean.substring(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+};
+
+const genderOptions = [
+  { value: "male", label: "Kişi" },
+  { value: "female", label: "Qadın" },
+];
+
+const typeOptions = [
+  { value: "owner", label: "Sahib" },
+  { value: "tenant", label: "Kirayəçi" },
+];
+
+const statusOptions = [
+  { value: "active", label: "Aktiv" },
+  { value: "inactive", label: "Qeyri-aktiv" },
+];
 
 export function ResidentFormModal({
   open,
@@ -20,287 +51,264 @@ export function ResidentFormModal({
   form,
   onSubmit,
   onEditRequest,
+  mtkId = null,
+  complexId = null,
+  buildingId = null,
+  blockId = null,
 }) {
-  const mtkId = useAppSelector((state) => state.mtk.selectedMtkId);
-  const complexId = useAppSelector((state) => state.complex.selectedComplexId);
-  const buildingId = useAppSelector((state) => state.building.selectedBuildingId);
-  const blockId = useAppSelector((state) => state.block.selectedBlockId);
-
   const [saving, setSaving] = useState(false);
-  const [existsPrompt, setExistsPrompt] = useState(false); // 426 — resident already exists
+  const [existsPrompt, setExistsPrompt] = useState(false);
   const [lastFormData, setLastFormData] = useState(null);
-  const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
-  const autoPopulatedRef = useRef({ mtk: false, complex: false });
-  const updateFieldRef = useRef(null);
-  useEffect(() => {
-    updateFieldRef.current = form?.updateField;
+  const [toast, setToast] = useState({
+    open: false,
+    type: "info",
+    message: "",
+    title: "",
   });
+
   const [mtks, setMtks] = useState([]);
   const [complexes, setComplexes] = useState([]);
+  const [buildings, setBuildings] = useState([]);
+  const [blocks, setBlocks] = useState([]);
   const [properties, setProperties] = useState([]);
-  const [loadingLookups, setLoadingLookups] = useState(false);
+
+  const [loadingMtks, setLoadingMtks] = useState(false);
   const [loadingComplexes, setLoadingComplexes] = useState(false);
+  const [loadingBuildings, setLoadingBuildings] = useState(false);
+  const [loadingBlocks, setLoadingBlocks] = useState(false);
   const [loadingProperties, setLoadingProperties] = useState(false);
-  const [propertyPage, setPropertyPage] = useState(1);
-  const [hasMoreProperties, setHasMoreProperties] = useState(true);
-  const [loadingMoreProperties, setLoadingMoreProperties] = useState(false);
-  const [propertySearch, setPropertySearch] = useState("");
-  
-  const PER_PAGE = 30;
-  
-  const showToast = (type, message, title = "") => {
-    setToast({ open: true, type, message, title });
-  };
 
   const isEdit = mode === "edit";
   const title = isEdit ? "Sakini Redaktə Et" : "Yeni Sakin Əlavə Et";
 
-  const genderOptions = [
-    { value: "male", label: "Kişi" },
-    { value: "female", label: "Qadın" },
-  ];
+  const showToast = (type, message, ttl = "") =>
+    setToast({ open: true, type, message, title: ttl });
 
-  const typeOptions = [
-    { value: "owner", label: "Sahib" },
-    { value: "tenant", label: "Kirayəçi" },
-  ];
-
-  const statusOptions = [
-    { value: "active", label: "Aktiv" },
-    { value: "inactive", label: "Qeyri-aktiv" },
-  ];
-
-  const formMtkId = form?.formData?.property?.mtk_id;
-  const formComplexId = form?.formData?.property?.complex_id;
+  const selectedMtkId = form?.formData?.property?.mtk_id || null;
+  const selectedComplexId = form?.formData?.property?.complex_id || null;
+  const selectedBuildingId = form?.formData?.property?.building_id || null;
+  const selectedBlockId = form?.formData?.property?.block_id || null;
+  const selectedPropertyId = form?.formData?.property?.property_id || null;
 
   useEffect(() => {
-    if (open) {
-      setLoadingLookups(true);
-      mtkAPI.getAll({ per_page: 1000 })
-        .then((res) => {
-          const data = res?.data?.data?.data || [];
-          setMtks(data || []);
-        })
-        .catch((error) => {
-          console.error("Error loading MTKs:", error);
-          setMtks([]);
-        })
-        .finally(() => {
-          setLoadingLookups(false);
-        });
-    }
+    if (!open || isEdit) return;
+
+    if (mtkId) form?.updateField("property.mtk_id", mtkId);
+    if (complexId) form?.updateField("property.complex_id", complexId);
+    if (buildingId) form?.updateField("property.building_id", buildingId);
+    if (blockId) form?.updateField("property.block_id", blockId);
   }, [open]);
 
   useEffect(() => {
-    if (!open) {
-      autoPopulatedRef.current = { mtk: false, complex: false };
-    }
-  }, [open]);
+    if (!open) return;
 
-  useEffect(() => {
-    if (open && mode === "create" && mtkId && mtks.length > 0 && !autoPopulatedRef.current.mtk) {
-      updateFieldRef.current?.("property.mtk_id", mtkId);
-      autoPopulatedRef.current.mtk = true;
-    }
-  }, [open, mode, mtkId, mtks.length]);
-
-  useEffect(() => {
-    if (open && mode === "create" && complexId && complexes.length > 0 && !autoPopulatedRef.current.complex) {
-      updateFieldRef.current?.("property.complex_id", complexId);
-      autoPopulatedRef.current.complex = true;
-    }
-  }, [open, mode, complexId, complexes.length]);
-
-  useEffect(() => {
-    if (open && formMtkId) {
-      setLoadingComplexes(true);
-      complexesAPI.search({ 
-        mtk_ids: [formMtkId],
-        per_page: 1000 
+    setLoadingMtks(true);
+    mtkAPI
+      .getAll({ per_page: 1000 })
+      .then((res) => {
+        const data = res?.data?.data?.data || [];
+        setMtks(data || []);
       })
-        .then((res) => {
-          const data = res?.data?.data?.data || [];
-          setComplexes(data || []);
-        })
-        .catch((error) => {
-          console.error("Error loading complexes:", error);
-          setComplexes([]);
-        })
-        .finally(() => {
-          setLoadingComplexes(false);
-        });
-    } else if (open && !formMtkId) {
+      .catch((error) => {
+        console.error("Error loading MTKs:", error);
+        setMtks([]);
+      })
+      .finally(() => setLoadingMtks(false));
+  }, [open]);
+
+  useEffect(() => {
+    if (!open || !selectedMtkId) {
       setComplexes([]);
+      return;
     }
-  }, [open, formMtkId]);
 
-  useEffect(() => {
-    if (open && formComplexId) {
-      setLoadingProperties(true);
-      setPropertyPage(1);
-      setHasMoreProperties(true);
-      propertiesAPI.search({
-        complex_ids: [formComplexId],
-        page: 1,
-        per_page: PER_PAGE,
+    setLoadingComplexes(true);
+    complexesAPI
+      .search({
+        mtk_ids: [selectedMtkId],
+        per_page: 1000,
       })
-        .then((response) => {
-          const meta = response?.data?.data || {};
-          const items = meta.data || [];
-          setProperties(items);
-          setPropertyPage(meta.current_page || 1);
-          if (typeof meta.current_page === "number" && typeof meta.last_page === "number") {
-            setHasMoreProperties(meta.current_page < meta.last_page);
-          } else {
-            setHasMoreProperties(items.length === PER_PAGE);
-          }
-        })
-        .catch((error) => {
-          console.error("Error loading properties:", error);
-          setProperties([]);
-          setHasMoreProperties(false);
-        })
-        .finally(() => setLoadingProperties(false));
-    } else if (open && !formComplexId) {
+      .then((res) => {
+        const data = res?.data?.data?.data || [];
+        setComplexes(data || []);
+      })
+      .catch((error) => {
+        console.error("Error loading complexes:", error);
+        setComplexes([]);
+      })
+      .finally(() => setLoadingComplexes(false));
+  }, [open, selectedMtkId]);
+
+  useEffect(() => {
+    if (!open || !selectedComplexId) {
+      setBuildings([]);
+      return;
+    }
+
+    setLoadingBuildings(true);
+    buildingsAPI
+      .search({
+        complex_ids: [selectedComplexId],
+        per_page: 1000,
+      })
+      .then((res) => {
+        const data = res?.data?.data?.data || [];
+        setBuildings(data || []);
+      })
+      .catch((error) => {
+        console.error("Error loading buildings:", error);
+        setBuildings([]);
+      })
+      .finally(() => setLoadingBuildings(false));
+  }, [open, selectedComplexId]);
+
+  useEffect(() => {
+    if (!open || !selectedBuildingId) {
+      setBlocks([]);
+      return;
+    }
+
+    setLoadingBlocks(true);
+    blocksAPI
+      .search({
+        building_ids: [selectedBuildingId],
+        per_page: 1000,
+      })
+      .then((res) => {
+        const data = res?.data?.data?.data || [];
+        setBlocks(data || []);
+      })
+      .catch((error) => {
+        console.error("Error loading blocks:", error);
+        setBlocks([]);
+      })
+      .finally(() => setLoadingBlocks(false));
+  }, [open, selectedBuildingId]);
+
+  useEffect(() => {
+    if (!open || !selectedComplexId) {
       setProperties([]);
-      setPropertyPage(1);
-      setHasMoreProperties(true);
+      return;
     }
-  }, [open, formComplexId]);
 
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (open && formComplexId) {
-        setLoadingProperties(true);
-        setPropertyPage(1);
-        setHasMoreProperties(true);
-        
-        propertiesAPI.search({
-          complex_ids: [formComplexId],
-          name: propertySearch || undefined,
-          building_name: propertySearch || undefined,  
-          block_name: propertySearch || undefined,    
-          page: 1,
-          per_page: PER_PAGE,
-        })
-          .then((response) => {
-            const meta = response?.data?.data || {};
-            const items = meta.data || [];
-            setProperties(items);
-            setPropertyPage(meta.current_page || 1);
-            if (typeof meta.current_page === "number" && typeof meta.last_page === "number") {
-              setHasMoreProperties(meta.current_page < meta.last_page);
-            } else {
-              setHasMoreProperties(items.length === PER_PAGE);
-            }
-          })
-          .catch((error) => {
-            console.error("Error searching properties:", error);
-            setProperties([]);
-            setHasMoreProperties(false);
-          })
-          .finally(() => setLoadingProperties(false));
-      }
-    }, 500); 
+    setLoadingProperties(true);
 
-    return () => clearTimeout(timeoutId);
-  }, [open, formComplexId, propertySearch]);
+    const payload = {
+      complex_ids: [selectedComplexId],
+      per_page: 1000,
+    };
 
-  useEffect(() => {
-    if (open && mode === "edit" && form?.formData?.property?.property_id) {
-      const propertyId = form.formData.property.property_id;
-      propertiesAPI.getById(propertyId)
-        .then((res) => {
-          const prop = res?.data?.data || null;
-          if (prop) {
-            setProperties(prev => {
-              if (prev.some(p => String(p.id) === String(propertyId))) return prev;
-              return [prop, ...prev];
-            });
-          }
-        })
-        .catch((error) => {
-          console.error("Error loading current property for edit:", error);
-        });
+    if (selectedBuildingId) {
+      payload.building_ids = [selectedBuildingId];
     }
-  }, [open, mode, form?.formData?.property?.property_id]);
 
-  const handlePropertyScrollEnd = async () => {
-    if (!hasMoreProperties || loadingMoreProperties || !formComplexId) return;
-    
-    setLoadingMoreProperties(true);
-    try {
-      const nextPage = propertyPage + 1;
-      const response = await propertiesAPI.search({
-        complex_ids: [formComplexId],
-        name: propertySearch || undefined,
-        building_name: propertySearch || undefined,  
-        block_name: propertySearch || undefined,   
-        per_page: PER_PAGE,
-        page: nextPage
-      });
-      
-      const meta = response?.data?.data || {};
-      const newItems = meta.data || [];
-      
-      setProperties(prev => [...prev, ...newItems]);
-      setPropertyPage(nextPage);
-      
-      if (typeof meta.current_page === "number" && typeof meta.last_page === "number") {
-        setHasMoreProperties(meta.current_page < meta.last_page);
-      } else {
-        setHasMoreProperties(newItems.length === PER_PAGE);
-      }
-    } catch (error) {
-      console.error("Error loading more properties:", error);
-    } finally {
-      setLoadingMoreProperties(false);
+    if (selectedBlockId) {
+      payload.block_ids = [selectedBlockId];
     }
-  };
+
+    propertiesAPI
+      .search(payload)
+      .then((res) => {
+        const data = res?.data?.data?.data || res?.data?.data?.items || [];
+        setProperties(data || []);
+      })
+      .catch((error) => {
+        console.error("Error loading properties:", error);
+        setProperties([]);
+      })
+      .finally(() => setLoadingProperties(false));
+  }, [open, selectedComplexId, selectedBuildingId, selectedBlockId]);
 
   const errorText = useMemo(() => {
     if (!form?.formData?.name?.trim()) return "Ad mütləqdir";
     if (!form?.formData?.surname?.trim()) return "Soyad mütləqdir";
-    if (mode === "create") {
-      if (!form?.formData?.property?.mtk_id) return "MTK mütləqdir";
-      if (!form?.formData?.property?.complex_id) return "Kompleks mütləqdir";
-      if (!form?.formData?.property?.property_id) return "Mənzil mütləqdir";
-    }
-    return "";
-  }, [form?.formData, mode]);
 
-  const getRgbaColor = (hex, opacity = 1) => {
-    if (!hex) return null;
-    const hexClean = hex.replace("#", "");
-    const r = parseInt(hexClean.substring(0, 2), 16);
-    const g = parseInt(hexClean.substring(2, 4), 16);
-    const b = parseInt(hexClean.substring(4, 6), 16);
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    if (!form?.formData?.property?.mtk_id) return "MTK mütləqdir";
+    if (!form?.formData?.property?.complex_id) return "Kompleks mütləqdir";
+    if (!form?.formData?.property?.property_id) return "Mənzil mütləqdir";
+
+    return "";
+  }, [form?.formData]);
+
+  const handleMtkChange = (value) => {
+    const numericValue = value ? Number(value) : null;
+
+    form?.updateField("property.mtk_id", numericValue);
+    form?.updateField("property.complex_id", null);
+    form?.updateField("property.building_id", null);
+    form?.updateField("property.block_id", null);
+    form?.updateField("property.property_id", null);
+
+    setComplexes([]);
+    setBuildings([]);
+    setBlocks([]);
+    setProperties([]);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleComplexChange = (value) => {
+    const numericValue = value ? Number(value) : null;
+
+    form?.updateField("property.complex_id", numericValue);
+    form?.updateField("property.building_id", null);
+    form?.updateField("property.block_id", null);
+    form?.updateField("property.property_id", null);
+
+    setBuildings([]);
+    setBlocks([]);
+    setProperties([]);
+  };
+
+  const handleBuildingChange = (value) => {
+    const numericValue = value ? Number(value) : null;
+
+    form?.updateField("property.building_id", numericValue);
+    form?.updateField("property.block_id", null);
+    form?.updateField("property.property_id", null);
+
+    setBlocks([]);
+    setProperties([]);
+  };
+
+  const handleBlockChange = (value) => {
+    const numericValue = value ? Number(value) : null;
+
+    form?.updateField("property.block_id", numericValue);
+    form?.updateField("property.property_id", null);
+
+    setProperties([]);
+  };
+
+  const handlePropertyChange = (value) => {
+    form?.updateField("property.property_id", value ? Number(value) : null);
+  };
+
+  const submit = async () => {
     if (errorText) {
       showToast("error", errorText, "Xəta");
       return;
     }
-    if (mode === "edit" && onEditRequest) {
+
+    if (isEdit && onEditRequest) {
       onEditRequest(form.formData);
       return;
     }
+
     setSaving(true);
+
     try {
-      await onSubmit(form.formData);
-      showToast("success", "Sakin uğurla əlavə edildi", "Uğurlu");
-      setExistsPrompt(false);
-      setLastFormData(null);
-      onClose();
-    } catch (error) {
-      if (error?.status === 426 || error?.code === 426 || error?.response?.status === 426) {
+      await onSubmit?.(form.formData);
+      showToast("success", "Sakin uğurla yadda saxlanıldı", "Uğurlu");
+      onClose?.();
+    } catch (e) {
+      if (
+        e?.status === 426 ||
+        e?.code === 426 ||
+        e?.response?.status === 426
+      ) {
         setLastFormData(form.formData);
         setExistsPrompt(true);
       } else {
-        showToast("error", error.message || "Xəta baş verdi", "Xəta");
+        showToast("error", e?.message || "Xəta baş verdi", "Xəta");
       }
     } finally {
       setSaving(false);
@@ -309,23 +317,22 @@ export function ResidentFormModal({
 
   const handleBindExists = async (bindExists) => {
     if (!lastFormData) return;
+
     setSaving(true);
     try {
       await onSubmit({ ...lastFormData, bind_existing: bindExists });
       showToast("success", "Sakin uğurla əlavə edildi", "Uğurlu");
       setExistsPrompt(false);
       setLastFormData(null);
-      onClose();
-    } catch (error) {
-      showToast("error", error.message || "Xəta baş verdi", "Xəta");
+      onClose?.();
+    } catch (e) {
+      showToast("error", e?.message || "Xəta baş verdi", "Xəta");
     } finally {
       setSaving(false);
     }
   };
 
-
   if (!open) return null;
-
 
   return (
     <>
@@ -334,18 +341,20 @@ export function ResidentFormModal({
         handler={onClose}
         size="xl"
         className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl"
-        style={{ zIndex: 9999 }}
         dismiss={{ enabled: false }}
       >
         <DialogHeader
           className="border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between"
           style={{
-            background: `linear-gradient(to right, ${getRgbaColor(ACTIVE_COLOR, 0.9)}, ${getRgbaColor(ACTIVE_COLOR, 0.7)})`,
+            background: `linear-gradient(to right, ${getRgbaColor(
+              ACTIVE_COLOR,
+              0.9
+            )}, ${getRgbaColor(ACTIVE_COLOR, 0.7)})`,
           }}
         >
           <div className="flex items-center gap-3">
             <div
-              className="p-2 rounded-lg bg-white/20 backdrop-blur-sm"
+              className="p-2 rounded-lg"
               style={{ backgroundColor: getRgbaColor(ACTIVE_COLOR, 0.3) }}
             >
               <UserIcon className="h-6 w-6 text-white" />
@@ -354,206 +363,279 @@ export function ResidentFormModal({
               {title}
             </Typography>
           </div>
+
           <Button
             variant="text"
             size="sm"
             onClick={onClose}
-            className="text-white hover:bg-white/20 rounded-full relative z-10"
+            className="text-white hover:bg-white/20 rounded-full"
           >
             <XMarkIcon className="h-5 w-5" />
           </Button>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit}>
-          <DialogBody className="p-6 overflow-y-auto max-h-[70vh]">
-            <div className="space-y-6">
-              <div>
-                <Typography variant="h6" className="text-gray-900 dark:text-white mb-4 font-semibold flex items-center gap-2">
-                  <div className="w-1 h-6 rounded-full" style={{ backgroundColor: ACTIVE_COLOR }}></div>
-                  Əsas Məlumatlar
-                </Typography>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <CustomInput
-                    label="Ad *"
-                    value={form.formData.name || ""}
-                    onChange={(e) => form.updateField("name", e.target.value)}
-                    error={form.errors?.name}
-                  />
-                  <CustomInput
-                    label="Soyad *"
-                    value={form.formData.surname || ""}
-                    onChange={(e) => form.updateField("surname", e.target.value)}
-                    error={form.errors?.surname}
-                  />
-                  <CustomInput
-                    label="Ata Adı"
-                    value={form.formData.meta?.father_name || ""}
-                    onChange={(e) => form.updateField("meta.father_name", e.target.value)}
-                    error={form.errors?.["meta.father_name"]}
-                  />
-                </div>
-              </div>
+        <DialogBody className="p-6 overflow-y-auto max-h-[70vh]">
+          <div className="space-y-6">
+            <div>
+              <Typography
+                variant="h6"
+                className="text-gray-900 dark:text-white mb-4 font-semibold flex items-center gap-2"
+              >
+                <div
+                  className="w-1 h-6 rounded-full"
+                  style={{ backgroundColor: ACTIVE_COLOR }}
+                />
+                Əsas Məlumatlar
+              </Typography>
 
-              <div>
-                <Typography variant="h6" className="text-gray-900 dark:text-white mb-4 font-semibold flex items-center gap-2">
-                  <div className="w-1 h-6 rounded-full" style={{ backgroundColor: ACTIVE_COLOR }}></div>
-                  Əlaqə Məlumatları
-                </Typography>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <CustomInput
-                    label="E-mail"
-                    type="email"
-                    value={form.formData.email || ""}
-                    onChange={(e) => form.updateField("email", e.target.value)}
-                    error={form.errors?.email}
-                  />
-                  <CustomInput
-                    label="Telefon"
-                    value={form.formData.phone || ""}
-                    onChange={(e) => form.updateField("phone", e.target.value)}
-                    error={form.errors?.phone}
-                  />
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <CustomInput
+                  label="Ad *"
+                  value={form?.formData?.name || ""}
+                  onChange={(e) => form?.updateField("name", e.target.value)}
+                  error={!!form?.errors?.name}
+                  helperText={form?.errors?.name}
+                />
+                <CustomInput
+                  label="Soyad *"
+                  value={form?.formData?.surname || ""}
+                  onChange={(e) => form?.updateField("surname", e.target.value)}
+                  error={!!form?.errors?.surname}
+                  helperText={form?.errors?.surname}
+                />
+                <CustomInput
+                  label="Ata Adı"
+                  value={form?.formData?.meta?.father_name || ""}
+                  onChange={(e) =>
+                    form?.updateField("meta.father_name", e.target.value)
+                  }
+                  error={!!form?.errors?.["meta.father_name"]}
+                  helperText={form?.errors?.["meta.father_name"]}
+                />
               </div>
+            </div>
 
-              <div>
-                <Typography variant="h6" className="text-gray-900 dark:text-white mb-4 font-semibold flex items-center gap-2">
-                  <div className="w-1 h-6 rounded-full" style={{ backgroundColor: ACTIVE_COLOR }}></div>
-                  Şəxsi Məlumatlar
-                </Typography>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <CustomSelect
-                    label="Cins"
-                    value={form.formData.meta?.gender || ""}
-                    onChange={(value) => form.updateField("meta.gender", value)}
-                    options={genderOptions}
-                  />
-                  <CustomInput
-                    label="Şəxsi Kod"
-                    value={form.formData.meta?.personal_code || ""}
-                    onChange={(e) => form.updateField("meta.personal_code", e.target.value)}
-                  />
-                  <CustomInput
-                    label="Doğum Tarixi"
-                    type="date"
-                    value={form.formData.meta?.birth_date || ""}
-                    onChange={(e) => form.updateField("meta.birth_date", e.target.value)}
-                  />
-                </div>
+            <div>
+              <Typography
+                variant="h6"
+                className="text-gray-900 dark:text-white mb-4 font-semibold flex items-center gap-2"
+              >
+                <div
+                  className="w-1 h-6 rounded-full"
+                  style={{ backgroundColor: ACTIVE_COLOR }}
+                />
+                Əlaqə Məlumatları
+              </Typography>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CustomInput
+                  label="E-mail"
+                  type="email"
+                  value={form?.formData?.email || ""}
+                  onChange={(e) => form?.updateField("email", e.target.value)}
+                  error={!!form?.errors?.email}
+                  helperText={form?.errors?.email}
+                />
+                <CustomInput
+                  label="Telefon"
+                  value={form?.formData?.phone || ""}
+                  onChange={(e) => form?.updateField("phone", e.target.value)}
+                  error={!!form?.errors?.phone}
+                  helperText={form?.errors?.phone}
+                />
               </div>
+            </div>
 
-              <div>
-                <Typography variant="h6" className="text-gray-900 dark:text-white mb-4 font-semibold flex items-center gap-2">
-                  <div className="w-1 h-6 rounded-full" style={{ backgroundColor: ACTIVE_COLOR }}></div>
-                  Tip və Status
-                </Typography>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <CustomSelect
-                    label="Tip"
-                    value={form.formData.type || "owner"}
-                    onChange={(value) => form.updateField("type", value)}
-                    options={typeOptions}
-                  />
-                  <CustomSelect
-                    label="Status"
-                    value={form.formData.status || "active"}
-                    onChange={(value) => form.updateField("status", value)}
-                    options={statusOptions}
-                  />
-                </div>
+            <div>
+              <Typography
+                variant="h6"
+                className="text-gray-900 dark:text-white mb-4 font-semibold flex items-center gap-2"
+              >
+                <div
+                  className="w-1 h-6 rounded-full"
+                  style={{ backgroundColor: ACTIVE_COLOR }}
+                />
+                Şəxsi Məlumatlar
+              </Typography>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <CustomSelect
+                  label="Cins"
+                  value={form?.formData?.meta?.gender || ""}
+                  onChange={(value) => form?.updateField("meta.gender", value)}
+                  options={genderOptions}
+                />
+                <CustomInput
+                  label="Şəxsi Kod"
+                  value={form?.formData?.meta?.personal_code || ""}
+                  onChange={(e) =>
+                    form?.updateField("meta.personal_code", e.target.value)
+                  }
+                />
+                <CustomInput
+                  label="Doğum Tarixi"
+                  type="date"
+                  value={form?.formData?.meta?.birth_date || ""}
+                  onChange={(e) =>
+                    form?.updateField("meta.birth_date", e.target.value)
+                  }
+                />
               </div>
+            </div>
 
-              {!isEdit && (
+            <div>
+              <Typography
+                variant="h6"
+                className="text-gray-900 dark:text-white mb-4 font-semibold flex items-center gap-2"
+              >
+                <div
+                  className="w-1 h-6 rounded-full"
+                  style={{ backgroundColor: ACTIVE_COLOR }}
+                />
+                Tip və Status
+              </Typography>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CustomSelect
+                  label="Tip"
+                  value={form?.formData?.type || "owner"}
+                  onChange={(value) => form?.updateField("type", value)}
+                  options={typeOptions}
+                />
+                <CustomSelect
+                  label="Status"
+                  value={form?.formData?.status || "active"}
+                  onChange={(value) => form?.updateField("status", value)}
+                  options={statusOptions}
+                />
+              </div>
+            </div>
+
+            {!isEdit && (
               <div>
-                <Typography variant="h6" className="text-gray-900 dark:text-white mb-4 font-semibold flex items-center gap-2">
-                  <div className="w-1 h-6 rounded-full" style={{ backgroundColor: ACTIVE_COLOR }}></div>
+                <Typography
+                  variant="h6"
+                  className="text-gray-900 dark:text-white mb-4 font-semibold flex items-center gap-2"
+                >
+                  <div
+                    className="w-1 h-6 rounded-full"
+                    style={{ backgroundColor: ACTIVE_COLOR }}
+                  />
                   Mənzil Seçimi
                 </Typography>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <CustomSelect
                     label="MTK *"
-                    value={form.formData.property?.mtk_id ? String(form.formData.property.mtk_id) : ""}
-                    onChange={(value) => {
-                      form.updateField("property.mtk_id", value ? Number(value) : null);
-                      form.updateField("property.complex_id", null);
-                      form.updateField("property.property_id", null);
-                      setComplexes([]);
-                      setProperties([]);
-                    }}
-                    options={mtks.map(mtk => ({ value: String(mtk.id), label: mtk.name }))}
-                    disabled={loadingLookups}
-                    loading={loadingLookups}
-                    error={form.errors?.property?.mtk_id}
+                    value={selectedMtkId ? String(selectedMtkId) : ""}
+                    onChange={handleMtkChange}
+                    options={mtks.map((item) => ({
+                      value: String(item.id),
+                      label: item.name,
+                    }))}
+                    loading={loadingMtks}
+                    disabled={loadingMtks}
+                    placeholder="MTK seçin"
+                    error={!!form?.errors?.["property.mtk_id"]}
+                    helperText={form?.errors?.["property.mtk_id"]}
                   />
+
                   <CustomSelect
                     label="Kompleks *"
-                    value={form.formData.property?.complex_id ? String(form.formData.property.complex_id) : ""}
-                    onChange={(value) => {
-                      form.updateField("property.complex_id", value ? Number(value) : null);
-                      form.updateField("property.property_id", null);
-                    }}
-                    options={complexes.map(complex => ({ value: String(complex.id), label: complex.name }))}
-                    disabled={loadingComplexes || !form.formData.property?.mtk_id}
+                    value={selectedComplexId ? String(selectedComplexId) : ""}
+                    onChange={handleComplexChange}
+                    options={complexes.map((item) => ({
+                      value: String(item.id),
+                      label: item.name,
+                    }))}
                     loading={loadingComplexes}
-                    error={form.errors?.property?.complex_id}
+                    disabled={!selectedMtkId || loadingComplexes}
+                    placeholder="Kompleks seçin"
+                    error={!!form?.errors?.["property.complex_id"]}
+                    helperText={form?.errors?.["property.complex_id"]}
                   />
+
                   <CustomSelect
-                    label="Mənzil *"
-                    value={form.formData.property?.property_id ? String(form.formData.property.property_id) : ""}
-                    onChange={(value) => {
-                      form.updateField("property.property_id", value ? Number(value) : null);
-                    }}
-                    options={[
-                      { value: "", label: "-- Mənzil seçin --" },
-                      ...properties.map((p) => ({
-                        value: String(p.id),
-                        label: `${p.sub_data?.building?.name || 'Bina'} | ${p.sub_data?.block?.name || 'Blok'} | ${p.name || p.meta?.apartment_number || `Mənzil #${p.id}`}`,
-                        sub_data: p.sub_data,
-                        meta: p.meta,
-                        name: p.name,
-                      })),
-                    ]}
-                    loading={loadingProperties}
-                    loadingMore={loadingMoreProperties}
-                    onScrollEnd={handlePropertyScrollEnd}
-                    disabled={!form.formData.property?.complex_id}
-                    placeholder="Mənzil seçin"
-                    error={form.errors?.property?.property_id || ""}
-                    helperText={properties.length > 0 ? `${properties.length} mənzil göstərilir` : ""}
-                    searchable={true}
-                    searchValue={propertySearch}
-                    onSearchChange={setPropertySearch}
-                    searchPlaceholder="Mənzil axtarın..."
+                    label="Bina"
+                    value={selectedBuildingId ? String(selectedBuildingId) : ""}
+                    onChange={handleBuildingChange}
+                    options={buildings.map((item) => ({
+                      value: String(item.id),
+                      label: item.name,
+                    }))}
+                    loading={loadingBuildings}
+                    disabled={!selectedComplexId || loadingBuildings}
+                    placeholder="Bina seçin"
+                    error={!!form?.errors?.["property.building_id"]}
+                    helperText={form?.errors?.["property.building_id"]}
                   />
+
+                  <CustomSelect
+                    label="Blok"
+                    value={selectedBlockId ? String(selectedBlockId) : ""}
+                    onChange={handleBlockChange}
+                    options={blocks.map((item) => ({
+                      value: String(item.id),
+                      label: item.name,
+                    }))}
+                    loading={loadingBlocks}
+                    disabled={!selectedBuildingId || loadingBlocks}
+                    placeholder="Blok seçin"
+                    error={!!form?.errors?.["property.block_id"]}
+                    helperText={form?.errors?.["property.block_id"]}
+                  />
+
+                  <div className="md:col-span-2">
+                    <CustomSelect
+                      label="Mənzil *"
+                      value={selectedPropertyId ? String(selectedPropertyId) : ""}
+                      onChange={handlePropertyChange}
+                      options={properties.map((item) => ({
+                        value: String(item.id),
+                        label:
+                          item.name ||
+                          item.apartment_number ||
+                          `Mənzil #${item.id}`,
+                      }))}
+                      loading={loadingProperties}
+                      disabled={!selectedComplexId || loadingProperties}
+                      placeholder="Mənzil seçin"
+                      error={!!form?.errors?.["property.property_id"]}
+                      helperText={form?.errors?.["property.property_id"]}
+                    />
+                  </div>
                 </div>
               </div>
-              )}
-            </div>
-          </DialogBody>
+            )}
+          </div>
+        </DialogBody>
 
-          <DialogFooter className="border-t border-gray-200 dark:border-gray-700 pt-4 flex justify-between">
-            <Button
-              variant="outlined"
-              onClick={() => { setExistsPrompt(false); setLastFormData(null); onClose(); }}
-              className="border-gray-600 text-gray-600 hover:bg-gray-600 hover:text-white dark:border-gray-400 dark:text-gray-400 dark:hover:bg-gray-400"
-            >
-              Ləğv et
-            </Button>
-            <Button
-                type="submit"
-                disabled={saving || !!errorText || (isEdit && !form.hasChanges)}
-                className="text-white"
-                style={{ backgroundColor: ACTIVE_COLOR }}
-              >
-                {saving ? "Yadda saxlanılır..." : isEdit ? "Yenilə" : "Əlavə et"}
-              </Button>
-          </DialogFooter>
-        </form>
+        <DialogFooter className="border-t border-gray-200 dark:border-gray-700 pt-4 flex justify-between">
+          <Button
+            variant="outlined"
+            onClick={onClose}
+            className="border-gray-600 text-gray-600 hover:bg-gray-600 hover:text-white dark:border-gray-400 dark:text-gray-400"
+          >
+            Ləğv et
+          </Button>
+
+          <Button
+            onClick={submit}
+            disabled={saving}
+            className="text-white"
+            style={{ backgroundColor: ACTIVE_COLOR }}
+          >
+            {saving ? "Yadda saxlanılır..." : isEdit ? "Yenilə" : "Əlavə et"}
+          </Button>
+        </DialogFooter>
       </Dialog>
 
       <ResidentExistsModal
         open={existsPrompt}
-        onClose={() => { setExistsPrompt(false); setLastFormData(null); }}
+        onClose={() => {
+          setExistsPrompt(false);
+          setLastFormData(null);
+        }}
         onChoose={handleBindExists}
         saving={saving}
       />
@@ -563,7 +645,7 @@ export function ResidentFormModal({
         type={toast.type}
         message={toast.message}
         title={toast.title}
-        onClose={() => setToast({ ...toast, open: false })}
+        onClose={() => setToast((p) => ({ ...p, open: false }))}
       />
     </>
   );

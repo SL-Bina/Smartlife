@@ -2,11 +2,9 @@ import React, { useState } from "react";
 import {
   Typography,
   Card,
-  CardHeader,
   CardBody,
   Button,
   Input,
-  Checkbox,
   Select,
   Option,
   Spinner,
@@ -15,18 +13,14 @@ import api from "@/services/api";
 import { useDynamicToast } from "@/hooks/useDynamicToast";
 import DynamicToast from "@/components/DynamicToast";
 import { useTranslation } from "react-i18next";
-import {
-  BuildingOfficeIcon,
-  RectangleStackIcon,
-  HomeModernIcon,
-  BellIcon,
-} from "@heroicons/react/24/solid";
+import { BellIcon } from "@heroicons/react/24/solid";
 import { useMtkColor } from "@/store/hooks/useMtkColor";
 
 const SendNotificationPage = () => {
   const { getRgba: getMtkRgba } = useMtkColor();
   const { t } = useTranslation();
   const { toast, showToast, closeToast } = useDynamicToast();
+
   const [accountId, setAccountId] = useState("");
   const [accountType, setAccountType] = useState("user");
   const [title, setTitle] = useState("");
@@ -36,10 +30,16 @@ const SendNotificationPage = () => {
 
   const handleSubmit = async () => {
     if (!title.trim() || !message.trim() || !accountId.trim()) {
-      showToast({ type: "error", title: "Xəta", message: "Başlıq, mesaj və account_id daxil edin" });
+      showToast({
+        type: "error",
+        title: "Xəta",
+        message: "Başlıq, mesaj və account_id daxil edin",
+      });
       return;
     }
+
     setSending(true);
+
     try {
       await api.post("/notify/send", {
         account_id: Number(accountId),
@@ -48,15 +48,26 @@ const SendNotificationPage = () => {
         message: message.trim(),
         type: type,
       });
-      showToast({ type: "success", title: "Uğurlu", message: t("notifications.send.sentSuccess") || "Bildiriş göndərildi" });
+
+      showToast({
+        type: "success",
+        title: "Uğurlu",
+        message: t("notifications.send.sentSuccess") || "Bildiriş göndərildi",
+      });
+
       setTitle("");
       setMessage("");
       setAccountId("");
-    } catch (err) {
+      setAccountType("user");
+      setType("success");
+    } catch (error) {
       showToast({
         type: "error",
         title: "Xəta",
-        message: err?.response?.data?.message || err?.message || "Xəta baş verdi",
+        message:
+          error?.response?.data?.message ||
+          t("notifications.send.sentError") ||
+          "Bildiriş göndərilərkən xəta baş verdi",
       });
     } finally {
       setSending(false);
@@ -64,28 +75,42 @@ const SendNotificationPage = () => {
   };
 
   return (
-    <div className="mt-12 mb-8">
-      <Card className="border dark:border-gray-700 shadow-sm dark:bg-gray-800" style={{ borderColor: getMtkRgba(0.7) }}>
-        <CardHeader
-          floated={false}
-          shadow={false}
-          color="transparent"
-          className="m-0 p-6 dark:bg-gray-800"
-        >
-          <div className="flex items-center gap-2">
-            <BellIcon className="h-5 w-5 text-blue-500 dark:text-blue-400" />
-            <Typography variant="h6" color="blue-gray" className="dark:text-white">
+    <div className="mt-12 mb-8 relative">
+      {/* Gradient Header */}
+      <div
+        className="relative w-full overflow-hidden rounded-xl shadow-lg p-4 sm:p-6 border border-gray-200 dark:border-gray-700 mb-8"
+        style={{
+          position: "relative",
+          zIndex: 0,
+          background: `linear-gradient(135deg, ${getMtkRgba(1)}, ${getMtkRgba(0.8)})`,
+        }}
+      >
+        <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-white/5 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16" />
+        <div className="absolute bottom-0 left-0 w-20 h-20 sm:w-24 sm:h-24 bg-white/5 rounded-full -ml-10 sm:-ml-12 -mb-10 sm:-mb-12" />
+
+        <div className="relative flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/30 dark:border-gray-600/30 bg-white/20">
+            <BellIcon className="h-6 w-6 text-white" />
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <Typography
+              variant="h4"
+              className="text-white font-bold mb-1 text-lg sm:text-xl md:text-2xl"
+            >
               {t("notifications.send.pageTitle") || "Bildiriş göndər"}
             </Typography>
+            <Typography className="text-white/90 dark:text-gray-300 text-xs sm:text-sm font-medium">
+              {t("notifications.send.pageSubtitle") ||
+                "Bildiriş göndərmək üçün formu doldurun"}
+            </Typography>
           </div>
-          <Typography
-            variant="small"
-            className="font-normal text-blue-gray-500 dark:text-gray-400 mt-1"
-          >
-            {t("notifications.send.pageSubtitle") || "Bildiriş göndərmək üçün formu doldurun"}
-          </Typography>
-        </CardHeader>
-        <CardBody className="px-6 pb-6 dark:bg-gray-800 space-y-6">
+        </div>
+      </div>
+
+      {/* Main Card */}
+      <Card className="shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 dark:bg-gray-800 overflow-hidden group mx-auto">
+        <CardBody className="p-6 space-y-6">
           {/* Account ID */}
           <div>
             <Input
@@ -97,12 +122,13 @@ const SendNotificationPage = () => {
               labelProps={{ className: "dark:text-gray-400" }}
             />
           </div>
+
           {/* Account Type */}
           <div>
             <Select
               label={t("notifications.send.accountType") || "Account Type (account_type)"}
               value={accountType}
-              onChange={setAccountType}
+              onChange={(value) => setAccountType(value || "user")}
               className="bg-white dark:bg-gray-800"
             >
               <Option value="user">user</Option>
@@ -110,6 +136,7 @@ const SendNotificationPage = () => {
               <Option value="manager">manager</Option>
             </Select>
           </div>
+
           {/* Title */}
           <div>
             <Input
@@ -120,6 +147,7 @@ const SendNotificationPage = () => {
               labelProps={{ className: "dark:text-gray-400" }}
             />
           </div>
+
           {/* Message */}
           <div>
             <Typography variant="small" color="blue-gray" className="mb-2 dark:text-gray-300">
@@ -133,12 +161,13 @@ const SendNotificationPage = () => {
               rows={4}
             />
           </div>
+
           {/* Type */}
           <div>
             <Select
               label={t("notifications.send.type") || "Bildiriş tipi (type)"}
               value={type}
-              onChange={setType}
+              onChange={(value) => setType(value || "success")}
               className="bg-white dark:bg-gray-800"
             >
               <Option value="success">success</Option>
@@ -147,8 +176,24 @@ const SendNotificationPage = () => {
               <Option value="warning">warning</Option>
             </Select>
           </div>
+
           {/* Submit Button */}
-          <div className="flex justify-end">
+          <div className="flex gap-3 justify-end mt-6">
+            <Button
+              variant="outlined"
+              color="blue"
+              onClick={() => {
+                setTitle("");
+                setMessage("");
+                setAccountId("");
+                setAccountType("user");
+                setType("success");
+              }}
+              className="flex items-center gap-2 border-blue-600 text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-900/20"
+            >
+              {t("notifications.send.clearButton") || "Təmizlə"}
+            </Button>
+
             <Button
               color="blue"
               onClick={handleSubmit}
@@ -175,4 +220,3 @@ const SendNotificationPage = () => {
 };
 
 export default SendNotificationPage;
-
