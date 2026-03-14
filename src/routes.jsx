@@ -220,7 +220,7 @@ export const routes = [
         name: "sidebar.notifications",
         path: "/notifications",
         element: <Notifications />,
-        // moduleName: "notification",
+        moduleName: "notification",
         // moduleId: 0,
       },
       {

@@ -150,8 +150,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
         />
       </motion.aside>
     </>
-  );
-}
+  );}
 
 Sidenav.defaultProps = {
   brandImg: "/Site_Logo/color_big.png",

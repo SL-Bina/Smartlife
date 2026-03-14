@@ -75,7 +75,6 @@ export function PropertyBindModal({
     return params;
   }, [mtkId, complexId, buildingId, blockId]);
 
-  // Unique keys to force re-render when parent changes
   const complexSelectKey = `complex-${mtkId || 'null'}`;
   const buildingSelectKey = `building-${mtkId || 'null'}-${complexId || 'null'}`;
   const blockSelectKey = `block-${mtkId || 'null'}-${complexId || 'null'}-${buildingId || 'null'}`;

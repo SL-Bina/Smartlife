@@ -8,6 +8,7 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import { CustomInput } from "@/components/ui/CustomInput";
+import AsyncSearchSelect from "@/components/ui/AsyncSearchSelect";
 import { CustomSelect } from "@/components/ui/CustomSelect";
 import { UserIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import DynamicToast from "@/components/DynamicToast";
@@ -55,6 +56,7 @@ export function ResidentFormModal({
   complexId = null,
   buildingId = null,
   blockId = null,
+  propertyId = null,
 }) {
   const [saving, setSaving] = useState(false);
   const [existsPrompt, setExistsPrompt] = useState(false);
@@ -90,21 +92,26 @@ export function ResidentFormModal({
   const selectedBlockId = form?.formData?.property?.block_id || null;
   const selectedPropertyId = form?.formData?.property?.property_id || null;
 
+  const selectedMtkLabel = selectedMtkId ? mtks.find((m) => m.id === selectedMtkId)?.name || `MTK #${selectedMtkId}` : "";
+  const selectedComplexLabel = selectedComplexId ? complexes.find((c) => c.id === selectedComplexId)?.name || `Kompleks #${selectedComplexId}` : "";
+  const selectedBuildingLabel = selectedBuildingId ? buildings.find((b) => b.id === selectedBuildingId)?.name || `Bina #${selectedBuildingId}` : "";
+  const selectedBlockLabel = selectedBlockId ? blocks.find((b) => b.id === selectedBlockId)?.name || `Blok #${selectedBlockId}` : "";
+  const selectedPropertyLabel = selectedPropertyId ? properties.find((p) => p.id === selectedPropertyId)?.name || properties.find((p) => p.id === selectedPropertyId)?.apartment_number || `Mənzil #${selectedPropertyId}` : "";
+
   useEffect(() => {
     if (!open || isEdit) return;
-
     if (mtkId) form?.updateField("property.mtk_id", mtkId);
     if (complexId) form?.updateField("property.complex_id", complexId);
     if (buildingId) form?.updateField("property.building_id", buildingId);
     if (blockId) form?.updateField("property.block_id", blockId);
-  }, [open]);
+    if (propertyId) form?.updateField("property.property_id", propertyId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, isEdit, mtkId, complexId, buildingId, blockId, propertyId]);
 
   useEffect(() => {
     if (!open) return;
-
     setLoadingMtks(true);
-    mtkAPI
-      .getAll({ per_page: 1000 })
+    mtkAPI.getAll({ per_page: 1000 })
       .then((res) => {
         const data = res?.data?.data?.data || [];
         setMtks(data || []);
@@ -121,13 +128,8 @@ export function ResidentFormModal({
       setComplexes([]);
       return;
     }
-
     setLoadingComplexes(true);
-    complexesAPI
-      .search({
-        mtk_ids: [selectedMtkId],
-        per_page: 1000,
-      })
+    complexesAPI.search({ mtk_ids: [selectedMtkId], per_page: 1000 })
       .then((res) => {
         const data = res?.data?.data?.data || [];
         setComplexes(data || []);
@@ -144,13 +146,8 @@ export function ResidentFormModal({
       setBuildings([]);
       return;
     }
-
     setLoadingBuildings(true);
-    buildingsAPI
-      .search({
-        complex_ids: [selectedComplexId],
-        per_page: 1000,
-      })
+    buildingsAPI.search({ complex_ids: [selectedComplexId], per_page: 1000 })
       .then((res) => {
         const data = res?.data?.data?.data || [];
         setBuildings(data || []);
@@ -167,13 +164,8 @@ export function ResidentFormModal({
       setBlocks([]);
       return;
     }
-
     setLoadingBlocks(true);
-    blocksAPI
-      .search({
-        building_ids: [selectedBuildingId],
-        per_page: 1000,
-      })
+    blocksAPI.search({ building_ids: [selectedBuildingId], per_page: 1000 })
       .then((res) => {
         const data = res?.data?.data?.data || [];
         setBlocks(data || []);
@@ -190,24 +182,12 @@ export function ResidentFormModal({
       setProperties([]);
       return;
     }
-
     setLoadingProperties(true);
+    const payload = { complex_ids: [selectedComplexId], per_page: 1000 };
+    if (selectedBuildingId) payload.building_ids = [selectedBuildingId];
+    if (selectedBlockId) payload.block_ids = [selectedBlockId];
 
-    const payload = {
-      complex_ids: [selectedComplexId],
-      per_page: 1000,
-    };
-
-    if (selectedBuildingId) {
-      payload.building_ids = [selectedBuildingId];
-    }
-
-    if (selectedBlockId) {
-      payload.block_ids = [selectedBlockId];
-    }
-
-    propertiesAPI
-      .search(payload)
+    propertiesAPI.search(payload)
       .then((res) => {
         const data = res?.data?.data?.data || res?.data?.data?.items || [];
         setProperties(data || []);
@@ -232,54 +212,37 @@ export function ResidentFormModal({
 
   const handleMtkChange = (value) => {
     const numericValue = value ? Number(value) : null;
-
     form?.updateField("property.mtk_id", numericValue);
     form?.updateField("property.complex_id", null);
     form?.updateField("property.building_id", null);
     form?.updateField("property.block_id", null);
     form?.updateField("property.property_id", null);
-
-    setComplexes([]);
-    setBuildings([]);
-    setBlocks([]);
-    setProperties([]);
   };
 
   const handleComplexChange = (value) => {
     const numericValue = value ? Number(value) : null;
-
     form?.updateField("property.complex_id", numericValue);
     form?.updateField("property.building_id", null);
     form?.updateField("property.block_id", null);
     form?.updateField("property.property_id", null);
-
-    setBuildings([]);
-    setBlocks([]);
-    setProperties([]);
   };
 
   const handleBuildingChange = (value) => {
     const numericValue = value ? Number(value) : null;
-
     form?.updateField("property.building_id", numericValue);
     form?.updateField("property.block_id", null);
     form?.updateField("property.property_id", null);
-
-    setBlocks([]);
-    setProperties([]);
   };
 
   const handleBlockChange = (value) => {
     const numericValue = value ? Number(value) : null;
-
     form?.updateField("property.block_id", numericValue);
     form?.updateField("property.property_id", null);
-
-    setProperties([]);
   };
 
   const handlePropertyChange = (value) => {
-    form?.updateField("property.property_id", value ? Number(value) : null);
+    const numericValue = value ? Number(value) : null;
+    form?.updateField("property.property_id", numericValue);
   };
 
   const submit = async () => {
@@ -525,83 +488,92 @@ export function ResidentFormModal({
                 </Typography>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <CustomSelect
+                  <AsyncSearchSelect
                     label="MTK *"
-                    value={selectedMtkId ? String(selectedMtkId) : ""}
+                    value={selectedMtkId || null}
+                    selectedLabel={selectedMtkLabel}
                     onChange={handleMtkChange}
-                    options={mtks.map((item) => ({
-                      value: String(item.id),
-                      label: item.name,
-                    }))}
-                    loading={loadingMtks}
-                    disabled={loadingMtks}
+                    endpoint="/search/module/mtk"
                     placeholder="MTK seçin"
+                    searchPlaceholder="MTK axtar..."
                     error={!!form?.errors?.["property.mtk_id"]}
-                    helperText={form?.errors?.["property.mtk_id"]}
+                    allowClear={false}
+                    valueKey="id"
+                    labelKey="name"
+                    className="w-full"
                   />
 
-                  <CustomSelect
+                  <AsyncSearchSelect
                     label="Kompleks *"
-                    value={selectedComplexId ? String(selectedComplexId) : ""}
+                    value={selectedComplexId || null}
+                    selectedLabel={selectedComplexLabel}
                     onChange={handleComplexChange}
-                    options={complexes.map((item) => ({
-                      value: String(item.id),
-                      label: item.name,
-                    }))}
-                    loading={loadingComplexes}
-                    disabled={!selectedMtkId || loadingComplexes}
+                    endpoint="/search/module/complex"
+                    searchParams={{ mtk_ids: selectedMtkId ? [selectedMtkId] : [] }}
                     placeholder="Kompleks seçin"
+                    searchPlaceholder="Kompleks axtar..."
+                    disabled={!selectedMtkId}
                     error={!!form?.errors?.["property.complex_id"]}
-                    helperText={form?.errors?.["property.complex_id"]}
+                    allowClear={false}
+                    valueKey="id"
+                    labelKey="name"
+                    className="w-full"
                   />
 
-                  <CustomSelect
+                  <AsyncSearchSelect
                     label="Bina"
-                    value={selectedBuildingId ? String(selectedBuildingId) : ""}
+                    value={selectedBuildingId || null}
+                    selectedLabel={selectedBuildingLabel}
                     onChange={handleBuildingChange}
-                    options={buildings.map((item) => ({
-                      value: String(item.id),
-                      label: item.name,
-                    }))}
-                    loading={loadingBuildings}
-                    disabled={!selectedComplexId || loadingBuildings}
+                    endpoint="/search/module/building"
+                    searchParams={{ complex_ids: selectedComplexId ? [selectedComplexId] : [] }}
                     placeholder="Bina seçin"
+                    searchPlaceholder="Bina axtar..."
+                    disabled={!selectedComplexId}
                     error={!!form?.errors?.["property.building_id"]}
-                    helperText={form?.errors?.["property.building_id"]}
+                    allowClear={false}
+                    valueKey="id"
+                    labelKey="name"
+                    className="w-full"
                   />
 
-                  <CustomSelect
+                  <AsyncSearchSelect
                     label="Blok"
-                    value={selectedBlockId ? String(selectedBlockId) : ""}
+                    value={selectedBlockId || null}
+                    selectedLabel={selectedBlockLabel}
                     onChange={handleBlockChange}
-                    options={blocks.map((item) => ({
-                      value: String(item.id),
-                      label: item.name,
-                    }))}
-                    loading={loadingBlocks}
-                    disabled={!selectedBuildingId || loadingBlocks}
+                    endpoint="/search/module/block"
+                    searchParams={{ building_ids: selectedBuildingId ? [selectedBuildingId] : [] }}
                     placeholder="Blok seçin"
+                    searchPlaceholder="Blok axtar..."
+                    disabled={!selectedBuildingId}
                     error={!!form?.errors?.["property.block_id"]}
-                    helperText={form?.errors?.["property.block_id"]}
+                    allowClear={false}
+                    valueKey="id"
+                    labelKey="name"
+                    className="w-full"
                   />
 
                   <div className="md:col-span-2">
-                    <CustomSelect
+                    <AsyncSearchSelect
                       label="Mənzil *"
-                      value={selectedPropertyId ? String(selectedPropertyId) : ""}
+                      value={selectedPropertyId || null}
+                      selectedLabel={selectedPropertyLabel}
                       onChange={handlePropertyChange}
-                      options={properties.map((item) => ({
-                        value: String(item.id),
-                        label:
-                          item.name ||
-                          item.apartment_number ||
-                          `Mənzil #${item.id}`,
-                      }))}
-                      loading={loadingProperties}
-                      disabled={!selectedComplexId || loadingProperties}
+                      endpoint="/search/module/property"
+                      searchParams={{
+                        complex_ids: selectedComplexId ? [selectedComplexId] : [],
+                        building_ids: selectedBuildingId ? [selectedBuildingId] : [],
+                        block_ids: selectedBlockId ? [selectedBlockId] : [],
+                      }}
                       placeholder="Mənzil seçin"
+                      searchPlaceholder="Mənzil axtar..."
+                      disabled={!selectedComplexId}
                       error={!!form?.errors?.["property.property_id"]}
-                      helperText={form?.errors?.["property.property_id"]}
+                      allowClear={false}
+                      valueKey="id"
+                      labelKey="name"
+                      className="w-full"
                     />
                   </div>
                 </div>

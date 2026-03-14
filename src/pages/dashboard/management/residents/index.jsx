@@ -239,6 +239,8 @@ export default function ResidentsPage() {
         onSubmit={submitForm}
         mtkId={selectedMtkId}
         complexId={selectedComplexId}
+        buildingId={selectedBuildingId}
+        blockId={selectedBlockId}
         propertyId={selectedPropertyId}
         onEditRequest={handleEditRequest}
       />

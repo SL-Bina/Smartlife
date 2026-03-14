@@ -15,6 +15,8 @@ const initialFormData = {
   property: {
     mtk_id: null,
     complex_id: null,
+    building_id: null,
+    block_id: null,
     property_id: null,
   },
   // bind_existing: false,
@@ -86,6 +88,8 @@ export function useResidentForm() {
       property: {
         mtk_id: boundProp?.mtk_id || resident.property?.mtk_id || null,
         complex_id: boundProp?.complex_id || resident.property?.complex_id || null,
+        building_id: boundProp?.building_id || resident.property?.building_id || null,
+        block_id: boundProp?.block_id || resident.property?.block_id || null,
         property_id: boundProp?.property_id || resident.property?.property_id || null,
       },
       // bind_existing: resident.bind_existing || false,

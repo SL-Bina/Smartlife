@@ -46,6 +46,8 @@ export function AsyncSearchSelect({
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+  const [dropdownOpenUp, setDropdownOpenUp] = useState(false);
+  const [dropdownMaxHeight, setDropdownMaxHeight] = useState(220);
 
   const selectRef = useRef(null);
   const buttonRef = useRef(null);
@@ -58,14 +60,31 @@ export function AsyncSearchSelect({
   const debouncedSearch = useDebounce(searchTerm, 300);
 
   const updateDropdownPosition = () => {
-    if (buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      setDropdownPosition({
-        top: rect.bottom + window.scrollY + 4,
-        left: rect.left + window.scrollX,
-        width: rect.width,
-      });
-    }
+    if (!buttonRef.current) return;
+    const rect = buttonRef.current.getBoundingClientRect();
+    const margin = 8;
+    const maxHeight = 260;
+    const availableBelow = window.innerHeight - rect.bottom - margin;
+    const availableAbove = rect.top - margin;
+
+    const minOpenUpHeight = 160;
+    const openUp = availableBelow < 220 && availableAbove > minOpenUpHeight;
+    const computedHeight = openUp
+      ? Math.min(availableAbove - 16, maxHeight)
+      : Math.min(availableBelow - 16, maxHeight);
+
+    setDropdownOpenUp(openUp);
+    setDropdownMaxHeight(Math.max(computedHeight, 120));
+
+    const top = openUp
+      ? rect.top + window.scrollY - computedHeight - 4
+      : rect.bottom + window.scrollY + 4;
+
+    setDropdownPosition({
+      top,
+      left: rect.left + window.scrollX,
+      width: rect.width,
+    });
   };
 
   const searchParamsKey = JSON.stringify(searchParams);
@@ -240,6 +259,7 @@ export function AsyncSearchSelect({
         left: dropdownPosition.left,
         width: dropdownPosition.width,
         zIndex: 99999,
+        maxHeight: dropdownMaxHeight + 80,
       }}
     >
       <div className="p-2 border-b border-gray-200 dark:border-gray-700">
@@ -259,7 +279,8 @@ export function AsyncSearchSelect({
 
       <div
         ref={listRef}
-        className="max-h-52 overflow-y-auto"
+        className="overflow-y-auto"
+        style={{ maxHeight: dropdownMaxHeight }}
         onScroll={handleListScroll}
       >
         {allowClear && (

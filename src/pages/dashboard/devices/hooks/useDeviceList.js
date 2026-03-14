@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-// TODO: Replace static import with devicesAPI.getAll() when endpoint is ready
 import devicesDataRaw from "../api/data.json";
 
 const ITEMS_PER_PAGE = 10;
@@ -13,7 +12,6 @@ export function useDeviceList() {
   const [lastPage, setLastPage] = useState(1);
   const [total, setTotal] = useState(0);
 
-  // Filters
   const [filterName, setFilterName] = useState("");
   const [filterBuilding, setFilterBuilding] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
@@ -49,10 +47,8 @@ export function useDeviceList() {
     setLastPage(lastPage);
   }, [filterName, filterBuilding, filterStatus, page]);
 
-  // Fetch / refresh
   const fetchData = useCallback(() => {
     setLoading(true);
-    // Simulate async — swap this block with a real API call later:
     //   const res = await devicesAPI.getAll({ page, per_page: ITEMS_PER_PAGE, name: filterName, ... });
     //   setItems(res.data.data.data);
     //   setTotal(res.data.data.total);
