@@ -98,6 +98,53 @@ export const devicesAPI = {
       throw error.response?.data || error.message;
     }
   },
+
+  // Basip Project integration endpoints
+  getBasipUsers: async ({ complex_id, page = 1, size = 20 }) => {
+    try {
+      const response = await api.post("/integration/device/basip-project/users", {
+        complex_id,
+        page,
+        size,
+      });
+      return response;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  getBasipUser: async ({ id, complex_id }) => {
+    try {
+      const response = await api.post(`/integration/device/basip-project/users/${id}`, {
+        complex_id,
+      });
+      return response;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  addBasipUser: async (data) => {
+    try {
+      const response = await api.patch("/integration/device/basip-project/users/add", data);
+      return response;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  deleteBasipUser: async ({ user_id, complex_id }) => {
+    try {
+      const response = await api.delete(`/integration/device/basip-project/users/${user_id}`, {
+        data: {
+          complex_id,
+        },
+      });
+      return response;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
 };
 
 export default devicesAPI;

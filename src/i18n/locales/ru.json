@@ -2633,7 +2633,23 @@
       "title": "Пользователи устройств",
       "userName": "Имя пользователя",
       "email": "Email",
-      "phone": "Телефон"
+      "phone": "Телефон",
+      "addUser": "Новый пользователь",
+      "complex": "Комплекс",
+      "total": "Итого",
+      "refresh": "Обновить",
+      "addUserTitle": "Добавить нового пользователя",
+      "form": {
+        "name": "Имя",
+        "email": "Email",
+        "phone": "Телефон",
+        "domainId": "Domain ID",
+        "complexId": "Complex ID"
+      },
+      "complexSelect": "Выберите комплекс",
+      "selectComplex": "Выберите комплекс",
+      "status": "Статус",
+      "users": "пользователей"
     },
     "deviceIdentifiers": {
       "title": "Идентификаторы устройств",

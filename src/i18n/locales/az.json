@@ -1445,7 +1445,6 @@
     "pageSubtitle": "Xidmətləri yarat, redaktə et, sil və izlə",
     "list": "Xidmət siyahısı",
     "add": "Yeni xidmət",
-    "filter": "Filter",
     "searchByName": "Ada görə axtar...",
     "loading": "Yüklənir...",
     "noData": "Məlumat tapılmadı",
@@ -2869,7 +2868,25 @@
       "title": "Cihaz istifadəçiləri",
       "userName": "İstifadəçi adı",
       "email": "Email",
-      "phone": "Telefon"
+      "role": "Rol",
+      "domain": "Domain",
+      "phone": "Telefon",
+      "addUser": "Yeni istifadəçi",
+      "complex": "Kompleks",
+      "total": "Cəm",
+      "refresh": "Yenilə",
+      "addUserTitle": "Yeni istifadəçi əlavə et",
+      "form": {
+        "name": "Ad",
+        "email": "Email",
+        "phone": "Telefon",
+        "domainId": "Domain ID",
+        "complexId": "Complex ID"
+      },
+      "complexSelect": "Kompleks seçin",
+      "selectComplex": "Kompleks seçin",
+      "status": "Status",
+      "users": "istifadəçi"
     },
     "deviceIdentifiers": {
       "title": "Cihaz identifikatorları",

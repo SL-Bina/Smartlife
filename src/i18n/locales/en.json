@@ -2718,7 +2718,23 @@
       "title": "Device Users",
       "userName": "User Name",
       "email": "Email",
-      "phone": "Phone"
+      "phone": "Phone",
+      "addUser": "New User",
+      "complex": "Complex",
+      "total": "Total",
+      "refresh": "Refresh",
+      "addUserTitle": "Add New User",
+      "form": {
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "domainId": "Domain ID",
+        "complexId": "Complex ID"
+      },
+      "complexSelect": "Select complex",
+      "selectComplex": "Select complex",
+      "status": "Status",
+      "users": "users"
     },
     "deviceIdentifiers": {
       "title": "Device Identifiers",
