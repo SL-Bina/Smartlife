@@ -192,7 +192,7 @@ const DevicesPage = () => {
       return;
     }
 
-    const pageNo = opts.page ?? deviceUsersPage;
+    const pageNo = Math.max(1, Number(opts.page) || 1);
     setDeviceUsersLoading(true);
 
     try {
@@ -221,7 +221,7 @@ const DevicesPage = () => {
     } finally {
       setDeviceUsersLoading(false);
     }
-  }, [applyComplexSelection, selectedComplexId, deviceUsersPage]);
+  }, [applyComplexSelection, selectedComplexId]);
 
   const handleNameSearch = (value) => {
     applySearch({ name: value, building: filterBuilding, status: statusFilter });
@@ -388,7 +388,7 @@ const DevicesPage = () => {
       return;
     }
 
-    const pageNo = opts.page ?? deviceIdentifiersPage;
+    const pageNo = Math.max(1, Number(opts.page) || 1);
     setDeviceIdentifiersLoading(true);
 
     try {
@@ -413,7 +413,7 @@ const DevicesPage = () => {
     } finally {
       setDeviceIdentifiersLoading(false);
     }
-  }, [applyComplexSelection, deviceIdentifiersPage, selectedComplexId]);
+  }, [applyComplexSelection, selectedComplexId]);
 
   const handleDeviceIdentifiersPageChange = (nextPage) => {
     const safePage = Math.max(1, Number(nextPage) || 1);
