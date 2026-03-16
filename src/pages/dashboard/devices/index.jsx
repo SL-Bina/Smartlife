@@ -17,10 +17,8 @@ import { DeviceIdentifiersModal } from "./components/modals/DeviceIdentifiersMod
 import { DeviceLogsModal } from "./components/modals/DeviceLogsModal";
 import { DeviceComplexSelectModal } from "./components/modals/DeviceComplexSelectModal";
 import SmartPagination from "@/components/ui/SmartPagination";
-import AppSelect from "@/components/ui/AppSelect";
 import { Button } from "@material-tailwind/react";
 import { ManagementActions } from "@/components/management/ManagementActions";
-import { useMtkColor } from "@/store/hooks/useMtkColor";
 
 import { useDeviceList } from "./hooks/useDeviceList";
 import { useDeviceForm } from "./hooks/useDeviceForm";
@@ -28,8 +26,35 @@ import { useDeviceForm } from "./hooks/useDeviceForm";
 const accessRulesData = devicesDataRaw?.accessRules ?? [];
 const logsData = devicesDataRaw?.logs ?? [];
 const DEVICES_COMPLEX_STORAGE_KEY = "smartlife_devices_complex_id";
+const DEVICES_COMPLEX_COOKIE_KEY = "smartlife_devices_complex_id";
+
+const setCookieValue = (key, value, days = 30) => {
+  try {
+    const expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
+    document.cookie = `${key}=${encodeURIComponent(String(value))}; expires=${expiresAt}; path=/; SameSite=Lax`;
+  } catch (error) {
+    // Ignore cookie write errors.
+  }
+};
+
+const getCookieValue = (key) => {
+  try {
+    const cookies = document.cookie ? document.cookie.split("; ") : [];
+    const match = cookies.find((item) => item.startsWith(`${key}=`));
+    if (!match) return null;
+    return decodeURIComponent(match.split("=").slice(1).join("="));
+  } catch (error) {
+    return null;
+  }
+};
 
 const getPersistedDevicesComplexId = () => {
+  const cookieValue = getCookieValue(DEVICES_COMPLEX_COOKIE_KEY);
+  if (cookieValue != null && cookieValue !== "") {
+    const parsedCookie = Number(cookieValue);
+    if (Number.isFinite(parsedCookie)) return parsedCookie;
+  }
+
   try {
     const raw = localStorage.getItem(DEVICES_COMPLEX_STORAGE_KEY);
     if (!raw) return null;
@@ -67,7 +92,6 @@ const canLoadBasipProjectForComplex = (complexDetails) => {
 
 const DevicesPage = () => {
   const { t } = useTranslation();
-  const { getActiveGradient } = useMtkColor();
 
   const {
     items,
@@ -145,6 +169,8 @@ const DevicesPage = () => {
       } catch (error) {
         // Ignore storage write errors and continue with in-memory selection.
       }
+
+      setCookieValue(DEVICES_COMPLEX_COOKIE_KEY, normalizedId, 30);
 
       dispatch(setSelectedComplex({ id: normalizedId }));
       dispatch(loadComplexById(normalizedId));
@@ -234,6 +260,11 @@ const DevicesPage = () => {
   }, [dispatch, complexes.length]);
 
   useEffect(() => {
+    if (!complexSelectionOpen) return;
+    dispatch(loadComplexes({ page: 1, per_page: 1000 }));
+  }, [complexSelectionOpen, dispatch]);
+
+  useEffect(() => {
     let mounted = true;
 
     const resolveEligibleComplexes = async () => {
@@ -298,7 +329,6 @@ const DevicesPage = () => {
     if (eligibleComplexesLoading) return;
 
     if (!eligibleComplexes.length) {
-      setSelectedComplexId(null);
       setComplexSelectionOpen(false);
       setComplexSelectionRequired(false);
       return;
@@ -397,41 +427,65 @@ const DevicesPage = () => {
     }
   }, [deviceIdentifiersOpen, loadDeviceIdentifiers, selectedComplexId]);
 
+  const handleComplexChange = useCallback((newComplexId) => {
+    const normalizedId = Number(newComplexId);
+    if (!normalizedId) return;
+
+    applyComplexSelection(normalizedId, { closeModal: false });
+
+    if (deviceUsersOpen) {
+      loadDeviceUsers({ complex_id: normalizedId, page: 1 });
+    }
+
+    if (deviceIdentifiersOpen) {
+      loadDeviceIdentifiers({ complex_id: normalizedId, page: 1 });
+    }
+  }, [
+    applyComplexSelection,
+    deviceIdentifiersOpen,
+    deviceUsersOpen,
+    loadDeviceIdentifiers,
+    loadDeviceUsers,
+  ]);
+
   const renderDeviceExtraControls = (isMobile = false) => {
     const wrapperClass = isMobile ? "flex flex-wrap gap-2" : "flex flex-wrap gap-2 md:gap-2";
-    const actionButtonClass = "flex items-center justify-center text-white shadow-md hover:shadow-lg transition-all px-4";
-    const actionButtonStyle = { background: getActiveGradient(0.9, 0.7) };
+    const baseActionButtonClass =
+      "flex items-center justify-center px-4 !bg-transparent !shadow-none hover:!shadow-none border transition-all duration-200";
+
+    const actionStyles = {
+      complex: { color: "#1d4ed8", borderColor: "#93c5fd" },
+      users: { color: "#7c3aed", borderColor: "#c4b5fd" },
+      access: { color: "#0f766e", borderColor: "#99f6e4" },
+      identifiers: { color: "#b45309", borderColor: "#fcd34d" },
+      logs: { color: "#374151", borderColor: "#d1d5db" },
+    };
 
     return (
       <div className={wrapperClass}>
         {eligibleComplexes.length > 1 ? (
-          <div className={isMobile ? "w-full" : "min-w-[220px]"}>
-            <AppSelect
-              items={eligibleComplexes}
-              value={selectedComplexId}
-              onChange={(value) => handleComplexChange(value)}
-              allowAll={false}
-              placeholder={t("devices.complexSelection.changeButton") || "Kompleks sec"}
-              getValue={(item) => item.id}
-              getLabel={(item) => item.name || `Complex ${item.id}`}
-              buttonProps={{
-                size: isMobile ? "sm" : "md",
-                className: "w-full justify-between flex items-center gap-2 text-white shadow-md hover:shadow-lg transition-all px-4 border-0",
-                style: actionButtonStyle,
-              }}
-              menuProps={{
-                className: "dark:bg-gray-800 dark:border-gray-700 max-h-[320px] overflow-y-auto scrollbar-thin z-[9999]",
-              }}
-            />
-          </div>
+          <Button
+            type="button"
+            size={isMobile ? "sm" : "md"}
+            onClick={() => {
+              setComplexSelectionRequired(false);
+              setComplexSelectionOpen(true);
+            }}
+            className={baseActionButtonClass}
+            style={actionStyles.complex}
+          >
+            {selectedComplexName
+              ? `${t("devices.complexSelection.changeButton") || "Kompleks sec"}: ${selectedComplexName}`
+              : t("devices.complexSelection.changeButton") || "Kompleks sec"}
+          </Button>
         ) : null}
 
         <Button
           type="button"
           size={isMobile ? "sm" : "md"}
           onClick={handleOpenDeviceUsers}
-          className={actionButtonClass}
-          style={actionButtonStyle}
+          className={baseActionButtonClass}
+          style={actionStyles.users}
         >
           {t("devices.actions.deviceUsers") || "Istifadeciler"}
         </Button>
@@ -440,8 +494,8 @@ const DevicesPage = () => {
           type="button"
           size={isMobile ? "sm" : "md"}
           onClick={() => setAccessRulesOpen(true)}
-          className={actionButtonClass}
-          style={actionButtonStyle}
+          className={baseActionButtonClass}
+          style={actionStyles.access}
         >
           {t("devices.actions.accessRules") || "Icaze qaydalari"}
         </Button>
@@ -450,8 +504,8 @@ const DevicesPage = () => {
           type="button"
           size={isMobile ? "sm" : "md"}
           onClick={handleOpenDeviceIdentifiers}
-          className={actionButtonClass}
-          style={actionButtonStyle}
+          className={baseActionButtonClass}
+          style={actionStyles.identifiers}
         >
           {t("devices.actions.deviceIdentifiers") || "Identifikatorlar"}
         </Button>
@@ -460,19 +514,13 @@ const DevicesPage = () => {
           type="button"
           size={isMobile ? "sm" : "md"}
           onClick={() => setDeviceLogsOpen(true)}
-          className={actionButtonClass}
-          style={actionButtonStyle}
+          className={baseActionButtonClass}
+          style={actionStyles.logs}
         >
           {t("devices.actions.deviceLogs") || "Loglar"}
         </Button>
       </div>
     );
-  };
-
-  const handleComplexChange = (newComplexId) => {
-    applyComplexSelection(Number(newComplexId), { closeModal: false });
-    loadDeviceUsers({ complex_id: Number(newComplexId), page: 1 });
-    loadDeviceIdentifiers({ complex_id: Number(newComplexId), page: 1 });
   };
 
   const handleOpenUserForm = () => {
@@ -724,13 +772,9 @@ const DevicesPage = () => {
         loading={eligibleComplexesLoading}
         required={complexSelectionRequired}
         onConfirm={(complexId) => {
-          applyComplexSelection(complexId);
-          if (deviceUsersOpen) {
-            loadDeviceUsers({ complex_id: complexId, page: 1 });
-          }
-          if (deviceIdentifiersOpen) {
-            loadDeviceIdentifiers({ complex_id: complexId, page: 1 });
-          }
+          handleComplexChange(complexId);
+          setComplexSelectionOpen(false);
+          setComplexSelectionRequired(false);
         }}
       />
     </div>
