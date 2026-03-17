@@ -1,5 +1,5 @@
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/solid";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { Suspense } from "react";
 import { useCallback, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { motion } from "framer-motion";
@@ -11,7 +11,7 @@ import {
 import myPropertiesAPI from "@/pages/resident/myproperties/api";
 import routes from "@/routes";
 import { useAuth } from "@/store/hooks/useAuth";
-import { loadPropertyById, setSelectedProperty } from "@/store/slices/propertySlice";
+import { setSelectedProperty } from "@/store/slices/propertySlice";
 import { useMaterialTailwindController } from "@/store/hooks/useMaterialTailwind";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import AiChat from "@/widgets/layout/ai-chat";
@@ -180,8 +180,7 @@ export function Dashboard() {
   const [isDesktop, setIsDesktop] = useState(false);
 
   const { showToast: showWsToast } = useDynamicToast();
-  const navigate = useNavigate();
-  const token = getCookie('smartlife_token');
+    const token = getCookie('smartlife_token');
 
   useDocumentTitle();
 
@@ -335,6 +334,11 @@ export function Dashboard() {
       >
         <DashboardNavbar homePath={firstActivePath} parentPathMap={parentPathMap} />
         <div className="mt-4 sm:mt-6 md:mt-8 min-h-screen-minus-footer">
+          <Suspense fallback={
+            <div className="flex items-center justify-center" style={{ minHeight: "60vh" }}>
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500" />
+            </div>
+          }>
           <Routes>
             <Route
               path="/"
@@ -392,6 +396,7 @@ export function Dashboard() {
               element={<NotFound />}
             />
           </Routes>
+          </Suspense>
         </div>
       </motion.div>
       <div className="relative z-10">

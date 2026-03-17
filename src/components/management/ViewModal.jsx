@@ -3,17 +3,8 @@ import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography, Car
 import { 
   XMarkIcon, 
   EyeIcon,
-  UserIcon,
-  EnvelopeIcon,
-  PhoneIcon,
-  MapPinIcon,
-  GlobeAltIcon,
-  IdentificationIcon,
-  CalendarIcon,
   CheckCircleIcon,
   XCircleIcon,
-  BuildingOfficeIcon,
-  HomeIcon,
   InformationCircleIcon
 } from "@heroicons/react/24/outline";
 
@@ -31,19 +22,14 @@ export function ViewModal({
   entityName = "element",
   loading = false
 }) {
-  // Set z-index for portal container when modal is open
   useEffect(() => {
     if (open) {
-      // Find all dialog elements and their portal containers
       const setDialogZIndex = () => {
-        // Find dialog by role
         const dialogs = document.querySelectorAll('div[role="dialog"]');
         dialogs.forEach((dialog) => {
-          // Set z-index on dialog itself
           if (dialog instanceof HTMLElement) {
             dialog.style.zIndex = '999999';
           }
-          // Find parent portal container
           let parent = dialog.parentElement;
           while (parent && parent !== document.body) {
             if (parent instanceof HTMLElement) {
@@ -56,7 +42,6 @@ export function ViewModal({
           }
         });
         
-        // Find backdrop elements
         const backdrops = document.querySelectorAll('[class*="backdrop"]');
         backdrops.forEach((backdrop) => {
           if (backdrop instanceof HTMLElement) {
@@ -65,7 +50,6 @@ export function ViewModal({
         });
       };
       
-      // Set immediately and also after a short delay (for portal rendering)
       setDialogZIndex();
       const timeout = setTimeout(setDialogZIndex, 10);
       
@@ -169,12 +153,10 @@ export function ViewModal({
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Main Info Card */}
             <Card className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700 shadow-lg">
               <CardBody className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {fields.map((field, index) => {
-                    // Custom render function for complex structures
                     if (field.customRender) {
                       return (
                         <div 
@@ -229,7 +211,6 @@ export function ViewModal({
               </CardBody>
             </Card>
 
-            {/* Additional Info Section */}
             {item.meta && Object.keys(item.meta).length > 0 && (
               <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-md">
                 <CardBody className="p-6">
@@ -260,7 +241,7 @@ export function ViewModal({
           </div>
         )}
       </DialogBody>
-      <DialogFooter className="border-t border-gray-200 dark:border-gray-700 dark:bg-gray-800 bg-gray-50 dark:bg-gray-900">
+      <DialogFooter className="border-t border-gray-200 dark:border-gray-700 dark:bg-gray-800 bg-gray-50">
         <Button
           variant="filled"
           color="blue"
