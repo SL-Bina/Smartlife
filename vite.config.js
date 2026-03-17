@@ -19,52 +19,6 @@ export default defineConfig({
     },
     // Chunk size warning threshold (kb)
     chunkSizeWarningLimit: 600,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          // React core — always first to load
-          if (id.includes("node_modules/react/") || id.includes("node_modules/react-dom/") || id.includes("node_modules/react-router-dom/") || id.includes("node_modules/scheduler/")) {
-            return "react-core";
-          }
-          // Redux
-          if (id.includes("node_modules/@reduxjs/") || id.includes("node_modules/react-redux/") || id.includes("node_modules/redux/") || id.includes("node_modules/immer/")) {
-            return "redux";
-          }
-          // Charts — çox ağır (~800kb), yalnız chart olan səhifələrdə lazımdır
-          if (id.includes("node_modules/apexcharts") || id.includes("node_modules/react-apexcharts")) {
-            return "charts";
-          }
-          // Animations
-          if (id.includes("node_modules/framer-motion")) {
-            return "animations";
-          }
-          // Maps — ən ağır kitabxanalardan biri
-          if (id.includes("node_modules/maplibre-gl") || id.includes("node_modules/react-map-gl")) {
-            return "maps";
-          }
-          // Leaflet
-          if (id.includes("node_modules/leaflet") || id.includes("node_modules/react-leaflet")) {
-            return "leaflet";
-          }
-          // Lottie animations
-          if (id.includes("node_modules/lottie-react") || id.includes("node_modules/@lottiefiles")) {
-            return "lottie";
-          }
-          // UI components
-          if (id.includes("node_modules/@material-tailwind") || id.includes("node_modules/@radix-ui")) {
-            return "ui-lib";
-          }
-          // i18n
-          if (id.includes("node_modules/i18next") || id.includes("node_modules/react-i18next")) {
-            return "i18n";
-          }
-          // Remaining node_modules → vendor chunk
-          if (id.includes("node_modules/")) {
-            return "vendor";
-          }
-        },
-      },
-    },
   },
   server: {
     port: 3157,

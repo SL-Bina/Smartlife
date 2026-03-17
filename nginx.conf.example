@@ -7,7 +7,7 @@ server {
     listen 80;
     server_name front.smartlife.az;
 
-    root /home/frontend/design/Smartlife;
+    root /home/frontend/dist;
     index index.html;
 
     # Log faylları
