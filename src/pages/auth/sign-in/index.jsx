@@ -1,7 +1,5 @@
 import {
-  Card,
   Input,
-  Checkbox,
   Button,
   Typography,
   Menu,
@@ -12,9 +10,10 @@ import {
 } from "@material-tailwind/react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { useAuth } from "@/store/exports";
+import { useAuth, useMaterialTailwindController, setDarkMode } from "@/store/exports";
 import { useTranslation } from "react-i18next";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
 import { getFirstActivePath } from "@/utils/getFirstActivePath";
 import { filterRoutesByRole } from "@/layouts/dashboard";
 import routes from "@/routes";
@@ -22,25 +21,99 @@ import routes from "@/routes";
 import ReactCountryFlag from "react-country-flag";
 
 const languages = [
-  { 
-    code: "az", 
-    label: "Azərbaycan dili", 
-    flag: <ReactCountryFlag countryCode="AZ" svg style={{ width: "1.5em", height: "1.5em" }} /> 
+  {
+    code: "az",
+    label: "Azərbaycan dili",
+    flag: <ReactCountryFlag countryCode="AZ" svg style={{ width: "1.5em", height: "1.5em" }} />
   },
-  { 
-    code: "en", 
-    label: "English", 
-    flag: <ReactCountryFlag countryCode="GB" svg style={{ width: "1.5em", height: "1.5em" }} /> 
+  {
+    code: "en",
+    label: "English",
+    flag: <ReactCountryFlag countryCode="GB" svg style={{ width: "1.5em", height: "1.5em" }} />
   },
-  { 
-    code: "ru", 
-    label: "Русский", 
-    flag: <ReactCountryFlag countryCode="RU" svg style={{ width: "1.5em", height: "1.5em" }} /> 
+  {
+    code: "ru",
+    label: "Русский",
+    flag: <ReactCountryFlag countryCode="RU" svg style={{ width: "1.5em", height: "1.5em" }} />
   },
 ];
 
+function MockQrCode() {
+  return (
+    <div className="rounded-2xl bg-white p-3 border border-white/30 dark:border-white/10 shadow-2xl">
+      <svg viewBox="0 0 220 220" className="h-52 w-52 rounded-xl bg-white">
+        <rect x="0" y="0" width="220" height="220" fill="#ffffff" />
+
+        <rect x="12" y="12" width="56" height="56" fill="#111827" />
+        <rect x="20" y="20" width="40" height="40" fill="#ffffff" />
+        <rect x="28" y="28" width="24" height="24" fill="#111827" />
+
+        <rect x="152" y="12" width="56" height="56" fill="#111827" />
+        <rect x="160" y="20" width="40" height="40" fill="#ffffff" />
+        <rect x="168" y="28" width="24" height="24" fill="#111827" />
+
+        <rect x="12" y="152" width="56" height="56" fill="#111827" />
+        <rect x="20" y="160" width="40" height="40" fill="#ffffff" />
+        <rect x="28" y="168" width="24" height="24" fill="#111827" />
+
+        <rect x="86" y="22" width="8" height="8" fill="#111827" />
+        <rect x="102" y="22" width="8" height="8" fill="#111827" />
+        <rect x="118" y="22" width="8" height="8" fill="#111827" />
+        <rect x="86" y="38" width="8" height="8" fill="#111827" />
+        <rect x="118" y="38" width="8" height="8" fill="#111827" />
+        <rect x="86" y="54" width="8" height="8" fill="#111827" />
+        <rect x="102" y="54" width="8" height="8" fill="#111827" />
+        <rect x="118" y="54" width="8" height="8" fill="#111827" />
+
+        <rect x="86" y="86" width="8" height="8" fill="#111827" />
+        <rect x="102" y="86" width="8" height="8" fill="#111827" />
+        <rect x="118" y="86" width="8" height="8" fill="#111827" />
+        <rect x="134" y="86" width="8" height="8" fill="#111827" />
+        <rect x="150" y="86" width="8" height="8" fill="#111827" />
+        <rect x="166" y="86" width="8" height="8" fill="#111827" />
+
+        <rect x="86" y="102" width="8" height="8" fill="#111827" />
+        <rect x="118" y="102" width="8" height="8" fill="#111827" />
+        <rect x="134" y="102" width="8" height="8" fill="#111827" />
+        <rect x="166" y="102" width="8" height="8" fill="#111827" />
+
+        <rect x="86" y="118" width="8" height="8" fill="#111827" />
+        <rect x="102" y="118" width="8" height="8" fill="#111827" />
+        <rect x="118" y="118" width="8" height="8" fill="#111827" />
+        <rect x="150" y="118" width="8" height="8" fill="#111827" />
+        <rect x="166" y="118" width="8" height="8" fill="#111827" />
+
+        <rect x="86" y="134" width="8" height="8" fill="#111827" />
+        <rect x="118" y="134" width="8" height="8" fill="#111827" />
+        <rect x="134" y="134" width="8" height="8" fill="#111827" />
+        <rect x="150" y="134" width="8" height="8" fill="#111827" />
+        <rect x="166" y="134" width="8" height="8" fill="#111827" />
+
+        <rect x="86" y="150" width="8" height="8" fill="#111827" />
+        <rect x="102" y="150" width="8" height="8" fill="#111827" />
+        <rect x="134" y="150" width="8" height="8" fill="#111827" />
+        <rect x="166" y="150" width="8" height="8" fill="#111827" />
+
+        <rect x="86" y="166" width="8" height="8" fill="#111827" />
+        <rect x="102" y="166" width="8" height="8" fill="#111827" />
+        <rect x="118" y="166" width="8" height="8" fill="#111827" />
+        <rect x="134" y="166" width="8" height="8" fill="#111827" />
+        <rect x="150" y="166" width="8" height="8" fill="#111827" />
+        <rect x="166" y="166" width="8" height="8" fill="#111827" />
+
+        <rect x="86" y="182" width="8" height="8" fill="#111827" />
+        <rect x="118" y="182" width="8" height="8" fill="#111827" />
+        <rect x="134" y="182" width="8" height="8" fill="#111827" />
+        <rect x="166" y="182" width="8" height="8" fill="#111827" />
+      </svg>
+    </div>
+  );
+}
+
 export function SignIn() {
   const { login, loading, user, isAuthenticated, isInitialized } = useAuth();
+  const [controller, dispatch] = useMaterialTailwindController();
+  const { darkMode } = controller;
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [identifier, setIdentifier] = useState("");
@@ -85,7 +158,7 @@ export function SignIn() {
 
   if (!isInitialized) {
     return (
-      <section className="h-full flex items-center justify-center">
+      <section className="h-full flex items-center justify-center bg-gray-50 dark:bg-gray-950">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-400">{t("auth.signIn.loading") || "Yüklənir..."}</p>
@@ -95,161 +168,147 @@ export function SignIn() {
   }
 
   return (
-    <section className="h-full flex gap-4 relative px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-6 overflow-hidden">
-      <div 
-        className="absolute inset-0 lg:hidden bg-cover bg-center opacity-40 dark:opacity-25 -z-10"
-        style={{ backgroundImage: "url('/img/pattern.png')" }}
-      ></div>
-
-      <div className="absolute left-1/2 -translate-x-1/2 top-6 sm:top-8 lg:hidden z-20">
-        <Link to="/">
-          <img
-            src="/Vector_Logo/color_logo.svg"
-            alt="SmartLife Logo"
-            className="w-24 h-24 sm:w-28 sm:h-28 object-contain"
-          />
-        </Link>
-      </div>
-
-      <div className="absolute right-4 sm:right-6 lg:right-8 top-4 sm:top-6 lg:top-6 z-10">
-        <Menu placement="bottom-end">
-          <MenuHandler>
-            <Button variant="text" className="flex items-center gap-1 px-2 normal-case bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700">
-              {languages.map((lng) =>
-                lng.code === i18n.language ? (
-                  <span key={lng.code} className="flex items-center gap-1">
-                    <span>{lng.flag}</span>
-                    <span className="hidden sm:inline-block text-xs font-medium">
-                      {lng.label}
-                    </span>
-                  </span>
-                ) : null
-              )}
-            </Button>
-          </MenuHandler>
-          <MenuList className="min-w-[160px]">
-            {languages.map((lng) => (
-              <MenuItem key={lng.code} onClick={() => changeLanguage(lng.code)}>
-                <span className="mr-2">{lng.flag}</span>
-                <span>{lng.label}</span>
-              </MenuItem>
-            ))}
-          </MenuList>
-        </Menu>
-      </div>
-
-      <div className="w-full lg:w-3/5 flex flex-col justify-center items-center lg:items-start mt-32 sm:mt-36 lg:mt-0 relative z-10">
-        <div className="w-full max-w-md mx-auto lg:mx-0 " style={{margin: "0 auto"}}>
-          <div className="lg:flex mb-6 hidden justify-center items-center" style={{margin: "0 auto"}}>
-            <Link to="/" className="flex items-center" style={{margin: "0 auto"}}>
+    <section className="min-h-screen bg-slate-100 px-4 py-8 dark:bg-[#020617] sm:px-6 lg:px-8">
+      <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-5xl items-center justify-center">
+        <div className="flex w-full flex-col justify-center overflow-hidden rounded-3xl bg-white dark:bg-[#020617] shadow-2xl dark:border dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex w-full items-center justify-between border-b border-slate-200 px-10 py-6 dark:border-slate-800 sm:px-12 lg:px-16">
+            <Link to="/" className="inline-flex items-center">
               <img
-                src="/Vector_Logo/color_logo.svg"
+                src={darkMode ? "/Vector_Logo/white_logo.svg" : "/Vector_Logo/color_logo.svg"}
                 alt="SmartLife Logo"
-                className="w-28 h-28 object-contain"
+                className="h-14 w-auto max-w-[220px] object-contain sm:h-16"
               />
             </Link>
-          </div>
 
-          <div className="text-center lg:text-left mb-4 lg:mb-6">
-            <Typography variant="h2" className="font-bold text-xl sm:text-2xl lg:text-3xl text-center">
-              {t("auth.signIn.title")}
-            </Typography>
-            {/* <Typography
-              variant="paragraph"
-              color="blue-gray"
-              className="text-lg font-normal"
-            >
-              {t("auth.signIn.subtitle")}
-            </Typography> */}
-          </div>
-          <form className="mt-6 mb-2 w-full" onSubmit={handleSubmit}>
-          <div className="mb-1 flex flex-col gap-6">
-            <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
-              {t("auth.signIn.identifierLabel") || "Email, Username, Phone və ya Name"}
-            </Typography>
-            <Input
-              type="text"
-              size="lg"
-              placeholder={t("auth.signIn.identifierPlaceholder") || "Email, Username, Phone və ya Name daxil edin"}
-              value={identifier}
-              onChange={(e) => setIdentifier(e.target.value)}
-              className=" !border-t-red-500 !border-red-500 focus:!border-red-600"
-              labelProps={{
-                className: "before:content-none after:content-none",
-              }}
-            />
-            <Typography variant="small" color="blue-gray" className="-mb-3 font-medium">
-              {t("auth.signIn.passwordLabel")}
-            </Typography>
-            <div className="relative">
-              <Input
-                type={showPassword ? "text" : "password"}
-                size="lg"
-                placeholder="********"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className=" !border-t-red-500 !border-red-500 focus:!border-red-600 pr-12"
-                labelProps={{
-                  className: "before:content-none after:content-none",
-                }}
-              />
+            <div className="flex items-center gap-2">
               <IconButton
                 variant="text"
                 size="sm"
-                className="!absolute right-1 top-1/2 -translate-y-1/2 rounded-full hover:bg-blue-gray-50 dark:hover:bg-gray-700"
-                onClick={() => setShowPassword(!showPassword)}
-                type="button"
+                onClick={() => setDarkMode(dispatch, !darkMode)}
+                className="rounded-lg border border-gray-200 bg-gray-50 dark:bg-black text-blue-gray-700 transition-colors hover:bg-gray-100 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 dark:hover:bg-slate-700"
               >
-                {showPassword ? (
-                  <EyeSlashIcon className="h-5 w-5 text-blue-gray-500 dark:text-gray-400" />
-                ) : (
-                  <EyeIcon className="h-5 w-5 text-blue-gray-500 dark:text-gray-400" />
-                )}
+                {darkMode ? <SunIcon className="h-5 w-5 text-amber-400" /> : <MoonIcon className="h-5 w-5" />}
               </IconButton>
+
+              <Menu placement="bottom-end">
+                <MenuHandler>
+                  <Button variant="text" className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-blue-gray-700 normal-case dark:border-slate-700 dark:bg-slate-800 ">
+                    {languages.map((lng) =>
+                      lng.code === i18n.language ? (
+                        <span key={lng.code} className="flex items-center gap-2">
+                          <span>{lng.flag}</span>
+                          <span className="hidden text-xs font-medium sm:inline-block">{lng.label}</span>
+                        </span>
+                      ) : null
+                    )}
+                  </Button>
+                </MenuHandler>
+                <MenuList className="min-w-[180px] dark:border-slate-700 dark:bg-slate-800">
+                  {languages.map((lng) => (
+                    <MenuItem key={lng.code} onClick={() => changeLanguage(lng.code)} className="flex items-center gap-2  dark:hover:bg-slate-700/70">
+                      <span>{lng.flag}</span>
+                      <span>{lng.label}</span>
+                    </MenuItem>
+                  ))}
+                </MenuList>
+              </Menu>
             </div>
           </div>
-          {error && (
-            <Typography variant="small" color="red" className="mt-2 font-medium">
-              {error}
-            </Typography>
-          )}
-          {/* <Checkbox
-            label={
-              <Typography
-                variant="small"
-                color="gray"
-                className="flex items-center justify-start font-medium"
-              >
-                I agree the&nbsp;
-                <a
-                  href="#"
-                  className="font-normal text-black transition-colors hover:text-gray-900 underline"
-                >
-                  Terms and Conditions
-                </a>
-              </Typography>
-            }
-            containerProps={{ className: "-ml-2.5" }}
-          /> */}
-          <Button 
-            type="submit" 
-            className="mt-6" 
-            fullWidth
-            disabled={loading}
-          >
-            {loading ? t("auth.signIn.loading") || "Yüklənir..." : t("auth.signIn.submit")}
-          </Button>
-        </form>
+          <div className="grid grid-cols-1 lg:grid-cols-2">
+
+            <div className="flex min-h-[680px] flex-col items-center justify-center bg-white dark:bg-[#020617] p-6 dark:bg-slate-900 sm:p-8 lg:p-10">
+
+
+              <div className="mb-6 w-full max-w-md text-center">
+                <Typography variant="h3" className="mb-2 text-3xl font-bold text-blue-gray-900 dark:text-gray-100">
+                  {t("auth.signIn.title")}
+                </Typography>
+                <Typography className="text-sm font-normal text-blue-gray-600 dark:text-gray-300">
+                  {t("auth.signIn.subtitle") || "Hesabınıza daxil olaraq davam edin"}
+                </Typography>
+              </div>
+
+              <form className="w-full max-w-md space-y-5" onSubmit={handleSubmit}>
+                <div className="space-y-2">
+                  <Typography variant="small" color="blue-gray" className="text-center font-medium text-blue-gray-800 dark:text-gray-200">
+                    {t("auth.signIn.identifierLabel") || "Email, Username, Phone və ya Name"}
+                  </Typography>
+                  <Input
+                    type="text"
+                    size="lg"
+                    placeholder={t("auth.signIn.identifierPlaceholder") || "Email, Username, Phone və ya Name daxil edin"}
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                    className="!border-gray-300 !bg-white !text-blue-gray-900 placeholder:!text-blue-gray-500 dark:!border-slate-700 dark:!bg-slate-800 dark:!text-gray-100 dark:placeholder:!text-slate-400"
+                    labelProps={{ className: "before:content-none after:content-none" }}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Typography variant="small" color="blue-gray" className="text-center font-medium text-blue-gray-800 dark:text-gray-200">
+                    {t("auth.signIn.passwordLabel")}
+                  </Typography>
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      size="lg"
+                      placeholder="********"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="!border-gray-300 !bg-white !text-blue-gray-900 placeholder:!text-blue-gray-500 pr-11 dark:!border-slate-700 dark:!bg-slate-800 dark:!text-gray-100 dark:placeholder:!text-slate-400"
+                      labelProps={{ className: "before:content-none after:content-none" }}
+                    />
+                    <IconButton
+                      variant="text"
+                      size="sm"
+                      className="!absolute right-1 top-1/2 -translate-y-1/2 rounded-full"
+                      onClick={() => setShowPassword(!showPassword)}
+                      type="button"
+                    >
+                      {showPassword ? (
+                        <EyeSlashIcon className="h-5 w-5 text-blue-gray-500 dark:text-slate-400" />
+                      ) : (
+                        <EyeIcon className="h-5 w-5 text-blue-gray-500 dark:text-slate-400" />
+                      )}
+                    </IconButton>
+                  </div>
+                </div>
+
+                {error && (
+                  <Typography variant="small" color="red" className="text-center font-medium">
+                    {error}
+                  </Typography>
+                )}
+
+                <Button type="submit" fullWidth disabled={loading} className="mt-2 rounded-lg bg-red-600 hover:bg-red-700">
+                  {loading ? t("auth.signIn.loading") || "Yüklənir..." : t("auth.signIn.submit")}
+                </Button>
+              </form>
+            </div>
+
+            <div className="relative flex min-h-[420px] items-center justify-center bg-gradient-to-br from-rose-500 to-pink-500 p-8 text-white dark:from-slate-900 dark:via-fuchsia-950 dark:to-slate-950 sm:p-10 lg:min-h-[680px] lg:p-12">
+              <div className="flex w-full max-w-sm flex-col items-center justify-center text-center">
+                <Typography variant="h2" className="mb-4 text-4xl font-extrabold text-black !opacity-100 dark:text-white">
+                  QR ilə giriş
+                </Typography>
+                <Typography className="mb-7 text-base font-medium text-black !opacity-100 dark:!text-slate-100 dark:text-white">
+                  Mobil tətbiq ilə QR kodu skan et və saniyələr içində hesabına daxil ol.
+                </Typography>
+
+                <div className="mb-7 flex justify-center">
+                  <MockQrCode />
+                </div>
+
+                <div className="space-y-2 text-center text-sm font-medium text-black/80 dark:text-slate-200 dark:text-white">
+                  <p>1. SmartLife mobil tətbiqini aç</p>
+                  <p>2. QR scan bölməsində kodu oxut</p>
+                  <p>3. Təsdiqlə və avtomatik daxil ol</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-
       </div>
-      <div className="w-2/5 h-full hidden lg:block">
-        <img
-          src="/img/pattern.png"
-          className="h-full w-full object-cover rounded-3xl"
-        />
-      </div>
-
     </section>
   );
 }

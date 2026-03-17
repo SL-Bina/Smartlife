@@ -11,7 +11,7 @@ function PageLoader() {
   );
 }
 
-function App() {
+function App() {  
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>

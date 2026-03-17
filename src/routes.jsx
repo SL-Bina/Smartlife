@@ -24,59 +24,55 @@ import {
   BookOpenIcon,
   CpuChipIcon,
 } from "@heroicons/react/24/solid";
-import { lazy } from "react";
-
-// --- Lazy page imports (code splitting — yalnız lazım olanda yüklənir) ---
-// Dashboard pages
-const Home = lazy(() => import("@/pages/dashboard/home"));
-const Notifications = lazy(() => import("@/pages/dashboard/notifications"));
-const KPI = lazy(() => import("@/pages/dashboard/kpi"));
-const ApplicationsListPage = lazy(() => import("@/pages/dashboard/applications/list"));
-const ApplicationsEvaluationPage = lazy(() => import("@/pages/dashboard/applications/evaluation"));
-const ComplexDashboardPage = lazy(() => import("@/pages/dashboard/complex-dashboard"));
-const SendNotificationPage = lazy(() => import("@/pages/dashboard/notifications/send"));
-const NotificationArchivePage = lazy(() => import("@/pages/dashboard/notifications/archive"));
-const SentSMSPage = lazy(() => import("@/pages/dashboard/notifications/sent-sms"));
-const CreateQueryPage = lazy(() => import("@/pages/dashboard/queries/create"));
-const QueriesListPage = lazy(() => import("@/pages/dashboard/queries/list"));
-const ReceptionPage = lazy(() => import("@/pages/dashboard/reception"));
-const ServicesPage = lazy(() => import("@/pages/dashboard/services"));
-const ElectronicDocumentsPage = lazy(() => import("@/pages/dashboard/e-documents"));
-const SignIn = lazy(() => import("@/pages/auth/sign-in"));
-const Profile = lazy(() => import("@/pages/dashboard/profile"));
-const Settings = lazy(() => import("@/pages/dashboard/settings"));
-// Management pages
-const MtkPage = lazy(() => import("@/pages/dashboard/management/mtk"));
-const ComplexesPage = lazy(() => import("@/pages/dashboard/management/complexes"));
-const BuildingsPage = lazy(() => import("@/pages/dashboard/management/buildings"));
-const BlocksPage = lazy(() => import("@/pages/dashboard/management/blocks"));
-const PropertiesPage = lazy(() => import("@/pages/dashboard/management/properties"));
-const ResidentsPage = lazy(() => import("@/pages/dashboard/management/residents"));
-// Finance pages
-const InvoicesPage = lazy(() => import("@/pages/dashboard/finance/invoices"));
-const PaymentHistoryPage = lazy(() => import("@/pages/dashboard/finance/payment-history"));
-const ReportsPage = lazy(() => import("@/pages/dashboard/finance/reports"));
-const DebtorApartmentsPage = lazy(() => import("@/pages/dashboard/finance/debtor-apartments"));
-const ExpensesPage = lazy(() => import("@/pages/dashboard/finance/expenses"));
-const DepositPage = lazy(() => import("@/pages/dashboard/finance/deposit"));
-const TransfersPage = lazy(() => import("@/pages/dashboard/finance/transfers"));
-const DebtPage = lazy(() => import("@/pages/dashboard/finance/debt"));
-// Other pages
-const PermissionsPage = lazy(() => import("@/pages/dashboard/permissions"));
-const DevicesPage = lazy(() => import("@/pages/dashboard/devices"));
-const ParkingPage = lazy(() => import("@/pages/dashboard/parking"));
-const UserAddPage = lazy(() => import("@/pages/dashboard/users/add"));
-// Resident pages
-const ResidentHomePage = lazy(() => import("@/pages/resident/home"));
-const ResidentNotificationsPage = lazy(() => import("@/pages/resident/notifications"));
-const ResidentEDocumentsPage = lazy(() => import("@/pages/resident/e-documents"));
-const ResidentTicketsPage = lazy(() => import("@/pages/resident/tickets"));
-const ResidentMyInvaoicesPage = lazy(() => import("@/pages/resident/myinvoices"));
-const ResidentProfilePage = lazy(() => import("@/pages/resident/profile"));
-const ResidentMyPropertiesPage = lazy(() => import("@/pages/resident/myproperties"));
-const ResidentMyServicesPage = lazy(() => import("@/pages/resident/myservices"));
-const ResidentComplexDashboardPage = lazy(() => import("@/pages/resident/complexdashboard"));
-const ResidentPaymentHistoryPage = lazy(() => import("@/pages/resident/payment-history"));
+import {
+  ApplicationsEvaluationPage,
+  ApplicationsListPage,
+  BlocksPage,
+  BuildingsPage,
+  ComplexDashboardPage,
+  ComplexesPage,
+  CreateQueryPage,
+  DebtorApartmentsPage,
+  DebtPage,
+  DepositPage,
+  DevicesPage,
+  ElectronicDocumentsPage,
+  ExpensesPage,
+  Home,
+  InvoicesPage,
+  KPI,
+  MtkPage,
+  NotificationArchivePage,
+  Notifications,
+  ParkingPage,
+  PaymentHistoryPage,
+  PermissionsPage,
+  Profile,
+  PropertiesPage,
+  QueriesListPage,
+  ReceptionPage,
+  ReportsPage,
+  ResidentsPage,
+  SentSMSPage,
+  SendNotificationPage,
+  ServicesPage,
+  Settings,
+  TransfersPage,
+  UserAddPage,
+} from "@/configs/dashboardLazyPages";
+import {
+  ResidentComplexDashboardPage,
+  ResidentEDocumentsPage,
+  ResidentHomePage,
+  ResidentMyInvaoicesPage,
+  ResidentMyPropertiesPage,
+  ResidentMyServicesPage,
+  ResidentNotificationsPage,
+  ResidentPaymentHistoryPage,
+  ResidentProfilePage,
+  ResidentTicketsPage,
+  SignIn,
+} from "@/configs/residentAuthLazyPages";
 
 const icon = {
   className: "w-5 h-5 text-inherit dark:text-white",
@@ -97,7 +93,6 @@ export const routes = [
       {
         icon: <BanknotesIcon {...icon} />,
         name: "sidebar.finance",
-        // Submenu - modul yoxdur, yalnız children-ın modullarına görə açılır
         children: [
           {
             icon: <DocumentTextIcon {...icon} />,
