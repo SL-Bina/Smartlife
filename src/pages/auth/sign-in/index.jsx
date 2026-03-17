@@ -168,15 +168,15 @@ export function SignIn() {
   }
 
   return (
-    <section className="min-h-screen bg-slate-100 px-4 py-8 dark:bg-[#020617] sm:px-6 lg:px-8">
-      <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-5xl items-center justify-center">
-        <div className="flex w-full flex-col justify-center overflow-hidden rounded-3xl bg-white dark:bg-[#020617] shadow-2xl dark:border dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex w-full items-center justify-between border-b border-slate-200 px-10 py-6 dark:border-slate-800 sm:px-12 lg:px-16">
+    <section className="min-h-screen bg-slate-100 dark:bg-[#020617]">
+      <div className="mx-auto flex min-h-screen w-full max-w-5xl items-center justify-center px-0 py-0 sm:px-4 sm:py-6 lg:px-8 lg:py-10">
+        <div className="flex w-full flex-col justify-center overflow-hidden bg-white dark:bg-[#020617] shadow-2xl dark:border-slate-800 sm:rounded-3xl sm:border sm:dark:border dark:bg-slate-900">
+          <div className="flex w-full items-center justify-between border-b border-slate-200 px-4 py-4 dark:border-slate-800 sm:px-8 sm:py-5 lg:px-12 lg:py-6">
             <Link to="/" className="inline-flex items-center">
               <img
                 src={darkMode ? "/Vector_Logo/white_logo.svg" : "/Vector_Logo/color_logo.svg"}
                 alt="SmartLife Logo"
-                className="h-14 w-auto max-w-[220px] object-contain sm:h-16"
+                className="h-10 w-auto max-w-[160px] object-contain sm:h-13 sm:max-w-[200px] lg:h-16 lg:max-w-[220px]"
               />
             </Link>
 
@@ -216,7 +216,7 @@ export function SignIn() {
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2">
 
-            <div className="flex min-h-[680px] flex-col items-center justify-center bg-white dark:bg-[#020617] p-6 dark:bg-slate-900 sm:p-8 lg:p-10">
+            <div className="flex min-h-[calc(100vh-65px)] flex-col items-center justify-center bg-white dark:bg-[#020617] p-6 dark:bg-slate-900 sm:min-h-[580px] sm:p-8 lg:min-h-[680px] lg:p-10">
 
 
               <div className="mb-6 w-full max-w-md text-center">
@@ -286,7 +286,7 @@ export function SignIn() {
               </form>
             </div>
 
-            <div className="relative flex min-h-[420px] items-center justify-center bg-gradient-to-br from-rose-500 to-pink-500 p-8 text-white dark:from-slate-900 dark:via-fuchsia-950 dark:to-slate-950 sm:p-10 lg:min-h-[680px] lg:p-12">
+            <div className="relative hidden items-center justify-center bg-gradient-to-br from-rose-500 to-pink-500 p-8 text-white dark:from-slate-900 dark:via-fuchsia-950 dark:to-slate-950 lg:flex lg:min-h-[680px] lg:p-12">
               <div className="flex w-full max-w-sm flex-col items-center justify-center text-center">
                 <Typography variant="h2" className="mb-4 text-4xl font-extrabold text-black !opacity-100 dark:text-white">
                   QR ilə giriş
