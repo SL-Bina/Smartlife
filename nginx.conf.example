@@ -22,6 +22,19 @@ server {
         try_files $uri $uri/ /index.html;
     }
 
+    # index.html həmişə yenilənsin (yeni deploydan sonra köhnə chunk linkləri qalmasın)
+    location = /index.html {
+        try_files $uri =404;
+        expires -1;
+        add_header Cache-Control "no-store, no-cache, must-revalidate";
+    }
+
+    # Digər HTML faylları üçün də cache-i deaktiv et
+    location ~* \.html$ {
+        expires -1;
+        add_header Cache-Control "no-store, no-cache, must-revalidate";
+    }
+
     # Statik fayllar üçün cache control (assets, img, və s.)
     location /assets/ {
         try_files $uri =404;
