@@ -117,6 +117,15 @@ export const devicesAPI = {
     }
   },
 
+  getBasipLogs: async (params = {}) => {
+    try {
+      const response = await api.get("/integration/device/basip-project/log-list", { params });
+      return response;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
   getBasipUsers: async ({ complex_id, page = 1, size = 20 }) => {
     try {
       const response = await api.post("/integration/device/basip-project/users", {

@@ -54,6 +54,15 @@ export function DeviceTable({ items, loading, page, lastPage, onEdit, onDelete, 
   const { t } = useTranslation();
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
+  const getTypeModel = (row) => {
+    const type = String(row?.type || "").toUpperCase();
+    const model = String(row?.model || "").toUpperCase();
+    if (type && model) return `${type} / ${model}`;
+    if (type) return type;
+    if (model) return model;
+    return row?.apartment || "-";
+  };
+
   const handleSort = (key) => {
     setSortConfig((prev) =>
       prev.key === key
@@ -89,7 +98,14 @@ export function DeviceTable({ items, loading, page, lastPage, onEdit, onDelete, 
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50/80 dark:bg-gray-900/50 border-b border-gray-200/50 dark:border-gray-700/50">
-                {[t("devices.table.name"), t("devices.table.building"), t("devices.table.apartment"), t("devices.table.device"), t("devices.table.userStatus"), ""].map((h, i) => (
+                {[
+                  t("devices.table.name") || "Ad",
+                  t("devices.table.building") || "Domain",
+                  t("devices.table.apartment") || "Type / Model",
+                  t("devices.table.device") || "Endpoint",
+                  t("devices.table.userStatus") || "Status",
+                  "",
+                ].map((h, i) => (
                   <th key={i} className="px-4 xl:px-6 py-3 xl:py-4 text-left">
                     <div className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
                   </th>
@@ -167,6 +183,12 @@ export function DeviceTable({ items, loading, page, lastPage, onEdit, onDelete, 
     </div>
   );
 
+  const TypeModelCell = ({ row }) => (
+    <Typography variant="small" className="text-gray-700 dark:text-gray-300 text-xs xl:text-sm font-medium">
+      {getTypeModel(row)}
+    </Typography>
+  );
+
   const SerialCell = ({ row }) => (
     <div className="flex flex-col gap-1">
       {(row.devices || []).map((d, i) => (
@@ -213,9 +235,9 @@ export function DeviceTable({ items, loading, page, lastPage, onEdit, onDelete, 
             <thead>
               <tr className="bg-gray-50/80 dark:bg-gray-900/50 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50">
                 <ThSort label={t("devices.table.name") || "Ad"} colKey="name" />
-                <ThSort label={t("devices.table.building") || "Bina"} colKey="building" />
-                <ThSort label={t("devices.table.apartment") || "Mənzil"} />
-                <ThSort label={t("devices.table.device") || "Serial"} />
+                <ThSort label={t("devices.table.building") || "Domain"} colKey="building" />
+                <ThSort label={t("devices.table.apartment") || "Type / Model"} />
+                <ThSort label={t("devices.table.device") || "Endpoint"} />
                 <ThSort label={t("devices.table.userStatus") || "Status"} colKey="status" />
                 <th className="px-4 xl:px-6 py-3 xl:py-4 text-left">
                   <Typography variant="small" className="font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider text-xs">
@@ -239,9 +261,7 @@ export function DeviceTable({ items, loading, page, lastPage, onEdit, onDelete, 
                     </Typography>
                   </td>
                   <td className="px-4 xl:px-6 py-3 xl:py-4 whitespace-nowrap">
-                    <Typography variant="small" className="text-gray-700 dark:text-gray-300 text-xs xl:text-sm">
-                      {row.apartment}
-                    </Typography>
+                    <TypeModelCell row={row} />
                   </td>
                   <td className="px-4 xl:px-6 py-3 xl:py-4 min-w-[220px]">
                     <SerialCell row={row} />
@@ -282,7 +302,7 @@ export function DeviceTable({ items, loading, page, lastPage, onEdit, onDelete, 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Typography variant="small" className="text-[11px] font-bold uppercase text-gray-400 dark:text-gray-500 mb-1">
-                      {t("devices.table.building") || "Bina"}
+                      {t("devices.table.building") || "Domain"}
                     </Typography>
                     <Typography variant="small" className="font-semibold text-gray-800 dark:text-gray-200 text-sm">
                       {row.building}
@@ -290,17 +310,15 @@ export function DeviceTable({ items, loading, page, lastPage, onEdit, onDelete, 
                   </div>
                   <div>
                     <Typography variant="small" className="text-[11px] font-bold uppercase text-gray-400 dark:text-gray-500 mb-1">
-                      {t("devices.table.apartment") || "Mənzil"}
+                      {t("devices.table.apartment") || "Type / Model"}
                     </Typography>
-                    <Typography variant="small" className="text-gray-700 dark:text-gray-300 text-sm">
-                      {row.apartment}
-                    </Typography>
+                    <TypeModelCell row={row} />
                   </div>
                 </div>
 
                 <div>
                   <Typography variant="small" className="text-[11px] font-bold uppercase text-gray-400 dark:text-gray-500 mb-1">
-                    {t("devices.table.device") || "Serial"}
+                    {t("devices.table.device") || "Endpoint"}
                   </Typography>
                   <SerialCell row={row} />
                 </div>

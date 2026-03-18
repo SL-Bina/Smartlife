@@ -157,6 +157,10 @@ const DevicesPage = () => {
   const [deviceIdentifiersPage, setDeviceIdentifiersPage] = useState(1);
   const [deviceIdentifiersTotal, setDeviceIdentifiersTotal] = useState(0);
   const [deviceLogsOpen, setDeviceLogsOpen] = useState(false);
+  const [deviceLogs, setDeviceLogs] = useState([]);
+  const [deviceLogsLoading, setDeviceLogsLoading] = useState(false);
+  const [deviceLogsPage, setDeviceLogsPage] = useState(1);
+  const [deviceLogsTotal, setDeviceLogsTotal] = useState(0);
   const [deviceViewOpen, setDeviceViewOpen] = useState(false);
   const [deviceViewLoading, setDeviceViewLoading] = useState(false);
   const [selectedDeviceView, setSelectedDeviceView] = useState(null);
@@ -510,6 +514,158 @@ const DevicesPage = () => {
     loadDeviceIdentifiers({ page: safePage });
   };
 
+  const loadDeviceLogs = useCallback(async (opts = {}) => {
+    const complex_id = Number(opts.complex_id ?? selectedComplexId);
+    if (!complex_id) {
+      setDeviceLogs([]);
+      setDeviceLogsTotal(0);
+      setDeviceLogsPage(1);
+      return;
+    }
+
+    const pageNo = Math.max(1, Number(opts.page) || 1);
+    setDeviceLogsLoading(true);
+
+    try {
+      const response = await devicesAPI.getBasipLogs({
+        complex_id,
+        page: pageNo,
+        size: 20,
+      });
+
+      const logs = response?.data?.body?.data ?? [];
+      const pagination = response?.data?.body?.pagination ?? {};
+
+      const mappedLogs = logs.map((log, index) => {
+        const primaryIdentifier = Array.isArray(log?.identifiers) ? log.identifiers[0] : null;
+        const primaryUser = Array.isArray(log?.users) ? log.users[0] : null;
+
+        const rawDate =
+          log?.created_at ||
+          log?.event_time ||
+          log?.date ||
+          log?.timestamp ||
+          log?.status_updated_at ||
+          null;
+
+        const timestamp = Number(rawDate);
+        const parsedDate = Number.isFinite(timestamp)
+          ? new Date(timestamp * 1000)
+          : rawDate
+            ? new Date(rawDate)
+            : null;
+
+        const dateLabel = parsedDate && !Number.isNaN(parsedDate.getTime())
+          ? parsedDate.toLocaleString("az-AZ")
+          : "-";
+
+        const accessAction =
+          log?.access_action ||
+          log?.acs_message ||
+          log?.access_result ||
+          log?.result ||
+          log?.event ||
+          log?.message ||
+          "";
+
+        const codeLabel = String(log?.code || "")
+          .replace(/_/g, " ")
+          .trim();
+
+        const acsMessage =
+          String(accessAction || "")
+            .replace(/_/g, " ")
+            .trim() ||
+          codeLabel ||
+          "-";
+
+        const deviceName =
+          log?.source?.name ||
+          log?.device?.name ||
+          log?.device_name ||
+          log?.name ||
+          "-";
+
+        const identifierLabel =
+          primaryIdentifier?.value ||
+          primaryIdentifier?.name ||
+          primaryIdentifier?.type ||
+          log?.identifier?.value ||
+          log?.identifier?.name ||
+          log?.identifier_value ||
+          log?.identifier ||
+          "-";
+
+        const typeLabel =
+          primaryIdentifier?.type ||
+          log?.type ||
+          log?.event_type ||
+          log?.action ||
+          log?.access_action ||
+          "-";
+
+        const domainLabel =
+          (log?.source?.id ? `#${log.source.id}` : "") ||
+          log?.requestor ||
+          (log?.requestor_translated && log.requestor_translated !== "logs.requestors." ? log.requestor_translated : "") ||
+          log?.domain?.full_name ||
+          log?.domain?.name ||
+          log?.building?.name ||
+          "-";
+
+        const userLabel =
+          (Array.isArray(log?.users) && log.users.length > 0
+            ? log.users
+                .map((user) => user?.name)
+                .filter(Boolean)
+                .join(", ")
+            : "") ||
+          primaryUser?.name ||
+          log?.user?.name ||
+          log?.created_by_user?.name ||
+          log?.actor?.name ||
+          log?.username ||
+          "-";
+
+        return {
+          id:
+            log?.id ||
+            primaryIdentifier?.pivot?.log_message_id ||
+            primaryUser?.pivot?.log_message_id ||
+            `${pageNo}-${index}`,
+          date: dateLabel,
+          device: deviceName,
+          identifier: identifierLabel,
+          type: typeLabel,
+          acsMessage,
+          domain: domainLabel,
+          user: userLabel,
+          raw: log,
+        };
+      });
+
+      setDeviceLogs(mappedLogs);
+      setDeviceLogsPage(pagination.page || pageNo);
+      setDeviceLogsTotal(pagination.total || mappedLogs.length);
+
+      if (opts.complex_id) {
+        applyComplexSelection(opts.complex_id, { closeModal: false });
+      }
+    } catch (error) {
+      console.error("Failed to load Basip logs", error);
+      setDeviceLogs([]);
+      setDeviceLogsTotal(0);
+    } finally {
+      setDeviceLogsLoading(false);
+    }
+  }, [applyComplexSelection, selectedComplexId]);
+
+  const handleDeviceLogsPageChange = (nextPage) => {
+    const safePage = Math.max(1, Number(nextPage) || 1);
+    setDeviceLogsPage(safePage);
+    loadDeviceLogs({ page: safePage });
+  };
+
   useEffect(() => {
     if (deviceIdentifiersOpen && selectedComplexId) {
       loadDeviceIdentifiers({ page: 1 });
@@ -521,6 +677,12 @@ const DevicesPage = () => {
       loadAccessRules({ page: 1 });
     }
   }, [accessRulesOpen, loadAccessRules, selectedComplexId]);
+
+  useEffect(() => {
+    if (deviceLogsOpen && selectedComplexId) {
+      loadDeviceLogs({ page: 1 });
+    }
+  }, [deviceLogsOpen, loadDeviceLogs, selectedComplexId]);
 
   const handleComplexChange = useCallback((newComplexId) => {
     const normalizedId = Number(newComplexId);
@@ -539,13 +701,19 @@ const DevicesPage = () => {
     if (deviceIdentifiersOpen) {
       loadDeviceIdentifiers({ complex_id: normalizedId, page: 1 });
     }
+
+    if (deviceLogsOpen) {
+      loadDeviceLogs({ complex_id: normalizedId, page: 1 });
+    }
   }, [
     accessRulesOpen,
     applyComplexSelection,
     deviceIdentifiersOpen,
+    deviceLogsOpen,
     deviceUsersOpen,
     loadAccessRules,
     loadDeviceIdentifiers,
+    loadDeviceLogs,
     loadDeviceUsers,
   ]);
 
@@ -937,7 +1105,15 @@ const DevicesPage = () => {
       <DeviceLogsModal
         open={deviceLogsOpen}
         onClose={() => setDeviceLogsOpen(false)}
-        items={[]}
+        items={deviceLogs}
+        loading={deviceLogsLoading}
+        complexId={selectedComplexId}
+        complexName={selectedComplexName}
+        page={deviceLogsPage}
+        total={deviceLogsTotal}
+        onPageChange={handleDeviceLogsPageChange}
+        itemsPerPage={20}
+        onRefresh={() => loadDeviceLogs({ page: deviceLogsPage })}
       />
 
       <DeviceComplexSelectModal
