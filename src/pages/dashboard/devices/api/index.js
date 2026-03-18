@@ -146,6 +146,43 @@ export const devicesAPI = {
     }
   },
 
+  // Basip Project access rules endpoints
+  getBasipAccessRules: async ({ complex_id, page = 1, size = 20 }) => {
+    try {
+      const response = await api.post("/integration/device/basip-project/access-rules/list", {
+        complex_id,
+        page,
+        size,
+      });
+      return response;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  getBasipAccessRule: async (id) => {
+    try {
+      const response = await api.get(`/integration/device/basip-project/access-rules/${id}`);
+      return response;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  addEditBasipAccessRule: async (data) => {
+    try {
+      const response = await api.put("/integration/device/basip-project/access-rules/add-edit", data);
+      return response;
+    } catch (error) {
+      const errorData = error.response?.data;
+      if (errorData?.errors) {
+        const errors = Object.values(errorData.errors).flat().join(", ");
+        throw new Error(errors || errorData.message || "Validation error");
+      }
+      throw error.response?.data || error.message;
+    }
+  },
+
   // Basip Project identifier endpoints
   getBasipIdentifiers: async ({ complex_id, page = 1, size = 20 }) => {
     try {

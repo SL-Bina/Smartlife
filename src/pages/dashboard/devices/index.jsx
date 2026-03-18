@@ -23,7 +23,6 @@ import { ManagementActions } from "@/components/management/ManagementActions";
 import { useDeviceList } from "./hooks/useDeviceList";
 import { useDeviceForm } from "./hooks/useDeviceForm";
 
-const accessRulesData = devicesDataRaw?.accessRules ?? [];
 const logsData = devicesDataRaw?.logs ?? [];
 const DEVICES_COMPLEX_STORAGE_KEY = "smartlife_devices_complex_id";
 const DEVICES_COMPLEX_COOKIE_KEY = "smartlife_devices_complex_id";
@@ -116,6 +115,10 @@ const DevicesPage = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState("create");
   const [accessRulesOpen, setAccessRulesOpen] = useState(false);
+  const [accessRules, setAccessRules] = useState([]);
+  const [accessRulesLoading, setAccessRulesLoading] = useState(false);
+  const [accessRulesPage, setAccessRulesPage] = useState(1);
+  const [accessRulesTotal, setAccessRulesTotal] = useState(0);
   const [deviceUsersOpen, setDeviceUsersOpen] = useState(false);
   const [deviceUsers, setDeviceUsers] = useState([]);
   const [deviceUsersLoading, setDeviceUsersLoading] = useState(false);
@@ -379,6 +382,63 @@ const DevicesPage = () => {
     loadDeviceUsers({ page: safePage });
   };
 
+  const loadAccessRules = useCallback(async (opts = {}) => {
+    const complex_id = Number(opts.complex_id ?? selectedComplexId);
+    if (!complex_id) {
+      setAccessRules([]);
+      setAccessRulesTotal(0);
+      setAccessRulesPage(1);
+      return;
+    }
+
+    const pageNo = Math.max(1, Number(opts.page) || 1);
+    setAccessRulesLoading(true);
+
+    try {
+      const response = await devicesAPI.getBasipAccessRules({
+        complex_id,
+        page: pageNo,
+        size: 20,
+      });
+      const rules = response?.data?.body?.data ?? [];
+      const pagination = response?.data?.body?.pagination ?? {};
+
+      setAccessRules(
+        rules.map((rule) => ({
+          id: rule?.id,
+          name: rule?.name || "",
+          description: rule?.description || "",
+          is_shareable: Boolean(rule?.is_shareable),
+          deviceCount: Number(rule?.devices_count ?? rule?.devices?.length ?? 0),
+          devices: Array.isArray(rule?.devices) ? rule.devices : [],
+          domains: Array.isArray(rule?.domains) ? rule.domains : [],
+          time_rules: Array.isArray(rule?.time_rules) ? rule.time_rules : [],
+          created_by_user: rule?.created_by_user || null,
+          created_at: rule?.created_at,
+          updated_at: rule?.updated_at,
+        }))
+      );
+      setAccessRulesPage(pagination.page || pageNo);
+      setAccessRulesTotal(pagination.total || rules.length);
+
+      if (opts.complex_id) {
+        applyComplexSelection(opts.complex_id, { closeModal: false });
+      }
+    } catch (error) {
+      console.error("Failed to load Basip access rules", error);
+      setAccessRules([]);
+      setAccessRulesTotal(0);
+    } finally {
+      setAccessRulesLoading(false);
+    }
+  }, [applyComplexSelection, selectedComplexId]);
+
+  const handleAccessRulesPageChange = (nextPage) => {
+    const safePage = Math.max(1, Number(nextPage) || 1);
+    setAccessRulesPage(safePage);
+    loadAccessRules({ page: safePage });
+  };
+
   const loadDeviceIdentifiers = useCallback(async (opts = {}) => {
     const complex_id = Number(opts.complex_id ?? selectedComplexId);
     if (!complex_id) {
@@ -427,6 +487,12 @@ const DevicesPage = () => {
     }
   }, [deviceIdentifiersOpen, loadDeviceIdentifiers, selectedComplexId]);
 
+  useEffect(() => {
+    if (accessRulesOpen && selectedComplexId) {
+      loadAccessRules({ page: 1 });
+    }
+  }, [accessRulesOpen, loadAccessRules, selectedComplexId]);
+
   const handleComplexChange = useCallback((newComplexId) => {
     const normalizedId = Number(newComplexId);
     if (!normalizedId) return;
@@ -437,13 +503,19 @@ const DevicesPage = () => {
       loadDeviceUsers({ complex_id: normalizedId, page: 1 });
     }
 
+    if (accessRulesOpen) {
+      loadAccessRules({ complex_id: normalizedId, page: 1 });
+    }
+
     if (deviceIdentifiersOpen) {
       loadDeviceIdentifiers({ complex_id: normalizedId, page: 1 });
     }
   }, [
+    accessRulesOpen,
     applyComplexSelection,
     deviceIdentifiersOpen,
     deviceUsersOpen,
+    loadAccessRules,
     loadDeviceIdentifiers,
     loadDeviceUsers,
   ]);
@@ -645,6 +717,39 @@ const DevicesPage = () => {
     }
   };
 
+  const handleCreateAccessRule = async (payload) => {
+    const effectiveComplexId = Number(selectedComplexId);
+    if (!effectiveComplexId) {
+      throw new Error(t("devices.deviceUsers.selectComplex") || "Kompleks secin");
+    }
+
+    await devicesAPI.addEditBasipAccessRule({
+      ...payload,
+      complex_id: effectiveComplexId,
+    });
+
+    await loadAccessRules({ complex_id: effectiveComplexId, page: accessRulesPage || 1 });
+  };
+
+  const handleUpdateAccessRule = async (payload) => {
+    const effectiveComplexId = Number(selectedComplexId);
+    if (!effectiveComplexId) {
+      throw new Error(t("devices.deviceUsers.selectComplex") || "Kompleks secin");
+    }
+
+    await devicesAPI.addEditBasipAccessRule({
+      ...payload,
+      complex_id: effectiveComplexId,
+    });
+
+    await loadAccessRules({ complex_id: effectiveComplexId, page: accessRulesPage || 1 });
+  };
+
+  const handleGetAccessRuleById = async (ruleId) => {
+    const response = await devicesAPI.getBasipAccessRule(ruleId);
+    return response;
+  };
+
   return (
     <div className="space-y-4 px-1">
       <DeviceHeader
@@ -708,7 +813,18 @@ const DevicesPage = () => {
       <AccessRulesModal
         open={accessRulesOpen}
         onClose={() => setAccessRulesOpen(false)}
-        items={accessRulesData}
+        items={accessRules}
+        loading={accessRulesLoading}
+        complexId={selectedComplexId}
+        complexName={selectedComplexName}
+        page={accessRulesPage}
+        total={accessRulesTotal}
+        onPageChange={handleAccessRulesPageChange}
+        itemsPerPage={20}
+        onRefresh={() => loadAccessRules({ page: accessRulesPage })}
+        onCreate={handleCreateAccessRule}
+        onUpdate={handleUpdateAccessRule}
+        onGetById={handleGetAccessRuleById}
       />
 
       <DeviceUsersModal
