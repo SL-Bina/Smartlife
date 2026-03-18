@@ -12,48 +12,6 @@ export function DeleteConfirmModal({
   entityName = "element",
   loading = false
 }) {
-  // Set z-index for portal container when modal is open
-  useEffect(() => {
-    if (open) {
-      // Find all dialog elements and their portal containers
-      const setDialogZIndex = () => {
-        // Find dialog by role
-        const dialogs = document.querySelectorAll('div[role="dialog"]');
-        dialogs.forEach((dialog) => {
-          // Set z-index on dialog itself
-          if (dialog instanceof HTMLElement) {
-            dialog.style.zIndex = '999999';
-          }
-          // Find parent portal container
-          let parent = dialog.parentElement;
-          while (parent && parent !== document.body) {
-            if (parent instanceof HTMLElement) {
-              const computedStyle = window.getComputedStyle(parent);
-              if (computedStyle.position === 'fixed' || computedStyle.position === 'absolute') {
-                parent.style.zIndex = '999999';
-              }
-            }
-            parent = parent.parentElement;
-          }
-        });
-        
-        // Find backdrop elements
-        const backdrops = document.querySelectorAll('[class*="backdrop"]');
-        backdrops.forEach((backdrop) => {
-          if (backdrop instanceof HTMLElement) {
-            backdrop.style.zIndex = '999998';
-          }
-        });
-      };
-      
-      // Set immediately and also after a short delay (for portal rendering)
-      setDialogZIndex();
-      const timeout = setTimeout(setDialogZIndex, 10);
-      
-      return () => clearTimeout(timeout);
-    }
-  }, [open]);
-
   if (!open) return null;
 
   const displayMessage = itemName 

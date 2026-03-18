@@ -4,7 +4,6 @@ import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { loadComplexes, loadComplexById, setSelectedComplex } from "@/store/slices/complexSlice";
 import complexesAPI from "@/pages/dashboard/management/complexes/api";
 
-import devicesDataRaw from "./api/data.json";
 import { devicesAPI } from "./api";
 
 import { DeviceHeader } from "./components/DeviceHeader";
@@ -19,11 +18,11 @@ import { DeviceComplexSelectModal } from "./components/modals/DeviceComplexSelec
 import SmartPagination from "@/components/ui/SmartPagination";
 import { Button } from "@material-tailwind/react";
 import { ManagementActions } from "@/components/management/ManagementActions";
+import { ViewModal } from "@/components/management/ViewModal";
 
 import { useDeviceList } from "./hooks/useDeviceList";
 import { useDeviceForm } from "./hooks/useDeviceForm";
 
-const logsData = devicesDataRaw?.logs ?? [];
 const DEVICES_COMPLEX_STORAGE_KEY = "smartlife_devices_complex_id";
 const DEVICES_COMPLEX_COOKIE_KEY = "smartlife_devices_complex_id";
 
@@ -92,6 +91,14 @@ const canLoadBasipProjectForComplex = (complexDetails) => {
 const DevicesPage = () => {
   const { t } = useTranslation();
 
+  const dispatch = useAppDispatch();
+  const complexes = useAppSelector((state) => state.complex.complexes);
+  const selectedComplexIdFromStore = useAppSelector((state) => state.complex.selectedComplexId);
+  const persistedDevicesComplexId = getPersistedDevicesComplexId();
+  const [selectedComplexId, setSelectedComplexId] = useState(
+    persistedDevicesComplexId || selectedComplexIdFromStore || null
+  );
+
   const {
     items,
     loading,
@@ -103,12 +110,7 @@ const DevicesPage = () => {
     filterStatus,
     goToPage,
     applySearch,
-  } = useDeviceList();
-
-  const dispatch = useAppDispatch();
-  const complexes = useAppSelector((state) => state.complex.complexes);
-  const selectedComplexIdFromStore = useAppSelector((state) => state.complex.selectedComplexId);
-  const persistedDevicesComplexId = getPersistedDevicesComplexId();
+  } = useDeviceList(selectedComplexId);
 
   const form = useDeviceForm();
 
@@ -124,9 +126,6 @@ const DevicesPage = () => {
   const [deviceUsersLoading, setDeviceUsersLoading] = useState(false);
   const [deviceUsersPage, setDeviceUsersPage] = useState(1);
   const [deviceUsersTotal, setDeviceUsersTotal] = useState(0);
-  const [selectedComplexId, setSelectedComplexId] = useState(
-    persistedDevicesComplexId || selectedComplexIdFromStore || null
-  );
   const [complexSelectionOpen, setComplexSelectionOpen] = useState(false);
   const [complexSelectionRequired, setComplexSelectionRequired] = useState(false);
   const [eligibleComplexes, setEligibleComplexes] = useState([]);
@@ -158,6 +157,9 @@ const DevicesPage = () => {
   const [deviceIdentifiersPage, setDeviceIdentifiersPage] = useState(1);
   const [deviceIdentifiersTotal, setDeviceIdentifiersTotal] = useState(0);
   const [deviceLogsOpen, setDeviceLogsOpen] = useState(false);
+  const [deviceViewOpen, setDeviceViewOpen] = useState(false);
+  const [deviceViewLoading, setDeviceViewLoading] = useState(false);
+  const [selectedDeviceView, setSelectedDeviceView] = useState(null);
   const [statusFilter, setStatusFilter] = useState(filterStatus);
 
   const applyComplexSelection = useCallback(
@@ -249,6 +251,33 @@ const DevicesPage = () => {
 
   const handleDelete = (device) => {
     // // console.log("delete", device.id);
+  };
+
+  const handleView = async (device) => {
+    if (!device?.id) return;
+
+    setDeviceViewOpen(true);
+    setDeviceViewLoading(true);
+
+    try {
+      const response = await devicesAPI.getBasipDevice(device.id, {
+        ...(selectedComplexId ? { complex_id: Number(selectedComplexId) } : {}),
+      });
+
+      const details = response?.data?.body?.data || response?.data?.data || null;
+      setSelectedDeviceView(details || device);
+    } catch (error) {
+      console.error("Failed to load device details", error);
+      setSelectedDeviceView(device);
+    } finally {
+      setDeviceViewLoading(false);
+    }
+  };
+
+  const handleCloseView = () => {
+    setDeviceViewOpen(false);
+    setSelectedDeviceView(null);
+    setDeviceViewLoading(false);
   };
 
   const handleFormSave = () => {
@@ -750,6 +779,39 @@ const DevicesPage = () => {
     return response;
   };
 
+  const deviceViewFields = [
+    { key: "id", label: "ID" },
+    { key: "name", label: t("devices.table.name") || "Ad" },
+    { key: "domain.full_name", label: t("devices.table.building") || "Bina" },
+    { key: "type", label: "Type" },
+    { key: "model", label: "Model" },
+    {
+      key: "status",
+      label: t("devices.table.userStatus") || "Status",
+      format: (value) => {
+        const raw = String(value || "").toLowerCase();
+        return raw === "online" || raw === "active" || raw === "onlayn" ? "active" : "inactive";
+      },
+    },
+    { key: "description", label: "IP / Description" },
+    { key: "protocol", label: "Protocol" },
+    { key: "port", label: "Port" },
+    { key: "device_info.api_info.firmware_version", label: "Firmware" },
+    { key: "device_info.api_info.device_model", label: "API Model" },
+    {
+      key: "device_info.is_synced_with_broker",
+      label: "Broker Sync",
+      format: (value) => (value === true ? "Yes" : value === false ? "No" : "-"),
+    },
+    {
+      key: "device_settings.lift_controller.enabled",
+      label: "Lift Controller",
+      format: (value) => (value === true ? "Enabled" : value === false ? "Disabled" : "-"),
+    },
+    { key: "domain.name", label: "Domain" },
+    { key: "domain.id", label: "Domain ID" },
+  ];
+
   return (
     <div className="space-y-4 px-1">
       <DeviceHeader
@@ -787,6 +849,7 @@ const DevicesPage = () => {
             onEdit={handleEdit}
             onDelete={handleDelete}
             onPageChange={goToPage}
+            onView={handleView}
           />
 
           <SmartPagination
@@ -874,7 +937,7 @@ const DevicesPage = () => {
       <DeviceLogsModal
         open={deviceLogsOpen}
         onClose={() => setDeviceLogsOpen(false)}
-        items={logsData}
+        items={[]}
       />
 
       <DeviceComplexSelectModal
@@ -892,6 +955,16 @@ const DevicesPage = () => {
           setComplexSelectionOpen(false);
           setComplexSelectionRequired(false);
         }}
+      />
+
+      <ViewModal
+        open={deviceViewOpen}
+        onClose={handleCloseView}
+        title={t("devices.actions.view") || "Cihaz məlumatı"}
+        item={selectedDeviceView}
+        fields={deviceViewFields}
+        entityName={t("devices.title") || "cihaz"}
+        loading={deviceViewLoading}
       />
     </div>
   );

@@ -50,7 +50,7 @@ function SkeletonRow({ cols = 5 }) {
   );
 }
 
-export function DeviceTable({ items, loading, page, lastPage, onEdit, onDelete, onPageChange }) {
+export function DeviceTable({ items, loading, page, lastPage, onEdit, onDelete, onPageChange, onView }) {
   const { t } = useTranslation();
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
@@ -82,7 +82,6 @@ export function DeviceTable({ items, loading, page, lastPage, onEdit, onDelete, 
       : <ChevronDownIcon className="h-3 w-3 text-gray-500 dark:text-gray-400" />;
   };
 
-  // Skeleton
   if (loading) {
     return (
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg border border-white/20 dark:border-gray-700/50 overflow-hidden">
@@ -130,6 +129,13 @@ export function DeviceTable({ items, loading, page, lastPage, onEdit, onDelete, 
         </IconButton>
       </MenuHandler>
       <MenuList className="min-w-[160px] !z-[9999]">
+        <MenuItem
+          onClick={(e) => { e.stopPropagation(); onView?.(row); }}
+          className="flex items-center gap-2"
+        >
+          <EyeIcon className="h-4 w-4" />
+          {t("devices.actions.view") || "Bax"}
+        </MenuItem>
         <MenuItem
           onClick={(e) => { e.stopPropagation(); onEdit(row); }}
           className="flex items-center gap-2"

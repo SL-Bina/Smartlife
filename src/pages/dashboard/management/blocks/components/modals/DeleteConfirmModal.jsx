@@ -13,41 +13,6 @@ export function DeleteConfirmModal({
   entityName = "element",
   loading = false
 }) {
-  useEffect(() => {
-    if (open) {
-      const setDialogZIndex = () => {
-        const dialogs = document.querySelectorAll('div[role="dialog"]');
-        dialogs.forEach((dialog) => {
-          if (dialog instanceof HTMLElement) {
-            dialog.style.zIndex = '999999';
-          }
-          let parent = dialog.parentElement;
-          while (parent && parent !== document.body) {
-            if (parent instanceof HTMLElement) {
-              const computedStyle = window.getComputedStyle(parent);
-              if (computedStyle.position === 'fixed' || computedStyle.position === 'absolute') {
-                parent.style.zIndex = '999999';
-              }
-            }
-            parent = parent.parentElement;
-          }
-        });
-        
-        const backdrops = document.querySelectorAll('[class*="backdrop"]');
-        backdrops.forEach((backdrop) => {
-          if (backdrop instanceof HTMLElement) {
-            backdrop.style.zIndex = '999998';
-          }
-        });
-      };
-      
-      setDialogZIndex();
-      const timeout = setTimeout(setDialogZIndex, 10);
-      
-      return () => clearTimeout(timeout);
-    }
-  }, [open]);
-
   const { getRgba: getMtkRgba } = useMtkColor();
 
   if (!open) return null;

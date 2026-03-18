@@ -1,6 +1,5 @@
 import api from "@/services/api";
 
-// TODO: Replace these endpoints with real API paths when backend is ready
 const BASE = "/module/devices";
 
 export const devicesAPI = {
@@ -100,6 +99,24 @@ export const devicesAPI = {
   },
 
   // Basip Project integration endpoints
+  getBasipDevices: async (params = {}) => {
+    try {
+      const response = await api.get("/integration/device/basip-project/devices", { params });
+      return response;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  getBasipDevice: async (id, params = {}) => {
+    try {
+      const response = await api.get(`/integration/device/basip-project/devices/${id}`, { params });
+      return response;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
   getBasipUsers: async ({ complex_id, page = 1, size = 20 }) => {
     try {
       const response = await api.post("/integration/device/basip-project/users", {

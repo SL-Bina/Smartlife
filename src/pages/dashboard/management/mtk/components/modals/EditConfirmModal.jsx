@@ -108,32 +108,6 @@ export function EditConfirmModal({
   oldData = null,
   newData = null,
 }) {
-  useEffect(() => {
-    if (open) {
-      const setDialogZIndex = () => {
-        const dialogs = document.querySelectorAll('div[role="dialog"]');
-        dialogs.forEach((dialog) => {
-          if (dialog instanceof HTMLElement) dialog.style.zIndex = "999999";
-          let parent = dialog.parentElement;
-          while (parent && parent !== document.body) {
-            if (parent instanceof HTMLElement) {
-              const cs = window.getComputedStyle(parent);
-              if (cs.position === "fixed" || cs.position === "absolute")
-                parent.style.zIndex = "999999";
-            }
-            parent = parent.parentElement;
-          }
-        });
-        document.querySelectorAll('[class*="backdrop"]').forEach((el) => {
-          if (el instanceof HTMLElement) el.style.zIndex = "999998";
-        });
-      };
-      setDialogZIndex();
-      const t = setTimeout(setDialogZIndex, 10);
-      return () => clearTimeout(t);
-    }
-  }, [open]);
-
   const changes = useMemo(() => getDiff(oldData, newData), [oldData, newData]);
 
   if (!open) return null;
