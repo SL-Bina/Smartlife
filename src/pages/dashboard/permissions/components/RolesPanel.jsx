@@ -42,7 +42,7 @@ export function RolesPanel({
       {/* Sidebar header */}
       <div className="flex-shrink-0 p-4 border-b border-gray-100 dark:border-gray-700/60">
         {/* Title row + create button */}
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-3 flex-wrap sm:flex-nowrap">
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
             style={{ background: getActiveGradient(0.85, 0.65) }}
@@ -62,11 +62,11 @@ export function RolesPanel({
           <button
             onClick={onCreateClick}
             title={t("permissions.roles.create") || "Yeni rol yarat"}
-            className="ml-auto flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-white text-xs font-semibold transition-opacity hover:opacity-90 shadow-sm flex-shrink-0"
+            className="ml-auto flex items-center justify-center gap-1 px-2 py-1.5 sm:px-2.5 rounded-lg text-white text-xs font-semibold transition-opacity hover:opacity-90 shadow-sm flex-shrink-0"
             style={{ background: getActiveGradient(0.9, 0.75) }}
           >
             <PlusIcon className="h-3.5 w-3.5" />
-            <span>{t("permissions.roles.create") || "Yeni rol"}</span>
+            <span className="hidden sm:inline">{t("permissions.roles.create") || "Yeni rol"}</span>
           </button>
         </div>
 

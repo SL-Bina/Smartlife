@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "@/store/hooks/useAuth";
 import { useSelector } from "react-redux";
 
-export function SidenavHeader({ brandName, collapsed = false, isLowHeight = false, homePath = "/dashboard/home" }) {
+export function SidenavHeader({ brandName, brandLogo, collapsed = false, isLowHeight = false, homePath = "/dashboard/home" }) {
   const [controller, actions] = useMaterialTailwindController();
   const { sidenavSize } = controller;
   const { t, i18n } = useTranslation();
@@ -101,7 +101,7 @@ export function SidenavHeader({ brandName, collapsed = false, isLowHeight = fals
 
   return (
     <div
-      className={`relative flex-shrink-0 border-b border-gray-200/50 dark:border-gray-700/50 backdrop-blur-xl backdrop-saturate-150 ${getHeaderPadding()}`}
+      className={`relative flex-shrink-0 border-b border-gray-200/50 dark:border-gray-700/50 ${isMobile ? "" : "backdrop-blur-xl backdrop-saturate-150"} ${getHeaderPadding()}`}
       style={headerStyle}
     >
       <Link
@@ -117,11 +117,7 @@ export function SidenavHeader({ brandName, collapsed = false, isLowHeight = fals
               }`}
           >
             <img
-              src={
-                selectedProperty?.sub_data?.complex?.logo ||
-                selectedProperty?.sub_data?.complex?.meta?.logo ||
-                "/Vector_Logo/color_logo.svg"
-              }
+              src={brandLogo || "/Vector_Logo/color_logo.svg"}
               alt="Logo"
               className={`object-contain ${collapsed
                 ? getIconSize("w-7 h-7 xl:w-6 xl:h-6", "w-6 h-6 xl:w-7 xl:h-7", "w-7 h-7 xl:w-8 xl:h-8")
@@ -184,16 +180,16 @@ export function SidenavHeader({ brandName, collapsed = false, isLowHeight = fals
           className={`${isLowHeight ? "hidden" : "mt-2 xl:mt-3"}`}
         >
           <div
-            className="
+            className={`
               relative overflow-hidden
               rounded-3xl xl:rounded-[2rem]
-              backdrop-blur-3xl backdrop-saturate-150
+              ${isMobile ? "" : "backdrop-blur-3xl backdrop-saturate-150"}
               bg-gradient-to-br from-white/30 via-white/15 to-white/10
               dark:from-white/10 dark:via-white/5 dark:to-black/20
               border border-white/30 dark:border-white/15
               shadow-[0_8px_32px_rgba(0,0,0,0.08),inset_0_1px_1px_rgba(255,255,255,0.3)]
               dark:shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.15)]
-            "
+            `}
           >
             <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/10 to-transparent dark:from-white/15 dark:via-white/5 dark:to-transparent" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/3 to-transparent dark:from-black/8 dark:to-transparent" />

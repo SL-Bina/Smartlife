@@ -288,17 +288,17 @@ export function PermissionsPanel({
     <div className="flex flex-col min-h-full bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700/60 shadow-sm overflow-hidden">
 
       {/* ── Toolbar — sticky so it stays visible while scrolling ── */}
-      <div className="sticky top-0 z-10 flex-shrink-0 flex items-center gap-3 px-4 py-3 border-b border-gray-100 dark:border-gray-700/60 bg-white dark:bg-gray-900">
+      <div className="sticky top-0 z-10 flex-shrink-0 flex flex-wrap items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 border-b border-gray-100 dark:border-gray-700/60 bg-white dark:bg-gray-900">
 
         {/* Module icon + role name */}
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0 min-w-0">
           <div
             className="w-7 h-7 rounded-lg flex items-center justify-center"
             style={{ background: getActiveGradient(0.85, 0.65) }}
           >
             <LockOpenIcon className="h-4 w-4 text-white" />
           </div>
-          <span className="text-sm font-bold text-gray-800 dark:text-gray-100 hidden sm:block">
+          <span className="text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-100 truncate">
             {selectedRoleName
               ? (t(`permissions.rolesDict.${selectedRoleName}`) || selectedRoleName)
               : (t("permissions.permissionsTitle") || "İcazələr")}
@@ -326,10 +326,10 @@ export function PermissionsPanel({
           </span>
         </div>
 
-        <div className="flex-1" />
+        <div className="flex-1 hidden sm:block" />
 
         {/* Search */}
-        <div className="relative w-40 sm:w-52 flex-shrink-0">
+        <div className="relative order-last sm:order-none w-full sm:w-52 md:w-64 flex-shrink-0">
           <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
           <input
             type="text"
@@ -343,7 +343,7 @@ export function PermissionsPanel({
         {/* Create permission button */}
         <button
           onClick={onCreateClick}
-          className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-xs font-semibold transition-opacity hover:opacity-90 shadow-sm"
+          className="ml-auto sm:ml-0 flex-shrink-0 flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-white text-xs font-semibold transition-opacity hover:opacity-90 shadow-sm"
           style={{ background: getActiveGradient(0.9, 0.75) }}
         >
           <PlusIcon className="h-3.5 w-3.5" />

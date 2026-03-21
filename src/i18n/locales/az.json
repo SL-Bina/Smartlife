@@ -2801,6 +2801,12 @@
       "deviceUsers": "Cihaz istifadəçiləri",
       "deviceIdentifiers": "Cihaz identifikatorları",
       "deviceLogs": "Cihaz qeydləri",
+      "open": "Aç",
+      "view": "Bax",
+      "user": "İstifadəçi",
+      "floorPrompt": "Mərtəbə nömrəsini daxil edin",
+      "floorInvalid": "Düzgün mərtəbə daxil edin",
+      "openSuccess": "Açma əmri göndərildi",
       "search": "Axtarış",
       "add": "Əlavə et",
       "edit": "Redaktə et",
@@ -2866,7 +2872,17 @@
     "accessRules": {
       "title": "Cihaz icazələri",
       "name": "Ad",
-      "deviceCount": "Cihaz sayı"
+      "description": "Təsvir",
+      "deviceCount": "Cihaz sayı",
+      "add": "Yeni icazə qaydası",
+      "edit": "İcazə qaydasını redaktə et",
+      "isShareable": "Paylaşıla bilən",
+      "devices": "Cihaz ID-ləri (vergüllə)",
+      "identifiers": "İdentifikator ID-ləri (vergüllə)",
+      "users": "İstifadəçi ID-ləri (vergüllə)",
+      "domains": "Domain ID-ləri (vergüllə)",
+      "timeRules": "Vaxt qaydası ID-ləri (vergüllə)",
+      "nameRequired": "Ad tələb olunur"
     },
     "complexSelection": {
       "title": "Kompleks seçimi",
@@ -2931,7 +2947,16 @@
       "enabled": "Aktiv",
       "disabled": "Deaktiv"
     },
-    "pageSubtitle": "Cihaz siyahısı, icazə qaydaları, istifadəçilər, loglar"
+    "pageSubtitle": "Cihaz siyahısı, icazə qaydaları, istifadəçilər, loglar",
+    "title": "cihaz",
+    "messages": {
+      "nameRequired": "Ad tələb olunur",
+      "emailRequired": "E-poçt tələb olunur",
+      "domainRequired": "Domain ID tələb olunur",
+      "genericError": "Xəta baş verdi",
+      "deleteUserConfirm": "Bu istifadəçini silmək istədiyinizə əminsiniz?",
+      "totalResults": "nəticə"
+    }
   },
   "settings": {
     "title": "Parametrlər",

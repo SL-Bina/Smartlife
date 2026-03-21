@@ -10,18 +10,30 @@ import { useSelector } from "react-redux";
 import { useAuth } from "@/store/hooks/useAuth";
 import { useComplexColor } from "@/hooks/useComplexColor";
 import { useMtkColor } from "@/store/hooks/useMtkColor";
+import { useAppDispatch } from "@/store/hooks";
+import { loadMtkById } from "@/store/slices/mtkSlice";
 
 export function Sidenav({ brandImg, brandName, routes }) {
+  const dispatch = useAppDispatch();
   const [controller, actions] = useMaterialTailwindController();
   const { sidenavType, openSidenav, sidenavCollapsed, sidenavFlatMenu, sidenavExpandAll, sidenavSize, sidenavPosition } = controller;
   
   const { user } = useAuth();
   const selectedProperty = useSelector((state) => state.property.selectedProperty);
-  let displayName = brandName;
-  if (user?.is_resident && selectedProperty) {
-    const complexName = selectedProperty.sub_data?.complex?.name;
-    if (complexName) displayName = complexName;
-  }
+  const selectedMtkId = useSelector((state) => state.mtk.selectedMtkId);
+  const selectedMtk = useSelector((state) => state.mtk.selectedMtk);
+
+  const displayName =
+    selectedMtk?.name ||
+    selectedProperty?.sub_data?.mtk?.name ||
+    selectedProperty?.mtk?.name ||
+    brandName;
+
+  const displayLogo =
+    selectedMtk?.meta?.logo ||
+    selectedProperty?.sub_data?.mtk?.meta?.logo ||
+    selectedProperty?.mtk?.meta?.logo ||
+    brandImg;
 
   // Resident → complex color, Dashboard → MTK color
   const RESIDENT_DEFAULT = "#3b82f6";
@@ -51,16 +63,22 @@ export function Sidenav({ brandImg, brandName, routes }) {
   };
 
   const getSidenavBackground = () => {
+    if (isMobile) {
+      return {
+        background: "#ffffff",
+      };
+    }
+
     if (mtkColorCode && sidenavType === "white") {
-      const color1 = getRgbaColor(mtkColorCode, 0.1);
-      const color2 = getRgbaColor(mtkColorCode, 0.05);
+      const color1 = getRgbaColor(mtkColorCode, isMobile ? 0.96 : 0.1);
+      const color2 = getRgbaColor(mtkColorCode, isMobile ? 0.92 : 0.05);
       return {
         background: `linear-gradient(to bottom, ${color1}, ${color2}, ${color1})`,
       };
     }
     if (mtkColorCode && sidenavType === "dark") {
-      const color1 = getRgbaColor(mtkColorCode, 0.2);
-      const color2 = getRgbaColor(mtkColorCode, 0.15);
+      const color1 = getRgbaColor(mtkColorCode, isMobile ? 0.98 : 0.2);
+      const color2 = getRgbaColor(mtkColorCode, isMobile ? 0.95 : 0.15);
       return {
         background: `linear-gradient(to bottom, ${color1}, ${color2}, ${color1})`,
       };
@@ -101,6 +119,12 @@ export function Sidenav({ brandImg, brandName, routes }) {
     return () => { document.body.style.overflow = ""; };
   }, [openSidenav, isMobile]);
 
+  React.useEffect(() => {
+    if (selectedMtkId && !selectedMtk) {
+      dispatch(loadMtkById(selectedMtkId));
+    }
+  }, [dispatch, selectedMtkId, selectedMtk]);
+
   return (
     <>
       <AnimatePresence>
@@ -110,7 +134,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="fixed inset-0 bg-black/50 dark:bg-black/70 z-[999] xl:hidden backdrop-blur-sm"
+            className="fixed inset-0 bg-black/40 dark:bg-black/60 z-[999] xl:hidden"
             onClick={() => actions.setOpenSidenav(false)}
           />
         )}
@@ -127,17 +151,23 @@ export function Sidenav({ brandImg, brandName, routes }) {
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         onMouseEnter={() => { if (!isMobile && sidenavCollapsed) setIsHovered(true); }}
         onMouseLeave={() => { if (!isMobile && sidenavCollapsed) setIsHovered(false); }}
-        className={`${sidenavTypes[sidenavType]} fixed inset-y-0 ${sidenavPosition === "right" ? "right-0" : "left-0"} xl:translate-x-0 flex flex-col backdrop-blur-xl ${sidenavPosition === "right" ? "border-l" : "border-r"} shadow-2xl ${
+        className={`${isMobile ? "bg-white" : sidenavTypes[sidenavType]} fixed inset-y-0 ${sidenavPosition === "right" ? "right-0" : "left-0"} xl:translate-x-0 flex flex-col ${isMobile ? "" : "backdrop-blur-xl"} ${sidenavPosition === "right" ? "border-l" : "border-r"} shadow-2xl ${
           sidenavCollapsed && !isHovered ? "xl:overflow-hidden" : "overflow-y-auto"
         }`}
         style={{
           ...getSidenavBackground(),
           borderColor: mtkColorCode ? getRgbaColor(mtkColorCode, 0.3) : undefined,
-          zIndex: 1000, 
+          zIndex: isMobile ? 1100 : 1000,
           isolation: 'isolate', 
         }}
       >
-        <SidenavHeader brandName={displayName} collapsed={sidenavCollapsed && !isHovered} isLowHeight={isLowHeight} homePath={homePath} />
+        <SidenavHeader
+          brandName={displayName}
+          brandLogo={displayLogo}
+          collapsed={sidenavCollapsed && !isHovered}
+          isLowHeight={isLowHeight}
+          homePath={homePath}
+        />
 
         <SidenavMenu
           routes={filteredRoutes}

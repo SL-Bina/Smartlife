@@ -17,6 +17,7 @@ import {
   PencilIcon,
   TrashIcon,
   EyeIcon,
+  LockOpenIcon,
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 
@@ -50,7 +51,7 @@ function SkeletonRow({ cols = 5 }) {
   );
 }
 
-export function DeviceTable({ items, loading, page, lastPage, onEdit, onDelete, onPageChange, onView }) {
+export function DeviceTable({ items, loading, page, lastPage, onEdit, onDelete, onPageChange, onView, onOpen, openingDeviceId }) {
   const { t } = useTranslation();
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
@@ -145,6 +146,14 @@ export function DeviceTable({ items, loading, page, lastPage, onEdit, onDelete, 
         </IconButton>
       </MenuHandler>
       <MenuList className="min-w-[160px] !z-[9999]">
+        <MenuItem
+          onClick={(e) => { e.stopPropagation(); onOpen?.(row); }}
+          disabled={Boolean(openingDeviceId) && String(openingDeviceId) === String(row?.id)}
+          className="flex items-center gap-2"
+        >
+          <LockOpenIcon className="h-4 w-4" />
+          {t("devices.actions.open") || "Ac"}
+        </MenuItem>
         <MenuItem
           onClick={(e) => { e.stopPropagation(); onView?.(row); }}
           className="flex items-center gap-2"

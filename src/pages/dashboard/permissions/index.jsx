@@ -33,6 +33,7 @@ const PermissionsPage = () => {
   const [permDeleteOpen, setPermDeleteOpen] = useState(false);
 
   const [selectedRole, setSelectedRole] = useState(null);
+  const [mobilePanel, setMobilePanel] = useState("roles");
   const [selectedPermissionCtx, setSelectedPermissionCtx] = useState(null);
   const [saving, setSaving] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -112,6 +113,7 @@ const PermissionsPage = () => {
     setSelectedRoleId(roleId);
     const r = (roles || []).find((x) => x.id === roleId || x.role_id === roleId);
     if (r) setSelectedRole(r);
+    setMobilePanel("permissions");
   };
 
   const handleCreateClick = () => {
@@ -459,11 +461,37 @@ const PermissionsPage = () => {
         onClose={closeToast}
       />
 
-      {/* Two-column layout: roles sidebar + permissions panel */}
-      <div className="flex flex-1 min-h-0 gap-4 overflow-hidden">
+      {/* Responsive layout: stacked on mobile, two columns on desktop */}
+      <div className="lg:hidden mb-3 flex items-center gap-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-1">
+        <button
+          type="button"
+          onClick={() => setMobilePanel("roles")}
+          className={`flex-1 rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${
+            mobilePanel === "roles"
+              ? "bg-blue-600 text-white"
+              : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+          }`}
+        >
+          {t("permissions.roles.title") || "Rollar"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobilePanel("permissions")}
+          disabled={!selectedRoleId}
+          className={`flex-1 rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${
+            mobilePanel === "permissions"
+              ? "bg-blue-600 text-white"
+              : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+          } ${!selectedRoleId ? "opacity-50 cursor-not-allowed" : ""}`}
+        >
+          {t("permissions.permissionsTitle") || "İcazələr"}
+        </button>
+      </div>
 
-        {/* Left: roles sidebar — fixed width */}
-        <div className="w-64 flex-shrink-0 min-h-0">
+      <div className="flex flex-col lg:flex-row flex-1 min-h-0 gap-4">
+
+        {/* Left: roles sidebar */}
+        <div className={`w-full lg:w-64 flex-shrink-0 min-h-0 h-[320px] sm:h-[380px] lg:h-full ${mobilePanel === "roles" ? "block" : "hidden lg:block"}`}>
           <RolesPanel
             roles={roles}
             loading={rolesLoading}
@@ -475,8 +503,8 @@ const PermissionsPage = () => {
           />
         </div>
 
-        {/* Right: permissions matrix — scrollable container */}
-        <div className="flex-1 min-w-0 overflow-y-auto">
+        {/* Right: permissions matrix */}
+        <div className={`flex-1 min-w-0 min-h-0 lg:overflow-y-auto ${mobilePanel === "permissions" ? "block" : "hidden lg:block"}`}>
           <PermissionsPanel
             modules={modules}
             loading={permissionsLoading}

@@ -19,6 +19,7 @@ import SmartPagination from "@/components/ui/SmartPagination";
 import { Button } from "@material-tailwind/react";
 import { ManagementActions } from "@/components/management/ManagementActions";
 import { ViewModal } from "@/components/management/ViewModal";
+import { useDynamicToast } from "@/hooks/useDynamicToast";
 
 import { useDeviceList } from "./hooks/useDeviceList";
 import { useDeviceForm } from "./hooks/useDeviceForm";
@@ -90,6 +91,7 @@ const canLoadBasipProjectForComplex = (complexDetails) => {
 
 const DevicesPage = () => {
   const { t } = useTranslation();
+  const { showToast } = useDynamicToast();
 
   const dispatch = useAppDispatch();
   const complexes = useAppSelector((state) => state.complex.complexes);
@@ -164,6 +166,7 @@ const DevicesPage = () => {
   const [deviceViewOpen, setDeviceViewOpen] = useState(false);
   const [deviceViewLoading, setDeviceViewLoading] = useState(false);
   const [selectedDeviceView, setSelectedDeviceView] = useState(null);
+  const [openingDeviceId, setOpeningDeviceId] = useState(null);
   const [statusFilter, setStatusFilter] = useState(filterStatus);
 
   const applyComplexSelection = useCallback(
@@ -255,6 +258,81 @@ const DevicesPage = () => {
 
   const handleDelete = (device) => {
     // // console.log("delete", device.id);
+  };
+
+  const handleOpenDevice = async (device) => {
+    const complex_id = Number(selectedComplexId);
+    if (!complex_id) {
+      showToast({
+        type: "error",
+        title: t("common.error") || "Xeta",
+        message: t("devices.deviceUsers.selectComplex") || "Kompleks secin",
+      });
+      return;
+    }
+
+    const device_id = Number(device?.id);
+    if (!device_id) {
+      showToast({
+        type: "error",
+        title: t("common.error") || "Xeta",
+        message: t("common.invalidData") || "Cihaz melumatlari yanlisdir",
+      });
+      return;
+    }
+
+    setOpeningDeviceId(device_id);
+
+    try {
+      const type = String(device?.type || "").toLowerCase();
+
+      if (type === "liftcontroller") {
+        const floorRaw = window.prompt(t("devices.actions.floorPrompt") || "Mertebe nomresini daxil edin", "1");
+        if (floorRaw == null) return;
+
+        const floor_number = Number(String(floorRaw).trim());
+        if (!Number.isFinite(floor_number)) {
+          showToast({
+            type: "error",
+            title: t("common.error") || "Xeta",
+            message: t("devices.actions.floorInvalid") || "Duzgun mertebe daxil edin",
+          });
+          return;
+        }
+
+        await devicesAPI.openBasipElevator({
+          complex_id,
+          device_id,
+          floor_number,
+        });
+      } else {
+        await devicesAPI.openBasipDoor({
+          complex_id,
+          device_id,
+        });
+      }
+
+      showToast({
+        type: "success",
+        title: t("common.success") || "Ugurlu",
+        message: t("devices.actions.openSuccess") || "Acmа emri gonderildi",
+      });
+    } catch (error) {
+      const errorMessage =
+        error?.message ||
+        error?.data?.message ||
+        error?.response?.data?.message ||
+        t("common.error") ||
+        "Xeta bas verdi";
+
+      showToast({
+        type: "error",
+        title: t("common.error") || "Xeta",
+        message: String(errorMessage),
+      });
+    } finally {
+      setOpeningDeviceId(null);
+    }
   };
 
   const handleView = async (device) => {
@@ -822,9 +900,9 @@ const DevicesPage = () => {
     const errors = {};
     const effectiveComplexId = Number(userFormData.complex_id || selectedComplexId);
 
-    if (!userFormData.name?.trim()) errors.name = "Ad tələb olunur";
-    if (!userFormData.email?.trim()) errors.email = "E-poçt tələb olunur";
-    if (!userFormData.domain_id) errors.domain_id = "Domain ID tələb olunur";
+    if (!userFormData.name?.trim()) errors.name = t("devices.messages.nameRequired") || "Ad tələb olunur";
+    if (!userFormData.email?.trim()) errors.email = t("devices.messages.emailRequired") || "E-poçt tələb olunur";
+    if (!userFormData.domain_id) errors.domain_id = t("devices.messages.domainRequired") || "Domain ID tələb olunur";
     if (!effectiveComplexId) errors.form = t("devices.deviceUsers.selectComplex") || "Kompleks secin";
     if (Object.keys(errors).length > 0) {
       setUserFormErrors(errors);
@@ -851,14 +929,14 @@ const DevicesPage = () => {
       loadDeviceUsers({ complex_id: effectiveComplexId, page: 1 });
     } catch (error) {
       console.error("Failed to add Basip user", error);
-      setUserFormErrors({ form: error?.message || "Xəta baş verdi" });
+      setUserFormErrors({ form: error?.message || t("devices.messages.genericError") || "Xəta baş verdi" });
     } finally {
       setUserFormSaving(false);
     }
   };
 
   const handleDeleteUser = async (userId) => {
-    if (!window.confirm("Bu istifadəçini silmək istədiyinizə əminsiniz?")) return;
+    if (!window.confirm(t("devices.messages.deleteUserConfirm") || "Bu istifadəçini silmək istədiyinizə əminsiniz?")) return;
     setDeviceUsersLoading(true);
     try {
       await devicesAPI.deleteBasipUser({ user_id: userId, complex_id: selectedComplexId });
@@ -1018,6 +1096,8 @@ const DevicesPage = () => {
             onDelete={handleDelete}
             onPageChange={goToPage}
             onView={handleView}
+            onOpen={handleOpenDevice}
+            openingDeviceId={openingDeviceId}
           />
 
           <SmartPagination
@@ -1026,7 +1106,11 @@ const DevicesPage = () => {
             onPageChange={goToPage}
             prevLabel={t("devices.pagination.prev") || "Əvvəlki"}
             nextLabel={t("devices.pagination.next") || "Növbəti"}
-            summary={<>Cəm: <b>{total}</b> nəticə</>}
+            summary={
+              <>
+                {t("devices.table.total") || "Cəm"}: <b>{total}</b> {t("devices.messages.totalResults") || "nəticə"}
+              </>
+            }
           />
         </>
       )}

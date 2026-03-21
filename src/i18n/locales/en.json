@@ -2651,6 +2651,12 @@
       "deviceUsers": "Device Users",
       "deviceIdentifiers": "Device Identifiers",
       "deviceLogs": "Device Logs",
+      "open": "Open",
+      "view": "View",
+      "user": "User",
+      "floorPrompt": "Enter floor number",
+      "floorInvalid": "Please enter a valid floor number",
+      "openSuccess": "Open command sent",
       "search": "Search",
       "add": "Add",
       "edit": "Edit",
@@ -2716,7 +2722,17 @@
     "accessRules": {
       "title": "Device Access Rules",
       "name": "Name",
-      "deviceCount": "Device Count"
+      "description": "Description",
+      "deviceCount": "Device Count",
+      "add": "New access rule",
+      "edit": "Edit access rule",
+      "isShareable": "Shareable",
+      "devices": "Device IDs (comma separated)",
+      "identifiers": "Identifier IDs (comma separated)",
+      "users": "User IDs (comma separated)",
+      "domains": "Domain IDs (comma separated)",
+      "timeRules": "Time rule IDs (comma separated)",
+      "nameRequired": "Name is required"
     },
     "complexSelection": {
       "title": "Complex Selection",
@@ -2781,7 +2797,16 @@
       "enabled": "Enabled",
       "disabled": "Disabled"
     },
-    "pageSubtitle": "Device list, access rules, users, logs"
+    "pageSubtitle": "Device list, access rules, users, logs",
+    "title": "device",
+    "messages": {
+      "nameRequired": "Name is required",
+      "emailRequired": "Email is required",
+      "domainRequired": "Domain ID is required",
+      "genericError": "An error occurred",
+      "deleteUserConfirm": "Are you sure you want to delete this user?",
+      "totalResults": "results"
+    }
   },
   "settings": {
     "title": "Settings",

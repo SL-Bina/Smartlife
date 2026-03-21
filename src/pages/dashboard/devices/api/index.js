@@ -126,6 +126,24 @@ export const devicesAPI = {
     }
   },
 
+  openBasipDoor: async (data) => {
+    try {
+      const response = await api.post("/integration/device/basip-project/devices/open-door", data);
+      return response;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  openBasipElevator: async (data) => {
+    try {
+      const response = await api.post("/integration/device/basip-project/devices/open-elevator", data);
+      return response;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
   getBasipUsers: async ({ complex_id, page = 1, size = 20 }) => {
     try {
       const response = await api.post("/integration/device/basip-project/users", {
