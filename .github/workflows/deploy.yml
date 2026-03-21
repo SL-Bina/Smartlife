@@ -184,8 +184,18 @@ jobs:
 
       - name: Build project
         env:
+          VITE_GROQ_API_KEY: ${{ secrets.VITE_GROQ_API_KEY }}
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
         run: |
+          if [ -z "$VITE_GROQ_API_KEY" ]; then
+            echo "VITE_GROQ_API_KEY secret is missing"
+            exit 1
+          fi
+          if [ -z "$VITE_API_BASE_URL" ]; then
+            echo "VITE_API_BASE_URL secret is missing"
+            exit 1
+          fi
           if [ -z "$VITE_API_URL" ]; then
             echo "VITE_API_URL secret is missing"
             exit 1
