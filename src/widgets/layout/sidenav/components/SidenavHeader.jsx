@@ -12,7 +12,7 @@ import { useSelector } from "react-redux";
 
 export function SidenavHeader({ brandName, brandLogo, collapsed = false, isLowHeight = false, homePath = "/dashboard/home" }) {
   const [controller, actions] = useMaterialTailwindController();
-  const { sidenavSize } = controller;
+  const { sidenavSize, darkMode } = controller;
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const selectedProperty = useSelector((state) => state.property.selectedProperty);
@@ -92,11 +92,15 @@ export function SidenavHeader({ brandName, brandLogo, collapsed = false, isLowHe
 
   const headerStyle = {
     background: complexColor
-      ? `linear-gradient(140deg, ${colorTintStrong} 0%, ${colorTintSoft} 42%, rgba(255,255,255,0.22) 100%)`
-      : "linear-gradient(140deg, rgba(255,255,255,0.38) 0%, rgba(255,255,255,0.2) 48%, rgba(255,255,255,0.12) 100%)",
+      ? `linear-gradient(140deg, ${colorTintStrong} 0%, ${colorTintSoft} 42%, ${isMobile && darkMode ? "rgba(31,41,55,0.22)" : "rgba(255,255,255,0.22)"} 100%)`
+      : isMobile && darkMode 
+        ? "linear-gradient(140deg, rgba(31,41,55,0.38) 0%, rgba(31,41,55,0.2) 48%, rgba(31,41,55,0.12) 100%)"
+        : "linear-gradient(140deg, rgba(255,255,255,0.38) 0%, rgba(255,255,255,0.2) 48%, rgba(255,255,255,0.12) 100%)",
     boxShadow: complexColor
       ? `inset 0 1px 0 ${getRgbaColor(complexColor, 0.28)}, inset 0 -1px 0 rgba(255,255,255,0.12)`
-      : "inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(255,255,255,0.08)",
+      : isMobile && darkMode
+        ? "inset 0 1px 0 rgba(55,65,81,0.28), inset 0 -1px 0 rgba(31,41,55,0.08)"
+        : "inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(255,255,255,0.08)",
   };
 
   return (

@@ -16,7 +16,7 @@ import { loadMtkById } from "@/store/slices/mtkSlice";
 export function Sidenav({ brandImg, brandName, routes }) {
   const dispatch = useAppDispatch();
   const [controller, actions] = useMaterialTailwindController();
-  const { sidenavType, openSidenav, sidenavCollapsed, sidenavFlatMenu, sidenavExpandAll, sidenavSize, sidenavPosition } = controller;
+  const { sidenavType, openSidenav, sidenavCollapsed, sidenavFlatMenu, sidenavExpandAll, sidenavSize, sidenavPosition, darkMode } = controller;
   
   const { user } = useAuth();
   const selectedProperty = useSelector((state) => state.property.selectedProperty);
@@ -65,7 +65,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
   const getSidenavBackground = () => {
     if (isMobile) {
       return {
-        background: "#ffffff",
+        background: darkMode ? "#1f2937" : "#ffffff",
       };
     }
 
@@ -134,7 +134,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="fixed inset-0 bg-black/40 dark:bg-black/60 z-[999] xl:hidden"
+            className="fixed inset-0 bg-black/50 dark:bg-black/80 z-[999] xl:hidden"
             onClick={() => actions.setOpenSidenav(false)}
           />
         )}
@@ -151,7 +151,7 @@ export function Sidenav({ brandImg, brandName, routes }) {
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         onMouseEnter={() => { if (!isMobile && sidenavCollapsed) setIsHovered(true); }}
         onMouseLeave={() => { if (!isMobile && sidenavCollapsed) setIsHovered(false); }}
-        className={`${isMobile ? "bg-white" : sidenavTypes[sidenavType]} fixed inset-y-0 ${sidenavPosition === "right" ? "right-0" : "left-0"} xl:translate-x-0 flex flex-col ${isMobile ? "" : "backdrop-blur-xl"} ${sidenavPosition === "right" ? "border-l" : "border-r"} shadow-2xl ${
+        className={`${isMobile ? (darkMode ? "bg-gray-800" : "bg-white") : sidenavTypes[sidenavType]} fixed inset-y-0 ${sidenavPosition === "right" ? "right-0" : "left-0"} xl:translate-x-0 flex flex-col ${isMobile ? "" : "backdrop-blur-xl"} ${sidenavPosition === "right" ? "border-l" : "border-r"} shadow-2xl ${
           sidenavCollapsed && !isHovered ? "xl:overflow-hidden" : "overflow-y-auto"
         }`}
         style={{

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { getResidentStats } from "@/data/dashboard-data";
 import { useMtkColor } from "@/store/hooks/useMtkColor";
+import { getIconComponent } from "@/utils/iconMapping";
 
 export function ResidentStatsCards({ residentStats: residentStatsFromProps }) {
   const { t } = useTranslation();
@@ -26,7 +27,7 @@ export function ResidentStatsCards({ residentStats: residentStatsFromProps }) {
           <Card className=" dark:border-gray-700/50 shadow-xl dark:shadow-gray-900/50 bg-gradient-to-br from-white via-white to-gray-50/50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-900 text-center p-3 sm:p-4 lg:p-6 h-full flex flex-col items-center justify-center min-h-[140px] sm:min-h-[160px] lg:min-h-[180px] rounded-2xl transition-all duration-300">
             <div className="mb-2 sm:mb-3 lg:mb-4 flex justify-center">
               <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-xl flex items-center justify-center" style={{ backgroundColor: getRgba(0.12) }}>
-                {React.createElement(stat.icon, {
+                {React.createElement(getIconComponent(stat.icon), {
                   className: "w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8",
                   style: { color: colorCode },
                 })}

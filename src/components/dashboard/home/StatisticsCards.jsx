@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { getPaymentStatistics } from "@/data/dashboard-data";
 import { useMtkColor } from "@/store/hooks/useMtkColor";
+import { getIconComponent } from "@/utils/iconMapping";
 
 export function StatisticsCards({ paymentStatistics: paymentStatisticsFromProps }) {
   const { t } = useTranslation();
@@ -26,7 +27,7 @@ export function StatisticsCards({ paymentStatistics: paymentStatisticsFromProps 
               <CardBody className="p-4 sm:p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center shadow-lg" style={{ background: `linear-gradient(135deg, ${getRgba(0.9)}, ${getRgba(1)})`, boxShadow: `0 10px 15px -3px ${getRgba(0.3)}` }}>
-                  {React.createElement(stat.icon, { className: "w-6 h-6 sm:w-7 sm:h-7 text-white" })}
+                  {React.createElement(getIconComponent(stat.icon), { className: "w-6 h-6 sm:w-7 sm:h-7 text-white" })}
                 </div>
               </div>
               <Typography

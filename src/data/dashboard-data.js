@@ -15,17 +15,17 @@ export const getPaymentStatistics = (t) => [
     titleKey: "dashboard.paymentStats.currentMonthPayments",
     titleKey: "dashboard.paymentStats.paidServicesCount",
     value: "4",
-    icon: BanknotesIcon,
+    icon: "BanknotesIcon",
   },
   {
     titleKey: "dashboard.paymentStats.paidInvoicesCount",
     value: "12",
-    icon: DocumentTextIcon,
+    icon: "DocumentTextIcon",
   },
   {
     titleKey: "dashboard.paymentStats.totalIncome",
     value: "1018.00 AZN",
-    icon: CurrencyDollarIcon,
+    icon: "CurrencyDollarIcon",
   },
 ];
 
@@ -146,32 +146,32 @@ export const getResidentStats = (t) => [
   {
     titleKey: "dashboard.residentStats.totalResidents",
     value: "79",
-    icon: UsersIcon,
+    icon: "UsersIcon",
   },
   {
     titleKey: "dashboard.residentStats.activeResidents",
     value: "23",
-    icon: CheckCircleIcon,
+    icon: "CheckCircleIcon",
   },
   {
     titleKey: "dashboard.residentStats.onlinePayingResidents",
     value: "1",
-    icon: CreditCardIcon,
+    icon: "CreditCardIcon",
   },
   {
     titleKey: "dashboard.residentStats.passiveResidents",
     value: "56",
-    icon: UserMinusIcon,
+    icon: "UserMinusIcon",
   },
   {
     titleKey: "dashboard.residentStats.buildings",
     value: "3",
-    icon: BuildingOfficeIcon,
+    icon: "BuildingOfficeIcon",
   },
   {
     titleKey: "dashboard.residentStats.apartments",
     value: "87",
-    icon: HomeIcon,
+    icon: "HomeIcon",
   },
 ];
 
