@@ -1,9 +1,21 @@
 import api from "@/services/api";
 
+const BASE = "/module/properties";
+const SEARCH_BASE = "/search/module/property";
+
 export const propertiesAPI = {
+  getLookupList: async (params = {}) => {
+    try {
+      const response = await api.get(`${BASE}/list`, { params });
+      return response?.data?.data?.data || [];
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
   getAll: async (params = {}) => {
     try {
-      const response = await api.get("/module/properties/list", { params });
+      const response = await api.get(`${BASE}/list`, { params });
       return response;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -12,7 +24,7 @@ export const propertiesAPI = {
 
   getById: async (id) => {
     try {
-      const response = await api.get(`/module/properties/${id}`);
+      const response = await api.get(`${BASE}/${id}`);
       return response;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -21,7 +33,7 @@ export const propertiesAPI = {
 
   add: async (propertyData) => {
     try {
-      const response = await api.put("/module/properties/add", propertyData);
+      const response = await api.put(`${BASE}/add`, propertyData);
       return response;
     } catch (error) {
       const errorData = error.response?.data;
@@ -41,7 +53,7 @@ export const propertiesAPI = {
 
   update: async (id, propertyData) => {
     try {
-      const response = await api.patch(`/module/properties/${id}`, propertyData);
+      const response = await api.patch(`${BASE}/${id}`, propertyData);
       return response;
     } catch (error) {
       const errorData = error.response?.data;
@@ -61,7 +73,7 @@ export const propertiesAPI = {
 
   delete: async (id) => {
     try {
-      const response = await api.delete(`/module/properties/${id}`);
+      const response = await api.delete(`${BASE}/${id}`);
       return response;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -85,7 +97,7 @@ export const propertiesAPI = {
         }
       });
 
-      const response = await api.get(`/search/module/property?${searchParams.toString()}`);
+      const response = await api.get(`${SEARCH_BASE}?${searchParams.toString()}`);
       return response;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -94,7 +106,16 @@ export const propertiesAPI = {
 
   getTypes: async (params = {}) => {
     try {
-      const response = await api.get("/module/properties/type/list", { params });
+      const response = await api.get(`${BASE}/type/list`, { params });
+      return response?.data?.data?.data || [];
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  getPropertyTypes: async (params = {}) => {
+    try {
+      const response = await api.get(`${BASE}/type/list`, { params });
       return response?.data?.data?.data || [];
     } catch (error) {
       throw error.response?.data || error.message;
@@ -108,7 +129,7 @@ export const propertiesAPI = {
       ids.forEach((id) => {
         searchParams.append("ids[]", String(id));
       });
-      const response = await api.get(`/module/json/property/search-data?${searchParams.toString()}`);
+      const response = await api.get(`${SEARCH_BASE}?${searchParams.toString()}`);
       return response?.data?.data || [];
     } catch (error) {
       throw error.response?.data || error.message;

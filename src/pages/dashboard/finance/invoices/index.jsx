@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Typography } from "@material-tailwind/react";
+import { Typography, Chip, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
 import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import complexesAPI from "@/services/management/complexesApi";
@@ -41,8 +41,10 @@ import {
   selectFinanceInvoicesTotalPaid,
 } from "@/store/slices/financeInvoicesSlice";
 import {
-  BuildingOfficeIcon,
+  CreditCardIcon,
   DocumentTextIcon,
+  EllipsisVerticalIcon,
+  EyeIcon,
 } from "@heroicons/react/24/outline";
 
 const InvoicesPage = () => {
@@ -382,6 +384,125 @@ const InvoicesPage = () => {
 
   const invoiceViewFields = itemToView ? createInvoiceViewFields(t) : [];
 
+  const getStatusColor = (status) => {
+    const statusMap = {
+      paid: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+      unpaid: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+      not_paid: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+      pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
+      overdue: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
+      declined: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400",
+      draft: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+      pre_paid: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
+    };
+    return statusMap[status] || statusMap.unpaid;
+  };
+
+  const getStatusLabel = (status) => t(`invoices.status.${status}`) || status;
+  const getTypeLabel = (type) => t(`invoices.types.${type}`) || type;
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "-";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("az-AZ", { year: "numeric", month: "short", day: "numeric" });
+    } catch {
+      return dateString;
+    }
+  };
+
+  const calculateRemaining = (amount, amountPaid) => {
+    const remaining = parseFloat(amount || 0) - parseFloat(amountPaid || 0);
+    return remaining.toFixed(2);
+  };
+
+  const tableColumns = [
+    { key: "id", label: t("invoices.table.id") || "ID", align: "text-left", render: (invoice) => <Typography variant="small" className="text-gray-700 dark:text-gray-300 font-medium">{invoice.id}</Typography> },
+    { key: "service", label: t("invoices.table.service") || "Xidmət", align: "text-left", render: (invoice) => <Typography variant="small" className="text-gray-700 dark:text-gray-300 font-semibold">{invoice.service?.name || "-"}</Typography> },
+    {
+      key: "property",
+      label: t("invoices.table.property") || "Mənzil",
+      align: "text-left",
+      render: (invoice) => (
+        <>
+          <Typography variant="small" className="text-gray-700 dark:text-gray-300">
+            {invoice.property?.name ||
+              invoice.property?.meta?.apartment_number ||
+              invoice.property?.apartment_number ||
+              (invoice.property?.id != null
+                ? `Mənzil #${invoice.property.id}`
+                : invoice.property_id != null
+                ? `Mənzil #${invoice.property_id}`
+                : "-")}
+          </Typography>
+          {invoice.property?.complex?.name && <Typography variant="small" className="text-xs text-gray-500 dark:text-gray-400">{invoice.property.complex.name}</Typography>}
+        </>
+      ),
+    },
+    {
+      key: "residents",
+      label: t("invoices.table.residents") || "Sakinlər",
+      align: "text-left",
+      render: (invoice) => (
+        <>
+          {invoice.residents && invoice.residents.length > 0 ? (
+            <div className="flex flex-col gap-1">
+              {invoice.residents.slice(0, 2).map((resident) => (
+                <Typography key={resident.id} variant="small" className="text-gray-700 dark:text-gray-300">{resident.name}</Typography>
+              ))}
+              {invoice.residents.length > 2 && <Typography variant="small" className="text-xs text-gray-500 dark:text-gray-400">+{invoice.residents.length - 2} daha</Typography>}
+            </div>
+          ) : (
+            <Typography variant="small" className="text-gray-500 dark:text-gray-400">-</Typography>
+          )}
+        </>
+      ),
+    },
+    { key: "type", label: t("invoices.table.type") || "Növ", align: "text-left", render: (invoice) => <Typography variant="small" className="text-gray-700 dark:text-gray-300">{getTypeLabel(invoice.type)}</Typography> },
+    { key: "amount", label: t("invoices.table.amount") || "Məbləğ", align: "text-right", render: (invoice) => <Typography variant="small" className="text-gray-700 dark:text-gray-300 font-semibold">{parseFloat(invoice.amount || 0).toFixed(2)} ₼</Typography> },
+    { key: "paidAmount", label: t("invoices.table.paidAmount") || "Ödənilmiş", align: "text-right", render: (invoice) => <Typography variant="small" className="text-green-600 dark:text-green-400 font-semibold">{parseFloat(invoice.amount_paid || 0).toFixed(2)} ₼</Typography> },
+    {
+      key: "remaining",
+      label: t("invoices.table.remaining") || "Qalıq",
+      align: "text-right",
+      render: (invoice) => {
+        const remaining = calculateRemaining(invoice.amount, invoice.amount_paid);
+        return <Typography variant="small" className={`font-semibold ${parseFloat(remaining) > 0 ? "text-red-600 dark:text-red-400" : "text-gray-700 dark:text-gray-300"}`}>{remaining} ₼</Typography>;
+      },
+    },
+    { key: "status", label: t("invoices.table.status") || "Status", align: "text-center", render: (invoice) => <Chip value={getStatusLabel(invoice.status)} className={`${getStatusColor(invoice.status)} text-xs font-medium`} size="sm" /> },
+    { key: "startDate", label: t("invoices.table.startDate") || "Başlama tarixi", align: "text-left", render: (invoice) => <Typography variant="small" className="text-gray-700 dark:text-gray-300">{formatDate(invoice.start_date)}</Typography> },
+    { key: "dueDate", label: t("invoices.table.dueDate") || "Son tarix", align: "text-left", render: (invoice) => <Typography variant="small" className="text-gray-700 dark:text-gray-300">{formatDate(invoice.due_date)}</Typography> },
+    { key: "paymentMethod", label: t("invoices.table.paymentMethod") || "Ödəniş metodu", align: "text-left", render: (invoice) => <Typography variant="small" className="text-gray-700 dark:text-gray-300">{invoice.payment_method?.name || "-"}</Typography> },
+    {
+      key: "actions",
+      label: t("invoices.table.operations") || "Əməliyyatlar",
+      align: "text-left",
+      cellClassName: "whitespace-nowrap",
+      render: (invoice) => (
+        <Menu placement="left-start">
+          <MenuHandler>
+            <IconButton size="sm" variant="text" color="blue-gray" className="dark:text-gray-300 dark:hover:bg-gray-700">
+              <EllipsisVerticalIcon strokeWidth={2} className="h-5 w-5" />
+            </IconButton>
+          </MenuHandler>
+          <MenuList className="dark:bg-gray-800 dark:border-gray-800">
+            <MenuItem onClick={() => handleView(invoice)} className="dark:text-gray-300 dark:hover:bg-gray-700 flex items-center gap-2">
+              <EyeIcon className="h-4 w-4" />
+              {t("invoices.actions.view") || "Bax"}
+            </MenuItem>
+            <MenuItem onClick={() => handleEdit(invoice)} className="dark:text-gray-300 dark:hover:bg-gray-700">{t("invoices.actions.edit") || "Redaktə et"}</MenuItem>
+            <MenuItem onClick={() => handlePay(invoice)} className="dark:hover:bg-gray-700 flex items-center gap-2 text-blue-600 dark:text-blue-400">
+              <CreditCardIcon className="h-4 w-4" />
+              {t("invoices.actions.pay") || "Ödə"}
+            </MenuItem>
+            <MenuItem onClick={() => handleDelete(invoice)} className="dark:text-gray-300 dark:hover:bg-gray-700">{t("invoices.actions.delete") || "Sil"}</MenuItem>
+          </MenuList>
+        </Menu>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-6" style={{ position: 'relative', zIndex: 0 }}>
       <Header
@@ -420,12 +541,13 @@ const InvoicesPage = () => {
       ) : (
         <>
           <Table
-            invoices={invoices}
+            rows={invoices}
+            columns={tableColumns}
             loading={loading}
-            onView={handleView}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onPay={handlePay}
+            emptyText={t("invoices.noData") || "Faktura tapılmadı"}
+            hideOnMobile
+            tableAuto
+            minWidth="min-w-[1200px]"
           />
           <CardList
             invoices={invoices}
@@ -491,6 +613,49 @@ const InvoicesPage = () => {
 
       <SearchModal
         open={searchModalOpen}
+        title={t("invoices.searchModal.title") || "Ətraflı Axtarış"}
+        fields={[
+          { key: "invoiceId", label: t("invoices.searchModal.invoiceId") || "Faktura ID", type: "text" },
+          {
+            key: "status",
+            label: t("invoices.table.status") || "Status",
+            type: "select",
+            options: [
+              { value: "", label: t("invoices.searchModal.all") || "Hamısı" },
+              { value: "paid", label: t("invoices.status.paid") || "paid" },
+              { value: "not_paid", label: t("invoices.status.not_paid") || "not_paid" },
+              { value: "pending", label: t("invoices.status.pending") || "pending" },
+              { value: "overdue", label: t("invoices.status.overdue") || "overdue" },
+              { value: "declined", label: t("invoices.status.declined") || "declined" },
+              { value: "draft", label: t("invoices.status.draft") || "draft" },
+              { value: "pre_paid", label: t("invoices.status.pre_paid") || "pre_paid" },
+            ],
+          },
+          {
+            key: "type",
+            label: t("invoices.searchModal.type") || "Növ",
+            type: "select",
+            options: [
+              { value: "", label: t("invoices.searchModal.all") || "Hamısı" },
+              { value: "daily", label: t("invoices.types.daily") || "daily" },
+              { value: "weekly", label: t("invoices.types.weekly") || "weekly" },
+              { value: "monthly", label: t("invoices.types.monthly") || "monthly" },
+              { value: "quarterly", label: t("invoices.types.quarterly") || "quarterly" },
+              { value: "biannually", label: t("invoices.types.biannually") || "biannually" },
+              { value: "yearly", label: t("invoices.types.yearly") || "yearly" },
+              { value: "one_time", label: t("invoices.types.one_time") || "one_time" },
+            ],
+          },
+          { key: "paidAtFrom", label: t("invoices.searchModal.dateFrom") || "Başlanğıc", type: "date" },
+          { key: "paidAtTo", label: t("invoices.searchModal.dateTo") || "Son", type: "date" },
+          { key: "amountFrom", label: `${t("invoices.searchModal.min") || "Minimum"} (₼)`, type: "number" },
+          { key: "amountTo", label: `${t("invoices.searchModal.max") || "Maksimum"} (₼)`, type: "number" },
+          { key: "amountPaidFrom", label: `${t("invoices.searchModal.min") || "Minimum"} ${t("invoices.searchModal.paidAmountLabel") || "Ödənilmiş"} (₼)`, type: "number" },
+          { key: "amountPaidTo", label: `${t("invoices.searchModal.max") || "Maksimum"} ${t("invoices.searchModal.paidAmountLabel") || "Ödənilmiş"} (₼)`, type: "number" },
+        ]}
+        searchLabel={t("invoices.searchModal.search") || "Axtar"}
+        clearLabel={t("invoices.searchModal.reset") || "Təmizlə"}
+        cancelLabel={t("buttons.cancel") || "Ləğv et"}
         onClose={() => setSearchModalOpen(false)}
         onSearch={handleSearch}
         currentFilters={filters}

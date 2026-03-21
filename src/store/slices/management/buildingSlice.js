@@ -1,5 +1,5 @@
-import { createCrudEntitySlice } from './utils/createCrudEntitySlice';
-import buildingsAPI from '@/services/management/buildingsApi';
+import { buildingsAPI } from '@/services/management';
+import { createCrudEntitySlice } from '../utils/createCrudEntitySlice';
 
 const COOKIE_KEYS = {
   BUILDING_ID: 'smartlife_building_id',

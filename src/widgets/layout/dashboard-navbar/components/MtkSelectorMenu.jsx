@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useAuth } from "@/store/hooks/useAuth";
-import { setSelectedMtk } from "@/store/slices/mtkSlice";
+import { setSelectedMtk } from "@/store/slices/management/mtkSlice";
 import { Menu, MenuHandler, MenuList, Typography, IconButton } from "@material-tailwind/react";
 import { BuildingLibraryIcon, CheckIcon } from "@heroicons/react/24/outline";
 import api from "@/services/api";

@@ -7,11 +7,11 @@ import { AsyncSearchSelect } from "@/components/ui/AsyncSearchSelect";
 import AppSelect from "@/components/ui/AppSelect";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { useMtkColor } from "@/store/hooks/useMtkColor";
-import { setSelectedMtk } from "@/store/slices/mtkSlice";
-import { setSelectedComplex } from "@/store/slices/complexSlice";
-import { setSelectedBuilding } from "@/store/slices/buildingSlice";
-import { setSelectedBlock } from "@/store/slices/blockSlice";
-import { setSelectedProperty } from "@/store/slices/propertySlice";
+import { setSelectedMtk } from "@/store/slices/management/mtkSlice";
+import { setSelectedComplex } from "@/store/slices/management/complexSlice";
+import { setSelectedBuilding } from "@/store/slices/management/buildingSlice";
+import { setSelectedBlock } from "@/store/slices/management/blockSlice";
+import { setSelectedProperty } from "@/store/slices/management/propertySlice";
 import api from "@/services/api";
 
 const STANDARD_OPTIONS = [10, 20, 50, 75, 100];

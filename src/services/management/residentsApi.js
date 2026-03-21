@@ -1,9 +1,12 @@
 import api from "@/services/api";
 
-const residentsAPI = {
+const BASE = "/module/resident";
+const SEARCH_BASE = "/search/module/resident";
+
+export const residentsAPI = {
   getAll: async (params = {}) => {
     try {
-      const response = await api.get("/module/resident/list", { params });
+      const response = await api.get(`${BASE}/list`, { params });
       return response;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -24,7 +27,7 @@ const residentsAPI = {
           searchParams.append(key, String(params[key]));
         }
       });
-      const response = await api.get(`/search/module/resident?${searchParams.toString()}`);
+      const response = await api.get(`${SEARCH_BASE}?${searchParams.toString()}`);
       return response;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -33,7 +36,7 @@ const residentsAPI = {
 
   getById: async (id) => {
     try {
-      const response = await api.get(`/module/resident/${id}`);
+      const response = await api.get(`${BASE}/${id}`);
       return response;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -42,7 +45,7 @@ const residentsAPI = {
 
   getMe: async () => {
     try {
-      const response = await api.get("/module/resident/config/me");
+      const response = await api.get(`${BASE}/config/me`);
       return response;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -51,7 +54,7 @@ const residentsAPI = {
 
   add: async (residentData) => {
     try {
-      const response = await api.put("/module/resident/add", residentData);
+      const response = await api.put(`${BASE}/add`, residentData);
       return response;
     } catch (error) {
       const status = error.response?.status;
@@ -79,7 +82,7 @@ const residentsAPI = {
 
   update: async (id, residentData) => {
     try {
-      const response = await api.patch(`/module/resident/${id}`, residentData);
+      const response = await api.patch(`${BASE}/${id}`, residentData);
       return response;
     } catch (error) {
       const errorData = error.response?.data;
@@ -99,7 +102,7 @@ const residentsAPI = {
 
   delete: async (id) => {
     try {
-      const response = await api.delete(`/module/resident/${id}`);
+      const response = await api.delete(`${BASE}/${id}`);
       return response;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -108,7 +111,7 @@ const residentsAPI = {
 
   bindProperty: async (residentId, propertyData) => {
     try {
-      const response = await api.post(`/module/resident/bind-property/${residentId}`, propertyData);
+      const response = await api.post(`${BASE}/bind-property/${residentId}`, propertyData);
       if (response.data?.success === false) {
         throw response.data;
       }
@@ -120,7 +123,7 @@ const residentsAPI = {
 
   unbindProperty: async (residentId, propertyData) => {
     try {
-      const response = await api.post(`/module/resident/unbind-property/${residentId}`, propertyData);
+      const response = await api.post(`${BASE}/unbind-property/${residentId}`, propertyData);
       if (response.data?.success === false) {
         throw response.data;
       }

@@ -1,32 +1,43 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { setSelectedResident, loadResidentById } from "@/store/slices/residentSlice";
-import { ResidentHeader } from "@/components/common/ResidentHeader";
-import { ManagementActions, ENTITY_LEVELS } from "@/components/management/ManagementActions";
-import { ResidentTable } from "@/components/common/ResidentTable";
-import { ResidentPagination } from "./components/ResidentPagination";
-import { ResidentFormModal } from "./components/modals/ResidentFormModal";
-import { ResidentSearchModal } from "@/components/common/modals/ResidentSearchModal";
+import { setSelectedResident, loadResidentById } from "@/store/slices/management/residentSlice";
+import {
+  Actions,
+  ENTITY_LEVELS,
+  DeleteConfirmModal,
+  EditConfirmModal,
+  ViewModal,
+  Header,
+  FormModal,
+  SearchModal,
+  Pagination,
+  Skeleton,
+  Table,
+} from "@/components/common";
 import { useResidentForm } from "@/hooks/management/residents/useResidentForm";
 import { useResidentData } from "@/hooks/management/residents/useResidentData";
 import residentsAPI from "@/services/management/residentsApi";
 import DynamicToast from "@/components/DynamicToast";
-import { ViewModal } from "@/components/common/modals/ViewModal";
-import { DeleteConfirmModal } from "@/components/common/modals/DeleteConfirmModal";
-import { EditConfirmModal } from "@/components/common/modals/EditConfirmModal";
-import { UserIcon, EnvelopeIcon, PhoneIcon, IdentificationIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
-import ResidentPropertyBindModal from "@/components/common/modals/ResidentPropertyBindModal";
+import { Typography, Chip, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
+import { UserIcon, EnvelopeIcon, PhoneIcon, IdentificationIcon, CheckCircleIcon, EllipsisVerticalIcon, EyeIcon, LinkIcon } from "@heroicons/react/24/outline";
+import PropertyBindModal from "@/components/common/modals/PropertyBindModal";
 import { AddBalanceCashModal } from "@/components/common/modals/AddBalanceCashModal";
+import { ResidentExistsModal } from "@/components/common/modals/ResidentExistsModal";
 
 export default function ResidentsPage() {
   const dispatch = useAppDispatch();
 
   // Read filter values directly from Redux — ManagementActions keeps these in sync
   const selectedMtkId = useAppSelector((state) => state.mtk.selectedMtkId);
+  const selectedMtk = useAppSelector((state) => state.mtk.selectedMtk);
   const selectedComplexId = useAppSelector((state) => state.complex.selectedComplexId);
+  const selectedComplex = useAppSelector((state) => state.complex.selectedComplex);
   const selectedBuildingId = useAppSelector((state) => state.building.selectedBuildingId);
+  const selectedBuilding = useAppSelector((state) => state.building.selectedBuilding);
   const selectedBlockId = useAppSelector((state) => state.block.selectedBlockId);
+  const selectedBlock = useAppSelector((state) => state.block.selectedBlock);
   const selectedPropertyId = useAppSelector((state) => state.property.selectedPropertyId);
+  const selectedProperty = useAppSelector((state) => state.property.selectedProperty);
 
   const selectedResidentId = useAppSelector((state) => state.resident.selectedResidentId);
   const selectedResident = useAppSelector((state) => state.resident.selectedResident);
@@ -43,6 +54,8 @@ export default function ResidentsPage() {
   const [editConfirmOpen, setEditConfirmOpen] = useState(false);
   const [editConfirmLoading, setEditConfirmLoading] = useState(false);
   const [pendingFormData, setPendingFormData] = useState(null);
+  const [existsPrompt, setExistsPrompt] = useState(false);
+  const [lastFormData, setLastFormData] = useState(null);
   const [itemToView, setItemToView] = useState(null);
   const [mode, setMode] = useState("create");
   const [selected, setSelected] = useState(null);
@@ -79,11 +92,6 @@ export default function ResidentsPage() {
     }));
   };
 
-  // Called by ManagementActions reset button — also clears text search state
-  const handleResetFilters = () => {
-    setSearch({});
-  };
-
   const handleRemoveFilter = (filterKey) => {
     setSearch((prev) => {
       const newSearch = { ...prev };
@@ -103,10 +111,24 @@ export default function ResidentsPage() {
 
   const handleCreate = () => {
     form.resetForm();
+    if (selectedMtkId) form.updateField("property.mtk_id", selectedMtkId);
+    if (selectedComplexId) form.updateField("property.complex_id", selectedComplexId);
+    if (selectedBuildingId) form.updateField("property.building_id", selectedBuildingId);
+    if (selectedBlockId) form.updateField("property.block_id", selectedBlockId);
+    if (selectedPropertyId) form.updateField("property.property_id", selectedPropertyId);
     setMode("create");
     setSelected(null);
     setFormOpen(true);
   };
+
+  useEffect(() => {
+    if (!formOpen || mode !== "create") return;
+    if (!selectedMtkId) return;
+
+    if (String(form.formData?.property?.mtk_id || "") !== String(selectedMtkId)) {
+      form.updateField("property.mtk_id", selectedMtkId);
+    }
+  }, [formOpen, mode, selectedMtkId, form]);
 
   const handleView = (item) => {
     setItemToView(item);
@@ -182,15 +204,304 @@ export default function ResidentsPage() {
       refresh();
       form.resetForm();
     } catch (error) {
+      if (error?.status === 426) {
+        setLastFormData(formData);
+        setExistsPrompt(true);
+      }
       throw error;
     }
   };
 
+  const handleBindExists = async (bindExists) => {
+    if (!lastFormData) return;
+
+    try {
+      await residentsAPI.add({ ...lastFormData, bind_existing: bindExists });
+      showToast("success", "Sakin uğurla əlavə edildi", "Uğurlu");
+      refresh();
+      form.resetForm();
+      setFormOpen(false);
+      setExistsPrompt(false);
+      setLastFormData(null);
+    } catch (error) {
+      showToast("error", error?.message || "Xəta baş verdi", "Xəta");
+    }
+  };
+
+  const handleResidentFieldChange = (field, value) => {
+    const numericValue = value ? Number(value) : null;
+
+    if (field === "property.mtk_id") {
+      form.updateField("property.mtk_id", numericValue);
+      form.updateField("property.complex_id", null);
+      form.updateField("property.building_id", null);
+      form.updateField("property.block_id", null);
+      form.updateField("property.property_id", null);
+      return;
+    }
+
+    if (field === "property.complex_id") {
+      form.updateField("property.complex_id", numericValue);
+      form.updateField("property.building_id", null);
+      form.updateField("property.block_id", null);
+      form.updateField("property.property_id", null);
+      return;
+    }
+
+    if (field === "property.building_id") {
+      form.updateField("property.building_id", numericValue);
+      form.updateField("property.block_id", null);
+      form.updateField("property.property_id", null);
+      return;
+    }
+
+    if (field === "property.block_id") {
+      form.updateField("property.block_id", numericValue);
+      form.updateField("property.property_id", null);
+      return;
+    }
+
+    if (field === "property.property_id") {
+      form.updateField("property.property_id", numericValue);
+      return;
+    }
+
+    form.updateField(field, value);
+  };
+
+  const residentFormFields = useMemo(() => {
+    const isCreate = mode === "create";
+    const formMtkId = form.formData?.property?.mtk_id;
+    const effectiveMtkId = formMtkId || selectedMtkId;
+    const formComplexId = form.formData?.property?.complex_id;
+    const formBuildingId = form.formData?.property?.building_id;
+    const formBlockId = form.formData?.property?.block_id;
+
+    return [
+      { key: "name", label: "Ad", type: "text", required: true },
+      { key: "surname", label: "Soyad", type: "text", required: true },
+      { key: "email", label: "E-mail", type: "text" },
+      { key: "phone", label: "Telefon", type: "phone" },
+      {
+        key: "type",
+        label: "Tip",
+        type: "select",
+        options: [
+          { value: "owner", label: "Sahib" },
+          { value: "tenant", label: "Kirayəçi" },
+        ],
+      },
+      {
+        key: "status",
+        label: "Status",
+        type: "select",
+        options: [
+          { value: "active", label: "Aktiv" },
+          { value: "inactive", label: "Qeyri-aktiv" },
+        ],
+      },
+      { key: "meta.father_name", label: "Ata adı", type: "text" },
+      {
+        key: "meta.gender",
+        label: "Cins",
+        type: "select",
+        options: [
+          { value: "male", label: "Kişi" },
+          { value: "female", label: "Qadın" },
+        ],
+      },
+      { key: "meta.personal_code", label: "Şəxsi kod", type: "text" },
+      { key: "meta.birth_date", label: "Doğum tarixi", type: "date" },
+      {
+        key: "property.complex_id",
+        label: "Kompleks",
+        type: "async-select",
+        endpoint: "/search/module/complex",
+        searchParams: { ...(effectiveMtkId ? { mtk_ids: [effectiveMtkId] } : {}) },
+        selectedLabel: selectedComplex?.name || null,
+        disabled: !effectiveMtkId,
+        placeholder: "Kompleks seçin",
+        searchPlaceholder: "Kompleks axtar...",
+        allowClear: false,
+        required: isCreate,
+        hidden: !isCreate,
+      },
+      {
+        key: "property.building_id",
+        label: "Bina",
+        type: "async-select",
+        endpoint: "/search/module/building",
+        searchParams: {
+          ...(effectiveMtkId ? { mtk_ids: [effectiveMtkId] } : {}),
+          ...(formComplexId ? { complex_ids: [formComplexId] } : {}),
+        },
+        selectedLabel: selectedBuilding?.name || null,
+        disabled: !formComplexId,
+        placeholder: "Bina seçin",
+        searchPlaceholder: "Bina axtar...",
+        allowClear: false,
+        hidden: !isCreate,
+      },
+      {
+        key: "property.block_id",
+        label: "Blok",
+        type: "async-select",
+        endpoint: "/search/module/block",
+        searchParams: {
+          ...(effectiveMtkId ? { mtk_ids: [effectiveMtkId] } : {}),
+          ...(formComplexId ? { complex_ids: [formComplexId] } : {}),
+          ...(formBuildingId ? { building_ids: [formBuildingId] } : {}),
+        },
+        selectedLabel: selectedBlock?.name || null,
+        disabled: !formBuildingId,
+        placeholder: "Blok seçin",
+        searchPlaceholder: "Blok axtar...",
+        allowClear: false,
+        hidden: !isCreate,
+      },
+      {
+        key: "property.property_id",
+        label: "Mənzil",
+        type: "async-select",
+        endpoint: "/search/module/property",
+        searchParams: {
+          ...(effectiveMtkId ? { mtk_ids: [effectiveMtkId] } : {}),
+          ...(formComplexId ? { complex_ids: [formComplexId] } : {}),
+          ...(formBuildingId ? { building_ids: [formBuildingId] } : {}),
+          ...(formBlockId ? { block_ids: [formBlockId] } : {}),
+        },
+        selectedLabel: selectedProperty?.name || selectedProperty?.apartment_number || null,
+        disabled: !formComplexId,
+        placeholder: "Mənzil seçin",
+        searchPlaceholder: "Mənzil axtar...",
+        allowClear: false,
+        required: isCreate,
+        hidden: !isCreate,
+      },
+    ];
+  }, [
+    mode,
+    form.formData?.property?.mtk_id,
+    form.formData?.property?.complex_id,
+    form.formData?.property?.building_id,
+    form.formData?.property?.block_id,
+    selectedMtkId,
+    selectedComplex,
+    selectedBuilding,
+    selectedBlock,
+    selectedProperty,
+  ]);
+
+  const getStatusColor = (status) => {
+    const normalized = String(status || "").trim().toLowerCase();
+    const statusMap = {
+      active: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+      inactive: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400",
+    };
+    return statusMap[normalized] || "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
+  };
+
+  const getStatusLabel = (status) => {
+    const normalized = String(status || "").trim().toLowerCase();
+    const labels = { active: "Aktiv", inactive: "Qeyri-aktiv" };
+    return labels[normalized] || (status || "-");
+  };
+
+  const tableColumns = [
+    {
+      key: "id",
+      label: "ID",
+      align: "text-left",
+      render: (item) => <Typography variant="small" className="text-gray-700 dark:text-gray-300 font-medium">#{item.id}</Typography>,
+    },
+    {
+      key: "fullName",
+      label: "Ad Soyad",
+      align: "text-left",
+      render: (item) => <Typography variant="small" className="font-semibold text-gray-700 dark:text-gray-300">{item?.name || "-"} {item?.surname || ""}</Typography>,
+    },
+    {
+      key: "email",
+      label: "E-mail",
+      align: "text-left",
+      render: (item) => <Typography variant="small" className="text-gray-700 dark:text-gray-300">{item?.email || "-"}</Typography>,
+    },
+    {
+      key: "phone",
+      label: "Telefon",
+      align: "text-left",
+      render: (item) => <Typography variant="small" className="text-gray-700 dark:text-gray-300">{item?.phone || "-"}</Typography>,
+    },
+    {
+      key: "type",
+      label: "Tip",
+      align: "text-left",
+      render: (item) => (
+        <Typography variant="small" className="text-gray-700 dark:text-gray-300">
+          {item?.type === "owner" ? "Sahib" : item?.type === "tenant" ? "Kirayəçi" : item?.type || "-"}
+        </Typography>
+      ),
+    },
+    {
+      key: "status",
+      label: "Status",
+      align: "text-left",
+      render: (item) => <Chip value={getStatusLabel(item?.status)} className={`${getStatusColor(item?.status)} text-xs font-medium w-fit`} size="sm" />,
+    },
+    {
+      key: "actions",
+      label: "Əməliyyatlar",
+      align: "text-left",
+      cellClassName: "whitespace-nowrap",
+      render: (item) => (
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => handleSelect(item)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${selectedResidentId === item.id ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" : "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/60"}`}
+          >
+            {selectedResidentId === item.id ? "Seçilib" : "Seç"}
+          </button>
+          <Menu placement="left-start">
+            <MenuHandler>
+              <IconButton size="sm" variant="text" color="blue-gray" className="dark:text-gray-300 dark:hover:bg-gray-700">
+                <EllipsisVerticalIcon strokeWidth={2} className="h-5 w-5" />
+              </IconButton>
+            </MenuHandler>
+            <MenuList className="dark:bg-gray-800 dark:border-gray-800">
+              <MenuItem onClick={() => handleView(item)} className="dark:text-gray-300 dark:hover:bg-gray-700 flex items-center gap-2">
+                <EyeIcon className="h-4 w-4" />
+                Bax
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  dispatch(setSelectedResident({ id: item.id, resident: item }));
+                  dispatch(loadResidentById(item.id));
+                  setBindModalOpen(true);
+                }}
+                className="dark:text-gray-300 dark:hover:bg-gray-700 flex items-center gap-2"
+              >
+                <LinkIcon className="h-4 w-4" />
+                Mənzillər
+              </MenuItem>
+              <MenuItem onClick={() => handleEdit(item)} className="dark:text-gray-300 dark:hover:bg-gray-700">Redaktə et</MenuItem>
+              <MenuItem onClick={() => handleDelete(item)} className="dark:text-gray-300 dark:hover:bg-gray-700">Sil</MenuItem>
+            </MenuList>
+          </Menu>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-6" style={{ position: 'relative', zIndex: 0 }}>
-      <ResidentHeader />
+      <Header
+        icon={UserIcon}
+        title="Sakinlər İdarəetməsi"
+        subtitle="Sakin siyahısı, yarat / redaktə et / sil / seç / mənzil bağlama"
+      />
 
-      <ManagementActions
+      <Actions
         entityLevel={ENTITY_LEVELS.RESIDENT}
         search={search}
         onCreateClick={handleCreate}
@@ -198,54 +509,50 @@ export default function ResidentsPage() {
         onApplyNameSearch={handleApplyNameSearch}
         onStatusChange={handleStatusChange}
         onRemoveFilter={handleRemoveFilter}
-        onResetFilters={handleResetFilters}
         totalItems={total}
         itemsPerPage={itemsPerPage}
         onItemsPerPageChange={setItemsPerPage}
       />
 
-      <ResidentTable
-        items={items}
-        loading={loading}
-        onView={handleView}
-        onEdit={handleEdit}
-        onBind={(resident) => {
-          dispatch(setSelectedResident({ id: resident.id, resident }));
-          dispatch(loadResidentById(resident.id));
-          setBindModalOpen(true);
-        }}
-        onDelete={handleDelete}
-        onSelect={handleSelect}
-        selectedResidentId={selectedResidentId}
-      />
-
-      {lastPage > 1 && (
-        <ResidentPagination
-          page={page}
-          lastPage={lastPage}
-          onPageChange={goToPage}
-          total={total}
+      {loading ? (
+        <Skeleton tableRows={6} cardRows={4} />
+      ) : (
+        <Table
+          rows={items}
+          columns={tableColumns}
+          loading={false}
+          emptyText="Məlumat tapılmadı"
+          minWidth="min-w-[980px]"
         />
       )}
 
-      <ResidentFormModal
+      <Pagination
+        page={page}
+        totalPages={lastPage}
+        onPageChange={goToPage}
+        summary={<>Cəm: <b>{total}</b> nəticə</>}
+        prevLabel="Əvvəlki"
+        nextLabel="Növbəti"
+      />
+
+      <FormModal
         open={formOpen}
         mode={mode}
+        title={mode === "edit" ? "Sakini Redaktə Et" : "Yeni Sakin Əlavə Et"}
+        description="Sakin məlumatlarını daxil edin və yadda saxlayın."
+        fields={residentFormFields}
+        formData={form.formData}
+        errors={form.errors}
+        onFieldChange={handleResidentFieldChange}
         onClose={() => {
           setFormOpen(false);
           form.resetForm();
         }}
-        form={form}
         onSubmit={submitForm}
-        mtkId={selectedMtkId}
-        complexId={selectedComplexId}
-        buildingId={selectedBuildingId}
-        blockId={selectedBlockId}
-        propertyId={selectedPropertyId}
         onEditRequest={handleEditRequest}
       />
 
-      <ResidentPropertyBindModal
+      <PropertyBindModal
         open={bindModalOpen}
         onClose={() => setBindModalOpen(false)}
         residentId={selectedResidentId}
@@ -261,8 +568,25 @@ export default function ResidentsPage() {
         }
       />
 
-      <ResidentSearchModal
+      <SearchModal
         open={searchModalOpen}
+        title="Sakin Axtarış"
+        fields={[
+          { key: "name", label: "Ad", type: "text" },
+          { key: "surname", label: "Soyad", type: "text" },
+          { key: "email", label: "E-mail", type: "text" },
+          { key: "phone", label: "Telefon", type: "phone" },
+          {
+            key: "type",
+            label: "Tip",
+            type: "select",
+            options: [
+              { value: "", label: "Hamısı" },
+              { value: "owner", label: "Sahib" },
+              { value: "tenant", label: "Kirayəçi" },
+            ],
+          },
+        ]}
         onClose={() => setSearchModalOpen(false)}
         onSearch={(searchParams) => {
           setSearch((prev) => ({
@@ -350,6 +674,16 @@ export default function ResidentsPage() {
         propertyId={balanceModal.propertyId}
         propertyName={balanceModal.propertyName}
         onSuccess={() => setBalanceModal({ open: false, propertyId: null, propertyName: "" })}
+      />
+
+      <ResidentExistsModal
+        open={existsPrompt}
+        onClose={() => {
+          setExistsPrompt(false);
+          setLastFormData(null);
+        }}
+        onChoose={handleBindExists}
+        saving={false}
       />
     </div>
   );

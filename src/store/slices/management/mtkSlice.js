@@ -1,5 +1,5 @@
-import { createCrudEntitySlice } from './utils/createCrudEntitySlice';
-import { getCookie, setCookie, removeCookie } from './utils/cookieUtils';
+import { createCrudEntitySlice } from '../utils/createCrudEntitySlice';
+import { getCookie, setCookie, removeCookie } from '../utils/cookieUtils';
 import mtkAPI from '@/services/management/mtkApi';
 
 const COOKIE_KEYS = {

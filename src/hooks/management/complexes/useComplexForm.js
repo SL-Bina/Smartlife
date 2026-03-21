@@ -1,5 +1,17 @@
 import { useState, useCallback } from "react";
 
+const normalizeIdArray = (input) => {
+  if (!Array.isArray(input)) return [];
+
+  return input
+    .map((item) => {
+      if (item === null || item === undefined) return null;
+      if (typeof item === "object") return item.id ?? item.value ?? null;
+      return item;
+    })
+    .filter((value) => value !== null && value !== undefined && value !== "");
+};
+
 const initialFormData = {
   name: "",
   mtk_id: null,
@@ -71,8 +83,8 @@ export function useComplexForm() {
         logo: complex.meta?.logo || "",
         images: Array.isArray(complex.meta?.images) ? complex.meta.images : (complex.meta?.image ? [complex.meta.image] : []),
       },
-      modules: complex.modules || [],
-      avaliable_modules: complex.avaliable_modules || [],
+      modules: normalizeIdArray(complex.modules),
+      avaliable_modules: normalizeIdArray(complex.avaliable_modules),
       status: complex.status || "active",
     });
     setErrors({});

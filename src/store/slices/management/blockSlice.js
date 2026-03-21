@@ -1,5 +1,5 @@
-import { createCrudEntitySlice } from './utils/createCrudEntitySlice';
-import blocksAPI from '@/services/management/blocksApi';
+import { blocksAPI } from '@/services/management';
+import { createCrudEntitySlice } from '../utils/createCrudEntitySlice';
 
 const COOKIE_KEYS = {
   BLOCK_ID: 'smartlife_block_id',

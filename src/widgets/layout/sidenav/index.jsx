@@ -11,7 +11,7 @@ import { useAuth } from "@/store/hooks/useAuth";
 import { useComplexColor } from "@/hooks/useComplexColor";
 import { useMtkColor } from "@/store/hooks/useMtkColor";
 import { useAppDispatch } from "@/store/hooks";
-import { loadMtkById } from "@/store/slices/mtkSlice";
+import { loadMtkById } from "@/store/slices/management/mtkSlice";
 
 export function Sidenav({ brandImg, brandName, routes }) {
   const dispatch = useAppDispatch();

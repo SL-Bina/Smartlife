@@ -1,9 +1,11 @@
 import api from "@/services/api";
 
+const BASE = "/module/service-configure/property";
+
 export const propertyServiceFeeAPI = {
   getList: async (propertyId, params = {}) => {
     try {
-      const response = await api.get(`/module/service-configure/property/list/${propertyId}`, { params });
+      const response = await api.get(`${BASE}/list/${propertyId}`, { params });
       return response;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -12,7 +14,7 @@ export const propertyServiceFeeAPI = {
 
   getById: async (propertyId, id) => {
     try {
-      const response = await api.get(`/module/service-configure/property/${propertyId}/${id}`);
+      const response = await api.get(`${BASE}/${propertyId}/${id}`);
       return response;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -21,7 +23,7 @@ export const propertyServiceFeeAPI = {
 
   add: async (propertyId, serviceFeeData) => {
     try {
-      const response = await api.put(`/module/service-configure/property/${propertyId}/add`, serviceFeeData);
+      const response = await api.put(`${BASE}/${propertyId}/add`, serviceFeeData);
       return response;
     } catch (error) {
       const errorData = error.response?.data;
@@ -41,7 +43,7 @@ export const propertyServiceFeeAPI = {
 
   update: async (propertyId, id, serviceFeeData) => {
     try {
-      const response = await api.patch(`/module/service-configure/property/${propertyId}/${id}`, serviceFeeData);
+      const response = await api.patch(`${BASE}/${propertyId}/${id}`, serviceFeeData);
       return response;
     } catch (error) {
       const errorData = error.response?.data;
@@ -61,7 +63,7 @@ export const propertyServiceFeeAPI = {
 
   delete: async (propertyId, id) => {
     try {
-      const response = await api.delete(`/module/service-configure/property/${propertyId}/${id}`);
+      const response = await api.delete(`${BASE}/${propertyId}/${id}`);
       return response;
     } catch (error) {
       throw error.response?.data || error.message;

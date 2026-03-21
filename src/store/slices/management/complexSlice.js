@@ -1,5 +1,5 @@
-import { createCrudEntitySlice } from './utils/createCrudEntitySlice';
-import complexesAPI from '@/services/management/complexesApi';
+import { complexesAPI } from '@/services/management';
+import { createCrudEntitySlice } from '../utils/createCrudEntitySlice';
 
 const COOKIE_KEYS = {
   COMPLEX_ID: 'smartlife_complex_id',

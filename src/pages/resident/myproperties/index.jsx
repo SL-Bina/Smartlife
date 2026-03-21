@@ -18,7 +18,7 @@ import {
 import { useTranslation } from "react-i18next";
 import myPropertiesAPI from "./api";
 import residentInvoicesAPI from "@/pages/resident/myinvoices/api";
-import { setSelectedProperty } from "@/store/slices/propertySlice";
+import { setSelectedProperty } from "@/store/slices/management/propertySlice";
 import { useComplexColor } from "@/hooks/useComplexColor";
 
 const formatCurrency = (val) => {

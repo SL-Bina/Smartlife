@@ -1,770 +1,329 @@
-import React, { useState, useEffect } from "react";
-import {
-  Dialog, DialogHeader, DialogBody, DialogFooter,
-  Button, Input, Select, Option, Typography,
-} from "@material-tailwind/react";
-import { XMarkIcon, MagnifyingGlassIcon, FunnelIcon } from "@heroicons/react/24/outline";
-import { useTranslation } from "react-i18next";
-import { AsyncSearchSelect } from "@/components/ui/AsyncSearchSelect";
-import { EMPTY_FILTERS } from "@/hooks/finance/invoices/useInvoicesFilters";
-import { CustomInput } from "@/components/ui/CustomInput";
-import { ResidentSearchModal } from "@/components/common/modals/ResidentSearchModal";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Input, Typography } from "@material-tailwind/react";
+import { XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { CustomSelect } from "@/components/ui/CustomSelect";
+import { useAppColor } from "@/hooks/useAppColor";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 
-const INVOICE_TYPE_VALUES = ["daily", "weekly", "monthly", "quarterly", "biannually", "yearly", "one_time"];
-const INVOICE_STATUS_VALUES = ["paid", "not_paid", "pending", "overdue", "declined", "draft", "pre_paid"];
+const EMPTY_OBJECT = Object.freeze({});
 
-const EMPTY_CASCADE = {
-  mtkId: null,
-  mtkLabel: "",
-  complexId: null,
-  complexLabel: "",
-  buildingId: null,
-  buildingLabel: "",
-  blockId: null,
-  blockLabel: "",
-  propertyId: null,
-  propertyLabel: "",
-};
+function FieldLabel({ label }) {
+  return (
+    <div className="mb-2.5 flex items-center justify-between gap-2">
+      <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-300">
+        {label}
+      </span>
+    </div>
+  );
+}
 
-export function SearchModal({ open, onClose, onSearch, currentFilters = {}, variant, currentSearch = {} }) {
-  if (variant === "resident") {
+function SearchField({ field, value, onChange, forceFullRow = false }) {
+  const {
+    key,
+    label,
+    type = "text",
+    placeholder,
+    options = [],
+    disabled,
+    rows = 3,
+    colSpan = 1,
+    searchable = false,
+    searchValue,
+    onSearchChange,
+    searchPlaceholder,
+    loading = false,
+    loadingMore = false,
+    onScrollEnd,
+  } = field;
+
+  const commonWrapperClass = colSpan === 2 || forceFullRow ? "md:col-span-2" : "";
+  const fieldCardClass = "rounded-base border border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/40 p-3 sm:p-4";
+
+  if (type === "select") {
     return (
-      <ResidentSearchModal
-        open={open}
-        onClose={onClose}
-        onSearch={onSearch}
-        currentSearch={currentSearch}
-      />
+      <div className={`${commonWrapperClass} ${fieldCardClass}`}>
+        <FieldLabel label={label} />
+        <CustomSelect
+          value={value ?? ""}
+          onChange={(selectedValue) => onChange(key, selectedValue)}
+          options={options}
+          placeholder={placeholder || "Seçin"}
+          disabled={disabled}
+          loading={loading}
+          loadingMore={loadingMore}
+          onScrollEnd={onScrollEnd}
+          searchable={searchable}
+          searchValue={searchValue}
+          onSearchChange={onSearchChange}
+          searchPlaceholder={searchPlaceholder || "Axtarın..."}
+        />
+      </div>
     );
   }
 
-  if (variant === "property") {
+  if (type === "textarea") {
     return (
-      <PropertySearchModalInline
-        open={open}
-        onClose={onClose}
-        onSearch={onSearch}
-        currentSearch={currentSearch}
-      />
+      <div className={`${commonWrapperClass} ${fieldCardClass}`}>
+        <FieldLabel label={label} />
+        <textarea
+          rows={rows}
+          value={value ?? ""}
+          onChange={(e) => onChange(key, e.target.value)}
+          placeholder={placeholder}
+          disabled={disabled}
+          className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-3.5 py-2.5 text-sm outline-none focus:border-blue-500 disabled:opacity-60 resize-y"
+        />
+      </div>
     );
   }
 
-  if (variant === "block") {
+  if (type === "phone") {
     return (
-      <BlockSearchModalInline
-        open={open}
-        onClose={onClose}
-        onSearch={onSearch}
-        currentSearch={currentSearch}
-      />
+      <div className={`${commonWrapperClass} ${fieldCardClass}`}>
+        <FieldLabel label={label} />
+        <PhoneInput
+          country="az"
+          enableSearch
+          value={value || ""}
+          onChange={(phone) => onChange(key, phone ? `+${phone}` : "")}
+          inputStyle={{
+            width: "100%",
+            height: "42px",
+            borderRadius: "0.75rem",
+            border: "1px solid rgb(209 213 219)",
+            background: "transparent",
+            color: "inherit",
+            paddingLeft: "50px",
+          }}
+          buttonStyle={{
+            borderTopLeftRadius: "0.75rem",
+            borderBottomLeftRadius: "0.75rem",
+            border: "1px solid rgb(209 213 219)",
+            background: "transparent",
+          }}
+          dropdownStyle={{
+            zIndex: 9999,
+            top: "100%",
+            bottom: "auto",
+            marginTop: "6px",
+          }}
+          containerClass="w-full"
+          disabled={disabled}
+        />
+      </div>
     );
   }
 
-  if (variant === "building") {
-    return (
-      <BuildingSearchModalInline
-        open={open}
-        onClose={onClose}
-        onSearch={onSearch}
-        currentSearch={currentSearch}
+  return (
+    <div className={`${commonWrapperClass} ${fieldCardClass}`}>
+      <FieldLabel label={label} />
+      <Input
+        label=" "
+        type={type}
+        value={value ?? ""}
+        onChange={(e) => onChange(key, e.target.value)}
+        placeholder={placeholder || label}
+        disabled={disabled}
       />
-    );
-  }
+    </div>
+  );
+}
 
-  if (variant === "complex") {
-    return (
-      <ComplexSearchModalInline
-        open={open}
-        onClose={onClose}
-        onSearch={onSearch}
-        currentSearch={currentSearch}
-      />
-    );
-  }
+function toFilteredPayload(data) {
+  return Object.entries(data || {}).reduce((acc, [key, value]) => {
+    if (value === null || value === undefined) return acc;
+    const normalized = typeof value === "string" ? value.trim() : value;
+    if (normalized === "") return acc;
+    acc[key] = normalized;
+    return acc;
+  }, {});
+}
 
-  if (variant === "mtk") {
-    return (
-      <MtkSearchModal
-        open={open}
-        onClose={onClose}
-        onSearch={onSearch}
-        currentSearch={currentSearch}
-      />
-    );
-  }
+export function SearchModal({
+  open,
+  onClose,
+  onSearch,
+  fields = [],
+  formData,
+  onFieldChange,
+  currentSearch,
+  currentFilters,
+  title = "Axtarış",
+  description,
+  searchLabel = "Axtar",
+  clearLabel = "Təmizlə",
+  cancelLabel = "Ləğv et",
+  size = "lg",
+  extraContent,
+  onClear,
+}) {
+  const { colorCode, getRgba } = useAppColor();
+  const closeButtonRef = useRef(null);
+  const safeCurrentSearch = currentSearch || EMPTY_OBJECT;
+  const safeCurrentFilters = currentFilters || EMPTY_OBJECT;
 
-  const { t } = useTranslation();
-  const [f, setF]         = useState(EMPTY_FILTERS);
-  const [cas, setCas]     = useState(EMPTY_CASCADE);
-  const [svc, setSvc]     = useState({ id: null, label: "" }); // xidmət
+  const initialData = useMemo(
+    () => ({ ...safeCurrentFilters, ...safeCurrentSearch }),
+    [safeCurrentFilters, safeCurrentSearch]
+  );
 
-  // Modal açılanda mövcud filterləri yüklə
+  const [localData, setLocalData] = useState(initialData);
+
   useEffect(() => {
     if (open) {
-      setF({ ...EMPTY_FILTERS, ...currentFilters });
-      setCas(EMPTY_CASCADE);
-      setSvc({ id: null, label: "" });
+      setLocalData(initialData);
     }
+  }, [open, initialData]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const activeEl = document.activeElement;
+    if (activeEl && typeof activeEl.blur === "function") {
+      activeEl.blur();
+    }
+
+    const timer = setTimeout(() => {
+      closeButtonRef.current?.focus?.();
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, [open]);
 
-  const set = (key, val) => setF((prev) => ({ ...prev, [key]: val }));
+  const resolvedData = formData || localData;
+  const visibleFields = useMemo(
+    () =>
+      fields.filter((field) => {
+        if (!field) return false;
+        if (field.hidden === true) return false;
+        if (typeof field.visible === "function") {
+          return field.visible(resolvedData);
+        }
+        if (typeof field.visible === "boolean") {
+          return field.visible;
+        }
+        return true;
+      }),
+    [fields, resolvedData]
+  );
 
-  const setMtk = (id, label) =>
-    setCas({ ...EMPTY_CASCADE, mtkId: id, mtkLabel: label });
-  const setComplex = (id, label) =>
-    setCas((p) => ({ ...p, complexId: id, complexLabel: label, buildingId: null, buildingLabel: "", blockId: null, blockLabel: "", propertyId: null, propertyLabel: "" }));
-  const setBuilding = (id, label) =>
-    setCas((p) => ({ ...p, buildingId: id, buildingLabel: label, blockId: null, blockLabel: "", propertyId: null, propertyLabel: "" }));
-  const setBlock = (id, label) =>
-    setCas((p) => ({ ...p, blockId: id, blockLabel: label, propertyId: null, propertyLabel: "" }));
-  const setProperty = (id, label) =>
-    setCas((p) => ({ ...p, propertyId: id, propertyLabel: label }));
+  if (!open) return null;
+
+  const handleFieldChange = (key, value) => {
+    if (typeof onFieldChange === "function") {
+      onFieldChange(key, value);
+      return;
+    }
+
+    setLocalData((prev) => ({ ...prev, [key]: value }));
+  };
 
   const handleSearch = () => {
-    const result = {
-      ...f,
-      serviceIds:  svc.id  ? [svc.id] : [],
-      propertyIds: cas.propertyId ? [cas.propertyId] : [],
-    };
-    onSearch(result);
-    onClose();
+    onSearch?.(toFilteredPayload(resolvedData));
+    onClose?.();
   };
 
-  const handleReset = () => {
-    setF(EMPTY_FILTERS);
-    setCas(EMPTY_CASCADE);
-    setSvc({ id: null, label: "" });
-    onSearch({});
-    onClose();
-  };
+  const handleClear = () => {
+    if (typeof onClear === "function") {
+      onClear();
+      return;
+    }
 
-  const inputProps = {
-    className: "dark:text-gray-200",
-    labelProps: { className: "dark:text-gray-300" },
+    if (typeof onFieldChange === "function") {
+      onSearch?.({});
+      onClose?.();
+      return;
+    }
+
+    setLocalData({});
+    onSearch?.({});
+    onClose?.();
   };
 
   return (
     <Dialog
-      open={open}
+      open={!!open}
       handler={onClose}
-      size="lg"
-      className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+      size={size}
       dismiss={{ enabled: false }}
+      className="w-full max-h-[92vh] overflow-hidden rounded-lg sm:rounded-xl border-[0.5px] border-gray-200/55 dark:border-gray-700/55 bg-white dark:bg-gray-800 shadow-2xl"
     >
-      <DialogHeader className="dark:text-white border-b border-gray-200 dark:border-gray-700 pb-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <FunnelIcon className="h-5 w-5 text-blue-500" />
-          <Typography variant="h5" className="font-bold dark:text-white">
-            {t("invoices.searchModal.title") || "Ətraflı Axtarış"}
+      <DialogHeader
+        className="flex items-center justify-between gap-3 px-4 py-4 sm:px-6 sm:py-5 text-white border-b border-white/15 rounded-t-lg sm:rounded-t-xl"
+        style={{ background: `linear-gradient(135deg, ${getRgba(0.95)}, ${getRgba(0.75)})` }}
+      >
+        <div className="min-w-0">
+          <Typography variant="h5" className="font-semibold text-white text-base sm:text-lg truncate">
+            {title}
           </Typography>
+          {description ? (
+            <Typography className="text-xs sm:text-sm font-normal text-white/90 mt-1">
+              {description}
+            </Typography>
+          ) : null}
         </div>
-        <div className="cursor-pointer p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-all" onClick={onClose}>
-          <XMarkIcon className="h-5 w-5 dark:text-white" />
-        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          ref={closeButtonRef}
+          className="h-9 w-9 rounded-xl grid place-items-center bg-white/15 hover:bg-white/25 transition-colors flex-shrink-0"
+          aria-label="Bağla"
+        >
+          <XMarkIcon className="h-5 w-5 text-white" />
+        </button>
       </DialogHeader>
 
-      <DialogBody divider className="dark:bg-gray-800 overflow-y-auto max-h-[72vh]">
-        <div className="space-y-5 py-2">
+      <DialogBody className="relative z-20 p-4 sm:p-6 bg-gray-50 dark:bg-gray-900 overflow-visible">
+        <div className="rounded-xl border-[0.5px] border-gray-200/70 dark:border-gray-700/70 bg-white dark:bg-gray-800 p-4 sm:p-5 shadow-sm space-y-4">
+          {visibleFields.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 grid-flow-row-dense auto-rows-max">
+              {visibleFields.map((field, index) => {
+                const isLast = index === visibleFields.length - 1;
+                const hasSingleSpan = (field?.colSpan || 1) === 1;
+                const shouldForceFullRow = visibleFields.length % 2 === 1 && isLast && hasSingleSpan;
 
-          {/* ── Ümumi filterlər ── */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Input
-              label={t("invoices.searchModal.invoiceId") || "Faktura ID"}
-              value={f.invoiceId}
-              onChange={(e) => set("invoiceId", e.target.value)}
-              {...inputProps}
-            />
-            <Select
-              label={t("invoices.table.status") || "Status"}
-              value={f.status}
-              onChange={(val) => set("status", val || "")}
-              className="dark:text-gray-200"
-              labelProps={{ className: "dark:text-gray-300" }}
-            >
-              <Option value="">{t("invoices.searchModal.all") || "Hamısı"}</Option>
-              {INVOICE_STATUS_VALUES.map((v) => (
-                <Option key={v} value={v}>{t(`invoices.status.${v}`) || v}</Option>
-              ))}
-            </Select>
-            <Select
-              label={t("invoices.searchModal.type") || "Növ"}
-              value={f.type}
-              onChange={(val) => set("type", val || "")}
-              className="dark:text-gray-200"
-              labelProps={{ className: "dark:text-gray-300" }}
-            >
-              <Option value="">{t("invoices.searchModal.all") || "Hamısı"}</Option>
-              {INVOICE_TYPE_VALUES.map((v) => (
-                <Option key={v} value={v}>{t(`invoices.types.${v}`) || v}</Option>
-              ))}
-            </Select>
-          </div>
-
-          {/* ── Xidmət (API-dən) ── */}
-          <div>
-            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">{t("invoices.searchModal.service") || "Xidmət"}</p>
-            <AsyncSearchSelect
-              label={t("invoices.searchModal.selectService") || "Xidmət seçin"}
-              endpoint="/module/services/list"
-              value={svc.id}
-              selectedLabel={svc.label}
-              onChange={(id, item) => setSvc({ id, label: item?.name || "" })}
-              labelKey="name"
-              valueKey="id"
-              allowClear
-            />
-          </div>
-
-          <Divider label={t("invoices.searchModal.cascadeSection") || "Mənzil seçimi"} />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <AsyncSearchSelect
-              label="MTK"
-              endpoint="/search/module/mtk"
-              value={cas.mtkId}
-              selectedLabel={cas.mtkLabel}
-              onChange={(id, item) => setMtk(id, item?.name || "")}
-              labelKey="name"
-              valueKey="id"
-              allowClear
-            />
-            <AsyncSearchSelect
-              key={`complex-${cas.mtkId}`}
-              label="Kompleks"
-              endpoint="/search/module/complex"
-              searchParams={cas.mtkId ? { mtk_ids: [cas.mtkId] } : {}}
-              value={cas.complexId}
-              selectedLabel={cas.complexLabel}
-              onChange={(id, item) => setComplex(id, item?.name || "")}
-              labelKey="name"
-              valueKey="id"
-              allowClear
-              disabled={!cas.mtkId}
-            />
-            <AsyncSearchSelect
-              key={`building-${cas.complexId}`}
-              label="Bina"
-              endpoint="/search/module/building"
-              searchParams={cas.complexId ? { complex_ids: [cas.complexId] } : {}}
-              value={cas.buildingId}
-              selectedLabel={cas.buildingLabel}
-              onChange={(id, item) => setBuilding(id, item?.name || "")}
-              labelKey="name"
-              valueKey="id"
-              allowClear
-              disabled={!cas.complexId}
-            />
-            <AsyncSearchSelect
-              key={`block-${cas.buildingId}`}
-              label="Blok"
-              endpoint="/search/module/block"
-              searchParams={cas.buildingId ? { building_ids: [cas.buildingId] } : {}}
-              value={cas.blockId}
-              selectedLabel={cas.blockLabel}
-              onChange={(id, item) => setBlock(id, item?.name || "")}
-              labelKey="name"
-              valueKey="id"
-              allowClear
-              disabled={!cas.buildingId}
-            />
-          </div>
-
-          <AsyncSearchSelect
-            key={`property-${cas.blockId}`}
-            label="Mənzil"
-            endpoint="/search/module/property"
-            searchParams={cas.blockId ? { block_ids: [cas.blockId] } : {}}
-            value={cas.propertyId}
-            selectedLabel={cas.propertyLabel}
-            onChange={(id, item) => setProperty(id, item?.name || item?.apartment_number || "")}
-            labelKey="name"
-            valueKey="id"
-            allowClear
-            disabled={!cas.blockId}
-          />
-
-          {/* ── Tarix aralıqları ── */}
-          <Divider label={t("invoices.searchModal.dateRangesSection") || "Tarix aralıqları"} />
-
-          <div>
-            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">{t("invoices.searchModal.paymentDateRange") || "Ödəniş tarixi aralığı"}</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label={t("invoices.searchModal.dateFrom") || "Başlanğıc"} type="date" value={f.paidAtFrom} onChange={(e) => set("paidAtFrom", e.target.value)} {...inputProps} />
-              <Input label={t("invoices.searchModal.dateTo") || "Son"} type="date" value={f.paidAtTo} onChange={(e) => set("paidAtTo", e.target.value)} {...inputProps} />
+                return (
+                <SearchField
+                  key={field.key}
+                  field={field}
+                  value={resolvedData?.[field.key]}
+                  onChange={handleFieldChange}
+                  forceFullRow={shouldForceFullRow}
+                />
+                );
+              })}
             </div>
-          </div>
+          ) : null}
 
-          {/* ── Məbləğ aralıqları ── */}
-          <Divider label={t("invoices.searchModal.amountRangesSection") || "Məbləğ aralıqları"} />
-
-          <div>
-            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">{t("invoices.searchModal.invoiceAmount") || "Faktura məbləği (₼)"}</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label={t("invoices.searchModal.min") || "Minimum"} type="number" min="0" value={f.amountFrom} onChange={(e) => set("amountFrom", e.target.value)} {...inputProps} />
-              <Input label={t("invoices.searchModal.max") || "Maksimum"} type="number" min="0" value={f.amountTo} onChange={(e) => set("amountTo", e.target.value)} {...inputProps} />
-            </div>
-          </div>
-
-          <div>
-            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">{t("invoices.searchModal.paidAmountLabel") || "Ödənilmiş məbləğ (₼)"}</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label={t("invoices.searchModal.min") || "Minimum"} type="number" min="0" value={f.amountPaidFrom} onChange={(e) => set("amountPaidFrom", e.target.value)} {...inputProps} />
-              <Input label={t("invoices.searchModal.max") || "Maksimum"} type="number" min="0" value={f.amountPaidTo} onChange={(e) => set("amountPaidTo", e.target.value)} {...inputProps} />
-            </div>
-          </div>
-
+          {extraContent ? extraContent : null}
         </div>
       </DialogBody>
 
-      <DialogFooter className="border-t border-gray-200 dark:border-gray-700 dark:bg-gray-800 gap-2">
-        <Button variant="text" color="gray" onClick={handleReset}>{t("invoices.searchModal.reset") || "Təmizlə"}</Button>
-        <Button variant="text" color="gray" onClick={onClose}>{t("buttons.cancel") || "Ləğv et"}</Button>
-        <Button variant="filled" color="blue" onClick={handleSearch} className="flex items-center gap-2">
+      <DialogFooter className="relative z-10 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2.5 px-4 py-4 sm:px-6 sm:py-5 border-t border-gray-200/80 dark:border-gray-700/80 bg-white dark:bg-gray-800 rounded-b-lg sm:rounded-b-xl">
+        <Button
+          variant="outlined"
+          onClick={handleClear}
+          className="w-full sm:w-auto rounded-xl px-6"
+        >
+          {clearLabel}
+        </Button>
+        <Button
+          variant="outlined"
+          onClick={onClose}
+          className="w-full sm:w-auto rounded-xl px-6"
+        >
+          {cancelLabel}
+        </Button>
+        <Button
+          onClick={handleSearch}
+          className="w-full sm:w-auto rounded-xl px-6 text-white border-0 flex items-center justify-center gap-2"
+          style={{ background: colorCode || "#2563eb" }}
+        >
           <MagnifyingGlassIcon className="h-4 w-4" />
-          {t("invoices.searchModal.search") || "Axtar"}
+          {searchLabel}
         </Button>
       </DialogFooter>
     </Dialog>
-  );
-}
-
-function PropertySearchModalInline({ open, onClose, onSearch, currentSearch = {} }) {
-  const [searchData, setSearchData] = useState({
-    name: "",
-    status: "",
-    property_type: "",
-    area: "",
-    floor: "",
-    apartment_number: "",
-  });
-
-  useEffect(() => {
-    if (open) {
-      setSearchData({
-        name: currentSearch.name || "",
-        status: currentSearch.status || "",
-        property_type: currentSearch.property_type || "",
-        area: currentSearch.area || "",
-        floor: currentSearch.floor || "",
-        apartment_number: currentSearch.apartment_number || "",
-      });
-    }
-  }, [open, currentSearch]);
-
-  const handleFieldChange = (field, value) => {
-    setSearchData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleSearch = () => {
-    const filteredData = Object.entries(searchData).reduce((acc, [key, value]) => {
-      if (value && String(value).trim()) {
-        acc[key] = String(value).trim();
-      }
-      return acc;
-    }, {});
-    onSearch?.(filteredData);
-    onClose?.();
-  };
-
-  const handleClear = () => {
-    setSearchData({ name: "", status: "", property_type: "", area: "", floor: "", apartment_number: "" });
-    onSearch?.({});
-    onClose?.();
-  };
-
-  if (!open) return null;
-
-  return (
-    <Dialog open={!!open} handler={onClose} size="lg" className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700" dismiss={{ enabled: false }}>
-      <DialogHeader className="border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between">
-        <Typography variant="h5" className="text-gray-900 dark:text-white font-bold">Mənzil Axtarış və Filtrləmə</Typography>
-        <Button variant="text" size="sm" onClick={onClose} className="text-gray-700 dark:text-white hover:bg-gray-200/50 dark:hover:bg-white/20 rounded-full">
-          <XMarkIcon className="h-5 w-5" />
-        </Button>
-      </DialogHeader>
-
-      <DialogBody className="p-6 overflow-y-auto max-h-[70vh]">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <CustomInput label="Ad" value={searchData.name} onChange={(e) => handleFieldChange("name", e.target.value)} />
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
-            <select value={searchData.status} onChange={(e) => handleFieldChange("status", e.target.value)} className="w-full px-3 py-2.5 border border-blue-gray-200 rounded-lg focus:border-teal-500 focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-white">
-              <option value="">Hamısı</option>
-              <option value="active">Aktiv</option>
-              <option value="inactive">Qeyri-aktiv</option>
-            </select>
-          </div>
-          <CustomInput label="Mənzil tipi" value={searchData.property_type} onChange={(e) => handleFieldChange("property_type", e.target.value)} />
-          <CustomInput label="Sahə" value={searchData.area} onChange={(e) => handleFieldChange("area", e.target.value)} />
-          <CustomInput label="Mərtəbə" value={searchData.floor} onChange={(e) => handleFieldChange("floor", e.target.value)} />
-          <CustomInput label="Mənzil №" value={searchData.apartment_number} onChange={(e) => handleFieldChange("apartment_number", e.target.value)} />
-        </div>
-      </DialogBody>
-
-      <DialogFooter className="border-t border-gray-200 dark:border-gray-700 pt-4 flex justify-between">
-        <div className="flex gap-2">
-          <Button variant="outlined" onClick={handleClear}>Təmizlə</Button>
-          <Button variant="outlined" onClick={onClose}>Ləğv et</Button>
-        </div>
-        <Button onClick={handleSearch} className="text-white bg-blue-600 flex items-center gap-2">
-          <MagnifyingGlassIcon className="h-5 w-5" />
-          Axtarış
-        </Button>
-      </DialogFooter>
-    </Dialog>
-  );
-}
-
-function BlockSearchModalInline({ open, onClose, onSearch, currentSearch = {} }) {
-  const [searchData, setSearchData] = useState({
-    name: "",
-    status: "",
-  });
-
-  useEffect(() => {
-    if (open) {
-      setSearchData({
-        name: currentSearch.name || "",
-        status: currentSearch.status || "",
-      });
-    }
-  }, [open, currentSearch]);
-
-  const handleFieldChange = (field, value) => {
-    setSearchData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleSearch = () => {
-    const filteredData = Object.entries(searchData).reduce((acc, [key, value]) => {
-      if (value && String(value).trim()) {
-        acc[key] = String(value).trim();
-      }
-      return acc;
-    }, {});
-    onSearch?.(filteredData);
-    onClose?.();
-  };
-
-  const handleClear = () => {
-    setSearchData({ name: "", status: "" });
-    onSearch?.({});
-    onClose?.();
-  };
-
-  if (!open) return null;
-
-  return (
-    <Dialog open={!!open} handler={onClose} size="lg" className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700" dismiss={{ enabled: false }}>
-      <DialogHeader className="border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between">
-        <Typography variant="h5" className="text-gray-900 dark:text-white font-bold">Blok Axtarış və Filtrləmə</Typography>
-        <Button variant="text" size="sm" onClick={onClose} className="text-gray-700 dark:text-white hover:bg-gray-200/50 dark:hover:bg-white/20 rounded-full">
-          <XMarkIcon className="h-5 w-5" />
-        </Button>
-      </DialogHeader>
-
-      <DialogBody className="p-6 overflow-y-auto max-h-[70vh]">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <CustomInput label="Ad" value={searchData.name} onChange={(e) => handleFieldChange("name", e.target.value)} />
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
-            <select
-              value={searchData.status}
-              onChange={(e) => handleFieldChange("status", e.target.value)}
-              className="w-full px-3 py-2.5 border border-blue-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-            >
-              <option value="">Hamısı</option>
-              <option value="active">Aktiv</option>
-              <option value="inactive">Qeyri-aktiv</option>
-            </select>
-          </div>
-        </div>
-      </DialogBody>
-
-      <DialogFooter className="border-t border-gray-200 dark:border-gray-700 pt-4 flex justify-between">
-        <div className="flex gap-2">
-          <Button variant="outlined" onClick={handleClear}>Təmizlə</Button>
-          <Button variant="outlined" onClick={onClose}>Ləğv et</Button>
-        </div>
-        <Button onClick={handleSearch} className="text-white bg-blue-600 flex items-center gap-2">
-          <MagnifyingGlassIcon className="h-5 w-5" />
-          Axtarış
-        </Button>
-      </DialogFooter>
-    </Dialog>
-  );
-}
-
-function BuildingSearchModalInline({ open, onClose, onSearch, currentSearch = {} }) {
-  const [searchData, setSearchData] = useState({
-    name: "",
-    status: "",
-  });
-
-  useEffect(() => {
-    if (open) {
-      setSearchData({
-        name: currentSearch.name || "",
-        status: currentSearch.status || "",
-      });
-    }
-  }, [open, currentSearch]);
-
-  const handleFieldChange = (field, value) => {
-    setSearchData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleSearch = () => {
-    const filteredData = Object.entries(searchData).reduce((acc, [key, value]) => {
-      if (value && String(value).trim()) {
-        acc[key] = String(value).trim();
-      }
-      return acc;
-    }, {});
-    onSearch?.(filteredData);
-    onClose?.();
-  };
-
-  const handleClear = () => {
-    setSearchData({ name: "", status: "" });
-    onSearch?.({});
-    onClose?.();
-  };
-
-  if (!open) return null;
-
-  return (
-    <Dialog open={!!open} handler={onClose} size="lg" className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700" dismiss={{ enabled: false }}>
-      <DialogHeader className="border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between">
-        <Typography variant="h5" className="text-gray-900 dark:text-white font-bold">Bina Axtarış və Filtrləmə</Typography>
-        <Button variant="text" size="sm" onClick={onClose} className="text-gray-700 dark:text-white hover:bg-gray-200/50 dark:hover:bg-white/20 rounded-full">
-          <XMarkIcon className="h-5 w-5" />
-        </Button>
-      </DialogHeader>
-
-      <DialogBody className="p-6 overflow-y-auto max-h-[70vh]">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <CustomInput label="Ad" value={searchData.name} onChange={(e) => handleFieldChange("name", e.target.value)} />
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
-            <select
-              value={searchData.status}
-              onChange={(e) => handleFieldChange("status", e.target.value)}
-              className="w-full px-3 py-2.5 border border-blue-gray-200 rounded-lg focus:border-purple-500 focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-            >
-              <option value="">Hamısı</option>
-              <option value="active">Aktiv</option>
-              <option value="inactive">Qeyri-aktiv</option>
-            </select>
-          </div>
-        </div>
-      </DialogBody>
-
-      <DialogFooter className="border-t border-gray-200 dark:border-gray-700 pt-4 flex justify-between">
-        <div className="flex gap-2">
-          <Button variant="outlined" onClick={handleClear}>Təmizlə</Button>
-          <Button variant="outlined" onClick={onClose}>Ləğv et</Button>
-        </div>
-        <Button onClick={handleSearch} className="text-white bg-blue-600 flex items-center gap-2">
-          <MagnifyingGlassIcon className="h-5 w-5" />
-          Axtarış
-        </Button>
-      </DialogFooter>
-    </Dialog>
-  );
-}
-
-function ComplexSearchModalInline({ open, onClose, onSearch, currentSearch = {} }) {
-  const [searchData, setSearchData] = useState({
-    name: "",
-    address: "",
-    phone: "",
-    email: "",
-    website: "",
-    color_code: "",
-  });
-
-  useEffect(() => {
-    if (open) {
-      setSearchData({
-        name: currentSearch.name || "",
-        address: currentSearch.address || "",
-        phone: currentSearch.phone || "",
-        email: currentSearch.email || "",
-        website: currentSearch.website || "",
-        color_code: currentSearch.color_code || "",
-      });
-    }
-  }, [open, currentSearch]);
-
-  const handleFieldChange = (field, value) => {
-    setSearchData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleSearch = () => {
-    const filteredData = Object.entries(searchData).reduce((acc, [key, value]) => {
-      if (value && String(value).trim()) {
-        acc[key] = String(value).trim();
-      }
-      return acc;
-    }, {});
-    onSearch?.(filteredData);
-    onClose?.();
-  };
-
-  const handleClear = () => {
-    setSearchData({ name: "", address: "", phone: "", email: "", website: "", color_code: "" });
-    onSearch?.({});
-    onClose?.();
-  };
-
-  if (!open) return null;
-
-  return (
-    <Dialog open={!!open} handler={onClose} size="lg" className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700" dismiss={{ enabled: false }}>
-      <DialogHeader className="border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between">
-        <Typography variant="h5" className="text-gray-900 dark:text-white font-bold">Complex Axtarış və Filtrləmə</Typography>
-        <Button variant="text" size="sm" onClick={onClose} className="text-gray-700 dark:text-white hover:bg-gray-200/50 dark:hover:bg-white/20 rounded-full">
-          <XMarkIcon className="h-5 w-5" />
-        </Button>
-      </DialogHeader>
-
-      <DialogBody className="p-6 overflow-y-auto max-h-[70vh]">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <CustomInput label="Ad" value={searchData.name} onChange={(e) => handleFieldChange("name", e.target.value)} />
-          <CustomInput label="Ünvan" value={searchData.address} onChange={(e) => handleFieldChange("address", e.target.value)} />
-          <CustomInput label="Telefon" value={searchData.phone} onChange={(e) => handleFieldChange("phone", e.target.value)} />
-          <CustomInput label="E-mail" value={searchData.email} onChange={(e) => handleFieldChange("email", e.target.value)} />
-          <CustomInput label="Website" value={searchData.website} onChange={(e) => handleFieldChange("website", e.target.value)} />
-          <CustomInput label="Rəng kodu" value={searchData.color_code} onChange={(e) => handleFieldChange("color_code", e.target.value)} />
-        </div>
-      </DialogBody>
-
-      <DialogFooter className="border-t border-gray-200 dark:border-gray-700 pt-4 flex justify-between">
-        <div className="flex gap-2">
-          <Button variant="outlined" onClick={handleClear}>Təmizlə</Button>
-          <Button variant="outlined" onClick={onClose}>Ləğv et</Button>
-        </div>
-        <Button onClick={handleSearch} className="text-white bg-blue-600 flex items-center gap-2">
-          <MagnifyingGlassIcon className="h-5 w-5" />
-          Axtarış
-        </Button>
-      </DialogFooter>
-    </Dialog>
-  );
-}
-
-function MtkSearchModal({ open, onClose, onSearch, currentSearch = {} }) {
-  const [searchData, setSearchData] = useState({
-    phone: "",
-    email: "",
-    website: "",
-    desc: "",
-    lat: "",
-    lng: "",
-    color_code: "",
-  });
-
-  useEffect(() => {
-    if (open) {
-      setSearchData({
-        phone: currentSearch.phone || "",
-        email: currentSearch.email || "",
-        website: currentSearch.website || "",
-        desc: currentSearch.desc || "",
-        lat: currentSearch.lat || "",
-        lng: currentSearch.lng || "",
-        color_code: currentSearch.color_code || "",
-      });
-    }
-  }, [open, currentSearch]);
-
-  const handleFieldChange = (field, value) => {
-    setSearchData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleSearch = () => {
-    const filteredData = Object.entries(searchData).reduce((acc, [key, value]) => {
-      if (value && String(value).trim()) {
-        acc[key] = String(value).trim();
-      }
-      return acc;
-    }, {});
-    onSearch?.(filteredData);
-    onClose?.();
-  };
-
-  const handleClear = () => {
-    const emptyData = {
-      phone: "",
-      email: "",
-      website: "",
-      desc: "",
-      lat: "",
-      lng: "",
-      color_code: "",
-    };
-    setSearchData(emptyData);
-    onSearch?.({});
-    onClose?.();
-  };
-
-  if (!open) return null;
-
-  return (
-    <Dialog open={!!open} handler={onClose} size="xl" className="dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl" dismiss={{ enabled: false }}>
-      <DialogHeader className="border-b border-gray-200 dark:border-gray-700 pb-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-blue-500/20 backdrop-blur-sm">
-            <FunnelIcon className="h-6 w-6 text-blue-500" />
-          </div>
-          <Typography variant="h5" className="text-gray-900 dark:text-white font-bold">MTK Axtarış və Filtrləmə</Typography>
-        </div>
-        <Button variant="text" size="sm" onClick={onClose} className="text-gray-700 dark:text-white hover:bg-gray-200/50 dark:hover:bg-white/20 rounded-full">
-          <XMarkIcon className="h-5 w-5" />
-        </Button>
-      </DialogHeader>
-
-      <DialogBody className="p-6 overflow-y-auto max-h-[70vh]">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <CustomInput label="Telefon" value={searchData.phone} onChange={(e) => handleFieldChange("phone", e.target.value)} />
-          <CustomInput label="E-mail" value={searchData.email} onChange={(e) => handleFieldChange("email", e.target.value)} />
-          <CustomInput label="Website" value={searchData.website} onChange={(e) => handleFieldChange("website", e.target.value)} />
-          <CustomInput label="Təsvir" value={searchData.desc} onChange={(e) => handleFieldChange("desc", e.target.value)} />
-          <CustomInput label="Latitude" value={searchData.lat} onChange={(e) => handleFieldChange("lat", e.target.value)} />
-          <CustomInput label="Longitude" value={searchData.lng} onChange={(e) => handleFieldChange("lng", e.target.value)} />
-          <div className="md:col-span-2">
-            <CustomInput label="Rəng kodu" value={searchData.color_code} onChange={(e) => handleFieldChange("color_code", e.target.value)} />
-          </div>
-        </div>
-      </DialogBody>
-
-      <DialogFooter className="border-t border-gray-200 dark:border-gray-700 pt-4 flex justify-between">
-        <div className="flex gap-2">
-          <Button variant="outlined" onClick={handleClear}>Təmizlə</Button>
-          <Button variant="outlined" onClick={onClose}>Ləğv et</Button>
-        </div>
-        <Button onClick={handleSearch} className="text-white bg-blue-600 flex items-center gap-2">
-          <MagnifyingGlassIcon className="h-5 w-5" />
-          Axtarış
-        </Button>
-      </DialogFooter>
-    </Dialog>
-  );
-}
-
-// köməkçi komponent
-function Divider({ label }) {
-  return (
-    <div className="flex items-center gap-3">
-      <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
-      <span className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wider font-semibold whitespace-nowrap">{label}</span>
-      <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
-    </div>
   );
 }

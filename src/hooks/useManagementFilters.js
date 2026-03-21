@@ -1,9 +1,9 @@
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { setSelectedMtk, loadMtkById } from "@/store/slices/mtkSlice";
-import { setSelectedComplex, loadComplexById } from "@/store/slices/complexSlice";
-import { setSelectedBuilding, loadBuildingById } from "@/store/slices/buildingSlice";
-import { setSelectedBlock, loadBlockById } from "@/store/slices/blockSlice";
-import { setSelectedProperty, loadPropertyById } from "@/store/slices/propertySlice";
+import { setSelectedMtk, loadMtkById } from "@/store/slices/management/mtkSlice";
+import { setSelectedComplex, loadComplexById } from "@/store/slices/management/complexSlice";
+import { setSelectedBuilding, loadBuildingById } from "@/store/slices/management/buildingSlice";
+import { setSelectedBlock, loadBlockById } from "@/store/slices/management/blockSlice";
+import { setSelectedProperty, loadPropertyById } from "@/store/slices/management/propertySlice";
 
 export function useManagementFilters() {
   const dispatch = useAppDispatch();

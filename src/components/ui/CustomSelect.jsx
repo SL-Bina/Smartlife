@@ -20,6 +20,7 @@ export function CustomSelect({
   searchValue = "",         // current search value
   onSearchChange,           // search change handler
   searchPlaceholder = "Axtarın...",
+  onOpen,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0, width: 0, openAbove: false });
@@ -84,7 +85,13 @@ export function CustomSelect({
 
   const handleToggle = () => {
     if (!disabled && !loading) {
-      setIsOpen((prev) => !prev);
+      setIsOpen((prev) => {
+        const next = !prev;
+        if (next) {
+          onOpen?.();
+        }
+        return next;
+      });
     }
   };
 

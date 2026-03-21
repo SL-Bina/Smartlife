@@ -1,9 +1,21 @@
 import api from "@/services/api";
 
+const BASE = "/module/buildings";
+const SEARCH_BASE = "/search/module/building";
+
 export const buildingsAPI = {
+  getLookupList: async (params = {}) => {
+    try {
+      const response = await api.get(`${BASE}/list`, { params });
+      return response?.data?.data?.data || [];
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
   getAll: async (params = {}) => {
     try {
-      const response = await api.get("/module/buildings/list", { params });
+      const response = await api.get(`${BASE}/list`, { params });
       return response;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -12,7 +24,7 @@ export const buildingsAPI = {
 
   getById: async (id) => {
     try {
-      const response = await api.get(`/module/buildings/${id}`);
+      const response = await api.get(`${BASE}/${id}`);
       return response;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -21,7 +33,7 @@ export const buildingsAPI = {
 
   add: async (buildingData) => {
     try {
-      const response = await api.put("/module/buildings/add", buildingData);
+      const response = await api.put(`${BASE}/add`, buildingData);
       return response;
     } catch (error) {
       const errorData = error.response?.data;
@@ -41,7 +53,7 @@ export const buildingsAPI = {
 
   update: async (id, buildingData) => {
     try {
-      const response = await api.patch(`/module/buildings/${id}`, buildingData);
+      const response = await api.patch(`${BASE}/${id}`, buildingData);
       return response;
     } catch (error) {
       const errorData = error.response?.data;
@@ -61,7 +73,7 @@ export const buildingsAPI = {
 
   delete: async (id) => {
     try {
-      const response = await api.delete(`/module/buildings/${id}`);
+      const response = await api.delete(`${BASE}/${id}`);
       return response;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -85,7 +97,7 @@ export const buildingsAPI = {
         }
       });
 
-      const response = await api.get(`/search/module/building?${searchParams.toString()}`);
+      const response = await api.get(`${SEARCH_BASE}?${searchParams.toString()}`);
       return response;
     } catch (error) {
       throw error.response?.data || error.message;

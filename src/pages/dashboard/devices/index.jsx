@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
-import { loadComplexes, loadComplexById, setSelectedComplex } from "@/store/slices/complexSlice";
+import { loadComplexes, loadComplexById, setSelectedComplex } from "@/store/slices/management/complexSlice";
 import complexesAPI from "@/services/management/complexesApi";
 
 import { devicesAPI } from "./api";

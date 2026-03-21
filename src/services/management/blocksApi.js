@@ -1,9 +1,21 @@
 import api from "@/services/api";
 
+const BASE = "/module/blocks";
+const SEARCH_BASE = "/search/module/block";
+
 export const blocksAPI = {
+  getLookupList: async (params = {}) => {
+    try {
+      const response = await api.get(`${BASE}/list`, { params });
+      return response?.data?.data?.data || [];
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
   getAll: async (params = {}) => {
     try {
-      const response = await api.get("/module/blocks/list", { params });
+      const response = await api.get(`${BASE}/list`, { params });
       return response;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -12,7 +24,7 @@ export const blocksAPI = {
 
   getById: async (id) => {
     try {
-      const response = await api.get(`/module/blocks/${id}`);
+      const response = await api.get(`${BASE}/${id}`);
       return response;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -21,7 +33,7 @@ export const blocksAPI = {
 
   add: async (blockData) => {
     try {
-      const response = await api.put("/module/blocks/add", blockData);
+      const response = await api.put(`${BASE}/add`, blockData);
       return response;
     } catch (error) {
       const errorData = error.response?.data;
@@ -41,7 +53,7 @@ export const blocksAPI = {
 
   update: async (id, blockData) => {
     try {
-      const response = await api.patch(`/module/blocks/${id}`, blockData);
+      const response = await api.patch(`${BASE}/${id}`, blockData);
       return response;
     } catch (error) {
       const errorData = error.response?.data;
@@ -61,7 +73,7 @@ export const blocksAPI = {
 
   delete: async (id) => {
     try {
-      const response = await api.delete(`/module/blocks/${id}`);
+      const response = await api.delete(`${BASE}/${id}`);
       return response;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -85,7 +97,7 @@ export const blocksAPI = {
         }
       });
 
-      const response = await api.get(`/search/module/block?${searchParams.toString()}`);
+      const response = await api.get(`${SEARCH_BASE}?${searchParams.toString()}`);
       return response;
     } catch (error) {
       throw error.response?.data || error.message;

@@ -340,7 +340,7 @@ export const refreshUser = createAsyncThunk(
   }
 );
 
-import { clearSelectedProperty } from "@/store/slices/propertySlice";
+import { clearSelectedProperty } from "@/store/slices/management/propertySlice";
 
 export const logoutUser = createAsyncThunk(
   'auth/logoutUser',

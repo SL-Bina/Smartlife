@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import myPropertiesAPI from "@/pages/resident/myproperties/api";
-import { setSelectedProperty } from "@/store/slices/propertySlice";
+import { setSelectedProperty } from "@/store/slices/management/propertySlice";
 import { useAuth } from "@/store/exports";
 import React from "react";
 import { IconButton, Typography, Menu, MenuHandler, MenuList } from "@material-tailwind/react";

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { loadMtks } from "@/store/slices/mtkSlice";
-import { loadComplexes } from "@/store/slices/complexSlice";
-import { setSelectedBuilding, loadBuildings, loadBuildingById } from "@/store/slices/buildingSlice";
+import { loadMtks } from "@/store/slices/management/mtkSlice";
+import { loadComplexes } from "@/store/slices/management/complexSlice";
+import { setSelectedBuilding, loadBuildings, loadBuildingById } from "@/store/slices/management/buildingSlice";
 import {
   Actions,
   ENTITY_LEVELS,
@@ -20,13 +20,16 @@ import { useBuildingForm } from "@/hooks/management/buildings/useBuildingForm";
 import { useBuildingData } from "@/hooks/management/buildings/useBuildingData";
 import buildingsAPI from "@/services/management/buildingsApi";
 import DynamicToast from "@/components/DynamicToast";
-import { BuildingOfficeIcon, CheckCircleIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
+import { Typography, Chip, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
+import { BuildingOfficeIcon, CheckCircleIcon, InformationCircleIcon, EllipsisVerticalIcon, EyeIcon } from "@heroicons/react/24/outline";
 
 export default function BuildingsPage() {
   const dispatch = useAppDispatch();
   
   const mtkId = useAppSelector((state) => state.mtk.selectedMtkId);
   const complexId = useAppSelector((state) => state.complex.selectedComplexId);
+  const selectedComplex = useAppSelector((state) => state.complex.selectedComplex);
+  const complexes = useAppSelector((state) => state.complex.complexes || []);
   const selectedBuildingId = useAppSelector((state) => state.building.selectedBuildingId);
   const selectedBuilding = useAppSelector((state) => state.building.selectedBuilding);
   const [search, setSearch] = useState({});
@@ -139,8 +142,20 @@ export default function BuildingsPage() {
   const confirmEdit = async () => {
     if (!pendingFormData || !selected) return;
     setEditConfirmLoading(true);
+
+    const payload = {
+      complex_id: pendingFormData?.complex_id !== null && pendingFormData?.complex_id !== undefined && pendingFormData?.complex_id !== ""
+        ? Number(pendingFormData.complex_id)
+        : null,
+      name: pendingFormData?.name || "",
+      meta: {
+        desc: pendingFormData?.meta?.desc || "",
+      },
+      status: pendingFormData?.status || "active",
+    };
+
     try {
-      await buildingsAPI.update(selected.id, pendingFormData);
+      await buildingsAPI.update(selected.id, payload);
       showToast("success", "Bina uğurla yeniləndi", "Uğurlu");
       refresh();
       dispatch(loadBuildings({ page: 1, per_page: 1000 }));
@@ -183,12 +198,23 @@ export default function BuildingsPage() {
   };
 
   const submitForm = async (formData) => {
+    const payload = {
+      complex_id: formData?.complex_id !== null && formData?.complex_id !== undefined && formData?.complex_id !== ""
+        ? Number(formData.complex_id)
+        : null,
+      name: formData?.name || "",
+      meta: {
+        desc: formData?.meta?.desc || "",
+      },
+      status: formData?.status || "active",
+    };
+
     try {
       if (mode === "create") {
-        await buildingsAPI.add(formData);
+        await buildingsAPI.add(payload);
         showToast("success", "Bina uğurla əlavə edildi", "Uğurlu");
       } else {
-        await buildingsAPI.update(selected.id, formData);
+        await buildingsAPI.update(selected.id, payload);
         showToast("success", "Bina uğurla yeniləndi", "Uğurlu");
       }
       refresh();
@@ -197,6 +223,133 @@ export default function BuildingsPage() {
       throw error;
     }
   };
+
+  const getStatusColor = (status) => {
+    const normalized = String(status || "").trim().toLowerCase();
+    const statusMap = {
+      active: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+      inactive: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400",
+    };
+    return statusMap[normalized] || "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
+  };
+
+  const getStatusLabel = (status) => {
+    const normalized = String(status || "").trim().toLowerCase();
+    const labels = { active: "Aktiv", inactive: "Qeyri-aktiv" };
+    return labels[normalized] || (status || "-");
+  };
+
+  const tableColumns = [
+    {
+      key: "id",
+      label: "ID",
+      align: "text-left",
+      render: (item) => <Typography variant="small" className="text-gray-700 dark:text-gray-300 font-medium">#{item.id}</Typography>,
+    },
+    {
+      key: "name",
+      label: "Ad",
+      align: "text-left",
+      render: (item) => <Typography variant="small" className="font-semibold text-gray-700 dark:text-gray-300">{item.name || "-"}</Typography>,
+    },
+    {
+      key: "complex",
+      label: "Complex",
+      align: "text-left",
+      render: (item) => <Typography variant="small" className="text-gray-700 dark:text-gray-300">{item?.complex?.name || "-"}</Typography>,
+    },
+    {
+      key: "desc",
+      label: "Təsvir",
+      align: "text-left",
+      render: (item) => <Typography variant="small" className="text-gray-700 dark:text-gray-300">{item?.meta?.desc || "-"}</Typography>,
+    },
+    {
+      key: "status",
+      label: "Status",
+      align: "text-left",
+      render: (item) => <Chip value={getStatusLabel(item?.status)} className={`${getStatusColor(item?.status)} text-xs font-medium w-fit`} size="sm" />,
+    },
+    {
+      key: "actions",
+      label: "Əməliyyatlar",
+      align: "text-left",
+      cellClassName: "whitespace-nowrap",
+      render: (item) => (
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => handleSelect(item)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${selectedBuildingId === item.id ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" : "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/60"}`}
+          >
+            {selectedBuildingId === item.id ? "Seçilib" : "Seç"}
+          </button>
+          <Menu placement="left-start">
+            <MenuHandler>
+              <IconButton size="sm" variant="text" color="blue-gray" className="dark:text-gray-300 dark:hover:bg-gray-700">
+                <EllipsisVerticalIcon strokeWidth={2} className="h-5 w-5" />
+              </IconButton>
+            </MenuHandler>
+            <MenuList className="dark:bg-gray-800 dark:border-gray-800">
+              <MenuItem onClick={() => handleView(item)} className="dark:text-gray-300 dark:hover:bg-gray-700 flex items-center gap-2">
+                <EyeIcon className="h-4 w-4" />
+                Bax
+              </MenuItem>
+              <MenuItem onClick={() => handleEdit(item)} className="dark:text-gray-300 dark:hover:bg-gray-700">Redaktə et</MenuItem>
+              <MenuItem onClick={() => handleDelete(item)} className="dark:text-gray-300 dark:hover:bg-gray-700">Sil</MenuItem>
+            </MenuList>
+          </Menu>
+        </div>
+      ),
+    },
+  ];
+
+  const buildingFormFields = useMemo(() => {
+    return [
+      {
+        key: "complex_id",
+        label: "Complex",
+        type: "async-select",
+        required: true,
+        endpoint: "/search/module/complex",
+        searchParams: {
+          ...(mtkId ? { mtk_ids: [mtkId] } : {}),
+        },
+        placeholder: "Complex seçin",
+        searchPlaceholder: "Complex adı ilə axtarın...",
+        selectedLabel:
+          (complexes || []).find((complex) => String(complex.id) === String(form.formData?.complex_id))?.name ||
+          selectedComplex?.name ||
+          null,
+        allowClear: false,
+      },
+      {
+        key: "name",
+        label: "Ad",
+        type: "text",
+        required: true,
+        placeholder: "Məsələn: Block -2038",
+      },
+      {
+        key: "status",
+        label: "Status",
+        type: "select",
+        required: true,
+        options: [
+          { value: "active", label: "Aktiv" },
+          { value: "inactive", label: "Qeyri-aktiv" },
+        ],
+      },
+      {
+        key: "meta.desc",
+        label: "Təsvir",
+        type: "textarea",
+        rows: 3,
+        colSpan: 2,
+        placeholder: "Bina haqqında qısa məlumat",
+      },
+    ];
+  }, [complexes, mtkId, selectedComplex, form.formData?.complex_id]);
 
   return (
     <div className="space-y-6" style={{ position: 'relative', zIndex: 0 }}>
@@ -208,9 +361,9 @@ export default function BuildingsPage() {
 
       <Actions
         entityLevel={ENTITY_LEVELS.BUILDING}
-        search={search}
+        // search={search}
         onCreateClick={handleCreate}
-        onSearchClick={() => setSearchModalOpen(true)}
+        // onSearchClick={() => setSearchModalOpen(true)}
         onApplyNameSearch={handleApplyNameSearch}
         onStatusChange={handleStatusChange}
         onRemoveFilter={handleRemoveFilter}
@@ -223,14 +376,11 @@ export default function BuildingsPage() {
         <Skeleton tableRows={6} cardRows={4} />
       ) : (
         <Table
-          variant="building"
-          items={items}
+          rows={items}
+          columns={tableColumns}
           loading={false}
-          onView={handleView}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onSelect={handleSelect}
-          selectedBuildingId={selectedBuildingId}
+          emptyText="Məlumat tapılmadı"
+          minWidth="min-w-[820px]"
         />
       )}
 
@@ -244,23 +394,38 @@ export default function BuildingsPage() {
       />
 
       <FormModal
-        variant="building"
         open={formOpen}
         mode={mode}
+        title={mode === "edit" ? "Bina Redaktə et" : "Yeni Bina Əlavə Et"}
+        description="Bina məlumatlarını daxil edin və yadda saxlayın."
+        fields={buildingFormFields}
+        formData={form.formData}
+        errors={form.errors}
+        onFieldChange={form.updateField}
         onClose={() => {
           setFormOpen(false);
           form.resetForm();
         }}
-        form={form}
         onSubmit={submitForm}
-        complexId={complexId}
-        mtkId={mtkId}
         onEditRequest={handleEditRequest}
       />
 
       <SearchModal
-        variant="building"
         open={searchModalOpen}
+        title="Bina Axtarış"
+        fields={[
+          { key: "name", label: "Ad", type: "text" },
+          {
+            key: "status",
+            label: "Status",
+            type: "select",
+            options: [
+              { value: "", label: "Hamısı" },
+              { value: "active", label: "Aktiv" },
+              { value: "inactive", label: "Qeyri-aktiv" },
+            ],
+          },
+        ]}
         onClose={() => setSearchModalOpen(false)}
         onSearch={(searchParams) => {
           setSearch((prev) => ({

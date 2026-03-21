@@ -1,9 +1,21 @@
 import api from "@/services/api";
 
+const BASE = "/module/mtk";
+const SEARCH_BASE = "/search/module/mtk";
+
 const mtkAPI = {
+  getLookupList: async (params = {}) => {
+    try {
+      const response = await api.get(`${BASE}/list`, { params });
+      return response?.data?.data?.data || [];
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
   getAll: async (params = {}) => {
     try {
-      const response = await api.get("/module/mtk/list", { params });
+      const response = await api.get(`${BASE}/list`, { params });
       return response;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -18,7 +30,7 @@ const mtkAPI = {
           urlParams.append(key, String(searchParams[key]));
         }
       });
-      const response = await api.get(`/search/module/mtk?${urlParams.toString()}`);
+      const response = await api.get(`${SEARCH_BASE}?${urlParams.toString()}`);
       return response;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -27,7 +39,7 @@ const mtkAPI = {
 
   getById: async (id) => {
     try {
-      const response = await api.get(`/module/mtk/${id}`);
+      const response = await api.get(`${BASE}/${id}`);
       return response;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -36,7 +48,7 @@ const mtkAPI = {
 
   add: async (mtkData) => {
     try {
-      const response = await api.put("/module/mtk/add", mtkData);
+      const response = await api.put(`${BASE}/add`, mtkData);
       return response;
     } catch (error) {
       const errorData = error.response?.data;
@@ -56,7 +68,7 @@ const mtkAPI = {
 
   update: async (id, mtkData) => {
     try {
-      const response = await api.patch(`/module/mtk/${id}`, mtkData);
+      const response = await api.patch(`${BASE}/${id}`, mtkData);
       return response;
     } catch (error) {
       const errorData = error.response?.data;
@@ -76,7 +88,7 @@ const mtkAPI = {
 
   delete: async (id) => {
     try {
-      const response = await api.delete(`/module/mtk/${id}`);
+      const response = await api.delete(`${BASE}/${id}`);
       return response;
     } catch (error) {
       throw error.response?.data || error.message;

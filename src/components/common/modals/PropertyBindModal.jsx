@@ -1,14 +1,14 @@
 import React, { useState, useMemo } from "react";
 import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography, Card, CardBody, Chip } from "@material-tailwind/react";
-import { XMarkIcon, HomeIcon, LinkIcon, BuildingOfficeIcon, Square3Stack3DIcon, TrashIcon, PlusIcon, CheckCircleIcon, BanknotesIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon, HomeIcon, LinkIcon, BuildingOfficeIcon, Square3Stack3DIcon, TrashIcon, PlusIcon, CheckCircleIcon, BanknotesIcon, UserCircleIcon } from "@heroicons/react/24/outline";
 import { AsyncSearchSelect } from "@/components/ui/AsyncSearchSelect";
 import DynamicToast from "@/components/DynamicToast";
 import { BindConfirmModal } from "./BindConfirmModal";
 import { UnbindConfirmModal } from "./UnbindConfirmModal";
 import residentAPI from "@/services/management/residentsApi";
-import { useMtkColor } from "@/store/hooks/useMtkColor";
+import { useAppColor } from "@/hooks/useAppColor";
 
-export function ResidentPropertyBindModal({
+export function PropertyBindModal({
   open,
   onClose,
   residentId,
@@ -17,7 +17,7 @@ export function ResidentPropertyBindModal({
   onSuccess,
   onAddBalance,
 }) {
-  const { getActiveGradient } = useMtkColor();
+  const { colorCode, getRgba } = useAppColor();
   const [mtkId, setMtkId] = useState(null);
   const [complexId, setComplexId] = useState(null);
   const [buildingId, setBuildingId] = useState(null);
@@ -190,24 +190,52 @@ export function ResidentPropertyBindModal({
 
   return (
     <>
-      <Dialog open={open} handler={() => { if (!unbindTarget && !bindConfirm) onClose(); }} size="xl" className="backdrop-blur-sm" dismiss={{ enabled: !unbindTarget && !bindConfirm }}>
-        <DialogHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-xl">
+      <Dialog
+        open={open}
+        handler={() => {
+          if (!unbindTarget && !bindConfirm) onClose();
+        }}
+        size="xl"
+        dismiss={{ enabled: !unbindTarget && !bindConfirm }}
+        className="w-full max-h-[92vh] overflow-hidden rounded-lg sm:rounded-xl border-[0.5px] border-gray-200/55 dark:border-gray-700/55 bg-white dark:bg-gray-800 shadow-2xl"
+      >
+        <DialogHeader
+          className="flex items-center justify-between gap-3 px-4 py-4 sm:px-6 sm:py-5 text-white border-b border-white/15 rounded-t-lg sm:rounded-t-xl"
+          style={{ background: `linear-gradient(135deg, ${getRgba(0.95)}, ${getRgba(0.75)})` }}
+        >
           <div className="flex justify-between items-center w-full">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm"><LinkIcon className="h-6 w-6 text-white" /></div>
               <div>
                 <Typography variant="h5" className="text-white font-bold">Mənzil Bağlama</Typography>
-                <Typography variant="small" className="text-blue-100">Sakin üçün mənzil əlavə edin və ya idarə edin</Typography>
+                <Typography variant="small" className="text-white/90">Sakin üçün mənzil əlavə edin və ya idarə edin</Typography>
               </div>
             </div>
-            <Button variant="text" onClick={onClose} className="text-white hover:bg-white/20 rounded-full p-2"><XMarkIcon className="h-5 w-5" /></Button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="h-9 w-9 rounded-xl grid place-items-center bg-white/15 hover:bg-white/25 transition-colors flex-shrink-0"
+              aria-label="Bağla"
+            >
+              <XMarkIcon className="h-5 w-5 text-white" />
+            </button>
           </div>
         </DialogHeader>
 
-        <DialogBody className="p-6 space-y-8 max-h-[80vh] overflow-y-auto">
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 border border-blue-100 dark:border-gray-700">
+        <DialogBody className="p-4 sm:p-6 bg-gray-50 dark:bg-gray-900 overflow-y-auto max-h-[64vh]">
+          <div className="rounded-xl border-[0.5px] border-gray-200/70 dark:border-gray-700/70 bg-white dark:bg-gray-800 p-4 sm:p-5 shadow-sm mb-6">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-indigo-600"><UserCircleIcon className="h-5 w-5 text-white" /></div>
+              <div>
+                <Typography variant="small" className="font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Sakin</Typography>
+                <Typography variant="h6" className="font-bold text-gray-800 dark:text-white">{residentName || `Sakin #${residentId || "-"}`}</Typography>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-xl border-[0.5px] border-gray-200/70 dark:border-gray-700/70 bg-white dark:bg-gray-800 p-4 sm:p-5 shadow-sm space-y-6">
             <div className="flex items-center gap-2 mb-6">
-              <div className="p-2 bg-blue-600 rounded-lg"><PlusIcon className="h-5 w-5 text-white" /></div>
+              <div className="p-2 rounded-lg" style={{ background: colorCode || "#2563eb" }}><PlusIcon className="h-5 w-5 text-white" /></div>
               <Typography variant="h6" className="font-bold text-gray-800 dark:text-white">Yeni Mənzil Bağla</Typography>
             </div>
 
@@ -217,8 +245,8 @@ export function ResidentPropertyBindModal({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <AsyncSearchSelect key={buildingSelectKey} label="Bina (istəyə bağlı)" value={buildingId} onChange={handleBuildingChange} endpoint="/search/module/building" searchParams={buildingSearchParams} selectedLabel={selectedLabels.building} disabled={!complexId} placeholder="Bina seçin" searchPlaceholder="Bina axtar..." />
-              <AsyncSearchSelect key={blockSelectKey} label="Blok (istəyə bağlı)" value={blockId} onChange={handleBlockChange} endpoint="/search/module/block" searchParams={blockSearchParams} selectedLabel={selectedLabels.block} disabled={!buildingId} placeholder="Blok seçin" searchPlaceholder="Blok axtar..." />
+              <AsyncSearchSelect key={buildingSelectKey} label="Bina " value={buildingId} onChange={handleBuildingChange} endpoint="/search/module/building" searchParams={buildingSearchParams} selectedLabel={selectedLabels.building} disabled={!complexId} placeholder="Bina seçin" searchPlaceholder="Bina axtar..." />
+              <AsyncSearchSelect key={blockSelectKey} label="Blok " value={blockId} onChange={handleBlockChange} endpoint="/search/module/block" searchParams={blockSearchParams} selectedLabel={selectedLabels.block} disabled={!buildingId} placeholder="Blok seçin" searchPlaceholder="Blok axtar..." />
             </div>
 
             <div className="mb-6">
@@ -226,14 +254,19 @@ export function ResidentPropertyBindModal({
             </div>
 
             <div className="flex justify-end">
-              <Button disabled={!canBind || saving} onClick={() => setBindConfirm(true)} className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-8 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2">
+              <Button
+                disabled={!canBind || saving}
+                onClick={() => setBindConfirm(true)}
+                className="text-white font-semibold px-8 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2"
+                style={{ background: colorCode || "#2563eb" }}
+              >
                 <PlusIcon className="h-4 w-4" />
                 {saving ? "Bağlanır..." : "Mənzili Bağla"}
               </Button>
             </div>
           </div>
 
-          <div className="space-y-6">
+          <div className="rounded-xl border-[0.5px] border-gray-200/70 dark:border-gray-700/70 bg-white dark:bg-gray-800 p-4 sm:p-5 shadow-sm space-y-6">
             <div className="flex items-center gap-2">
               <div className="p-2 bg-green-600 rounded-lg"><HomeIcon className="h-5 w-5 text-white" /></div>
               <Typography variant="h6" className="font-bold text-gray-800 dark:text-white">Bağlı Mənzillər ({residentProperties.length})</Typography>
@@ -307,8 +340,7 @@ export function ResidentPropertyBindModal({
                               color="red"
                               onClick={() => setUnbindTarget(p)}
                               disabled={saving}
-                              className="flex items-center gap-2 hover:hover:"
-                              style={{ background: getActiveGradient(0.9, 0.7) }}
+                              className="flex items-center gap-2"
                             >
                               <TrashIcon className="h-4 w-4" />Bağlantını sil
                             </Button>
@@ -323,8 +355,8 @@ export function ResidentPropertyBindModal({
           </div>
         </DialogBody>
 
-        <DialogFooter className="bg-gray-50 dark:bg-gray-800 rounded-b-xl border-t border-gray-200 dark:border-gray-700 p-6">
-          <Button variant="outlined" onClick={onClose} className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-8 py-3 rounded-lg font-semibold">Bağla</Button>
+        <DialogFooter className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2.5 px-4 py-4 sm:px-6 sm:py-5 border-t border-gray-200/80 dark:border-gray-700/80 bg-white dark:bg-gray-800 rounded-b-lg sm:rounded-b-xl">
+          <Button variant="outlined" onClick={onClose} className="w-full sm:w-auto rounded-xl px-6">Bağla</Button>
         </DialogFooter>
       </Dialog>
 
@@ -350,4 +382,4 @@ export function ResidentPropertyBindModal({
   );
 }
 
-export default ResidentPropertyBindModal;
+export default PropertyBindModal;

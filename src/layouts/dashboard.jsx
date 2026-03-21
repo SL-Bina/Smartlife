@@ -11,7 +11,7 @@ import {
 import myPropertiesAPI from "@/pages/resident/myproperties/api";
 import routes from "@/routes";
 import { useAuth } from "@/store/hooks/useAuth";
-import { setSelectedProperty } from "@/store/slices/propertySlice";
+import { setSelectedProperty } from "@/store/slices/management/propertySlice";
 import { useMaterialTailwindController } from "@/store/hooks/useMaterialTailwind";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import AiChat from "@/widgets/layout/ai-chat";
