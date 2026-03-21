@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Button, Input, Select, Option, Typography } from "@material-tailwind/react";
-import { PlusIcon, MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, MagnifyingGlassIcon, XMarkIcon, LinkIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
 export function DeviceActions({
   filterName = "",
@@ -13,6 +14,7 @@ export function DeviceActions({
   itemsPerPage = 10,
 }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [localName, setLocalName] = useState(filterName);
 
   const handleKeyDown = (e) => {
@@ -26,6 +28,10 @@ export function DeviceActions({
   const handleClearName = () => {
     setLocalName("");
     onNameSearch?.("");
+  };
+
+  const handleConnectionClick = () => {
+    navigate("/dashboard/devices/connection");
   };
 
   return (
@@ -75,11 +81,11 @@ export function DeviceActions({
       <Button
         size="sm"
         color="blue"
-        onClick={onCreateClick}
+        onClick={handleConnectionClick}
         className="flex items-center gap-2 flex-shrink-0"
       >
-        <PlusIcon className="h-4 w-4" />
-        {t("devices.actions.add") || "Əlavə et"}
+        <LinkIcon className="h-4 w-4" />
+        {t("sidebar.connection") || "Elaqələndirmə"}
       </Button>
     </div>
   );

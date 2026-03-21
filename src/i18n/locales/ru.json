@@ -67,9 +67,12 @@
     "residents": "Жители",
     "resident": "Житель",
     "devices": "Устройства",
+    "deviceList": "Список устройств",
+    "deviceServices": "Услуги устройств",
     "buildings": "Здания",
     "properties": "Квартиры",
     "blocks": "Блоки",
+    "connection": "Подключение",
     "apartmentGroups": "Группы квартир",
     "buildingServiceFee": "Сервисный платеж",
     "reception": "Ресепшн",
@@ -2109,6 +2112,47 @@
         "title": "Редактировать право",
         "name": "Название права",
         "status": "Статус"
+      },
+      "connection": {
+        "pageTitle": "Подключение устройств",
+        "pageSubtitle": "Выберите способ подключения устройства",
+        "tabConnection": "Подключение",
+        "tabRoles": "Роли",
+        "tabPermissions": "Разрешения ролей",
+        "connectionOptions": "Варианты подключения",
+        "wired": {
+          "title": "Проводное подключение",
+          "description": "Подключите устройство через Ethernet кабель"
+        },
+        "wireless": {
+          "title": "Беспроводное подключение",
+          "description": "Подключите устройство через WiFi сеть"
+        },
+        "manual": {
+          "title": "Ручная конфигурация",
+          "description": "Настройте параметры устройства вручную"
+        },
+        "select": "Выбрать",
+        "rolesTitle": "Роли",
+        "addRole": "Новая роль",
+        "searchRole": "Поиск роли...",
+        "filterRole": "Фильтр",
+        "roleName": "Название роли",
+        "permissions": "Разрешения",
+        "status": "Статус",
+        "permissionsTitle": "Разрешения ролей",
+        "addPermission": "Новое разрешение",
+        "searchPermission": "Поиск разрешения...",
+        "filterPermission": "Фильтр",
+        "permissionName": "Название разрешения",
+        "category": "Категория",
+        "description": "Описание",
+        "help": {
+          "title": "Нужна помощь?",
+          "description": "Если вам нужна помощь с подключением устройства, обратитесь к руководству устройства или свяжитесь с нашей службой поддержки.",
+          "manual": "Посмотреть руководство",
+          "support": "Связаться с поддержкой"
+        }
       }
     }
   },
@@ -2567,6 +2611,7 @@
       "deviceIdentifiers": "Идентификаторы устройств",
       "deviceLogs": "Журналы устройств",
       "open": "Открыть",
+      "call": "Вызов",
       "view": "Просмотр",
       "user": "Пользователь",
       "floorPrompt": "Введите номер этажа",

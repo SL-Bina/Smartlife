@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { loadComplexes, loadComplexById, setSelectedComplex } from "@/store/slices/complexSlice";
 import complexesAPI from "@/services/management/complexesApi";
@@ -93,6 +94,7 @@ const canLoadBasipProjectForComplex = (complexDetails) => {
 const DevicesPage = () => {
   const { t } = useTranslation();
   const { showToast } = useDynamicToast();
+  const navigate = useNavigate();
 
   const dispatch = useAppDispatch();
   const complexes = useAppSelector((state) => state.complex.complexes);
@@ -248,9 +250,7 @@ const DevicesPage = () => {
   };
 
   const handleOpenCreate = () => {
-    form.resetForm();
-    setFormMode("create");
-    setFormOpen(true);
+    navigate("/dashboard/devices/connection");
   };
 
   const handleEdit = (device) => {

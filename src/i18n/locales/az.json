@@ -67,9 +67,12 @@
     "residents": "Sakinlər",
     "resident": "Sakin",
     "devices": "Cihazlar",
+    "deviceList": "Cihaz Siyahısı",
+    "deviceServices": "Cihaz Xidmətləri",
     "buildings": "Binalar",
     "properties": "Mənzillər",
     "blocks": "Bloklar",
+    "connection": "Elaqələndirmə",
     "apartmentGroups": "Mənzil qrupu",
     "buildingServiceFee": "Servis haqqı",
     "reception": "Resepsiya",
@@ -2951,19 +2954,44 @@
     "pageSubtitle": "Cihaz siyahısı, icazə qaydaları, istifadəçilər, loglar",
     "title": "cihaz",
     "messages": {
-      "nameRequired": "Ad tələb olunur",
-      "emailRequired": "E-poçt tələb olunur",
-      "domainRequired": "Domain ID tələb olunur",
-      "genericError": "Xəta baş verdi",
-      "deleteUserConfirm": "Bu istifadəçini silmək istədiyinizə əminsiniz?",
-      "totalResults": "nəticə"
+      "nameRequired": "Ad mütlədir",
+      "emailRequired": "Email mütlədir",
+    "connection": {
+      "pageTitle": "Cihaz Elaqələndirməsi",
+      "pageSubtitle": "Cihazınız necə qoşulacağını seçin",
+      "tabConnection": "Elaqələndirmə",
+      "tabRoles": "Məntiqlər",
+      "tabPermissions": "Role İcazələri",
+      "connectionOptions": "Qoşulma Seçimləri",
+      "wired": {
+        "title": "Lahili Bağlantı",
+        "description": "Cihazı Ethernet kabli ilə qoşun"
+      },
+      "wireless": {
+        "title": "Wireless Bağlantı",
+        "description": "Cihazı WiFi şəbəkəsi ilə qoşun"
+      },
+      "manual": {
+        "title": "Manual Konfiqurasiya",
+        "description": "Cihaz parametrlərini əl ilə konfiqurasiya edin"
+      },
+      "select": "Seç",
+      "rolesTitle": "Məntiqlər",
+      "addRole": "Yeni Məntiq",
+      "searchRole": "Məntiq axtar...",
+      "filterRole": "Filter",
+      "roleName": "Məntiq Adı",
+      "permissions": "İcazələr",
+      "status": "Status",
+      "permissionsTitle": "Role İcazələri",
+      "addPermission": "Yeni İcazə",
+      "searchPermission": "İcazə axtar...",
+      "filterPermission": "Filter"
     }
   },
   "settings": {
     "title": "Parametrlər",
     "description": "Hesab parametrlərinizi idarə edin",
-    "general": "Ümumi",
-    "notifications": "Bildirişlər",
     "security": "Təhlükəsizlik",
     "language": "Dil",
     "languageDescription": "İstifadə etmək istədiyiniz dili seçin",
@@ -3104,4 +3132,4 @@
       }
     }
   }
-}
+}}

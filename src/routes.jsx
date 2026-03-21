@@ -23,6 +23,7 @@ import {
   CogIcon,
   BookOpenIcon,
   CpuChipIcon,
+  LinkIcon,
 } from "@heroicons/react/24/solid";
 import {
   ApplicationsEvaluationPage,
@@ -35,6 +36,7 @@ import {
   DebtorApartmentsPage,
   DebtPage,
   DepositPage,
+  DeviceConnectionPage,
   DevicesPage,
   ElectronicDocumentsPage,
   ExpensesPage,
@@ -216,10 +218,23 @@ export const routes = [
       {
         icon: <CpuChipIcon {...icon} />,
         name: "sidebar.devices",
-        path: "/devices",
-        element: <DevicesPage />,
-        moduleName: "device",
-        // moduleId: 0,
+        children: [
+          {
+            icon: <CpuChipIcon {...icon} />,
+            name: "sidebar.deviceList",
+            path: "/devices",
+            element: <DevicesPage />,
+            moduleName: "device",
+            // moduleId: 0,
+          },
+          {
+            icon: <LinkIcon {...icon} />,
+            name: "sidebar.connection",
+            path: "/devices/connection",
+            element: <DeviceConnectionPage />,
+            moduleName: "device",
+          },
+        ],
       },
       {
         name: "sidebar.parking",

@@ -67,9 +67,12 @@
     "residents": "Residents",
     "resident": "Resident",
     "devices": "Devices",
+    "deviceList": "Device List",
+    "deviceServices": "Device Services",
     "buildings": "Buildings",
     "properties": "Apartments",
     "blocks": "Blocks",
+    "connection": "Connection",
     "apartmentGroups": "Apartment Groups",
     "buildingServiceFee": "Service Fee",
     "reception": "Reception",
@@ -2899,42 +2902,6 @@
         "expandAll": {
           "title": "Expand All Submenus",
           "description": "Keeps all submenus automatically open. Does not work with flat menu."
-        },
-        "size": {
-          "title": "Size",
-          "description": "Changes the sidenav size (Small, Medium, Large).",
-          "options": {
-            "small": "Small",
-            "medium": "Medium",
-            "large": "Large"
-          }
-        },
-        "position": {
-          "title": "Position",
-          "description": "Changes the sidenav position (Left, Right).",
-          "options": {
-            "left": "Left",
-            "right": "Right"
-          }
-        },
-        "shadow": {
-          "title": "Shadow",
-          "description": "Adds or removes shadow from the sidenav."
-        },
-        "border": {
-          "title": "Border",
-          "description": "Shows or hides the sidenav border."
-        }
-      },
-      "navbar": {
-        "title": "Navbar",
-        "fixed": {
-          "title": "Fixed",
-          "description": "Fixes the navbar at the top of the screen, stays in place when scrolling."
-        },
-        "transparent": {
-          "title": "Transparent",
-          "description": "Makes the navbar transparent, allowing background content to show through."
         },
         "size": {
           "title": "Size",

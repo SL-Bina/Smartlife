@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Button, Chip, Typography } from "@material-tailwind/react";
-import { PlusIcon, MagnifyingGlassIcon, FunnelIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, MagnifyingGlassIcon, FunnelIcon, LinkIcon } from "@heroicons/react/24/outline";
 import { CustomInput } from "@/components/ui/CustomInput";
 import { CustomSelect } from "@/components/ui/CustomSelect";
 import { AsyncSearchSelect } from "@/components/ui/AsyncSearchSelect";
@@ -87,7 +87,7 @@ const LEVEL_CONFIG = {
   [ENTITY_LEVELS.DEVICE]: {
     filters: [],
     label: "Cihaz",
-    addButtonText: "Cihaz əlavə et",
+    addButtonText: "Əlaqələndir",
     gradientColors: "from-sky-500 to-sky-600",
   },
 };
@@ -633,7 +633,11 @@ export function ManagementActions({
               className="flex-1 text-white shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2" style={{ background: getActiveGradient(0.9, 0.7) }}
               size="sm"
             >
-              <PlusIcon className="h-4 w-4" />
+              {entityLevel === ENTITY_LEVELS.DEVICE ? (
+                <LinkIcon className="h-4 w-4" />
+              ) : (
+                <PlusIcon className="h-4 w-4" />
+              )}
               <span>{config.addButtonText}</span>
             </Button>
           )}
@@ -709,8 +713,12 @@ export function ManagementActions({
                 className="flex items-center justify-center text-white shadow-md hover:shadow-lg transition-all px-4" style={{ background: getActiveGradient(0.9, 0.7) }}
                 size="md"
               >
-                <PlusIcon className="h-4 w-4 mr-2" />
-                <span className="text-sm font-medium">Əlavə et</span>
+                {entityLevel === ENTITY_LEVELS.DEVICE ? (
+                  <LinkIcon className="h-4 w-4 mr-2" />
+                ) : (
+                  <PlusIcon className="h-4 w-4 mr-2" />
+                )}
+                <span className="text-sm font-medium">{config.addButtonText}</span>
               </Button>
             )}
           </div>
