@@ -3,21 +3,25 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { Typography } from "@material-tailwind/react";
 import { loadMtkById, setSelectedMtk, loadMtks } from "@/store/slices/mtkSlice";
 import { setSelectedComplex, loadComplexes, loadComplexById } from "@/store/slices/complexSlice";
-import { ComplexHeader } from "./components/ComplexHeader";
-import { ManagementActions, ENTITY_LEVELS } from "@/components/management/ManagementActions";
-import { ComplexTable } from "./components/ComplexTable";
-import { ComplexPagination } from "./components/ComplexPagination";
-import { ComplexFormModal } from "./components/modals/ComplexFormModal";
-import { ComplexSearchModal } from "./components/modals/ComplexSearchModal";
-import { useComplexForm } from "./hooks/useComplexForm";
-import { useComplexData } from "./hooks/useComplexData";
-import complexesAPI from "./api";
+import {
+  Actions,
+  ENTITY_LEVELS,
+  DeleteConfirmModal,
+  EditConfirmModal,
+  ViewModal,
+  Header,
+  FormModal,
+  SearchModal,
+  Pagination,
+  Skeleton,
+  Table,
+} from "@/components/common";
+import { useComplexForm } from "@/hooks/management/complexes/useComplexForm";
+import { useComplexData } from "@/hooks/management/complexes/useComplexData";
+import complexesAPI from "@/services/management/complexesApi";
 import DynamicToast from "@/components/DynamicToast";
-import { ViewModal } from "@/components/management/ViewModal";
-import { DeleteConfirmModal } from "./components/modals/DeleteConfirmModal";
-import { EditConfirmModal } from "./components/modals/EditConfirmModal";
 import { BuildingOfficeIcon, MapPinIcon, InformationCircleIcon, CheckCircleIcon, PhoneIcon, EnvelopeIcon, GlobeAltIcon, CubeIcon } from "@heroicons/react/24/outline";
-import ComplexSettingsModal from "./components/modals/ComplexSettingsModal";
+import SettingsModal from "@/components/common/modals/SettingsModal";
 
 export default function ComplexesPage() {
   const dispatch = useAppDispatch();
@@ -30,9 +34,6 @@ export default function ComplexesPage() {
   const selectedComplex = useAppSelector((state) => state.complex.selectedComplex);
 
   const [search, setSearch] = useState({});
-
-  const [paramModalOpen, setParamModalOpen] = useState(false);
-  const [paramItem, setParamItem] = useState(null);
 
   const handleOpenParams = (item) => {
     setItemToView(item);
@@ -55,12 +56,6 @@ export default function ComplexesPage() {
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
 
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
-  const updateField = (field, value) => {
-    setSelected({ ...selected, [field]: value });
-  };
-
-  const config = useAppSelector((state) => state.complex.selectedComplex?.config);
-
   const form = useComplexForm();
   const { items, loading, page, lastPage, total, itemsPerPage, setItemsPerPage, goToPage, refresh } = useComplexData({ search, mtkId });
 
@@ -223,12 +218,17 @@ export default function ComplexesPage() {
 
   return (
     <div className="space-y-6" style={{ position: 'relative', zIndex: 0 }}>
-      <ComplexHeader />
+      <Header
+        icon={BuildingOfficeIcon}
+        title="Complex İdarəetməsi"
+        subtitle="Complex siyahısı, yarat / redaktə et / sil / seç"
+      />
 
-      <ManagementActions
+      <Actions
         entityLevel={ENTITY_LEVELS.COMPLEX}
         search={search}
         onCreateClick={handleCreate}
+        onSearchClick={() => setSearchModalOpen(true)}
         onApplyNameSearch={handleApplyNameSearch}
         onStatusChange={handleStatusChange}
         onRemoveFilter={handleRemoveFilter}
@@ -237,27 +237,35 @@ export default function ComplexesPage() {
         onItemsPerPageChange={setItemsPerPage}
       />
 
-      <ComplexTable
-        items={items}
-        loading={loading}
-        onView={handleView}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onSelect={handleSelect}
-        selectedComplexId={selectedComplexId}
-        onOpenParams={handleOpenParams}
-      />
-
-      {lastPage > 1 && (
-        <ComplexPagination
-          page={page}
-          lastPage={lastPage}
-          onPageChange={goToPage}
-          total={total}
+      {loading ? (
+        <Skeleton tableRows={6} cardRows={4} />
+      ) : (
+        <Table
+          variant="complex"
+          items={items}
+          loading={false}
+          onView={handleView}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onSelect={handleSelect}
+          selectedComplexId={selectedComplexId}
+          onOpenParams={handleOpenParams}
         />
       )}
 
-      <ComplexFormModal
+      <Pagination
+          page={page}
+          totalPages={lastPage}
+          onPageChange={goToPage}
+          summary={<>Cəm: <b>{total}</b> nəticə</>}
+          prevLabel="Əvvəlki"
+          nextLabel="Növbəti"
+          alwaysVisible
+          hidePageNumbers
+      />
+
+      <FormModal
+        variant="complex"
         open={formOpen}
         mode={mode}
         onClose={() => {
@@ -270,7 +278,8 @@ export default function ComplexesPage() {
         onEditRequest={handleEditRequest}
       />
 
-      <ComplexSearchModal
+      <SearchModal
+        variant="complex"
         open={searchModalOpen}
         onClose={() => setSearchModalOpen(false)}
         onSearch={(searchParams) => {
@@ -496,7 +505,7 @@ export default function ComplexesPage() {
         newData={pendingFormData}
       />
 
-      <ComplexSettingsModal
+      <SettingsModal
         open={settingsModalOpen}
         onClose={() => {
           setSettingsModalOpen(false);

@@ -8,6 +8,8 @@ import blockReducer from './slices/blockSlice';
 import propertyReducer from './slices/propertySlice';
 import residentReducer from './slices/residentSlice';
 import notificationsReducer from './slices/notificationsSlice';
+import dashboardHomeReducer from './slices/dashboardHomeSlice';
+import financeInvoicesReducer from './slices/financeInvoicesSlice';
 
 export const store = configureStore({
   reducer: {
@@ -20,6 +22,8 @@ export const store = configureStore({
     property: propertyReducer,
     resident: residentReducer,
     notifications: notificationsReducer,
+    dashboardHome: dashboardHomeReducer,
+    financeInvoices: financeInvoicesReducer,
   },
 });
 

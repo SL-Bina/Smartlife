@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import residentsAPI from "@/pages/dashboard/management/residents/api";
-import propertyLookupsAPI from "@/pages/dashboard/management/properties/api/lookups";
+import propertyLookupsAPI from "@/services/management/propertyLookupsApi";
 
 export function usePropertyBind(residentId, { onSuccess } = {}) {
   const [mtks, setMtks] = useState([]);

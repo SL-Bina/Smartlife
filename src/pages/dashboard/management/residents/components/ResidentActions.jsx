@@ -8,7 +8,7 @@ import { loadComplexes } from "@/store/slices/complexSlice";
 import { loadBuildings } from "@/store/slices/buildingSlice";
 import { loadBlocks } from "@/store/slices/blockSlice";
 import { loadProperties } from "@/store/slices/propertySlice";
-import propertyLookupsAPI from "../../properties/api/lookups";
+import propertyLookupsAPI from "@/services/management/propertyLookupsApi";
 
 const STANDARD_OPTIONS = [10, 20, 50, 75, 100];
 

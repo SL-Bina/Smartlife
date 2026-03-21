@@ -1,39 +1,53 @@
 import React, { useState, useEffect } from "react";
-import { Spinner, Typography } from "@material-tailwind/react";
+import { Typography } from "@material-tailwind/react";
 import { useTranslation } from "react-i18next";
-import { useAppSelector } from "@/store/hooks";
-import complexesAPI from "@/pages/dashboard/management/complexes/api";
-import { useInvoicesData } from "./hooks/useInvoicesData";
-import { useInvoicesForm } from "./hooks/useInvoicesForm";
-import { useInvoicesFilters } from "./hooks/useInvoicesFilters";
-import { createInvoice, updateInvoice, deleteInvoice, fetchInvoiceById, payInvoices } from "./api";
-import propertiesAPI from "@/pages/dashboard/management/properties/api";
-import { InvoicesHeader } from "./components/InvoicesHeader";
-import { InvoicesSummaryCard } from "./components/InvoicesSummaryCard";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import complexesAPI from "@/services/management/complexesApi";
+import { useInvoicesForm, useInvoicesFilters } from "@/hooks/finance/invoices";
+import propertiesAPI from "@/services/management/propertiesApi";
+import {
+  Skeleton,
+  SummaryCards,
+  Table,
+  CardList,
+  Pagination,
+  FormModal,
+  PaymentModal,
+  SearchModal,
+  Header,
+} from "@/components/common";
 import { ManagementActions } from "@/components/management/ManagementActions";
-import { InvoicesTable } from "./components/InvoicesTable";
-import { InvoicesCardList } from "./components/InvoicesCardList";
-import { InvoicesPagination } from "./components/InvoicesPagination";
-import { InvoicesFormModal } from "./components/modals/InvoicesFormModal";
-import { InvoicesPayModal } from "./components/modals/InvoicesPayModal";
-import { InvoicesSearchModal } from "./components/modals/InvoicesSearchModal";
-import { ViewModal } from "@/components/management/ViewModal";
-import { DeleteConfirmModal } from "@/components/management/DeleteConfirmModal";
+import { ViewModal } from "@/components/common/modals/ViewModal";
+import { DeleteConfirmModal } from "@/components/common/modals/DeleteConfirmModal";
 import DynamicToast from "@/components/DynamicToast";
-import { getInvoiceComplexId, resolveComplexPrePaidEnabled } from "./utils/paymentAvailability";
+import {
+  getInvoiceComplexId,
+  resolveComplexPrePaidEnabled,
+  buildInvoicePayload,
+  createInvoiceViewFields,
+} from "@/utils/finance/invoices";
+import {
+  loadFinanceInvoices,
+  createFinanceInvoice,
+  updateFinanceInvoice,
+  deleteFinanceInvoice,
+  fetchFinanceInvoiceById,
+  payFinanceInvoices,
+  selectFinanceInvoices,
+  selectFinanceInvoicesError,
+  selectFinanceInvoicesLoading,
+  selectFinanceInvoicesPagination,
+  selectFinanceInvoicesTotalConsumption,
+  selectFinanceInvoicesTotalPaid,
+} from "@/store/slices/financeInvoicesSlice";
 import {
   BuildingOfficeIcon,
-  CurrencyDollarIcon,
-  CalendarIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  UserGroupIcon,
   DocumentTextIcon,
-  CreditCardIcon,
 } from "@heroicons/react/24/outline";
 
 const InvoicesPage = () => {
   const { t } = useTranslation();
+  const dispatch = useAppDispatch();
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -69,9 +83,9 @@ const InvoicesPage = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [payModalOpen, setPayModalOpen] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
   const [viewLoading, setViewLoading] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   
   const [selectedItem, setSelectedItem] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
@@ -83,13 +97,23 @@ const InvoicesPage = () => {
   const [complexPrePaidMap, setComplexPrePaidMap] = useState({});
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
 
-  const { invoices, totalPaid, totalConsumption, loading, error, pagination } = useInvoicesData(
-    apiParamsWithMtk,
-    page,
-    refreshKey,
-    itemsPerPage
-  );
+  const invoices = useAppSelector(selectFinanceInvoices);
+  const totalPaid = useAppSelector(selectFinanceInvoicesTotalPaid);
+  const totalConsumption = useAppSelector(selectFinanceInvoicesTotalConsumption);
+  const loading = useAppSelector(selectFinanceInvoicesLoading);
+  const error = useAppSelector(selectFinanceInvoicesError);
+  const pagination = useAppSelector(selectFinanceInvoicesPagination);
   const { formData, updateField, resetForm, setFormFromInvoice } = useInvoicesForm();
+
+  useEffect(() => {
+    dispatch(
+      loadFinanceInvoices({
+        filters: apiParamsWithMtk,
+        page,
+        itemsPerPage,
+      })
+    );
+  }, [dispatch, apiParamsWithMtk, page, refreshKey, itemsPerPage]);
 
   useEffect(() => {
     if (page > (pagination.totalPages || 1) && pagination.totalPages > 0) {
@@ -208,7 +232,7 @@ const InvoicesPage = () => {
       setItemToView(null);
       setViewModalOpen(true);
       
-      const invoiceData = await fetchInvoiceById(item.id);
+      const invoiceData = await dispatch(fetchFinanceInvoiceById(item.id)).unwrap();
       setItemToView(invoiceData);
     } catch (error) {
       console.error("Error fetching invoice:", error);
@@ -225,7 +249,7 @@ const InvoicesPage = () => {
     setFormOpen(true);
     setFormLoading(true);
     try {
-      let invoiceData = await fetchInvoiceById(item.id);
+      let invoiceData = await dispatch(fetchFinanceInvoiceById(item.id)).unwrap();
       const prop = invoiceData.property || invoiceData.apartment;
       const hasBuildingBlock = (inv) => {
         const b = inv?.building_id ?? inv?.property?.building_id ?? inv?.property?.building?.id ?? inv?.apartment?.building_id ?? inv?.apartment?.building?.id;
@@ -286,22 +310,8 @@ const InvoicesPage = () => {
   const handleCreateSave = async () => {
     try {
       setSaving(true);
-      // Map form data to API structure
-      const invoiceData = {
-        property_id: formData.property_id,
-        service_id: formData.service_id,
-        amount: parseFloat(formData.amount),
-        start_date: formData.start_date,
-        due_date: formData.due_date,
-        type: formData.type,
-        status: formData.status || "unpaid",
-        ...(formData.meta?.desc && {
-          meta: {
-            desc: formData.meta.desc
-          }
-        })
-      };
-      await createInvoice(invoiceData);
+      const invoiceData = buildInvoicePayload(formData);
+      await dispatch(createFinanceInvoice(invoiceData)).unwrap();
       showToast("success", "Faktura uğurla əlavə edildi", "Uğurlu");
       setFormOpen(false);
       resetForm();
@@ -318,22 +328,8 @@ const InvoicesPage = () => {
     try {
       setSaving(true);
       if (selectedItem) {
-        // Map form data to API structure
-        const invoiceData = {
-          property_id: formData.property_id,
-          service_id: formData.service_id,
-          amount: parseFloat(formData.amount),
-          start_date: formData.start_date,
-          due_date: formData.due_date,
-          type: formData.type,
-          status: formData.status || "unpaid",
-          ...(formData.meta?.desc && {
-            meta: {
-              desc: formData.meta.desc
-            }
-          })
-        };
-        await updateInvoice(selectedItem.id, invoiceData);
+        const invoiceData = buildInvoicePayload(formData);
+        await dispatch(updateFinanceInvoice({ id: selectedItem.id, invoiceData })).unwrap();
         showToast("success", "Faktura uğurla yeniləndi", "Uğurlu");
         setFormOpen(false);
         setSelectedItem(null);
@@ -352,7 +348,7 @@ const InvoicesPage = () => {
     try {
       setDeleteLoading(true);
       if (itemToDelete) {
-        await deleteInvoice(itemToDelete.id);
+        await dispatch(deleteFinanceInvoice(itemToDelete.id)).unwrap();
         showToast("success", "Faktura uğurla silindi", "Uğurlu");
         setDeleteModalOpen(false);
         setItemToDelete(null);
@@ -384,134 +380,20 @@ const InvoicesPage = () => {
     }
   };
 
-  const invoiceViewFields = itemToView ? [
-    { key: "id", label: "ID", icon: DocumentTextIcon },
-    { 
-      key: "service.name", 
-      label: t("invoices.table.service") || "Xidmət",
-      icon: BuildingOfficeIcon,
-      getValue: (item) => item?.service?.name || "-"
-    },
-    { 
-      key: "property.name", 
-      label: t("invoices.table.property") || "Mənzil",
-      icon: BuildingOfficeIcon,
-      getValue: (item) => item?.property?.name || "-"
-    },
-    { 
-      key: "property.complex.name", 
-      label: t("invoices.table.complex") || "Kompleks",
-      icon: BuildingOfficeIcon,
-      getValue: (item) => item?.property?.complex?.name || "-"
-    },
-    { 
-      key: "residents", 
-      label: t("invoices.table.residents") || "Sakinlər",
-      icon: UserGroupIcon,
-      customRender: (item) => {
-        const residents = item?.residents || [];
-        if (residents.length === 0) return "-";
-        return (
-          <div className="flex flex-col gap-1">
-            {residents.map((resident) => (
-              <span key={resident.id} className="text-sm">{resident.name}</span>
-            ))}
-          </div>
-        );
-      }
-    },
-    { 
-      key: "amount", 
-      label: t("invoices.table.amount") || "Məbləğ",
-      icon: CurrencyDollarIcon,
-      format: (value) => `${parseFloat(value || 0).toFixed(2)} ₼`
-    },
-    { 
-      key: "amount_paid", 
-      label: t("invoices.table.paidAmount") || "Ödənilmiş məbləğ",
-      icon: CurrencyDollarIcon,
-      format: (value) => `${parseFloat(value || 0).toFixed(2)} ₼`
-    },
-    { 
-      key: "remaining", 
-      label: t("invoices.table.remaining") || "Qalıq",
-      icon: CurrencyDollarIcon,
-      getValue: (item) => {
-        const remaining = parseFloat(item?.amount || 0) - parseFloat(item?.amount_paid || 0);
-        return remaining.toFixed(2);
-      },
-      format: (value) => `${value} ₼`
-    },
-    { 
-      key: "status", 
-      label: t("invoices.table.status") || "Status",
-      icon: CheckCircleIcon,
-      format: (value) => t(`invoices.status.${value}`) || value
-    },
-    { 
-      key: "type", 
-      label: t("invoices.table.type") || "Növ",
-      icon: DocumentTextIcon,
-      format: (value) => t(`invoices.types.${value}`) || value
-    },
-    { 
-      key: "start_date", 
-      label: t("invoices.table.startDate") || "Başlama tarixi",
-      icon: CalendarIcon,
-      format: (value) => {
-        if (!value) return "-";
-        try {
-          return new Date(value).toLocaleDateString("az-AZ");
-        } catch {
-          return value;
-        }
-      }
-    },
-    { 
-      key: "due_date", 
-      label: t("invoices.table.dueDate") || "Son tarix",
-      icon: CalendarIcon,
-      format: (value) => {
-        if (!value) return "-";
-        try {
-          return new Date(value).toLocaleDateString("az-AZ");
-        } catch {
-          return value;
-        }
-      }
-    },
-    { 
-      key: "paid_at", 
-      label: t("invoices.table.paymentDate") || "Ödəniş tarixi",
-      icon: CalendarIcon,
-      format: (value) => {
-        if (!value) return "-";
-        try {
-          return new Date(value).toLocaleDateString("az-AZ");
-        } catch {
-          return value;
-        }
-      }
-    },
-    { 
-      key: "payment_method.name", 
-      label: t("invoices.table.paymentMethod") || "Ödəniş metodu",
-      icon: CreditCardIcon,
-      getValue: (item) => item?.payment_method?.name || "-"
-    },
-    { 
-      key: "meta.description", 
-      label: t("invoices.table.description") || "Təsvir",
-      icon: DocumentTextIcon,
-      getValue: (item) => item?.meta?.description || item?.meta?.desc || "-",
-      fullWidth: true
-    },
-  ] : [];
+  const invoiceViewFields = itemToView ? createInvoiceViewFields(t) : [];
 
   return (
     <div className="space-y-6" style={{ position: 'relative', zIndex: 0 }}>
-      <InvoicesHeader />
-      <InvoicesSummaryCard totalPaid={totalPaid} totalConsumption={totalConsumption} />
+      <Header
+        icon={DocumentTextIcon}
+        title={t("invoices.pageTitle") || "Faktura İdarəetməsi"}
+        subtitle={
+          t("invoices.pageSubtitle") ||
+          "Faktura siyahısı, yarat / redaktə et / sil / bax"
+        }
+        className="mb-6"
+      />
+      <SummaryCards totalPaid={totalPaid} totalConsumption={totalConsumption} />
 
       <ManagementActions
         entityLevel="invoice"
@@ -528,12 +410,7 @@ const InvoicesPage = () => {
       />
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-10">
-          <Spinner className="h-6 w-6 dark:text-blue-400" />
-          <Typography variant="small" className="mt-2 text-blue-gray-400 dark:text-gray-400">
-            Yüklənir...
-          </Typography>
-        </div>
+        <Skeleton tableRows={6} cardRows={4} />
       ) : error ? (
         <div className="flex flex-col items-center justify-center py-10">
           <Typography variant="small" className="text-red-600 dark:text-red-400">
@@ -542,7 +419,7 @@ const InvoicesPage = () => {
         </div>
       ) : (
         <>
-          <InvoicesTable
+          <Table
             invoices={invoices}
             loading={loading}
             onView={handleView}
@@ -550,7 +427,7 @@ const InvoicesPage = () => {
             onDelete={handleDelete}
             onPay={handlePay}
           />
-          <InvoicesCardList
+          <CardList
             invoices={invoices}
             loading={loading}
             onView={handleView}
@@ -559,7 +436,7 @@ const InvoicesPage = () => {
             onPay={handlePay}
           />
           {pagination.totalPages > 1 && (
-            <InvoicesPagination
+            <Pagination
               page={page}
               totalPages={pagination.totalPages || 1}
               onPageChange={goToPage}
@@ -570,7 +447,7 @@ const InvoicesPage = () => {
         </>
       )}
 
-      <InvoicesFormModal
+      <FormModal
         open={formOpen}
         onClose={() => {
           setFormOpen(false);
@@ -612,14 +489,14 @@ const InvoicesPage = () => {
         loading={deleteLoading}
       />
 
-      <InvoicesSearchModal
+      <SearchModal
         open={searchModalOpen}
         onClose={() => setSearchModalOpen(false)}
         onSearch={handleSearch}
         currentFilters={filters}
       />
 
-      <InvoicesPayModal
+      <PaymentModal
         open={payModalOpen}
         onClose={() => {
           setPayModalOpen(false);
@@ -627,6 +504,9 @@ const InvoicesPage = () => {
         }}
         invoice={itemToPay}
         allowPartialPayment={allowPartialPayment}
+        onPay={async (payload) => {
+          await dispatch(payFinanceInvoices([payload])).unwrap();
+        }}
         onSuccess={handlePaySuccess}
       />
 

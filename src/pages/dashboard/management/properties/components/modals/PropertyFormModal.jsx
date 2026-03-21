@@ -5,10 +5,10 @@ import { CustomSelect } from "@/components/ui/CustomSelect";
 import { HomeIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import DynamicToast from "@/components/DynamicToast";
 import propertyLookupsAPI from "../../api/lookups";
-import mtkAPI from "../../../mtk/api";
-import complexesAPI from "../../../complexes/api";
-import buildingsAPI from "../../../buildings/api";
-import blocksAPI from "../../../blocks/api";
+import mtkAPI from "@/services/management/mtkApi";
+import complexesAPI from "@/services/management/complexesApi";
+import buildingsAPI from "@/services/management/buildingsApi";
+import blocksAPI from "@/services/management/blocksApi";
 
 const ACTIVE_COLOR = "#14b8a6";
 

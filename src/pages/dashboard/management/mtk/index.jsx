@@ -1,25 +1,28 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useMaterialTailwindController } from "@/store/hooks/useMaterialTailwind";
 import { setSelectedMtk, loadMtks, loadMtkById } from "@/store/slices/mtkSlice";
-import { MtkHeader } from "./components/MtkHeader";
-import { ManagementActions, ENTITY_LEVELS } from "@/components/management/ManagementActions";
-import { MtkTable } from "./components/MtkTable";
-import { MtkPagination } from "./components/MtkPagination";
-import { MtkFormModal } from "./components/modals/MtkFormModal";
-import { MtkSearchModal } from "./components/modals/MtkSearchModal";
-import { useMtkForm } from "./hooks/useMtkForm";
-import { useMtkData } from "./hooks/useMtkData";
-import mtkAPI from "./api";
+import {
+  Actions,
+  ENTITY_LEVELS,
+  DeleteConfirmModal,
+  EditConfirmModal,
+  ViewModal,
+  Header,
+  FormModal,
+  SearchModal,
+  Table,
+  Pagination,
+  Skeleton,
+} from "@/components/common";
+import { useMtkForm } from "@/hooks/management/mtk/useMtkForm";
+import { useMtkData } from "@/hooks/management/mtk/useMtkData";
+import mtkAPI from "@/services/management/mtkApi";
 import DynamicToast from "@/components/DynamicToast";
-import { ViewModal } from "@/components/management/ViewModal";
-import { DeleteConfirmModal } from "./components/modals/DeleteConfirmModal";
-import { EditConfirmModal } from "./components/modals/EditConfirmModal";
-import { BuildingOfficeIcon, MapPinIcon, PhoneIcon, EnvelopeIcon, GlobeAltIcon, InformationCircleIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { mtkViewFields } from "@/utils/management/mtk/mtkViewFields";
+import { BuildingOfficeIcon } from "@heroicons/react/24/outline";
 
 export default function MtkPage() {
-  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [controller] = useMaterialTailwindController();
   const { sidenavType } = controller;
@@ -208,9 +211,13 @@ export default function MtkPage() {
 
   return (
     <div className="space-y-6" style={{ position: 'relative', zIndex: 0 }}>
-      <MtkHeader />
+      <Header
+        icon={BuildingOfficeIcon}
+        title="MTK İdarəetməsi"
+        subtitle="MTK siyahısı, yarat / redaktə et / sil / seç"
+      />
 
-      <ManagementActions
+      <Actions
         entityLevel={ENTITY_LEVELS.MTK}
         search={search}
         onCreateClick={handleCreate}
@@ -223,24 +230,32 @@ export default function MtkPage() {
         onItemsPerPageChange={setItemsPerPage}
       />
 
-      <MtkTable
-        items={items}
-        loading={loading}
-        onView={handleView}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
-
-      {lastPage > 1 && (
-        <MtkPagination
-          page={page}
-          lastPage={lastPage}
-          onPageChange={goToPage}
-          total={total}
+      {loading ? (
+        <Skeleton tableRows={6} cardRows={4} />
+      ) : (
+        <Table
+          variant="mtk"
+          items={items}
+          loading={false}
+          onView={handleView}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
         />
       )}
 
-      <MtkFormModal
+      <Pagination
+        page={page}
+        totalPages={lastPage}
+        onPageChange={goToPage}
+        summary={<>Cəm: <b>{total}</b> nəticə</>}
+        prevLabel="Əvvəlki"
+        nextLabel="Növbəti"
+        alwaysVisible
+        hidePageNumbers
+      />
+
+      <FormModal
+        variant="mtk"
         open={formOpen}
         mode={mode}
         onClose={() => {
@@ -252,7 +267,8 @@ export default function MtkPage() {
         onEditRequest={handleEditRequest}
       />
 
-      <MtkSearchModal
+      <SearchModal
+        variant="mtk"
         open={searchModalOpen}
         onClose={() => setSearchModalOpen(false)}
         onSearch={(searchParams) => {
@@ -276,77 +292,7 @@ export default function MtkPage() {
         item={itemToView}
         entityName="MTK"
         loading={viewLoading}
-        fields={[
-          { key: "name", label: "Ad", icon: BuildingOfficeIcon },
-          { 
-            key: "meta.desc", 
-            label: "Təsvir",
-            icon: InformationCircleIcon,
-            fullWidth: true,
-            getValue: (item) => item?.meta?.desc
-          },
-          { 
-            key: "meta.address", 
-            label: "Ünvan",
-            icon: MapPinIcon,
-            fullWidth: true,
-            getValue: (item) => item?.meta?.address
-          },
-          { 
-            key: "meta.phone", 
-            label: "Telefon",
-            icon: PhoneIcon,
-            getValue: (item) => item?.meta?.phone
-          },
-          { 
-            key: "meta.email", 
-            label: "E-mail",
-            icon: EnvelopeIcon,
-            getValue: (item) => item?.meta?.email
-          },
-          { 
-            key: "meta.website", 
-            label: "Website",
-            icon: GlobeAltIcon,
-            fullWidth: true,
-            getValue: (item) => item?.meta?.website
-          },
-          { 
-            key: "meta.lat", 
-            label: "Enlik (Lat)",
-            icon: MapPinIcon,
-            getValue: (item) => item?.meta?.lat
-          },
-          { 
-            key: "meta.lng", 
-            label: "Uzunluq (Lng)",
-            icon: MapPinIcon,
-            getValue: (item) => item?.meta?.lng
-          },
-          { 
-            key: "meta.color_code", 
-            label: "Rəng kodu",
-            icon: InformationCircleIcon,
-            getValue: (item) => item?.meta?.color_code,
-            format: (value) => {
-              if (!value) return "-";
-              return (
-                <div className="flex items-center gap-2">
-                  <span>{value}</span>
-                  <div 
-                    className="w-6 h-6 rounded border border-gray-300 dark:border-gray-600" 
-                    style={{ backgroundColor: value }}
-                  />
-                </div>
-              );
-            }
-          },
-          { 
-            key: "status", 
-            label: "Status",
-            icon: CheckCircleIcon
-          },
-        ]}
+        fields={mtkViewFields}
       />
 
       <DeleteConfirmModal

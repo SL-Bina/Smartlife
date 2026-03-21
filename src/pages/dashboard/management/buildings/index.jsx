@@ -3,19 +3,23 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { loadMtks } from "@/store/slices/mtkSlice";
 import { loadComplexes } from "@/store/slices/complexSlice";
 import { setSelectedBuilding, loadBuildings, loadBuildingById } from "@/store/slices/buildingSlice";
-import { BuildingHeader } from "./components/BuildingHeader";
-import { ManagementActions, ENTITY_LEVELS } from "@/components/management/ManagementActions";
-import { BuildingTable } from "./components/BuildingTable";
-import { BuildingPagination } from "./components/BuildingPagination";
-import { BuildingFormModal } from "./components/modals/BuildingFormModal";
-import { BuildingSearchModal } from "./components/modals/BuildingSearchModal";
-import { useBuildingForm } from "./hooks/useBuildingForm";
-import { useBuildingData } from "./hooks/useBuildingData";
-import buildingsAPI from "./api";
+import {
+  Actions,
+  ENTITY_LEVELS,
+  DeleteConfirmModal,
+  EditConfirmModal,
+  ViewModal,
+  Header,
+  FormModal,
+  SearchModal,
+  Pagination,
+  Skeleton,
+  Table,
+} from "@/components/common";
+import { useBuildingForm } from "@/hooks/management/buildings/useBuildingForm";
+import { useBuildingData } from "@/hooks/management/buildings/useBuildingData";
+import buildingsAPI from "@/services/management/buildingsApi";
 import DynamicToast from "@/components/DynamicToast";
-import { ViewModal } from "@/components/management/ViewModal";
-import { DeleteConfirmModal } from "./components/modals/DeleteConfirmModal";
-import { EditConfirmModal } from "./components/modals/EditConfirmModal";
 import { BuildingOfficeIcon, CheckCircleIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
 
 export default function BuildingsPage() {
@@ -196,12 +200,17 @@ export default function BuildingsPage() {
 
   return (
     <div className="space-y-6" style={{ position: 'relative', zIndex: 0 }}>
-      <BuildingHeader />
+      <Header
+        icon={BuildingOfficeIcon}
+        title="Binalar İdarəetməsi"
+        subtitle="Bina siyahısı, yarat / redaktə et / sil / seç"
+      />
 
-      <ManagementActions
+      <Actions
         entityLevel={ENTITY_LEVELS.BUILDING}
         search={search}
         onCreateClick={handleCreate}
+        onSearchClick={() => setSearchModalOpen(true)}
         onApplyNameSearch={handleApplyNameSearch}
         onStatusChange={handleStatusChange}
         onRemoveFilter={handleRemoveFilter}
@@ -210,26 +219,32 @@ export default function BuildingsPage() {
         onItemsPerPageChange={setItemsPerPage}
       />
 
-      <BuildingTable
-        items={items}
-        loading={loading}
-        onView={handleView}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onSelect={handleSelect}
-        selectedBuildingId={selectedBuildingId}
-      />
-
-      {lastPage > 1 && (
-        <BuildingPagination
-          page={page}
-          lastPage={lastPage}
-          onPageChange={goToPage}
-          total={total}
+      {loading ? (
+        <Skeleton tableRows={6} cardRows={4} />
+      ) : (
+        <Table
+          variant="building"
+          items={items}
+          loading={false}
+          onView={handleView}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onSelect={handleSelect}
+          selectedBuildingId={selectedBuildingId}
         />
       )}
 
-      <BuildingFormModal
+      <Pagination
+        page={page}
+        totalPages={lastPage}
+        onPageChange={goToPage}
+        summary={<>Cəm: <b>{total}</b> nəticə</>}
+        prevLabel="Əvvəlki"
+        nextLabel="Növbəti"
+      />
+
+      <FormModal
+        variant="building"
         open={formOpen}
         mode={mode}
         onClose={() => {
@@ -243,7 +258,8 @@ export default function BuildingsPage() {
         onEditRequest={handleEditRequest}
       />
 
-      <BuildingSearchModal
+      <SearchModal
+        variant="building"
         open={searchModalOpen}
         onClose={() => setSearchModalOpen(false)}
         onSearch={(searchParams) => {

@@ -1,46 +1,35 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useChartConfigs } from "./hooks/useChartConfigs";
-import { StatisticsCards } from "./components/StatisticsCards";
-import { PaymentDynamicsChart } from "./components/PaymentDynamicsChart";
-import { EmployeePerformanceChart } from "./components/EmployeePerformanceChart";
-import { ApplicationStatusChart } from "./components/ApplicationStatusChart";
-import { DepartmentStatsChart } from "./components/DepartmentStatsChart";
-import { ResidentStatsCards } from "./components/ResidentStatsCards";
-import { fetchAllDashboardData } from "./api";
-import { StatisticsHeader } from "./components/StatisticsHeader";
-import { useMtkColor } from "@/store/hooks/useMtkColor";
+import { ChartBarIcon } from "@heroicons/react/24/outline";
+import { Header } from "@/components/ui/Header";
+import { useChartConfigs } from "@/hooks/dashboard/home";
+import {
+  StatisticsCards,
+  PaymentDynamicsChart,
+  EmployeePerformanceChart,
+  ApplicationStatusChart,
+  DepartmentStatsChart,
+  ResidentStatsCards,
+} from "@/components/dashboard/home";
+import { useAppDispatch, useAppSelector, useMtkColor } from "@/store/hooks";
+import {
+  loadDashboardHomeData,
+  selectDashboardHomeData,
+  selectDashboardHomeError,
+  selectDashboardHomeLoading,
+} from "@/store/slices";
 
 export function Home() {
   const { t } = useTranslation();
-  const { getRgba: getMtkRgba, getActiveGradient } = useMtkColor();
-  const [dashboardData, setDashboardData] = useState({
-    paymentStatistics: null,
-    paymentDynamics: null,
-    employeePerformance: null,
-    applicationStatus: null,
-    departmentStats: null,
-    residentStats: null,
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { getRgba: getMtkRgba } = useMtkColor();
+  const dispatch = useAppDispatch();
+  const dashboardData = useAppSelector(selectDashboardHomeData);
+  const loading = useAppSelector(selectDashboardHomeLoading);
+  const error = useAppSelector(selectDashboardHomeError);
 
   useEffect(() => {
-    const loadDashboardData = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchAllDashboardData(t);
-        setDashboardData(data);
-      } catch (err) {
-        console.error("Error loading dashboard data:", err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadDashboardData();
-  }, [t]);
+    dispatch(loadDashboardHomeData());
+  }, [dispatch]);
 
   const {
     getChartHeight,
@@ -82,7 +71,15 @@ export function Home() {
 
   return (
     <div className="">
-      <StatisticsHeader />
+      <Header
+        icon={ChartBarIcon}
+        title={t("statistics.pageTitle") || "Dashboard"}
+        subtitle={
+          t("statistics.pageSubtitle") ||
+          "Ödənişlər, işçi performansı, müraciətlər və şöbə statistikaları"
+        }
+        className="mb-6"
+      />
       <StatisticsCards paymentStatistics={dashboardData.paymentStatistics} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mt-6">

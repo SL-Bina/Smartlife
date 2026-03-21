@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setSelectedResident, loadResidentById } from "@/store/slices/residentSlice";
-import { ResidentHeader } from "./components/ResidentHeader";
+import { ResidentHeader } from "@/components/common/ResidentHeader";
 import { ManagementActions, ENTITY_LEVELS } from "@/components/management/ManagementActions";
-import { ResidentTable } from "./components/ResidentTable";
+import { ResidentTable } from "@/components/common/ResidentTable";
 import { ResidentPagination } from "./components/ResidentPagination";
 import { ResidentFormModal } from "./components/modals/ResidentFormModal";
-import { ResidentSearchModal } from "./components/modals/ResidentSearchModal";
-import { useResidentForm } from "./hooks/useResidentForm";
-import { useResidentData } from "./hooks/useResidentData";
-import residentsAPI from "./api";
+import { ResidentSearchModal } from "@/components/common/modals/ResidentSearchModal";
+import { useResidentForm } from "@/hooks/management/residents/useResidentForm";
+import { useResidentData } from "@/hooks/management/residents/useResidentData";
+import residentsAPI from "@/services/management/residentsApi";
 import DynamicToast from "@/components/DynamicToast";
-import { ViewModal } from "@/components/management/ViewModal";
-import { DeleteConfirmModal } from "./components/modals/DeleteConfirmModal";
-import { EditConfirmModal } from "./components/modals/EditConfirmModal";
+import { ViewModal } from "@/components/common/modals/ViewModal";
+import { DeleteConfirmModal } from "@/components/common/modals/DeleteConfirmModal";
+import { EditConfirmModal } from "@/components/common/modals/EditConfirmModal";
 import { UserIcon, EnvelopeIcon, PhoneIcon, IdentificationIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
-import PropertyBindModal from "./components/modals/PropertyBindModal";
-import { AddBalanceCashModal } from "@/components/finance/AddBalanceCashModal";
+import ResidentPropertyBindModal from "@/components/common/modals/ResidentPropertyBindModal";
+import { AddBalanceCashModal } from "@/components/common/modals/AddBalanceCashModal";
 
 export default function ResidentsPage() {
   const dispatch = useAppDispatch();
@@ -245,8 +245,7 @@ export default function ResidentsPage() {
         onEditRequest={handleEditRequest}
       />
 
-      <PropertyBindModal
-
+      <ResidentPropertyBindModal
         open={bindModalOpen}
         onClose={() => setBindModalOpen(false)}
         residentId={selectedResidentId}

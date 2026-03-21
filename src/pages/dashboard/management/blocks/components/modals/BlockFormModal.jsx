@@ -5,7 +5,7 @@ import { CustomSelect } from "@/components/ui/CustomSelect";
 import { RectangleStackIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import DynamicToast from "@/components/DynamicToast";
 import blockLookupsAPI from "../../api/lookups";
-import buildingsAPI from "../../../buildings/api";
+import buildingsAPI from "@/services/management/buildingsApi";
 
 const ACTIVE_COLOR = "#6366f1"; // Indigo for blocks
 

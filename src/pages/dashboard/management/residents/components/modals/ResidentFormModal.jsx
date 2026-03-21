@@ -13,11 +13,11 @@ import { CustomSelect } from "@/components/ui/CustomSelect";
 import { UserIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import DynamicToast from "@/components/DynamicToast";
 import { ResidentExistsModal } from "./ResidentExistsModal";
-import mtkAPI from "../../../mtk/api";
-import complexesAPI from "../../../complexes/api";
-import buildingsAPI from "../../../buildings/api";
-import blocksAPI from "../../../blocks/api";
-import propertiesAPI from "../../../properties/api";
+import mtkAPI from "@/services/management/mtkApi";
+import complexesAPI from "@/services/management/complexesApi";
+import buildingsAPI from "@/services/management/buildingsApi";
+import blocksAPI from "@/services/management/blocksApi";
+import propertiesAPI from "@/services/management/propertiesApi";
 
 const ACTIVE_COLOR = "#3b82f6";
 

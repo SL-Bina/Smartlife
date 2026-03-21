@@ -1,10 +1,10 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import SmartPagination from "@/components/ui/SmartPagination";
+import { Pagination } from "@/components/common";
 
 export function PaymentHistoryPagination({ page, totalPages, onPageChange, onPrev, onNext }) {
   const { t } = useTranslation();
 
-  return <SmartPagination page={page} totalPages={totalPages} onPageChange={onPageChange} onPrev={onPrev} onNext={onNext} prevLabel={t("paymentHistory.pagination.prev")} nextLabel={t("paymentHistory.pagination.next")} />;
+  return <Pagination page={page} totalPages={totalPages} onPageChange={onPageChange} onPrev={onPrev} onNext={onNext} prevLabel={t("paymentHistory.pagination.prev")} nextLabel={t("paymentHistory.pagination.next")} />;
 }
 

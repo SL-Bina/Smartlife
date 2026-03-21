@@ -5,23 +5,25 @@ import { loadComplexById } from "@/store/slices/complexSlice";
 import { loadBuildingById } from "@/store/slices/buildingSlice";
 import { loadBlockById, setSelectedBlock } from "@/store/slices/blockSlice";
 import { setSelectedProperty, loadProperties, loadPropertyById } from "@/store/slices/propertySlice";
-import { PropertyHeader } from "./components/PropertyHeader";
-import { ManagementActions, ENTITY_LEVELS } from "@/components/management/ManagementActions";
-import { PropertyTable } from "./components/PropertyTable";
-import { PropertyCardList } from "./components/PropertyCardList";
-import { PropertyFloorView } from "./components/PropertyFloorView";
-import { PropertyPagination } from "./components/PropertyPagination";
-import { PropertyFormModal } from "./components/modals/PropertyFormModal";
-import { PropertySearchModal } from "./components/modals/PropertySearchModal";
-import { PropertyServiceFeeModal } from "./components/modals/PropertyServiceFeeModal";
-import { AddBalanceCashModal } from "@/components/finance/AddBalanceCashModal";
-import { usePropertyForm } from "./hooks/usePropertyForm";
-import { usePropertyData } from "./hooks/usePropertyData";
-import propertiesAPI from "./api";
+import {
+  Actions,
+  ENTITY_LEVELS,
+  DeleteConfirmModal,
+  EditConfirmModal,
+  ViewModal,
+  Header,
+  FormModal,
+  SearchModal,
+  Pagination,
+  Skeleton,
+  Table,
+  ServiceFeeModal
+} from "@/components/common";
+import { AddBalanceCashModal } from "@/components/common/modals/AddBalanceCashModal";
+import { usePropertyForm } from "@/hooks/management/properties/usePropertyForm";
+import { usePropertyData } from "@/hooks/management/properties/usePropertyData";
+import propertiesAPI from "@/services/management/propertiesApi";
 import DynamicToast from "@/components/DynamicToast";
-import { ViewModal } from "@/components/management/ViewModal";
-import { DeleteConfirmModal } from "./components/modals/DeleteConfirmModal";
-import { EditConfirmModal } from "./components/modals/EditConfirmModal";
 import { 
   HomeIcon, 
   IdentificationIcon, 
@@ -37,7 +39,6 @@ import {
   Squares2X2Icon,
   TableCellsIcon
 } from "@heroicons/react/24/outline";
-import { Button } from "@material-tailwind/react";
 
 export default function PropertiesPage() {
   const dispatch = useAppDispatch();
@@ -65,7 +66,6 @@ export default function PropertiesPage() {
   const [itemToView, setItemToView] = useState(null);
   const [selected, setSelected] = useState(null);
   const [mode, setMode] = useState("create");
-  const [viewMode, setViewMode] = useState("table"); // "table" | "floor"
   const [toast, setToast] = useState({ open: false, type: "info", message: "", title: "" });
 
   const form = usePropertyForm();
@@ -236,9 +236,13 @@ export default function PropertiesPage() {
 
   return (
     <div className="space-y-6" style={{ position: 'relative', zIndex: 0 }}>
-      <PropertyHeader />
+      <Header
+        icon={HomeIcon}
+        title="Mənzillər İdarəetməsi"
+        subtitle="Mənzil siyahısı, yarat / redaktə et / sil / seç / servis haqqı"
+      />
 
-      <ManagementActions
+      <Actions
         entityLevel={ENTITY_LEVELS.PROPERTY}
         search={search}
         onCreateClick={handleCreate}
@@ -251,97 +255,34 @@ export default function PropertiesPage() {
         onItemsPerPageChange={setItemsPerPage}
       />
 
-      <div className="flex items-center justify-between gap-2">
-        {/* Total count */}
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-700/50 rounded-lg">
-          <HomeIcon className="h-4 w-4 text-teal-600 dark:text-teal-400" />
-          <span className="text-sm font-medium text-teal-700 dark:text-teal-300">
-            Ümumi: <span className="font-bold">{total}</span> mənzil
-          </span>
-        </div>
-
-        {/* View mode toggle */}
-        <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-          <Button
-            variant={viewMode === "table" ? "filled" : "text"}
-            size="sm"
-            onClick={() => setViewMode("table")}
-            className={`
-              flex items-center gap-2 px-3 py-2
-              ${viewMode === "table" 
-                ? "bg-blue-600 text-white" 
-                : "text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
-              }
-            `}
-          >
-            <TableCellsIcon className="h-4 w-4" />
-            <span className="hidden sm:inline">Cədvəl</span>
-          </Button>
-          <Button
-            variant={viewMode === "floor" ? "filled" : "text"}
-            size="sm"
-            onClick={() => setViewMode("floor")}
-            className={`
-              flex items-center gap-2 px-3 py-2
-              ${viewMode === "floor" 
-                ? "bg-blue-600 text-white" 
-                : "text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
-              }
-            `}
-          >
-            <Squares2X2Icon className="h-4 w-4" />
-            <span className="hidden sm:inline">Mərtəbə</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* Conditional Rendering */}
-      {viewMode === "table" ? (
-        <>
-          <PropertyTable
-            items={items}
-            loading={loading}
-            onView={handleView}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onServiceFee={handleServiceFee}
-            onAddBalance={handleAddBalance}
-            onSelect={handleSelect}
-            selectedPropertyId={selectedPropertyId}
-          />
-          <PropertyCardList
-            items={items}
-            loading={loading}
-            onView={handleView}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onServiceFee={handleServiceFee}
-            onAddBalance={handleAddBalance}
-            onSelect={handleSelect}
-            selectedPropertyId={selectedPropertyId}
-          />
-        </>
+      {loading ? (
+        <Skeleton tableRows={6} cardRows={4} />
       ) : (
-        <PropertyFloorView
+        <Table
+          variant="property"
           items={items}
-          loading={loading}
+          loading={false}
           onView={handleView}
           onEdit={handleEdit}
           onDelete={handleDelete}
           onServiceFee={handleServiceFee}
+          onAddBalance={handleAddBalance}
           onSelect={handleSelect}
           selectedPropertyId={selectedPropertyId}
         />
       )}
 
-      <PropertyPagination
+      <Pagination
         page={page}
-        lastPage={lastPage}
-        total={total}
+        totalPages={lastPage}
         onPageChange={goToPage}
+        summary={<>Cəm: <b>{total}</b> nəticə</>}
+        prevLabel="Əvvəlki"
+        nextLabel="Növbəti"
       />
 
-      <PropertyFormModal
+      <FormModal
+        variant="property"
         open={formOpen}
         mode={mode}
         onClose={() => {
@@ -357,7 +298,8 @@ export default function PropertiesPage() {
         onEditRequest={handleEditRequest}
       />
 
-      <PropertySearchModal
+      <SearchModal
+        variant="property"
         open={searchModalOpen}
         onClose={() => setSearchModalOpen(false)}
         onSearch={(searchParams) => {
@@ -371,7 +313,7 @@ export default function PropertiesPage() {
         currentSearch={search}
       />
 
-      <PropertyServiceFeeModal
+      <ServiceFeeModal
         open={serviceFeeModalOpen}
         propertyId={selected?.id}
         propertyName={selected?.name || selected?.apartment_number || `Mənzil #${selected?.id}`}

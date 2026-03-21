@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { loadComplexes, loadComplexById, setSelectedComplex } from "@/store/slices/complexSlice";
-import complexesAPI from "@/pages/dashboard/management/complexes/api";
+import complexesAPI from "@/services/management/complexesApi";
 
 import { devicesAPI } from "./api";
 
@@ -15,10 +15,10 @@ import { DeviceUserFormModal } from "./components/modals/DeviceUserFormModal";
 import { DeviceIdentifiersModal } from "./components/modals/DeviceIdentifiersModal";
 import { DeviceLogsModal } from "./components/modals/DeviceLogsModal";
 import { DeviceComplexSelectModal } from "./components/modals/DeviceComplexSelectModal";
-import SmartPagination from "@/components/ui/SmartPagination";
+import { Pagination } from "@/components/common";
 import { Button } from "@material-tailwind/react";
 import { ManagementActions } from "@/components/management/ManagementActions";
-import { ViewModal } from "@/components/management/ViewModal";
+import { ViewModal } from "@/components/common/modals/ViewModal";
 import { useDynamicToast } from "@/hooks/useDynamicToast";
 
 import { useDeviceList } from "./hooks/useDeviceList";
@@ -1100,7 +1100,7 @@ const DevicesPage = () => {
             openingDeviceId={openingDeviceId}
           />
 
-          <SmartPagination
+          <Pagination
             page={page}
             totalPages={lastPage}
             onPageChange={goToPage}

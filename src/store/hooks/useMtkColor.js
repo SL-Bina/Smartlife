@@ -1,6 +1,5 @@
 import { useAppSelector } from '../hooks';
 
-// Color utility functions
 const hexToRgba = (hex, opacity = 1) => {
   if (!hex) return null;
   const hexClean = hex.replace("#", "");
@@ -41,22 +40,22 @@ const getSelectedColor = (hex, opacity = 0.25) => {
 export function useMtkColor() {
   const selectedMtk = useAppSelector((state) => state.mtk.selectedMtk);
   const storedColorCode = useAppSelector((state) => state.mtk.storedColorCode);
-  
+
   const colorCode = selectedMtk?.meta?.color_code || storedColorCode || "#dc2626";
 
   return {
     colorCode,
     getRgba: (opacity = 1) => hexToRgba(colorCode, opacity),
     getContrastColor: () => getContrastColor(colorCode),
-    getGradientBackground: (direction, opacity1, opacity2) => 
+    getGradientBackground: (direction, opacity1, opacity2) =>
       getGradientBackground(colorCode, direction, opacity1, opacity2),
-    getActiveGradient: (opacity1, opacity2) => 
+    getActiveGradient: (opacity1, opacity2) =>
       getActiveGradient(colorCode, opacity1, opacity2),
     getHoverColor: (opacity) => getHoverColor(colorCode, opacity),
     getSelectedColor: (opacity) => getSelectedColor(colorCode, opacity),
-    defaultColor: "#dc2626",
-    defaultHover: "rgba(220, 38, 38, 0.15)",
-    defaultSelected: "rgba(220, 38, 38, 0.25)",
+    defaultColor: '#dc2626',
+    defaultHover: 'rgba(220, 38, 38, 0.15)',
+    defaultSelected: 'rgba(220, 38, 38, 0.25)',
   };
 }
 

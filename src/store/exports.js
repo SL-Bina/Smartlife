@@ -207,9 +207,7 @@ export const setNavbarHoverEffects = (actionsOrDispatch, value) => {
   }
 };
 
-// Legacy providers (no-op, Redux handles state)
+// Legacy provider alias kept for compatibility
 export const ManagementProviderEnhanced = ({ children }) => children;
-export const MaterialTailwindControllerProvider = ({ children }) => children;
-export const AuthProvider = ({ children }) => children;
 
 

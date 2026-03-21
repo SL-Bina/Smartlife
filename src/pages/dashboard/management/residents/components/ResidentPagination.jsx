@@ -1,7 +1,7 @@
 import React from "react";
-import SmartPagination from "@/components/ui/SmartPagination";
+import { Pagination } from "@/components/common";
 
 export function ResidentPagination({ page, lastPage, onPageChange, total = 0 }) {
-  return <SmartPagination page={page} totalPages={lastPage} onPageChange={onPageChange} summary={<>Cəm: <b>{total}</b> nəticə</>} prevLabel="Əvvəlki" nextLabel="Növbəti" />;
+  return <Pagination page={page} totalPages={lastPage} onPageChange={onPageChange} summary={<>Cəm: <b>{total}</b> nəticə</>} prevLabel="Əvvəlki" nextLabel="Növbəti" />;
 }
 

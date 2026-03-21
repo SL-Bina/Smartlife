@@ -1,19 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setSelectedBlock, loadBlocks, loadBlockById } from "@/store/slices/blockSlice";
-import { BlockHeader } from "./components/BlockHeader";
-import { ManagementActions, ENTITY_LEVELS } from "@/components/management/ManagementActions";
-import { BlockTable } from "./components/BlockTable";
-import { BlockPagination } from "./components/BlockPagination";
-import { BlockFormModal } from "./components/modals/BlockFormModal";
-import { BlockSearchModal } from "./components/modals/BlockSearchModal";
-import { useBlockForm } from "./hooks/useBlockForm";
-import { useBlockData } from "./hooks/useBlockData";
-import blocksAPI from "./api";
+import {
+  Actions,
+  ENTITY_LEVELS,
+  DeleteConfirmModal,
+  EditConfirmModal,
+  ViewModal,
+  Header,
+  FormModal,
+  SearchModal,
+  Pagination,
+  Skeleton,
+  Table,
+} from "@/components/common";
+import { useBlockForm } from "@/hooks/management/blocks/useBlockForm";
+import { useBlockData } from "@/hooks/management/blocks/useBlockData";
+import blocksAPI from "@/services/management/blocksApi";
 import DynamicToast from "@/components/DynamicToast";
-import { ViewModal } from "@/components/management/ViewModal";
-import { DeleteConfirmModal } from "./components/modals/DeleteConfirmModal";
-import { EditConfirmModal } from "./components/modals/EditConfirmModal";
 import { BuildingOfficeIcon, CheckCircleIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
 
 export default function BlocksPage() {
@@ -204,12 +208,17 @@ export default function BlocksPage() {
 
   return (
     <div className="space-y-6" style={{ position: 'relative', zIndex: 0 }}>
-      <BlockHeader />
+      <Header
+        icon={BuildingOfficeIcon}
+        title="Bloklar İdarəetməsi"
+        subtitle="Blok siyahısı, yarat / redaktə et / sil / seç"
+      />
 
-      <ManagementActions
+      <Actions
         entityLevel={ENTITY_LEVELS.BLOCK}
         search={search}
         onCreateClick={handleCreate}
+        onSearchClick={() => setSearchModalOpen(true)}
         onApplyNameSearch={handleApplyNameSearch}
         onStatusChange={handleStatusChange}
         onRemoveFilter={handleRemoveFilter}
@@ -218,24 +227,32 @@ export default function BlocksPage() {
         onItemsPerPageChange={setItemsPerPage}
       />
 
-      <BlockTable
-        items={items}
-        loading={loading}
-        onView={handleView}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onSelect={handleSelect}
-        selectedBlockId={selectedBlockId}
-      />
+      {loading ? (
+        <Skeleton tableRows={6} cardRows={4} />
+      ) : (
+        <Table
+          variant="block"
+          items={items}
+          loading={false}
+          onView={handleView}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onSelect={handleSelect}
+          selectedBlockId={selectedBlockId}
+        />
+      )}
 
-      <BlockPagination
+      <Pagination
         page={page}
-        lastPage={lastPage}
-        total={total}
+        totalPages={lastPage}
         onPageChange={goToPage}
+        summary={<>Cəm: <b>{total}</b> nəticə</>}
+        prevLabel="Əvvəlki"
+        nextLabel="Növbəti"
       />
 
-      <BlockFormModal
+      <FormModal
+        variant="block"
         open={formOpen}
         mode={mode}
         onClose={() => {
@@ -250,7 +267,8 @@ export default function BlocksPage() {
         onEditRequest={handleEditRequest}
       />
 
-      <BlockSearchModal
+      <SearchModal
+        variant="block"
         open={searchModalOpen}
         onClose={() => setSearchModalOpen(false)}
         onSearch={(searchParams) => {

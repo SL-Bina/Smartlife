@@ -1,164 +1,71 @@
-import { createSlice } from '@reduxjs/toolkit';
-
-const getCookie = (name) => {
-  try {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-    return null;
-  } catch (e) {
-    return null;
-  }
-};
-
-const setCookie = (name, value, days = 365) => {
-  try {
-    const date = new Date();
-    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-    const expires = `expires=${date.toUTCString()}`;
-    document.cookie = `${name}=${value};${expires};path=/`;
-  } catch (e) {
-    console.error(`Error writing cookie ${name}:`, e);
-  }
-};
-
-const getInitialValue = (key, defaultValue) => {
-  if (typeof window === 'undefined') return defaultValue;
-  const cookieValue = getCookie(key);
-  if (cookieValue !== null) return cookieValue;
-  const saved = localStorage.getItem(key);
-  if (saved !== null) {
-    setCookie(key, saved);
-    localStorage.removeItem(key);
-    return saved;
-  }
-  return defaultValue;
-};
-
-const getInitialBool = (key, defaultValue = false) => {
-  const value = getInitialValue(key, String(defaultValue));
-  return value === 'true';
-};
+import {
+  createUiPreferencesSlice,
+  getInitialPreferenceBool,
+  getInitialPreferenceValue,
+} from './utils/createUiPreferencesSlice';
 
 const initialState = {
   openSidenav: false,
   sidenavColor: 'dark',
   sidenavType: 'white',
   transparentNavbar: true,
-  fixedNavbar: getInitialBool('fixedNavbar', true), // Default: true (sabit navbar)
+  fixedNavbar: getInitialPreferenceBool('fixedNavbar', true), // Default: true (sabit navbar)
   openConfigurator: false,
-  darkMode: getInitialBool('darkMode', false),
-  sidenavCollapsed: getInitialBool('sidenavCollapsed', false),
-  sidenavFlatMenu: getInitialBool('sidenavFlatMenu', false),
-  sidenavExpandAll: getInitialBool('sidenavExpandAll', false),
-  sidenavSize: getInitialValue('sidenavSize', 'medium'),
-  sidenavPosition: getInitialValue('sidenavPosition', 'left'),
-  navbarColor: getInitialValue('navbarColor', 'default'),
-  navbarHeight: getInitialValue('navbarHeight', 'normal'),
-  navbarStyle: getInitialValue('navbarStyle', 'modern'),
-  navbarShadow: getInitialValue('navbarShadow', 'large'), // Default: 'large' (shadow large)
-  navbarBorder: getInitialValue('navbarBorder', 'enabled'),
-  navbarBlur: getInitialValue('navbarBlur', 'enabled'),
-  navbarTransparency: getInitialValue('navbarTransparency', '95'),
-  navbarPosition: getInitialValue('navbarPosition', 'top'),
-  navbarAnimations: getInitialValue('navbarAnimations', 'enabled'),
-  navbarHoverEffects: getInitialValue('navbarHoverEffects', 'disabled'), // Default: 'disabled' (hover effekt disable)
+  darkMode: getInitialPreferenceBool('darkMode', false),
+  sidenavCollapsed: getInitialPreferenceBool('sidenavCollapsed', false),
+  sidenavFlatMenu: getInitialPreferenceBool('sidenavFlatMenu', false),
+  sidenavExpandAll: getInitialPreferenceBool('sidenavExpandAll', false),
+  sidenavSize: getInitialPreferenceValue('sidenavSize', 'medium'),
+  sidenavPosition: getInitialPreferenceValue('sidenavPosition', 'left'),
+  navbarColor: getInitialPreferenceValue('navbarColor', 'default'),
+  navbarHeight: getInitialPreferenceValue('navbarHeight', 'normal'),
+  navbarStyle: getInitialPreferenceValue('navbarStyle', 'modern'),
+  navbarShadow: getInitialPreferenceValue('navbarShadow', 'large'), // Default: 'large' (shadow large)
+  navbarBorder: getInitialPreferenceValue('navbarBorder', 'enabled'),
+  navbarBlur: getInitialPreferenceValue('navbarBlur', 'enabled'),
+  navbarTransparency: getInitialPreferenceValue('navbarTransparency', '95'),
+  navbarPosition: getInitialPreferenceValue('navbarPosition', 'top'),
+  navbarAnimations: getInitialPreferenceValue('navbarAnimations', 'enabled'),
+  navbarHoverEffects: getInitialPreferenceValue('navbarHoverEffects', 'disabled'), // Default: 'disabled' (hover effekt disable)
 };
 
-const uiSlice = createSlice({
+const uiSlice = createUiPreferencesSlice({
   name: 'ui',
   initialState,
-  reducers: {
-    setOpenSidenav: (state, action) => {
-      state.openSidenav = action.payload;
-    },
-    setSidenavType: (state, action) => {
-      state.sidenavType = action.payload;
-    },
-    setSidenavColor: (state, action) => {
-      state.sidenavColor = action.payload;
-    },
-    setTransparentNavbar: (state, action) => {
-      state.transparentNavbar = action.payload;
-    },
-    setFixedNavbar: (state, action) => {
-      state.fixedNavbar = action.payload;
-      setCookie('fixedNavbar', String(action.payload));
-    },
-    setOpenConfigurator: (state, action) => {
-      state.openConfigurator = action.payload;
-    },
-    setDarkMode: (state, action) => {
-      state.darkMode = action.payload;
-      setCookie('darkMode', String(action.payload));
-      if (typeof window !== 'undefined') {
-        if (action.payload) {
+  reducersConfig: {
+    setOpenSidenav: { stateKey: 'openSidenav' },
+    setSidenavType: { stateKey: 'sidenavType' },
+    setSidenavColor: { stateKey: 'sidenavColor' },
+    setTransparentNavbar: { stateKey: 'transparentNavbar' },
+    setFixedNavbar: { stateKey: 'fixedNavbar', persistKey: 'fixedNavbar' },
+    setOpenConfigurator: { stateKey: 'openConfigurator' },
+    setDarkMode: {
+      stateKey: 'darkMode',
+      persistKey: 'darkMode',
+      onSet: ({ value }) => {
+        if (typeof window === 'undefined') return;
+        if (value) {
           document.documentElement.classList.add('dark');
         } else {
           document.documentElement.classList.remove('dark');
         }
-      }
+      },
     },
-    setSidenavCollapsed: (state, action) => {
-      state.sidenavCollapsed = action.payload;
-      setCookie('sidenavCollapsed', String(action.payload));
-    },
-    setSidenavFlatMenu: (state, action) => {
-      state.sidenavFlatMenu = action.payload;
-      setCookie('sidenavFlatMenu', String(action.payload));
-    },
-    setSidenavExpandAll: (state, action) => {
-      state.sidenavExpandAll = action.payload;
-      setCookie('sidenavExpandAll', String(action.payload));
-    },
-    setSidenavSize: (state, action) => {
-      state.sidenavSize = action.payload;
-      setCookie('sidenavSize', action.payload);
-    },
-    setSidenavPosition: (state, action) => {
-      state.sidenavPosition = action.payload;
-      setCookie('sidenavPosition', action.payload);
-    },
-    setNavbarColor: (state, action) => {
-      state.navbarColor = action.payload;
-      setCookie('navbarColor', action.payload);
-    },
-    setNavbarHeight: (state, action) => {
-      state.navbarHeight = action.payload;
-      setCookie('navbarHeight', action.payload);
-    },
-    setNavbarStyle: (state, action) => {
-      state.navbarStyle = action.payload;
-      setCookie('navbarStyle', action.payload);
-    },
-    setNavbarShadow: (state, action) => {
-      state.navbarShadow = action.payload;
-      setCookie('navbarShadow', action.payload);
-    },
-    setNavbarBorder: (state, action) => {
-      state.navbarBorder = action.payload;
-      setCookie('navbarBorder', action.payload);
-    },
-    setNavbarBlur: (state, action) => {
-      state.navbarBlur = action.payload;
-      setCookie('navbarBlur', action.payload);
-    },
-    setNavbarTransparency: (state, action) => {
-      state.navbarTransparency = action.payload;
-      setCookie('navbarTransparency', action.payload);
-    },
-    setNavbarPosition: (state, action) => {
-      state.navbarPosition = action.payload;
-      setCookie('navbarPosition', action.payload);
-    },
-    setNavbarAnimations: (state, action) => {
-      state.navbarAnimations = action.payload;
-      setCookie('navbarAnimations', action.payload);
-    },
-    setNavbarHoverEffects: (state, action) => {
-      state.navbarHoverEffects = action.payload;
-      setCookie('navbarHoverEffects', action.payload);
-    },
+    setSidenavCollapsed: { stateKey: 'sidenavCollapsed', persistKey: 'sidenavCollapsed' },
+    setSidenavFlatMenu: { stateKey: 'sidenavFlatMenu', persistKey: 'sidenavFlatMenu' },
+    setSidenavExpandAll: { stateKey: 'sidenavExpandAll', persistKey: 'sidenavExpandAll' },
+    setSidenavSize: { stateKey: 'sidenavSize', persistKey: 'sidenavSize' },
+    setSidenavPosition: { stateKey: 'sidenavPosition', persistKey: 'sidenavPosition' },
+    setNavbarColor: { stateKey: 'navbarColor', persistKey: 'navbarColor' },
+    setNavbarHeight: { stateKey: 'navbarHeight', persistKey: 'navbarHeight' },
+    setNavbarStyle: { stateKey: 'navbarStyle', persistKey: 'navbarStyle' },
+    setNavbarShadow: { stateKey: 'navbarShadow', persistKey: 'navbarShadow' },
+    setNavbarBorder: { stateKey: 'navbarBorder', persistKey: 'navbarBorder' },
+    setNavbarBlur: { stateKey: 'navbarBlur', persistKey: 'navbarBlur' },
+    setNavbarTransparency: { stateKey: 'navbarTransparency', persistKey: 'navbarTransparency' },
+    setNavbarPosition: { stateKey: 'navbarPosition', persistKey: 'navbarPosition' },
+    setNavbarAnimations: { stateKey: 'navbarAnimations', persistKey: 'navbarAnimations' },
+    setNavbarHoverEffects: { stateKey: 'navbarHoverEffects', persistKey: 'navbarHoverEffects' },
   },
 });
 
