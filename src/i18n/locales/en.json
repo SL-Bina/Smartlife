@@ -2665,7 +2665,8 @@
       "close": "Close",
       "cancel": "Cancel",
       "loading": "Loading...",
-      "saving": "Saving..."
+      "saving": "Saving...",
+      "call":"Call"
     },
     "table": {
       "id": "ID",

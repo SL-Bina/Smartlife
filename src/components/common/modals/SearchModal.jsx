@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { AsyncSearchSelect } from "@/components/ui/AsyncSearchSelect";
 import { EMPTY_FILTERS } from "@/hooks/finance/invoices/useInvoicesFilters";
 import { CustomInput } from "@/components/ui/CustomInput";
+import { ResidentSearchModal } from "@/components/common/modals/ResidentSearchModal";
 
 const INVOICE_TYPE_VALUES = ["daily", "weekly", "monthly", "quarterly", "biannually", "yearly", "one_time"];
 const INVOICE_STATUS_VALUES = ["paid", "not_paid", "pending", "overdue", "declined", "draft", "pre_paid"];
@@ -26,6 +27,17 @@ const EMPTY_CASCADE = {
 };
 
 export function SearchModal({ open, onClose, onSearch, currentFilters = {}, variant, currentSearch = {} }) {
+  if (variant === "resident") {
+    return (
+      <ResidentSearchModal
+        open={open}
+        onClose={onClose}
+        onSearch={onSearch}
+        currentSearch={currentSearch}
+      />
+    );
+  }
+
   if (variant === "property") {
     return (
       <PropertySearchModalInline

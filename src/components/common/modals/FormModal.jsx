@@ -10,8 +10,27 @@ import complexLookupsAPI from "@/services/management/complexLookupsApi";
 import buildingLookupsAPI from "@/services/management/buildingLookupsApi";
 import blockLookupsAPI from "@/services/management/blockLookupsApi";
 import propertyLookupsAPI from "@/services/management/propertyLookupsApi";
+import { ResidentFormModal } from "@/pages/dashboard/management/residents/components/modals/ResidentFormModal";
 
 export function FormModal({ open, onClose, title, formData, onFieldChange, onSave, isEdit = false, saving = false, formLoading = false, variant, mode, form, onSubmit, onEditRequest, mtkId = null, complexId = null, buildingId = null }) {
+  if (variant === "resident") {
+    return (
+      <ResidentFormModal
+        open={open}
+        mode={mode || (isEdit ? "edit" : "create")}
+        onClose={onClose}
+        form={form}
+        onSubmit={onSubmit}
+        mtkId={mtkId}
+        complexId={complexId}
+        buildingId={buildingId}
+        blockId={form?.formData?.property?.block_id || null}
+        propertyId={form?.formData?.property?.property_id || null}
+        onEditRequest={onEditRequest}
+      />
+    );
+  }
+
   if (variant === "property") {
     return (
       <PropertyFormModalInline

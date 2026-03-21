@@ -24,15 +24,15 @@ import { useTranslation } from "react-i18next";
 // Small inline badge
 function Tag({ children, color = "gray" }) {
   const map = {
-    green: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-    red:   "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-    teal:  "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400",
-    blue:  "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-    slate: "bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400",
-    gray:  "bg-gray-100 text-gray-700 dark:bg-gray-700/60 dark:text-gray-300",
+    green: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800",
+    red:   "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800",
+    teal:  "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400 border border-teal-200 dark:border-teal-800",
+    blue:  "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800",
+    slate: "bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400 border border-slate-200 dark:border-slate-800",
+    gray:  "bg-gray-100 text-gray-700 dark:bg-gray-700/60 dark:text-gray-300 border border-gray-200 dark:border-gray-600",
   };
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border border-transparent ${map[color] || map.gray}`}>
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold border ${map[color] || map.gray}`}>
       {children}
     </span>
   );
@@ -152,7 +152,10 @@ export function DeviceTable({ items, loading, page, lastPage, onEdit, onDelete, 
           className="flex items-center gap-2"
         >
           <LockOpenIcon className="h-4 w-4" />
-          {t("devices.actions.open") || "Ac"}
+          {String(row?.type || "").toLowerCase() === "liftcontroller" 
+            ? (t("devices.actions.call") || "Çağır") 
+            : (t("devices.actions.open") || "Aç")
+          }
         </MenuItem>
         <MenuItem
           onClick={(e) => { e.stopPropagation(); onView?.(row); }}
@@ -180,30 +183,30 @@ export function DeviceTable({ items, loading, page, lastPage, onEdit, onDelete, 
   );
 
   const NameCell = ({ row }) => (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-2">
       {(row.nameLines || [{ id: row.id, text: row.name || "" }]).map((ln) => (
-        <div key={ln.id} className="flex items-center gap-1.5 flex-wrap">
-          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold font-mono bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
+        <div key={ln.id} className="flex items-center gap-2 flex-wrap">
+          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[12px] font-bold font-mono bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
             #{ln.id}
           </span>
-          <span className="text-xs text-gray-700 dark:text-gray-200">{ln.text}</span>
+          <span className="text-sm font-medium text-gray-800 dark:text-gray-100">{ln.text}</span>
         </div>
       ))}
     </div>
   );
 
   const TypeModelCell = ({ row }) => (
-    <Typography variant="small" className="text-gray-700 dark:text-gray-300 text-xs xl:text-sm font-medium">
+    <Typography variant="small" className="text-gray-700 dark:text-gray-300 text-sm font-medium">
       {getTypeModel(row)}
     </Typography>
   );
 
   const SerialCell = ({ row }) => (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-2">
       {(row.devices || []).map((d, i) => (
-        <div key={i} className="flex items-center gap-1.5 flex-wrap">
+        <div key={i} className="flex items-center gap-2 flex-wrap">
           <Tag color={d.status === "Onlayn" ? "green" : "red"}>{d.status}</Tag>
-          <span className="text-[11px] font-mono text-gray-500 dark:text-gray-400">{d.value}</span>
+          <span className="text-[12px] font-mono text-gray-600 dark:text-gray-300 font-medium">{d.value}</span>
         </div>
       ))}
     </div>
@@ -211,10 +214,10 @@ export function DeviceTable({ items, loading, page, lastPage, onEdit, onDelete, 
 
   const StatusBadge = ({ value }) => (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-bold ${
         String(value).toLowerCase() === "onlayn"
-          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-          : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800"
+          : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"
       }`}
     >
       {value}
@@ -288,48 +291,75 @@ export function DeviceTable({ items, loading, page, lastPage, onEdit, onDelete, 
         </div>
 
         {/* ── Mobile cards ── */}
-        <div className="lg:hidden space-y-3 p-3 sm:p-4">
+        <div className="lg:hidden space-y-4 p-4">
           {sortedItems.map((row) => (
             <Card
               key={row.id}
-              className="border border-gray-200 dark:border-gray-700 shadow-sm dark:bg-gray-800"
+              className="border border-gray-200 dark:border-gray-700 shadow-md dark:bg-gray-800/90 backdrop-blur-sm hover:shadow-lg transition-all duration-200"
             >
-              <CardBody className="p-4 sm:p-5 space-y-3">
-                <div className="flex items-start justify-between gap-2">
+              <CardBody className="p-5 sm:p-6 space-y-4">
+                {/* Header with name and actions */}
+                <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <Typography variant="small" className="text-[11px] font-bold uppercase text-gray-400 dark:text-gray-500 mb-1">
+                    <Typography variant="small" className="text-[11px] font-bold uppercase text-gray-400 dark:text-gray-500 mb-2">
                       {t("devices.table.name") || "Ad"}
                     </Typography>
                     <NameCell row={row} />
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center gap-3 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                     <StatusBadge value={row.userStatus} />
-                    <ActionMenu row={row} />
+                    <div className="p-1">
+                      <ActionMenu row={row} />
+                    </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Typography variant="small" className="text-[11px] font-bold uppercase text-gray-400 dark:text-gray-500 mb-1">
+                {/* Two column grid for building and type */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-3">
+                    <Typography variant="small" className="text-[11px] font-bold uppercase text-gray-400 dark:text-gray-500 mb-2">
                       {t("devices.table.building") || "Domain"}
                     </Typography>
                     <Typography variant="small" className="font-semibold text-gray-800 dark:text-gray-200 text-sm">
                       {row.building}
                     </Typography>
                   </div>
-                  <div>
-                    <Typography variant="small" className="text-[11px] font-bold uppercase text-gray-400 dark:text-gray-500 mb-1">
+                  <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-3">
+                    <Typography variant="small" className="text-[11px] font-bold uppercase text-gray-400 dark:text-gray-500 mb-2">
                       {t("devices.table.apartment") || "Type / Model"}
                     </Typography>
                     <TypeModelCell row={row} />
                   </div>
                 </div>
 
-                <div>
-                  <Typography variant="small" className="text-[11px] font-bold uppercase text-gray-400 dark:text-gray-500 mb-1">
+                {/* Device endpoints section */}
+                <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-3">
+                  <Typography variant="small" className="text-[11px] font-bold uppercase text-gray-400 dark:text-gray-500 mb-2">
                     {t("devices.table.device") || "Endpoint"}
                   </Typography>
                   <SerialCell row={row} />
+                </div>
+
+                {/* Quick action buttons */}
+                <div className="flex gap-2 pt-2">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onOpen?.(row); }}
+                    disabled={Boolean(openingDeviceId) && String(openingDeviceId) === String(row?.id)}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  >
+                    {openingDeviceId === String(row?.id) 
+                      ? "Göndərilir..." 
+                      : (String(row?.type || "").toLowerCase() === "liftcontroller" 
+                        ? (t("devices.actions.call") || "Çağır") 
+                        : (t("devices.actions.open") || "Aç"))
+                    }
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onView?.(row); }}
+                    className="flex-1 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-medium py-3 px-4 rounded-lg transition-colors duration-200 text-sm"
+                  >
+                    Bax
+                  </button>
                 </div>
               </CardBody>
             </Card>

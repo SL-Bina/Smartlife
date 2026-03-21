@@ -15,6 +15,7 @@ import { DeviceUserFormModal } from "./components/modals/DeviceUserFormModal";
 import { DeviceIdentifiersModal } from "./components/modals/DeviceIdentifiersModal";
 import { DeviceLogsModal } from "./components/modals/DeviceLogsModal";
 import { DeviceComplexSelectModal } from "./components/modals/DeviceComplexSelectModal";
+import { FloorSelectionModal } from "./components/modals/FloorSelectionModal";
 import { Pagination } from "@/components/common";
 import { Button } from "@material-tailwind/react";
 import { ManagementActions } from "@/components/management/ManagementActions";
@@ -168,6 +169,8 @@ const DevicesPage = () => {
   const [selectedDeviceView, setSelectedDeviceView] = useState(null);
   const [openingDeviceId, setOpeningDeviceId] = useState(null);
   const [statusFilter, setStatusFilter] = useState(filterStatus);
+  const [floorSelectionOpen, setFloorSelectionOpen] = useState(false);
+  const [selectedDeviceForFloor, setSelectedDeviceForFloor] = useState(null);
 
   const applyComplexSelection = useCallback(
     (complexId, { closeModal = true } = {}) => {
@@ -260,7 +263,27 @@ const DevicesPage = () => {
     // // console.log("delete", device.id);
   };
 
-  const handleOpenDevice = async (device) => {
+  const handleFloorSelectionConfirm = async (floorNumber) => {
+    if (selectedDeviceForFloor) {
+      try {
+        await handleOpenDevice(selectedDeviceForFloor, floorNumber);
+        // Success - close modal after successful response
+        setFloorSelectionOpen(false);
+        setSelectedDeviceForFloor(null);
+      } catch (error) {
+        // Error - keep modal open so user can try again
+        console.error("Floor selection failed:", error);
+        // Modal stays open for user to retry
+      }
+    }
+  };
+
+  const handleFloorSelectionClose = () => {
+    setFloorSelectionOpen(false);
+    setSelectedDeviceForFloor(null);
+  };
+
+  const handleOpenDevice = async (device, floorNumber = null) => {
     const complex_id = Number(selectedComplexId);
     if (!complex_id) {
       showToast({
@@ -281,29 +304,35 @@ const DevicesPage = () => {
       return;
     }
 
+    const type = String(device?.type || "").toLowerCase();
+
+    if (type === "liftcontroller") {
+      // Open floor selection modal if no floor provided
+      if (floorNumber === null) {
+        setSelectedDeviceForFloor(device);
+        setFloorSelectionOpen(true);
+        return;
+      }
+
+      // Validate floor number
+      if (!Number.isFinite(floorNumber) || floorNumber < 1 || floorNumber > 16) {
+        showToast({
+          type: "error",
+          title: t("common.error") || "Xeta",
+          message: "Yalnız 1-16 arası mərtəbələr aktivdir",
+        });
+        return;
+      }
+    }
+
     setOpeningDeviceId(device_id);
 
     try {
-      const type = String(device?.type || "").toLowerCase();
-
       if (type === "liftcontroller") {
-        const floorRaw = window.prompt(t("devices.actions.floorPrompt") || "Mertebe nomresini daxil edin", "1");
-        if (floorRaw == null) return;
-
-        const floor_number = Number(String(floorRaw).trim());
-        if (!Number.isFinite(floor_number)) {
-          showToast({
-            type: "error",
-            title: t("common.error") || "Xeta",
-            message: t("devices.actions.floorInvalid") || "Duzgun mertebe daxil edin",
-          });
-          return;
-        }
-
         await devicesAPI.openBasipElevator({
           complex_id,
           device_id,
-          floor_number,
+          floor_number: floorNumber,
         });
       } else {
         await devicesAPI.openBasipDoor({
@@ -1215,6 +1244,13 @@ const DevicesPage = () => {
           setComplexSelectionOpen(false);
           setComplexSelectionRequired(false);
         }}
+      />
+
+      <FloorSelectionModal
+        open={floorSelectionOpen}
+        onClose={handleFloorSelectionClose}
+        onConfirm={handleFloorSelectionConfirm}
+        loading={openingDeviceId !== null}
       />
 
       <ViewModal

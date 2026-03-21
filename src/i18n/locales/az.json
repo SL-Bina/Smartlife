@@ -2815,7 +2815,8 @@
       "close": "Bağla",
       "cancel": "Ləğv et",
       "loading": "Yüklənir...",
-      "saving": "Yadda saxlanılır..."
+      "saving": "Yadda saxlanılır...",
+      "call":"Çağır"
     },
     "table": {
       "id": "ID",

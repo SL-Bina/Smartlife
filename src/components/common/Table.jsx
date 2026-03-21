@@ -2,8 +2,9 @@ import React from "react";
 import { Typography, Chip, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
 import { EllipsisVerticalIcon, EyeIcon, CreditCardIcon, CurrencyDollarIcon, BanknotesIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
+import { ResidentTable } from "@/components/common/ResidentTable";
 
-export function Table({ variant = "invoices", invoices, items, loading, onView, onEdit, onDelete, onPay, onSelect, selectedComplexId, selectedBuildingId, selectedBlockId, selectedPropertyId, onOpenParams, onServiceFee, onAddBalance }) {
+export function Table({ variant = "invoices", invoices, items, loading, onView, onEdit, onDelete, onPay, onSelect, onBind, selectedComplexId, selectedBuildingId, selectedBlockId, selectedPropertyId, selectedResidentId, onOpenParams, onServiceFee, onAddBalance }) {
   const { t } = useTranslation();
 
   const getStatusColor = (status) => {
@@ -118,6 +119,21 @@ export function Table({ variant = "invoices", invoices, items, loading, onView, 
           {variant === "mtk" || variant === "complex" || variant === "building" || variant === "block" || variant === "property" ? "Məlumat tapılmadı" : t("invoices.noData") || "Faktura tapılmadı"}
         </Typography>
       </div>
+    );
+  }
+
+  if (variant === "resident") {
+    return (
+      <ResidentTable
+        items={items}
+        loading={loading}
+        onView={onView}
+        onEdit={onEdit}
+        onBind={onBind}
+        onDelete={onDelete}
+        onSelect={onSelect}
+        selectedResidentId={selectedResidentId}
+      />
     );
   }
 
