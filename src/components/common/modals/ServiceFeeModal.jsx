@@ -3,7 +3,6 @@ import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography } fr
 import { CurrencyDollarIcon, XMarkIcon, PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { CustomInput } from "@/components/ui/CustomInput";
 import { CustomSelect } from "@/components/ui/CustomSelect";
-import DynamicToast from "@/components/DynamicToast";
 import propertyServiceFeeAPI from "@/services/management/propertyServiceFeeApi";
 import api from "@/services/api";
 
@@ -457,15 +456,6 @@ export function ServiceFeeModal({ open, propertyId, propertyName, onClose }) {
             {submitting ? "Göndərilir..." : formMode === "edit" ? "Yenilə" : "Əlavə et"}
           </Button>
         </DialogFooter>
-      </Dialog>
-
-      <DynamicToast
-        open={toast.open}
-        type={toast.type}
-        message={toast.message}
-        title={toast.title}
-        onClose={() => setToast({ ...toast, open: false })}
-      />
-    </>
+      </Dialog>     </>
   );
 }

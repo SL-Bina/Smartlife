@@ -11,7 +11,6 @@ import {
     Cog6ToothIcon, XMarkIcon, CreditCardIcon,
     CpuChipIcon, EnvelopeIcon, EyeIcon, EyeSlashIcon,
 } from "@heroicons/react/24/outline";
-import DynamicToast from "@/components/DynamicToast";
 import { useComplexSettings } from "@/hooks/management/complexes/useComplexSettings";
 
 const ACTIVE_COLOR = "#3b82f6";
@@ -262,14 +261,6 @@ export default function ComplexSettingsModal({ open, onClose, complexId, complex
                         {loading ? "Yadda saxlanılır..." : "Yadda saxla"}
                     </Button>
                 </DialogFooter>
-            </Dialog>
-
-            <DynamicToast
-                open={toast.open}
-                type={toast.type}
-                message={toast.message}
-                onClose={() => setToast((t) => ({ ...t, open: false }))}
-            />
-        </>
+            </Dialog>         </>
     );
 }

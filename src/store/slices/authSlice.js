@@ -149,6 +149,13 @@ export const initializeUser = createAsyncThunk(
       removeCookie(IS_RESIDENT_COOKIE_NAME);
       return { user: null, error: errorMessage };
     }
+  },
+  {
+    condition: (_, { getState }) => {
+      const auth = getState()?.auth;
+      if (!auth) return true;
+      return !auth.isInitializing && !auth.isInitialized;
+    },
   }
 );
 

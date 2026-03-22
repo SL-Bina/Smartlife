@@ -15,11 +15,10 @@ import {
   PaymentModal,
   SearchModal,
   Header,
-} from "@/components/common";
-import { ManagementActions } from "@/components/management/ManagementActions";
-import { ViewModal } from "@/components/common/modals/ViewModal";
-import { DeleteConfirmModal } from "@/components/common/modals/DeleteConfirmModal";
-import DynamicToast from "@/components/DynamicToast";
+  ViewModal,
+  DeleteConfirmModal,
+} from "@/components";
+import { Actions as ManagementActions } from "@/components";
 import {
   getInvoiceComplexId,
   resolveComplexPrePaidEnabled,
@@ -28,6 +27,7 @@ import {
 } from "@/utils/finance/invoices";
 import {
   loadFinanceInvoices,
+  clearFinanceInvoices,
   createFinanceInvoice,
   updateFinanceInvoice,
   deleteFinanceInvoice,
@@ -45,6 +45,15 @@ import {
   DocumentTextIcon,
   EllipsisVerticalIcon,
   EyeIcon,
+  IdentificationIcon,
+  TagIcon,
+  CheckBadgeIcon,
+  BuildingOffice2Icon,
+  BuildingOfficeIcon,
+  Squares2X2Icon,
+  HomeModernIcon,
+  CalendarDaysIcon,
+  CurrencyDollarIcon,
 } from "@heroicons/react/24/outline";
 
 const InvoicesPage = () => {
@@ -56,6 +65,8 @@ const InvoicesPage = () => {
 
   const selectedMtkId = useAppSelector((state) => state.mtk.selectedMtkId);
   const selectedComplex = useAppSelector((state) => state.complex.selectedComplex);
+
+  const effectiveMtkId = selectedMtkId || selectedComplex?.mtk_id || selectedComplex?.mtk?.id || null;
 
   const {
     filters,
@@ -71,24 +82,25 @@ const InvoicesPage = () => {
   const apiParamsWithMtk = React.useMemo(() => {
     const params = { ...apiParams };
 
-    if (selectedMtkId) {
-      params["mtk_ids[]"] = [selectedMtkId];
+    if (effectiveMtkId) {
+      params["mtk_ids[]"] = [effectiveMtkId];
     } else {
       delete params["mtk_ids[]"];
     }
 
     return params;
-  }, [apiParams, selectedMtkId]);
-  
+  }, [apiParams, effectiveMtkId]);
+
   const [formOpen, setFormOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [payModalOpen, setPayModalOpen] = useState(false);
+  const [searchFormData, setSearchFormData] = useState(filters);
   const [viewLoading, setViewLoading] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  
+
   const [selectedItem, setSelectedItem] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [itemToView, setItemToView] = useState(null);
@@ -107,7 +119,28 @@ const InvoicesPage = () => {
   const pagination = useAppSelector(selectFinanceInvoicesPagination);
   const { formData, updateField, resetForm, setFormFromInvoice } = useInvoicesForm();
 
+  const initialSearchFormData = React.useMemo(
+    () => ({
+      ...filters,
+      complexId: "",
+      buildingId: "",
+      blockId: "",
+      propertyId: "",
+    }),
+    [filters]
+  );
+
   useEffect(() => {
+    if (!searchModalOpen) return;
+    setSearchFormData(initialSearchFormData);
+  }, [searchModalOpen, initialSearchFormData]);
+
+  useEffect(() => {
+    if (!effectiveMtkId) {
+      dispatch(clearFinanceInvoices());
+      return;
+    }
+
     dispatch(
       loadFinanceInvoices({
         filters: apiParamsWithMtk,
@@ -115,7 +148,7 @@ const InvoicesPage = () => {
         itemsPerPage,
       })
     );
-  }, [dispatch, apiParamsWithMtk, page, refreshKey, itemsPerPage]);
+  }, [dispatch, apiParamsWithMtk, page, refreshKey, itemsPerPage, effectiveMtkId]);
 
   useEffect(() => {
     if (page > (pagination.totalPages || 1) && pagination.totalPages > 0) {
@@ -134,7 +167,7 @@ const InvoicesPage = () => {
       )
     );
 
-      const missingIds = invoiceComplexIds.filter((id) => {
+    const missingIds = invoiceComplexIds.filter((id) => {
       const invoice = invoices.find((item) => Number(getInvoiceComplexId(item)) === Number(id));
       const inlineResolved = resolveComplexPrePaidEnabled(invoice);
       return inlineResolved === null && complexPrePaidMap[String(id)] === undefined;
@@ -218,8 +251,486 @@ const InvoicesPage = () => {
   };
 
   const handleSearchClick = () => {
+    setSearchFormData(initialSearchFormData);
     setSearchModalOpen(true);
   };
+
+  const normalizeId = React.useCallback((value) => {
+    if (value === null || value === undefined || value === "") return null;
+    return String(value);
+  }, []);
+
+  const selectedComplexFilterId = normalizeId(searchFormData?.complexId);
+  const selectedBuildingFilterId = normalizeId(searchFormData?.buildingId);
+  const selectedBlockFilterId = normalizeId(searchFormData?.blockId);
+  const selectedComplexFormId = normalizeId(formData?.complex_id);
+  const selectedBuildingFormId = normalizeId(formData?.building_id);
+  const selectedBlockFormId = normalizeId(formData?.block_id);
+
+  const handleSearchFieldChange = (field, value) => {
+    setSearchFormData((prev) => {
+      const next = { ...prev, [field]: value };
+
+      if (field === "complexId") {
+        next.buildingId = "";
+        next.blockId = "";
+        next.propertyId = "";
+      }
+
+      if (field === "buildingId") {
+        next.blockId = "";
+        next.propertyId = "";
+      }
+
+      if (field === "blockId") {
+        next.propertyId = "";
+      }
+
+      return next;
+    });
+  };
+
+  const tx = React.useCallback(
+    (key, fallback) => {
+      const value = t(key);
+      if (!value || value === key) return fallback;
+      return value;
+    },
+    [t]
+  );
+
+  const searchFields = React.useMemo(
+    () => [
+      {
+        key: "section-base",
+        type: "section",
+        icon: DocumentTextIcon,
+        accentColor: "#0ea5e9",
+        label: tx("invoices.searchModal.sections.base", "Əsas filtrlər"),
+        description: tx("invoices.searchModal.sections.baseDesc", "Faktura identifikasiyası və status filtrləri"),
+      },
+      {
+        key: "invoiceId",
+        label: tx("invoices.searchModal.invoiceId", "Faktura ID"),
+        type: "text",
+        icon: IdentificationIcon,
+        accentColor: "#0ea5e9",
+      },
+      {
+        key: "status",
+        label: tx("invoices.table.status", "Status"),
+        type: "select",
+        icon: CheckBadgeIcon,
+        accentColor: "#14b8a6",
+        options: [
+          { value: "", label: tx("invoices.searchModal.all", "Hamısı") },
+          { value: "paid", label: tx("invoices.status.paid", "paid") },
+          { value: "not_paid", label: tx("invoices.status.not_paid", "not_paid") },
+          { value: "pending", label: tx("invoices.status.pending", "pending") },
+          { value: "overdue", label: tx("invoices.status.overdue", "overdue") },
+          { value: "declined", label: tx("invoices.status.declined", "declined") },
+          { value: "draft", label: tx("invoices.status.draft", "draft") },
+          { value: "pre_paid", label: tx("invoices.status.pre_paid", "pre_paid") },
+        ],
+      },
+      {
+        key: "type",
+        label: tx("invoices.searchModal.type", "Növ"),
+        type: "select",
+        icon: TagIcon,
+        accentColor: "#8b5cf6",
+        options: [
+          { value: "", label: tx("invoices.searchModal.all", "Hamısı") },
+          { value: "daily", label: tx("invoices.types.daily", "daily") },
+          { value: "weekly", label: tx("invoices.types.weekly", "weekly") },
+          { value: "monthly", label: tx("invoices.types.monthly", "monthly") },
+          { value: "quarterly", label: tx("invoices.types.quarterly", "quarterly") },
+          { value: "biannually", label: tx("invoices.types.biannually", "biannually") },
+          { value: "yearly", label: tx("invoices.types.yearly", "yearly") },
+          { value: "one_time", label: tx("invoices.types.one_time", "one_time") },
+        ],
+      },
+      {
+        key: "section-structure",
+        type: "section",
+        icon: HomeModernIcon,
+        accentColor: "#f97316",
+        label: "Mənzil məlumatları",
+        description: tx("invoices.searchModal.sections.structureDesc", "Kompleks, bina, blok və mənzil üzrə daraltma"),
+      },
+      {
+        key: "complexId",
+        label: tx("invoices.searchModal.complex", "Kompleks"),
+        type: "async-select",
+        icon: BuildingOffice2Icon,
+        accentColor: "#f97316",
+        endpoint: "/search/module/complex",
+        searchParams: {
+          ...(effectiveMtkId ? { mtk_ids: [effectiveMtkId] } : {}),
+        },
+        disabled: !effectiveMtkId,
+        placeholder: "Kompleks seçin",
+        searchPlaceholder: "Kompleks axtar...",
+        allowClear: true,
+      },
+      {
+        key: "buildingId",
+        label: tx("invoices.searchModal.building", "Bina"),
+        type: "async-select",
+        icon: BuildingOfficeIcon,
+        accentColor: "#f59e0b",
+        endpoint: "/search/module/building",
+        searchParams: {
+          ...(effectiveMtkId ? { mtk_ids: [effectiveMtkId] } : {}),
+          ...(selectedComplexFilterId ? { complex_ids: [selectedComplexFilterId] } : {}),
+        },
+        disabled: !selectedComplexFilterId,
+        placeholder: "Bina seçin",
+        searchPlaceholder: "Bina axtar...",
+        allowClear: true,
+      },
+      {
+        key: "blockId",
+        label: tx("invoices.searchModal.block", "Blok"),
+        type: "async-select",
+        icon: Squares2X2Icon,
+        accentColor: "#eab308",
+        endpoint: "/search/module/block",
+        searchParams: {
+          ...(effectiveMtkId ? { mtk_ids: [effectiveMtkId] } : {}),
+          ...(selectedComplexFilterId ? { complex_ids: [selectedComplexFilterId] } : {}),
+          ...(selectedBuildingFilterId ? { building_ids: [selectedBuildingFilterId] } : {}),
+        },
+        disabled: !selectedBuildingFilterId,
+        placeholder: "Blok seçin",
+        searchPlaceholder: "Blok axtar...",
+        allowClear: true,
+      },
+      {
+        key: "propertyId",
+        label: tx("invoices.searchModal.property", "Mənzil"),
+        type: "async-select",
+        icon: HomeModernIcon,
+        accentColor: "#22c55e",
+        endpoint: "/search/module/property",
+        searchParams: {
+          ...(effectiveMtkId ? { mtk_ids: [effectiveMtkId] } : {}),
+          ...(selectedComplexFilterId ? { complex_ids: [selectedComplexFilterId] } : {}),
+          ...(selectedBuildingFilterId ? { building_ids: [selectedBuildingFilterId] } : {}),
+          ...(selectedBlockFilterId ? { block_ids: [selectedBlockFilterId] } : {}),
+        },
+        disabled: !selectedBlockFilterId,
+        placeholder: "Mənzil seçin",
+        searchPlaceholder: "Mənzil axtar...",
+        allowClear: true,
+        labelKey: "name",
+      },
+      {
+        key: "section-range",
+        type: "section",
+        icon: CurrencyDollarIcon,
+        accentColor: "#10b981",
+        label: tx("invoices.searchModal.sections.range", "Tarix və məbləğ"),
+        description: tx("invoices.searchModal.sections.rangeDesc", "Ödəniş tarixi və məbləğ aralığı filtrləri"),
+      },
+      {
+        key: "paidAtFrom",
+        label: tx("invoices.searchModal.dateFrom", "Başlanğıc"),
+        type: "date",
+        icon: CalendarDaysIcon,
+        accentColor: "#10b981",
+      },
+      {
+        key: "paidAtTo",
+        label: tx("invoices.searchModal.dateTo", "Son"),
+        type: "date",
+        icon: CalendarDaysIcon,
+        accentColor: "#059669",
+      },
+      {
+        key: "amountFrom",
+        label: `${tx("invoices.searchModal.min", "Minimum")} (₼)`,
+        type: "number",
+        icon: CurrencyDollarIcon,
+        accentColor: "#14b8a6",
+      },
+      {
+        key: "amountTo",
+        label: `${tx("invoices.searchModal.max", "Maksimum")} (₼)`,
+        type: "number",
+        icon: CurrencyDollarIcon,
+        accentColor: "#0d9488",
+      },
+      {
+        key: "amountPaidFrom",
+        label: `${tx("invoices.searchModal.min", "Minimum")} ${tx("invoices.searchModal.paidAmountLabel", "Ödənilmiş")}`,
+        type: "number",
+        icon: CurrencyDollarIcon,
+        accentColor: "#22c55e",
+      },
+      {
+        key: "amountPaidTo",
+        label: `${tx("invoices.searchModal.max", "Maksimum")} ${tx("invoices.searchModal.paidAmountLabel", "Ödənilmiş")}`,
+        type: "number",
+        icon: CurrencyDollarIcon,
+        accentColor: "#16a34a",
+      },
+    ],
+    [
+      t,
+      selectedComplexFilterId,
+      selectedBuildingFilterId,
+      selectedBlockFilterId,
+      tx,
+      effectiveMtkId,
+    ]
+  );
+
+  const invoiceFormFields = React.useMemo(
+    () => [
+      {
+        key: "section-apartment",
+        type: "section",
+        icon: HomeModernIcon,
+        accentColor: "#f97316",
+        label: "Mənzil məlumatları",
+        description: "Kompleks, bina, blok və mənzil seçimi",
+        colSpan: 2,
+      },
+      {
+        key: "complex_id",
+        label: tx("invoices.searchModal.complex", "Kompleks"),
+        type: "async-select",
+        icon: BuildingOffice2Icon,
+        accentColor: "#f97316",
+        endpoint: "/search/module/complex",
+        searchParams: {
+          ...(effectiveMtkId ? { mtk_ids: [effectiveMtkId] } : {}),
+        },
+        selectedLabel: formData?.complex?.name || null,
+        placeholder: "Kompleks seçin",
+        searchPlaceholder: "Kompleks axtar...",
+        required: true,
+        disabled: !effectiveMtkId,
+        allowClear: false,
+      },
+      {
+        key: "building_id",
+        label: tx("invoices.searchModal.building", "Bina"),
+        type: "async-select",
+        icon: BuildingOfficeIcon,
+        accentColor: "#f59e0b",
+        endpoint: "/search/module/building",
+        searchParams: {
+          ...(effectiveMtkId ? { mtk_ids: [effectiveMtkId] } : {}),
+          ...(selectedComplexFormId ? { complex_ids: [selectedComplexFormId] } : {}),
+        },
+        selectedLabel:
+          formData?.building?.name ||
+          (formData?.building_id != null ? `Bina #${formData.building_id}` : null),
+        placeholder: "Bina seçin",
+        searchPlaceholder: "Bina axtar...",
+        required: true,
+        disabled: !selectedComplexFormId,
+        allowClear: false,
+      },
+      {
+        key: "block_id",
+        label: tx("invoices.searchModal.block", "Blok"),
+        type: "async-select",
+        icon: Squares2X2Icon,
+        accentColor: "#eab308",
+        endpoint: "/search/module/block",
+        searchParams: {
+          ...(effectiveMtkId ? { mtk_ids: [effectiveMtkId] } : {}),
+          ...(selectedComplexFormId ? { complex_ids: [selectedComplexFormId] } : {}),
+          ...(selectedBuildingFormId ? { building_ids: [selectedBuildingFormId] } : {}),
+        },
+        selectedLabel:
+          formData?.block?.name ||
+          (formData?.block_id != null ? `Blok #${formData.block_id}` : null),
+        placeholder: "Blok seçin",
+        searchPlaceholder: "Blok axtar...",
+        required: true,
+        disabled: !selectedBuildingFormId,
+        allowClear: false,
+      },
+      {
+        key: "property_id",
+        label: tx("invoices.searchModal.property", "Mənzil"),
+        type: "async-select",
+        icon: HomeModernIcon,
+        accentColor: "#22c55e",
+        endpoint: "/search/module/property",
+        searchParams: {
+          ...(effectiveMtkId ? { mtk_ids: [effectiveMtkId] } : {}),
+          ...(selectedComplexFormId ? { complex_ids: [selectedComplexFormId] } : {}),
+          ...(selectedBuildingFormId ? { building_ids: [selectedBuildingFormId] } : {}),
+          ...(selectedBlockFormId ? { block_ids: [selectedBlockFormId] } : {}),
+        },
+        selectedLabel:
+          formData?.property?.name ||
+          formData?.property?.apartment_number ||
+          (formData?.property_id != null ? `Mənzil #${formData.property_id}` : null),
+        placeholder: "Mənzil seçin",
+        searchPlaceholder: "Mənzil axtar...",
+        required: true,
+        disabled: !selectedBlockFormId,
+        allowClear: false,
+      },
+      {
+        key: "section-invoice",
+        type: "section",
+        icon: DocumentTextIcon,
+        accentColor: "#0ea5e9",
+        label: "Faktura məlumatları",
+        description: "Xidmət, tarix, məbləğ və status",
+        colSpan: 2,
+      },
+      {
+        key: "service_id",
+        label: tx("invoices.table.service", "Xidmət"),
+        type: "async-select",
+        icon: TagIcon,
+        accentColor: "#0ea5e9",
+        endpoint: "/search/module/service",
+        searchParams: {
+          ...(effectiveMtkId ? { mtk_ids: [effectiveMtkId] } : {}),
+        },
+        selectedLabel:
+          formData?.service?.name ||
+          (formData?.service_id != null ? `Xidmət #${formData.service_id}` : null),
+        placeholder: "Xidmət seçin",
+        searchPlaceholder: "Xidmət axtar...",
+        required: true,
+        allowClear: false,
+      },
+      {
+        key: "amount",
+        label: tx("invoices.table.amount", "Məbləğ"),
+        type: "number",
+        icon: CurrencyDollarIcon,
+        accentColor: "#10b981",
+        placeholder: "12.3",
+        required: true,
+      },
+      {
+        key: "type",
+        label: tx("invoices.searchModal.type", "Növ"),
+        type: "select",
+        icon: TagIcon,
+        accentColor: "#8b5cf6",
+        required: true,
+        options: [
+          { value: "daily", label: tx("invoices.types.daily", "daily") },
+          { value: "weekly", label: tx("invoices.types.weekly", "weekly") },
+          { value: "monthly", label: tx("invoices.types.monthly", "monthly") },
+          { value: "quarterly", label: tx("invoices.types.quarterly", "quarterly") },
+          { value: "biannually", label: tx("invoices.types.biannually", "biannually") },
+          { value: "yearly", label: tx("invoices.types.yearly", "yearly") },
+          { value: "one_time", label: tx("invoices.types.one_time", "one_time") },
+        ],
+      },
+      {
+        key: "start_date",
+        label: tx("invoices.table.startDate", "Başlama tarixi"),
+        type: "date",
+        icon: CalendarDaysIcon,
+        accentColor: "#10b981",
+        required: true,
+      },
+      {
+        key: "due_date",
+        label: tx("invoices.table.dueDate", "Son tarix"),
+        type: "date",
+        icon: CalendarDaysIcon,
+        accentColor: "#059669",
+        required: true,
+      },
+      {
+        key: "status",
+        label: tx("invoices.table.status", "Status"),
+        type: "select",
+        icon: CheckBadgeIcon,
+        accentColor: "#14b8a6",
+        required: true,
+        options: [
+          { value: "unpaid", label: tx("invoices.status.unpaid", "unpaid") },
+          { value: "pending", label: tx("invoices.status.pending", "pending") },
+          { value: "pre_paid", label: tx("invoices.status.pre_paid", "pre_paid") },
+          { value: "paid", label: tx("invoices.status.paid", "paid") },
+          { value: "overdue", label: tx("invoices.status.overdue", "overdue") },
+          { value: "declined", label: tx("invoices.status.declined", "declined") },
+          { value: "draft", label: tx("invoices.status.draft", "draft") },
+        ],
+      },
+      {
+        key: "meta.desc",
+        label: tx("common.description", "Təsvir"),
+        type: "textarea",
+        icon: DocumentTextIcon,
+        accentColor: "#64748b",
+        rows: 4,
+        colSpan: 2,
+        placeholder: "abcsggds",
+      },
+    ],
+    [
+      tx,
+      effectiveMtkId,
+      selectedComplexFormId,
+      selectedBuildingFormId,
+      selectedBlockFormId,
+      formData?.complex,
+      formData?.building,
+      formData?.block,
+      formData?.property,
+      formData?.service,
+    ]
+  );
+
+  const handleInvoiceFormFieldChange = React.useCallback(
+    (field, value, selectedOption) => {
+      updateField(field, value);
+
+      if (field === "complex_id") {
+        updateField("complex", selectedOption || null);
+        updateField("building_id", null);
+        updateField("building", null);
+        updateField("block_id", null);
+        updateField("block", null);
+        updateField("property_id", null);
+        updateField("property", null);
+        return;
+      }
+
+      if (field === "building_id") {
+        updateField("building", selectedOption || null);
+        updateField("block_id", null);
+        updateField("block", null);
+        updateField("property_id", null);
+        updateField("property", null);
+        return;
+      }
+
+      if (field === "block_id") {
+        updateField("block", selectedOption || null);
+        updateField("property_id", null);
+        updateField("property", null);
+        return;
+      }
+
+      if (field === "property_id") {
+        updateField("property", selectedOption || null);
+        return;
+      }
+
+      if (field === "service_id") {
+        updateField("service", selectedOption || null);
+      }
+    },
+    [updateField]
+  );
 
   const handleCreate = () => {
     resetForm();
@@ -233,7 +744,7 @@ const InvoicesPage = () => {
       setViewLoading(true);
       setItemToView(null);
       setViewModalOpen(true);
-      
+
       const invoiceData = await dispatch(fetchFinanceInvoiceById(item.id)).unwrap();
       setItemToView(invoiceData);
     } catch (error) {
@@ -264,6 +775,7 @@ const InvoicesPage = () => {
           const res = await propertiesAPI.getById(propId);
           const propDetail = res?.data?.data ?? res?.data ?? (typeof res === "object" ? res : null);
           if (propDetail) {
+            const complexId = propDetail.complex_id ?? propDetail.complex?.id ?? null;
             const buildingId = propDetail.building_id ?? propDetail.building?.id ?? null;
             const blockId = propDetail.block_id ?? propDetail.block?.id ?? null;
             invoiceData = {
@@ -271,8 +783,10 @@ const InvoicesPage = () => {
               property: {
                 ...(prop || {}),
                 ...propDetail,
+                complex_id: complexId ?? propDetail.complex_id,
                 building_id: buildingId ?? propDetail.building_id,
                 block_id: blockId ?? propDetail.block_id,
+                complex: propDetail.complex ?? prop?.complex,
                 building: propDetail.building ?? prop?.building,
                 block: propDetail.block ?? prop?.block,
               },
@@ -432,8 +946,8 @@ const InvoicesPage = () => {
               (invoice.property?.id != null
                 ? `Mənzil #${invoice.property.id}`
                 : invoice.property_id != null
-                ? `Mənzil #${invoice.property_id}`
-                : "-")}
+                  ? `Mənzil #${invoice.property_id}`
+                  : "-")}
           </Typography>
           {invoice.property?.complex?.name && <Typography variant="small" className="text-xs text-gray-500 dark:text-gray-400">{invoice.property.complex.name}</Typography>}
         </>
@@ -518,7 +1032,7 @@ const InvoicesPage = () => {
 
       <ManagementActions
         entityLevel="invoice"
-        search={apiParams}
+        search={filters}
         onCreateClick={handleCreate}
         onApplyNameSearch={handleApplyNameSearch}
         onStatusChange={handleStatusChange}
@@ -577,12 +1091,14 @@ const InvoicesPage = () => {
           resetForm();
         }}
         title={mode === "create" ? "Yeni faktura əlavə et" : "Fakturanı redaktə et"}
+        description="Mənzil və xidmət seçib faktura məlumatlarını doldurun"
+        fields={invoiceFormFields}
         formData={formData}
-        onFieldChange={updateField}
-        onSave={mode === "create" ? handleCreateSave : handleEditSave}
-        isEdit={mode === "edit"}
-        saving={saving}
-        formLoading={formLoading}
+        onFieldChange={handleInvoiceFormFieldChange}
+        onSubmit={mode === "create" ? handleCreateSave : handleEditSave}
+        mode={mode}
+        submitLabel={mode === "create" ? "Əlavə et" : "Yenilə"}
+        saving={saving || formLoading}
       />
 
       <ViewModal
@@ -614,45 +1130,9 @@ const InvoicesPage = () => {
       <SearchModal
         open={searchModalOpen}
         title={t("invoices.searchModal.title") || "Ətraflı Axtarış"}
-        fields={[
-          { key: "invoiceId", label: t("invoices.searchModal.invoiceId") || "Faktura ID", type: "text" },
-          {
-            key: "status",
-            label: t("invoices.table.status") || "Status",
-            type: "select",
-            options: [
-              { value: "", label: t("invoices.searchModal.all") || "Hamısı" },
-              { value: "paid", label: t("invoices.status.paid") || "paid" },
-              { value: "not_paid", label: t("invoices.status.not_paid") || "not_paid" },
-              { value: "pending", label: t("invoices.status.pending") || "pending" },
-              { value: "overdue", label: t("invoices.status.overdue") || "overdue" },
-              { value: "declined", label: t("invoices.status.declined") || "declined" },
-              { value: "draft", label: t("invoices.status.draft") || "draft" },
-              { value: "pre_paid", label: t("invoices.status.pre_paid") || "pre_paid" },
-            ],
-          },
-          {
-            key: "type",
-            label: t("invoices.searchModal.type") || "Növ",
-            type: "select",
-            options: [
-              { value: "", label: t("invoices.searchModal.all") || "Hamısı" },
-              { value: "daily", label: t("invoices.types.daily") || "daily" },
-              { value: "weekly", label: t("invoices.types.weekly") || "weekly" },
-              { value: "monthly", label: t("invoices.types.monthly") || "monthly" },
-              { value: "quarterly", label: t("invoices.types.quarterly") || "quarterly" },
-              { value: "biannually", label: t("invoices.types.biannually") || "biannually" },
-              { value: "yearly", label: t("invoices.types.yearly") || "yearly" },
-              { value: "one_time", label: t("invoices.types.one_time") || "one_time" },
-            ],
-          },
-          { key: "paidAtFrom", label: t("invoices.searchModal.dateFrom") || "Başlanğıc", type: "date" },
-          { key: "paidAtTo", label: t("invoices.searchModal.dateTo") || "Son", type: "date" },
-          { key: "amountFrom", label: `${t("invoices.searchModal.min") || "Minimum"} (₼)`, type: "number" },
-          { key: "amountTo", label: `${t("invoices.searchModal.max") || "Maksimum"} (₼)`, type: "number" },
-          { key: "amountPaidFrom", label: `${t("invoices.searchModal.min") || "Minimum"} ${t("invoices.searchModal.paidAmountLabel") || "Ödənilmiş"} (₼)`, type: "number" },
-          { key: "amountPaidTo", label: `${t("invoices.searchModal.max") || "Maksimum"} ${t("invoices.searchModal.paidAmountLabel") || "Ödənilmiş"} (₼)`, type: "number" },
-        ]}
+        fields={searchFields}
+        formData={searchFormData}
+        onFieldChange={handleSearchFieldChange}
         searchLabel={t("invoices.searchModal.search") || "Axtar"}
         clearLabel={t("invoices.searchModal.reset") || "Təmizlə"}
         cancelLabel={t("buttons.cancel") || "Ləğv et"}
@@ -673,16 +1153,7 @@ const InvoicesPage = () => {
           await dispatch(payFinanceInvoices([payload])).unwrap();
         }}
         onSuccess={handlePaySuccess}
-      />
-
-      <DynamicToast
-        open={toast.open}
-        type={toast.type}
-        message={toast.message}
-        title={toast.title}
-        onClose={() => setToast({ ...toast, open: false })}
-      />
-    </div>
+      /></div>
   );
 };
 

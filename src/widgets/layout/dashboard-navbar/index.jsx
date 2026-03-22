@@ -33,6 +33,9 @@ export function DashboardNavbar({ homePath, parentPathMap }) {
   const { pathname } = useLocation();
   const { t } = useTranslation();
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth < 768 : false
+  );
 
   useEffect(() => {
     const checkDarkMode = () => {
@@ -56,6 +59,18 @@ export function DashboardNavbar({ homePath, parentPathMap }) {
       observer.disconnect();
       mediaQuery.removeEventListener('change', checkDarkMode);
     };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const updateViewport = () => {
+      setIsMobileViewport(window.innerWidth < 768);
+    };
+
+    updateViewport();
+    window.addEventListener("resize", updateViewport);
+    return () => window.removeEventListener("resize", updateViewport);
   }, []);
 
   const pathParts = pathname.split("/").filter((el) => el !== "");
@@ -234,15 +249,18 @@ export function DashboardNavbar({ homePath, parentPathMap }) {
         return base;
       })()}
     >
-      <MobileNavbar pageTitle={displayTitle} navbarHoverEffects={navbarHoverEffects} />
-      <DesktopNavbar 
-        pathParts={pathParts} 
-        pageTitle={displayTitle} 
-        fixedNavbar={fixedNavbar}
-        navbarHoverEffects={navbarHoverEffects}
-        homePath={homePath}
-        parentPathMap={parentPathMap}
-      />
+      {isMobileViewport ? (
+        <MobileNavbar pageTitle={displayTitle} navbarHoverEffects={navbarHoverEffects} />
+      ) : (
+        <DesktopNavbar
+          pathParts={pathParts}
+          pageTitle={displayTitle}
+          fixedNavbar={fixedNavbar}
+          navbarHoverEffects={navbarHoverEffects}
+          homePath={homePath}
+          parentPathMap={parentPathMap}
+        />
+      )}
     </Navbar>
   );
 }

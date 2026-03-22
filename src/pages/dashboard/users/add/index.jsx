@@ -6,16 +6,14 @@ import { UsersTable } from "./components/UsersTable";
 import { UsersCardList } from "./components/UsersCardList";
 import { UsersPagination } from "./components/UsersPagination";
 import { UserAddFormModal } from "./components/modals/UserAddFormModal";
-import { ManagementActions, ENTITY_LEVELS } from "@/components/management/ManagementActions";
+import { Actions as ManagementActions, ENTITY_LEVELS } from "@/components";
 import { CustomSelect } from "@/components/ui/CustomSelect";
 
 import { useUserAddForm } from "./hooks/useUserAddForm";
 import { useUserAddLookups } from "./hooks/useUserAddLookups";
 import { useUsersData } from "./hooks/useUsersData";
 import usersAPI from "./api";
-import DynamicToast from "@/components/DynamicToast";
-import { ViewModal } from "@/components/common/modals/ViewModal";
-import { DeleteConfirmModal } from "@/components/common/modals/DeleteConfirmModal";
+import { ViewModal, DeleteConfirmModal } from "@/components";
 import { 
   UserIcon, 
   EnvelopeIcon, 
@@ -486,17 +484,7 @@ export default function UserAddPage() {
         itemName={itemToDelete ? `"${itemToDelete.name}"` : ""}
         entityName="istifadəçi"
         loading={deleteLoading}
-      />
-
-      <DynamicToast
-        open={toast.open}
-        type={toast.type}
-        title={toast.title}
-        message={toast.message}
-        onClose={() => setToast({ ...toast, open: false })}
-        duration={3000}
-      />
-    </div>
+      />     </div>
   );
 }
 

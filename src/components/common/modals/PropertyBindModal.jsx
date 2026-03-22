@@ -2,7 +2,6 @@ import React, { useState, useMemo } from "react";
 import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography, Card, CardBody, Chip } from "@material-tailwind/react";
 import { XMarkIcon, HomeIcon, LinkIcon, BuildingOfficeIcon, Square3Stack3DIcon, TrashIcon, PlusIcon, CheckCircleIcon, BanknotesIcon, UserCircleIcon } from "@heroicons/react/24/outline";
 import { AsyncSearchSelect } from "@/components/ui/AsyncSearchSelect";
-import DynamicToast from "@/components/DynamicToast";
 import { BindConfirmModal } from "./BindConfirmModal";
 import { UnbindConfirmModal } from "./UnbindConfirmModal";
 import residentAPI from "@/services/management/residentsApi";
@@ -375,10 +374,7 @@ export function PropertyBindModal({
           property: unbindTarget?.property?.name || unbindTarget?.property?.apartment_number || (unbindTarget?.property_id ? `#${unbindTarget.property_id}` : undefined),
         }}
         loading={saving}
-      />
-
-      <DynamicToast open={toast.open} type={toast.type} message={toast.message} title={toast.title} onClose={() => setToast({ ...toast, open: false })} />
-    </>
+      />     </>
   );
 }
 

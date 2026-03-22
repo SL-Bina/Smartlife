@@ -15,11 +15,10 @@ import {
   Pagination,
   Skeleton,
   Table,
-} from "@/components/common";
+} from "@/components";
 import { useBuildingForm } from "@/hooks/management/buildings/useBuildingForm";
 import { useBuildingData } from "@/hooks/management/buildings/useBuildingData";
 import buildingsAPI from "@/services/management/buildingsApi";
-import DynamicToast from "@/components/DynamicToast";
 import { Typography, Chip, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
 import { BuildingOfficeIcon, CheckCircleIcon, InformationCircleIcon, EllipsisVerticalIcon, EyeIcon } from "@heroicons/react/24/outline";
 
@@ -501,15 +500,7 @@ export default function BuildingsPage() {
         loading={editConfirmLoading}
         oldData={selected}
         newData={pendingFormData}
-      />
-      <DynamicToast
-        open={toast.open}
-        type={toast.type}
-        message={toast.message}
-        title={toast.title}
-        onClose={() => setToast({ ...toast, open: false })}
-      />
-    </div>
+      />     </div>
   );
 }
 

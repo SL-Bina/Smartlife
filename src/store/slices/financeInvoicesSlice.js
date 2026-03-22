@@ -26,6 +26,18 @@ export const loadFinanceInvoices = createAsyncThunk(
   'financeInvoices/loadFinanceInvoices',
   async ({ filters = {}, page = 1, itemsPerPage = 20 } = {}, { rejectWithValue }) => {
     try {
+      const mtkIds = filters?.['mtk_ids[]'];
+      const hasMtkScope = Array.isArray(mtkIds) && mtkIds.length > 0 && mtkIds[0] !== null && mtkIds[0] !== undefined && mtkIds[0] !== '';
+
+      if (!hasMtkScope) {
+        return {
+          invoices: [],
+          pagination: { ...initialState.pagination, page, itemsPerPage },
+          totalPaid: 0,
+          totalConsumption: 0,
+        };
+      }
+
       const result = await fetchInvoices(filters, page, itemsPerPage);
       const invoices = result?.data || [];
       const totalPaid = invoices.reduce((sum, item) => sum + parseFloat(item.amount_paid || 0), 0);
@@ -106,6 +118,14 @@ const financeInvoicesSlice = createSlice({
     clearFinanceInvoicesError: (state) => {
       state.error = null;
     },
+    clearFinanceInvoices: (state) => {
+      state.invoices = [];
+      state.totalPaid = 0;
+      state.totalConsumption = 0;
+      state.pagination = { ...initialState.pagination };
+      state.loading = false;
+      state.error = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -127,7 +147,7 @@ const financeInvoicesSlice = createSlice({
   },
 });
 
-export const { clearFinanceInvoicesError } = financeInvoicesSlice.actions;
+export const { clearFinanceInvoicesError, clearFinanceInvoices } = financeInvoicesSlice.actions;
 
 export const selectFinanceInvoices = (state) => state.financeInvoices.invoices;
 export const selectFinanceInvoicesLoading = (state) => state.financeInvoices.loading;

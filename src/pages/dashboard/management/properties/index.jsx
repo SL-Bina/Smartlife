@@ -13,13 +13,12 @@ import {
   Pagination,
   Skeleton,
   Table,
-  ServiceFeeModal
-} from "@/components/common";
-import { AddBalanceCashModal } from "@/components/common/modals/AddBalanceCashModal";
+  ServiceFeeModal,
+  AddBalanceCashModal,
+} from "@/components";
 import { usePropertyForm } from "@/hooks/management/properties/usePropertyForm";
 import { usePropertyData } from "@/hooks/management/properties/usePropertyData";
 import propertiesAPI from "@/services/management/propertiesApi";
-import DynamicToast from "@/components/DynamicToast";
 import { Typography, Chip, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
 import { 
   HomeIcon, 
@@ -762,16 +761,7 @@ export default function PropertiesPage() {
         loading={editConfirmLoading}
         oldData={selected}
         newData={pendingFormData}
-      />
-
-      <DynamicToast
-        open={toast.open}
-        type={toast.type}
-        message={toast.message}
-        title={toast.title}
-        onClose={() => setToast({ ...toast, open: false })}
-      />
-    </div>
+      />     </div>
   );
 }
 

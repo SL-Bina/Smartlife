@@ -6,7 +6,7 @@ import { useServicesData } from "./hooks/useServicesData";
 import { useServicesFilters } from "./hooks/useServicesFilters";
 import { useServicesForm } from "./hooks/useServicesForm";
 import { ServicesHeader } from "./components/ServicesHeader";
-import { ManagementActions, ENTITY_LEVELS } from "@/components/management/ManagementActions";
+import { Actions as ManagementActions, ENTITY_LEVELS } from "@/components";
 import { ServicesTable } from "./components/ServicesTable";
 import { ServicesCardList } from "./components/ServicesCardList";
 import { ServicesPagination } from "./components/ServicesPagination";
@@ -15,7 +15,6 @@ import { ServicesFormModal } from "./components/modals/ServicesFormModal";
 import { ServicesDeleteModal } from "./components/modals/ServicesDeleteModal";
 import { ServicesViewModal } from "./components/modals/ServicesViewModal";
 import { useMtkColor } from "@/store/hooks/useMtkColor";
-import DynamicToast from "@/components/DynamicToast";
 
 const ServicesPage = () => {
   const { getRgba, getActiveGradient } = useMtkColor();
@@ -179,15 +178,6 @@ const ServicesPage = () => {
   return (
     <div className="space-y-6" style={{ position: "relative", zIndex: 0 }}>
       <ServicesHeader />
-
-      <DynamicToast
-        open={toast.open}
-        type={toast.type}
-        message={toast.message}
-        title={toast.title}
-        onClose={() => setToast((p) => ({ ...p, open: false }))}
-      />
-
       <ManagementActions
         entityLevel={ENTITY_LEVELS.SERVICE}
         search={filters}

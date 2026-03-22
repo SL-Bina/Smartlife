@@ -13,11 +13,10 @@ import {
   Table,
   Pagination,
   Skeleton,
-} from "@/components/common";
+} from "@/components";
 import { useMtkForm } from "@/hooks/management/mtk/useMtkForm";
 import { useMtkData } from "@/hooks/management/mtk/useMtkData";
 import mtkAPI from "@/services/management/mtkApi";
-import DynamicToast from "@/components/DynamicToast";
 import { Typography, Chip, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
 import { BuildingOfficeIcon, CheckCircleIcon, EllipsisVerticalIcon, EnvelopeIcon, EyeIcon, GlobeAltIcon, InformationCircleIcon, MapPinIcon, PhoneIcon } from "@heroicons/react/24/outline";
 
@@ -590,16 +589,7 @@ export default function MtkPage() {
         loading={editConfirmLoading}
         oldData={selected}
         newData={pendingFormData}
-      />
-
-      <DynamicToast
-        open={toast.open}
-        type={toast.type}
-        message={toast.message}
-        title={toast.title}
-        onClose={() => setToast({ ...toast, open: false })}
-      />
-    </div>
+      />     </div>
   );
 }
 

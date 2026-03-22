@@ -7,7 +7,6 @@ import {
 import { XMarkIcon, BanknotesIcon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 import api from "@/services/api";
-import DynamicToast from "@/components/DynamicToast";
 
 /**
  * Shared modal for adding cash balance to a property.
@@ -169,14 +168,6 @@ export function AddBalanceCashModal({ open, onClose, propertyId, propertyName, o
             {t("addBalance.submit") || "Əlavə et"}
           </Button>
         </div>
-      </div>
-
-      <DynamicToast
-        open={toast.open}
-        type={toast.type}
-        message={toast.message}
-        onClose={() => setToast((p) => ({ ...p, open: false }))}
-      />
-    </dialog>
+      </div>     </dialog>
   );
 }

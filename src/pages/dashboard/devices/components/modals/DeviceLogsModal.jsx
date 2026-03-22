@@ -3,7 +3,7 @@ import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography } fr
 import { QueueListIcon, XMarkIcon, ArrowPathIcon, BuildingOffice2Icon } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 import { useMtkColor } from "@/store/hooks/useMtkColor";
-import { Pagination } from "@/components/common";
+import { Pagination } from "@/components";
 
 export function DeviceLogsModal({
   open,

@@ -8,7 +8,7 @@ import {
   DashboardNavbar,
   Configurator,
 } from "@/widgets/layout";
-import myPropertiesAPI from "@/pages/resident/myproperties/api";
+import myPropertiesAPI from "@/pages/resident/myproperties/api";  
 import routes from "@/routes";
 import { useAuth } from "@/store/hooks/useAuth";
 import { setSelectedProperty } from "@/store/slices/management/propertySlice";
@@ -21,7 +21,7 @@ import { getFirstActivePath, buildParentPathMap } from "@/utils/getFirstActivePa
 import { useNotificationsSocket } from "@/hooks/useNotificationsSocket";
 import { useDynamicToast } from "@/hooks/useDynamicToast";
 import { addNotification } from "@/store/slices/notificationsSlice";
-import DynamicToastContainer from "@/components/DynamicToastContainer";
+import DynamicToastContainer from "@/components/ui/DynamicToastContainer";
 import "./dashboard.css";
 
 const getCookie = (name) => {
@@ -37,11 +37,7 @@ function ProtectedRoute({ element, allowedRoles, moduleName, fallbackPath }) {
   const properties = useSelector((state) => state.property.properties);
 
   if (!isInitialized) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin h-10 w-10 border-b-2 border-red-600 rounded-full"></div>
-      </div>
-    );
+    return null;
   }
 
   if (!user) return <Navigate to="/auth/sign-in" replace />;
@@ -334,11 +330,7 @@ export function Dashboard() {
       >
         <DashboardNavbar homePath={firstActivePath} parentPathMap={parentPathMap} />
         <div className="mt-4 sm:mt-6 md:mt-8 min-h-screen-minus-footer">
-          <Suspense fallback={
-            <div className="flex items-center justify-center" style={{ minHeight: "60vh" }}>
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500" />
-            </div>
-          }>
+          <Suspense fallback={null}>
           <Routes>
             <Route
               path="/"

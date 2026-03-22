@@ -13,7 +13,6 @@ import { RoleFormModal } from "./components/modals/RoleFormModal";
 import { PermissionFormModal } from "./components/modals/PermissionFormModal";
 import { ConfirmDeleteModal } from "./components/modals/ConfirmDeleteModal";
 import { useDynamicToast } from "@/hooks/useDynamicToast";
-import DynamicToast from "@/components/DynamicToast";
 import { PermissionHeader } from "./components/PermissionHeader";
 
 const PermissionsPage = () => {
@@ -450,17 +449,7 @@ const PermissionsPage = () => {
         selectedRoleId={selectedRoleId}
         saving={saving}
         onSavePermissions={handleSavePermissions}
-      />
-
-      <DynamicToast
-        open={toast.open}
-        type={toast.type}
-        title={toast.title}
-        message={toast.message}
-        duration={toast.duration}
-        onClose={closeToast}
-      />
-
+      /> 
       {/* Responsive layout: stacked on mobile, two columns on desktop */}
       <div className="lg:hidden mb-3 flex items-center gap-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-1">
         <button

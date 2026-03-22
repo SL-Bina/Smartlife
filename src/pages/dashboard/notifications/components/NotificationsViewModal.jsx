@@ -58,7 +58,11 @@ export function NotificationsViewModal({ open, onClose, notification }) {
                 {t("notifications.view.priority") || "Prioritet"}
               </Typography>
               <Chip
-                value={notification.priority === "important" || notification.type === "warning" ? (t("notifications.view.important") || "Vacib") : t(`notifications.types.${notification.type}`)}
+                value={
+                  notification.priority === "important" || notification.type === "warning"
+                    ? (t("notifications.view.important") || "Vacib")
+                    : (t(`notifications.types.${notification.type}`) || notification.type || "-")
+                }
                 color={notification.priority === "important" || notification.type === "warning" ? "red" : "blue"}
                 className="w-fit"
               />

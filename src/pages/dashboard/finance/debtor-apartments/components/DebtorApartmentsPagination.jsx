@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Pagination } from "@/components/common";
+import { Pagination } from "@/components";
 
 export function DebtorApartmentsPagination({ page, totalPages, onPageChange, onPrev, onNext }) {
   const { t } = useTranslation();

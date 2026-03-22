@@ -15,11 +15,10 @@ import {
   Pagination,
   Skeleton,
   Table,
-} from "@/components/common";
+} from "@/components";
 import { useBlockForm } from "@/hooks/management/blocks/useBlockForm";
 import { useBlockData } from "@/hooks/management/blocks/useBlockData";
 import blocksAPI from "@/services/management/blocksApi";
-import DynamicToast from "@/components/DynamicToast";
 import { Typography, Chip, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
 import { BuildingOfficeIcon, CheckCircleIcon, InformationCircleIcon, EllipsisVerticalIcon, EyeIcon } from "@heroicons/react/24/outline";
 
@@ -649,16 +648,7 @@ export default function BlocksPage() {
         loading={editConfirmLoading}
         oldData={selected}
         newData={pendingFormData}
-      />
-
-      <DynamicToast
-        open={toast.open}
-        type={toast.type}
-        message={toast.message}
-        title={toast.title}
-        onClose={() => setToast({ ...toast, open: false })}
-      />
-    </div>
+      />     </div>
   );
 }
 

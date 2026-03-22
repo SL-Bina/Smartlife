@@ -5,7 +5,7 @@ import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "@material-tailwind/react";
 import { Provider } from "react-redux";
 import { store } from "@/store";
-import { ReduxInitializer } from "@/components/ReduxInitializer";
+import { ReduxInitializer } from "@/components/ui/ReduxInitializer";
 import "@/styles/tailwind.css";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./i18n/i18n";

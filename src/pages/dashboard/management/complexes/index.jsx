@@ -15,14 +15,12 @@ import {
   Pagination,
   Skeleton,
   Table,
-} from "@/components/common";
+  SettingsModal,
+} from "@/components";
 import { useComplexForm } from "@/hooks/management/complexes/useComplexForm";
 import { useComplexData } from "@/hooks/management/complexes/useComplexData";
 import complexesAPI from "@/services/management/complexesApi";
-import DynamicToast from "@/components/DynamicToast";
 import { BuildingOfficeIcon, MapPinIcon, InformationCircleIcon, CheckCircleIcon, PhoneIcon, EnvelopeIcon, GlobeAltIcon, CubeIcon, EllipsisVerticalIcon, EyeIcon, CreditCardIcon, PhotoIcon } from "@heroicons/react/24/outline";
-import SettingsModal from "@/components/common/modals/SettingsModal";
-
 const isFileObject = (value) => typeof File !== "undefined" && value instanceof File;
 
 const fileToBase64 = (file) =>
@@ -1130,16 +1128,7 @@ export default function ComplexesPage() {
         }}
         complexId={itemToView?.id}
         complexData={itemToView}
-      />
-
-      <DynamicToast
-        open={toast.open}
-        type={toast.type}
-        message={toast.message}
-        title={toast.title}
-        onClose={() => setToast({ ...toast, open: false })}
-      />
-    </div>
+      />     </div>
   );
 }
 

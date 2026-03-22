@@ -13,7 +13,6 @@ import { DebtorApartmentsPagination } from "./components/DebtorApartmentsPaginat
 import { DebtorApartmentsFilterModal } from "./components/modals/DebtorApartmentsFilterModal";
 import { DebtorApartmentsViewModal } from "./components/modals/DebtorApartmentsViewModal";
 import { DebtorApartmentsPayModal } from "./components/modals/DebtorApartmentsPayModal";
-import DynamicToast from "@/components/DynamicToast";
 import { useDynamicToast } from "@/hooks/useDynamicToast";
 
 const DebtorApartmentsPage = () => {
@@ -266,17 +265,7 @@ const DebtorApartmentsPage = () => {
         onFieldChange={setPaymentField}
         onSave={handlePaySave}
         saving={saving}
-      />
-
-      <DynamicToast
-        open={toast.open}
-        type={toast.type}
-        title={toast.title}
-        message={toast.message}
-        duration={toast.duration}
-        onClose={closeToast}
-      />
-    </div>
+      />     </div>
   );
 };
 

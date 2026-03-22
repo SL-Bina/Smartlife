@@ -1,8 +1,10 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import { ChartBarIcon } from "@heroicons/react/24/outline";
 import { Header } from "@/components/ui/Header";
 import { useChartConfigs } from "@/hooks/dashboard/home";
+import { getDepartmentStats } from "@/data/dashboard-data";
+
 import {
   StatisticsCards,
   PaymentDynamicsChart,
@@ -10,26 +12,18 @@ import {
   ApplicationStatusChart,
   DepartmentStatsChart,
   ResidentStatsCards,
-} from "@/components/dashboard/home";
-import { useAppDispatch, useAppSelector, useMtkColor } from "@/store/hooks";
-import {
-  loadDashboardHomeData,
-  selectDashboardHomeData,
-  selectDashboardHomeError,
-  selectDashboardHomeLoading,
-} from "@/store/slices";
+} from "@/components";
 
 export function Home() {
   const { t } = useTranslation();
-  const { getRgba: getMtkRgba } = useMtkColor();
-  const dispatch = useAppDispatch();
-  const dashboardData = useAppSelector(selectDashboardHomeData);
-  const loading = useAppSelector(selectDashboardHomeLoading);
-  const error = useAppSelector(selectDashboardHomeError);
+  const [isLoading, setIsLoading] = React.useState(true);
 
-  useEffect(() => {
-    dispatch(loadDashboardHomeData());
-  }, [dispatch]);
+  React.useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 700);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const departmentStats = getDepartmentStats(t);
 
   const {
     getChartHeight,
@@ -41,33 +35,7 @@ export function Home() {
     pieChartOptions,
     pieChartSeries,
     windowWidth,
-  } = useChartConfigs(
-    dashboardData.paymentDynamics,
-    dashboardData.employeePerformance,
-    dashboardData.applicationStatus,
-    dashboardData.departmentStats
-  );
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: getMtkRgba(0.7) }}></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Yüklənir...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <p className="text-red-600 dark:text-red-400">Xəta: {error}</p>
-        </div>
-      </div>
-    );
-  }
+  } = useChartConfigs();
 
   return (
     <div className="">
@@ -80,16 +48,18 @@ export function Home() {
         }
         className="mb-6"
       />
-      <StatisticsCards paymentStatistics={dashboardData.paymentStatistics} />
+      <StatisticsCards loading={isLoading} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mt-6">
         <PaymentDynamicsChart
+          loading={isLoading}
           options={paymentChartOptions}
           series={paymentChartSeries}
           height={getChartHeight(250, 300, 380)}
         />
 
         <EmployeePerformanceChart
+          loading={isLoading}
           options={employeeChartOptions}
           series={employeeChartSeries}
           height={getChartHeight(250, 300, 380)}
@@ -98,18 +68,17 @@ export function Home() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mt-6 mb-6">
         <ApplicationStatusChart
+          loading={isLoading}
           options={pieChartOptions}
           series={pieChartSeries}
           height={getPieChartHeight()}
           windowWidth={windowWidth}
         />
 
-        <DepartmentStatsChart
-          departmentStats={dashboardData.departmentStats}
-        />
+        <DepartmentStatsChart loading={isLoading} departmentStats={departmentStats} />
       </div>
 
-      <ResidentStatsCards residentStats={dashboardData.residentStats} />
+      <ResidentStatsCards loading={isLoading} />
     </div>
   );
 }

@@ -17,11 +17,11 @@ import { DeviceIdentifiersModal } from "./components/modals/DeviceIdentifiersMod
 import { DeviceLogsModal } from "./components/modals/DeviceLogsModal";
 import { DeviceComplexSelectModal } from "./components/modals/DeviceComplexSelectModal";
 import { FloorSelectionModal } from "./components/modals/FloorSelectionModal";
-import { Pagination } from "@/components/common";
+import { Pagination, ViewModal } from "@/components";
 import { Button } from "@material-tailwind/react";
-import { ManagementActions } from "@/components/management/ManagementActions";
-import { ViewModal } from "@/components/common/modals/ViewModal";
+import { Actions as ManagementActions } from "@/components";
 import { useDynamicToast } from "@/hooks/useDynamicToast";
+import { TableCellsIcon, Squares2X2Icon } from "@heroicons/react/24/outline";
 
 import { useDeviceList } from "./hooks/useDeviceList";
 import { useDeviceForm } from "./hooks/useDeviceForm";
@@ -171,6 +171,7 @@ const DevicesPage = () => {
   const [selectedDeviceView, setSelectedDeviceView] = useState(null);
   const [openingDeviceId, setOpeningDeviceId] = useState(null);
   const [statusFilter, setStatusFilter] = useState(filterStatus);
+  const [devicesViewMode, setDevicesViewMode] = useState("table");
   const [floorSelectionOpen, setFloorSelectionOpen] = useState(false);
   const [selectedDeviceForFloor, setSelectedDeviceForFloor] = useState(null);
 
@@ -839,6 +840,33 @@ const DevicesPage = () => {
 
     return (
       <div className={wrapperClass}>
+        <div className="inline-flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setDevicesViewMode("table")}
+            className={`px-3 py-2 text-xs sm:text-sm font-medium inline-flex items-center gap-1.5 transition-colors ${
+              devicesViewMode === "table"
+                ? "bg-blue-600 text-white"
+                : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+            }`}
+          >
+            <TableCellsIcon className="h-4 w-4" />
+            Cədvəl
+          </button>
+          <button
+            type="button"
+            onClick={() => setDevicesViewMode("card")}
+            className={`px-3 py-2 text-xs sm:text-sm font-medium inline-flex items-center gap-1.5 transition-colors ${
+              devicesViewMode === "card"
+                ? "bg-blue-600 text-white"
+                : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+            }`}
+          >
+            <Squares2X2Icon className="h-4 w-4" />
+            Kart
+          </button>
+        </div>
+
         {eligibleComplexes.length > 1 ? (
           <Button
             type="button"
@@ -1116,18 +1144,123 @@ const DevicesPage = () => {
             renderExtraControls={renderDeviceExtraControls}
           />
 
-          <DeviceTable
-            items={items}
-            loading={loading}
-            page={page}
-            lastPage={lastPage}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onPageChange={goToPage}
-            onView={handleView}
-            onOpen={handleOpenDevice}
-            openingDeviceId={openingDeviceId}
-          />
+          {devicesViewMode === "table" ? (
+            <DeviceTable
+              items={items}
+              loading={loading}
+              page={page}
+              lastPage={lastPage}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onPageChange={goToPage}
+              onView={handleView}
+              onOpen={handleOpenDevice}
+              openingDeviceId={openingDeviceId}
+            />
+          ) : null}
+
+          {devicesViewMode === "card" ? (
+            loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <div key={index} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 animate-pulse">
+                    <div className="h-4 w-2/3 bg-gray-200 dark:bg-gray-700 rounded mb-3" />
+                    <div className="h-3 w-1/2 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+                    <div className="h-3 w-3/4 bg-gray-200 dark:bg-gray-700 rounded" />
+                  </div>
+                ))}
+              </div>
+            ) : items?.length ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                {items.map((row) => {
+                  const typeModel = [row?.type, row?.model]
+                    .filter(Boolean)
+                    .map((value) => String(value).toUpperCase())
+                    .join(" / ") || "-";
+
+                  const deviceStatus = String(row?.userStatus || "").toLowerCase();
+                  const isOnline = deviceStatus === "onlayn" || deviceStatus === "online" || deviceStatus === "active";
+
+                  return (
+                    <div
+                      key={row.id}
+                      className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm"
+                    >
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">#{row?.id} {row?.name || "-"}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{row?.building || "-"}</p>
+                        </div>
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${
+                            isOnline
+                              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                              : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                          }`}
+                        >
+                          {row?.userStatus || "-"}
+                        </span>
+                      </div>
+
+                      <div className="space-y-2 mb-4">
+                        <p className="text-xs text-gray-600 dark:text-gray-300"><span className="font-semibold">Type/Model:</span> {typeModel}</p>
+                        <div className="text-xs text-gray-600 dark:text-gray-300">
+                          <span className="font-semibold">Endpoint:</span>
+                          <div className="mt-1 space-y-1">
+                            {(row?.devices || []).length > 0 ? (
+                              row.devices.map((device, index) => (
+                                <div key={`${row.id}-d-${index}`}>{device?.value || "-"}</div>
+                              ))
+                            ) : (
+                              <div>-</div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenDevice(row)}
+                          disabled={Boolean(openingDeviceId) && String(openingDeviceId) === String(row?.id)}
+                          className="rounded-lg px-3 py-2 text-xs font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+                        >
+                          {String(row?.type || "").toLowerCase() === "liftcontroller"
+                            ? (t("devices.actions.call") || "Çağır")
+                            : (t("devices.actions.open") || "Aç")}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleView(row)}
+                          className="rounded-lg px-3 py-2 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600"
+                        >
+                          {t("devices.actions.view") || "Bax"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleEdit(row)}
+                          className="rounded-lg px-3 py-2 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/50"
+                        >
+                          {t("devices.actions.edit") || "Redaktə et"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(row)}
+                          className="rounded-lg px-3 py-2 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/50"
+                        >
+                          {t("devices.actions.delete") || "Sil"}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                {t("common.noData") || "Məlumat tapılmadı"}
+              </div>
+            )
+          ) : null}
 
           <Pagination
             page={page}

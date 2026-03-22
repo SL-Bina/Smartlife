@@ -13,9 +13,9 @@ import {
   GlobeAltIcon,
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
-import { Pagination } from "@/components/common";
+import { Pagination } from "@/components";
 import { useMtkColor } from "@/store/hooks/useMtkColor";
-import { ManagementActions } from "@/components/management/ManagementActions";
+import { Actions as ManagementActions } from "@/components";
 
 export function DeviceUsersModal({
   open,

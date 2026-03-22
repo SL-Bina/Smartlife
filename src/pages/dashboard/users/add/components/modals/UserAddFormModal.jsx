@@ -1,7 +1,6 @@
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography, Input, Select, Option, Checkbox } from "@material-tailwind/react";
-import DynamicToast from "@/components/DynamicToast";
-import MultiSelect from "@/components/MultiSelect";
+import MultiSelect from "@/components/ui/MultiSelect";
 import {
   UserIcon,
   EnvelopeIcon,
@@ -633,17 +632,7 @@ export function UserAddFormModal({ open, mode = "create", onClose, form, onSubmi
             </Button>
           </DialogFooter>
         </div>
-      </Dialog>
-
-      <DynamicToast
-        open={toast.open}
-        type={toast.type}
-        title={toast.title}
-        message={toast.message}
-        onClose={() => setToast({ ...toast, open: false })}
-        duration={3000}
-      />
-    </>
+      </Dialog>     </>
   );
 }
 

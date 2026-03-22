@@ -4,6 +4,8 @@ const initialFormState = {
   amount: "",
   start_date: "",
   due_date: "",
+  complex_id: null,
+  complex: null,
   building_id: null,
   building: null,
   block_id: null,
@@ -11,6 +13,7 @@ const initialFormState = {
   property_id: null,
   property: null,
   service_id: null,
+  service: null,
   type: "",
   status: "unpaid",
   meta: {
@@ -58,6 +61,12 @@ export function useInvoicesForm() {
     const dueDate = toDateOnly(invoice.due_date || invoice.dateEnd);
     const propertyId = invoice.property_id ?? prop?.id ?? null;
     const serviceId = invoice.service_id ?? invoice.service?.id ?? null;
+    const complexId =
+      invoice.complex_id ??
+      prop?.complex_id ??
+      prop?.complex?.id ??
+      invoice.complex?.id ??
+      null;
     const buildingId =
       invoice.building_id ??
       prop?.building_id ??
@@ -70,6 +79,8 @@ export function useInvoicesForm() {
       amount,
       start_date: startDate,
       due_date: dueDate,
+      complex_id: complexId,
+      complex: invoice.complex || prop?.complex || null,
       building_id: buildingId,
       building: invoice.building || prop?.building || null,
       block_id: blockId,
@@ -77,6 +88,7 @@ export function useInvoicesForm() {
       property_id: propertyId,
       property: prop,
       service_id: serviceId,
+      service: invoice.service || null,
       type: invoice.type || "",
       status: invoice.status || "unpaid",
       meta: {

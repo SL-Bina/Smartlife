@@ -11,7 +11,6 @@ import {
 } from "@material-tailwind/react";
 import api from "@/services/api";
 import { useDynamicToast } from "@/hooks/useDynamicToast";
-import DynamicToast from "@/components/DynamicToast";
 import { useTranslation } from "react-i18next";
 import { BellIcon } from "@heroicons/react/24/solid";
 import { useMtkColor } from "@/store/hooks/useMtkColor";
@@ -205,17 +204,7 @@ const SendNotificationPage = () => {
             </Button>
           </div>
         </CardBody>
-      </Card>
-
-      <DynamicToast
-        open={toast.open}
-        type={toast.type}
-        title={toast.title}
-        message={toast.message}
-        duration={toast.duration}
-        onClose={closeToast}
-      />
-    </div>
+      </Card>     </div>
   );
 };
 

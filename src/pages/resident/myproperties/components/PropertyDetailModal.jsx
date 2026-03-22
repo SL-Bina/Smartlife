@@ -20,7 +20,7 @@ import {
 import { useTranslation } from "react-i18next";
 import myPropertiesAPI from "../api";
 import { useComplexColor } from "@/hooks/useComplexColor";
-import { AddBalanceCashModal } from "@/components/common/modals/AddBalanceCashModal";
+import { AddBalanceCashModal } from "@/components";
 
 export function PropertyDetailModal({ open, onClose, propertyId }) {
   const { t } = useTranslation();

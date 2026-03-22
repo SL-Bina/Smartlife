@@ -19,8 +19,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
 import { useMtkColor } from "@/store/hooks/useMtkColor";
-import { ManagementActions } from "@/components/management/ManagementActions";
-import { Pagination } from "@/components/common";
+import { Actions as ManagementActions } from "@/components";
+import { Pagination } from "@/components";
 import { CustomInput } from "@/components/ui/CustomInput";
 import { CustomSelect } from "@/components/ui/CustomSelect";
 

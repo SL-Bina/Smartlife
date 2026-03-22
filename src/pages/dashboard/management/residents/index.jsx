@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setSelectedResident, loadResidentById } from "@/store/slices/management/residentSlice";
+import { setSelectedComplex } from "@/store/slices/management/complexSlice";
+import { setSelectedBuilding } from "@/store/slices/management/buildingSlice";
+import { setSelectedBlock } from "@/store/slices/management/blockSlice";
+import { setSelectedProperty } from "@/store/slices/management/propertySlice";
 import {
   Actions,
   ENTITY_LEVELS,
@@ -13,17 +17,15 @@ import {
   Pagination,
   Skeleton,
   Table,
-} from "@/components/common";
+  PropertyBindModal,
+  AddBalanceCashModal,
+  ResidentExistsModal,
+} from "@/components";
 import { useResidentForm } from "@/hooks/management/residents/useResidentForm";
 import { useResidentData } from "@/hooks/management/residents/useResidentData";
 import residentsAPI from "@/services/management/residentsApi";
-import DynamicToast from "@/components/DynamicToast";
-import { Typography, Chip, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
+import { Typography, Chip, IconButton, Menu, MenuHandler, MenuList, MenuItem, Button } from "@material-tailwind/react";
 import { UserIcon, EnvelopeIcon, PhoneIcon, IdentificationIcon, CheckCircleIcon, EllipsisVerticalIcon, EyeIcon, LinkIcon } from "@heroicons/react/24/outline";
-import PropertyBindModal from "@/components/common/modals/PropertyBindModal";
-import { AddBalanceCashModal } from "@/components/common/modals/AddBalanceCashModal";
-import { ResidentExistsModal } from "@/components/common/modals/ResidentExistsModal";
-
 export default function ResidentsPage() {
   const dispatch = useAppDispatch();
 
@@ -103,6 +105,14 @@ export default function ResidentsPage() {
       });
       return newSearch;
     });
+  };
+
+  const handleResetResidentFilters = () => {
+    setSearch({});
+    dispatch(setSelectedComplex({ id: null, complex: null }));
+    dispatch(setSelectedBuilding({ id: null, building: null }));
+    dispatch(setSelectedBlock({ id: null, block: null }));
+    dispatch(setSelectedProperty({ id: null, property: null }));
   };
 
   const showToast = (type, message, title = "") => {
@@ -512,6 +522,19 @@ export default function ResidentsPage() {
         totalItems={total}
         itemsPerPage={itemsPerPage}
         onItemsPerPageChange={setItemsPerPage}
+        renderExtraControls={(isMobile) => (
+          <div className={isMobile ? "w-full" : "w-full md:w-auto flex-shrink-0"}>
+            <Button
+              type="button"
+              variant="outlined"
+              onClick={handleResetResidentFilters}
+              className="w-full md:w-auto border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-200"
+              size={isMobile ? "sm" : "md"}
+            >
+              Sıfırla
+            </Button>
+          </div>
+        )}
       />
 
       {loading ? (
@@ -658,16 +681,7 @@ export default function ResidentsPage() {
         loading={editConfirmLoading}
         oldData={selected}
         newData={pendingFormData}
-      />
-
-      <DynamicToast
-        open={toast.open}
-        type={toast.type}
-        message={toast.message}
-        title={toast.title}
-        onClose={() => setToast({ ...toast, open: false })}
-      />
-
+      /> 
       <AddBalanceCashModal
         open={balanceModal.open}
         onClose={() => setBalanceModal({ open: false, propertyId: null, propertyName: "" })}

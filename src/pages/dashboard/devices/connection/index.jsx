@@ -5,7 +5,6 @@ import { Typography } from "@material-tailwind/react";
 import { CpuChipIcon, HomeIcon } from "@heroicons/react/24/outline";
 
 import { useDynamicToast } from "@/hooks/useDynamicToast";
-import DynamicToast from "@/components/DynamicToast";
 import { useMtkColor } from "@/store/hooks/useMtkColor";
 
 const DeviceConnectionPage = () => {
@@ -172,17 +171,7 @@ const DeviceConnectionPage = () => {
         {/* Decorative circles */}
         <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-white/5 rounded-full -mr-12 sm:-mr-16 -mt-12 sm:-mt-16" />
         <div className="absolute bottom-0 left-0 w-20 h-20 sm:w-24 sm:h-24 bg-white/5 rounded-full -ml-10 sm:-ml-12 -mb-10 sm:-mb-12" />
-      </div>
-
-      <DynamicToast
-        open={toast.open}
-        type={toast.type}
-        title={toast.title}
-        message={toast.message}
-        duration={toast.duration}
-        onClose={closeToast}
-      />
-
+      </div> 
       {/* Responsive layout: stacked on mobile, two columns on desktop */}
       <div className="lg:hidden mb-3 flex items-center gap-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-1">
         <button
