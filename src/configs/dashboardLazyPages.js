@@ -34,4 +34,4 @@ export const PermissionsPage = lazy(() => import("@/pages/dashboard/permissions"
 export const DeviceConnectionPage = lazy(() => import("@/pages/dashboard/devices/connection"));
 export const DevicesPage = lazy(() => import("@/pages/dashboard/devices"));
 export const ParkingPage = lazy(() => import("@/pages/dashboard/parking"));
-export const UserAddPage = lazy(() => import("@/pages/dashboard/users/add"));
+export const UsersPage = lazy(() => import("@/pages/dashboard/users"));

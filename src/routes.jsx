@@ -60,7 +60,7 @@ import {
   ServicesPage,
   Settings,
   TransfersPage,
-  UserAddPage,
+  UsersPage,
 } from "@/configs/dashboardLazyPages";
 import {
   ResidentComplexDashboardPage,
@@ -354,7 +354,7 @@ export const routes = [
         icon: <UserCircleIcon {...icon} />,
         name: "sidebar.users",
         path: "/users",
-        element: <UserAddPage />,
+        element: <UsersPage />,
         moduleName: "user",
         moduleId: 16,
         hideInSidenav: false,

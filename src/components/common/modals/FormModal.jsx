@@ -84,6 +84,7 @@ function FormField({ field, value, error, onChange, formData }) {
     valueKey,
     labelKey,
     allowClear,
+    customRender,
   } = field;
 
   const commonWrapperClass = colSpan === 2 ? "md:col-span-2" : "";
@@ -481,6 +482,22 @@ function FormField({ field, value, error, onChange, formData }) {
           }}
         />
 
+        {error ? <p className="mt-1 text-xs text-red-500">{error}</p> : null}
+      </div>
+    );
+  }
+
+  if (type === "custom") {
+    if (typeof customRender !== "function") {
+      return null;
+    }
+
+    return (
+      <div className={`${commonWrapperClass} ${fieldCardClass}`}>
+        <FieldLabel label={label} required={required} type={type} />
+        <div className="mt-2 mb-2">
+          {customRender()}
+        </div>
         {error ? <p className="mt-1 text-xs text-red-500">{error}</p> : null}
       </div>
     );
