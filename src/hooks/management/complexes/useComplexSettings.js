@@ -7,6 +7,9 @@ const initialConfig = {
       device_connection: "",
       device_panel_login: "",
       device_panel_password: "",
+      device_complex_id: "",
+      device_elevator_min_floor: "",
+      device_elevator_max_floor: "",
     },
   },
   mail: {
@@ -62,6 +65,9 @@ export function useComplexSettings() {
           device_connection: data.integrations?.device?.device_connection || "",
           device_panel_login: data.integrations?.device?.device_panel_login || "",
           device_panel_password: data.integrations?.device?.device_panel_password || "",
+          device_complex_id: data.integrations?.device?.device_complex_id ?? "",
+          device_elevator_min_floor: data.integrations?.device?.device_elevator_min_floor ?? "",
+          device_elevator_max_floor: data.integrations?.device?.device_elevator_max_floor ?? "",
         },
       },
       mail: {

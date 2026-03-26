@@ -1126,6 +1126,10 @@ export default function ComplexesPage() {
           setSettingsModalOpen(false);
           setItemToView(null);
         }}
+        onSaved={(savedConfig) => {
+          refresh();
+          setItemToView((prev) => (prev ? { ...prev, config: savedConfig } : prev));
+        }}
         complexId={itemToView?.id}
         complexData={itemToView}
       />     </div>

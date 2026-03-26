@@ -36,12 +36,13 @@ function SectionHeader({ icon: Icon, title, color = "blue" }) {
 function SettingsInput({ label, value, onChange, type = "text", placeholder = "" }) {
     const [show, setShow] = React.useState(false);
     const isPassword = type === "password";
+    const inputType = isPassword && !show ? "password" : isPassword ? "text" : type;
     return (
         <div>
             <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{label}</label>
             <div className="relative">
                 <input
-                    type={isPassword && !show ? "password" : "text"}
+                    type={inputType}
                     value={value ?? ""}
                     onChange={(e) => onChange(e.target.value)}
                     placeholder={placeholder}
@@ -78,7 +79,7 @@ function SettingsSelect({ label, value, onChange, options = [] }) {
     );
 }
 
-export default function ComplexSettingsModal({ open, onClose, complexId, complexData }) {
+export default function ComplexSettingsModal({ open, onClose, complexId, complexData, onSaved }) {
     const { config, updateField, updateNestedField, setConfigFromData, save, loading } = useComplexSettings();
 
     const [toast, setToast] = React.useState({ open: false, type: "info", message: "" });
@@ -92,6 +93,7 @@ export default function ComplexSettingsModal({ open, onClose, complexId, complex
     const handleSave = async () => {
         const result = await save(complexId);
         if (result.success) {
+            onSaved?.(config);
             setToast({ open: true, type: "success", message: "Parametrlər uğurla yeniləndi" });
             setTimeout(() => onClose?.(), 800);
         } else {
@@ -178,6 +180,27 @@ export default function ComplexSettingsModal({ open, onClose, complexId, complex
                                 type="password"
                                 value={dev.device_panel_password}
                                 onChange={(v) => updateNestedField("integrations.device.device_panel_password", v)}
+                            />
+                            <SettingsInput
+                                label="Device Complex ID"
+                                type="number"
+                                value={dev.device_complex_id}
+                                onChange={(v) => updateNestedField("integrations.device.device_complex_id", v === "" ? "" : Number(v))}
+                                placeholder="1234"
+                            />
+                            <SettingsInput
+                                label="Lift minimum mərtəbə"
+                                type="number"
+                                value={dev.device_elevator_min_floor}
+                                onChange={(v) => updateNestedField("integrations.device.device_elevator_min_floor", v === "" ? "" : Number(v))}
+                                placeholder="-2"
+                            />
+                            <SettingsInput
+                                label="Lift maksimum mərtəbə"
+                                type="number"
+                                value={dev.device_elevator_max_floor}
+                                onChange={(v) => updateNestedField("integrations.device.device_elevator_max_floor", v === "" ? "" : Number(v))}
+                                placeholder="16"
                             />
                         </div>
                     </div>
