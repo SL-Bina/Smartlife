@@ -13,6 +13,7 @@ import {
   Pagination,
   FormModal,
   PaymentModal,
+  PropertyInvoicesModal,
   SearchModal,
   Header,
   ViewModal,
@@ -96,6 +97,8 @@ const InvoicesPage = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [payModalOpen, setPayModalOpen] = useState(false);
+  const [propertyInvoicesModalOpen, setPropertyInvoicesModalOpen] = useState(false);
+  const [propertyInvoicesContext, setPropertyInvoicesContext] = useState(null);
   const [searchFormData, setSearchFormData] = useState(filters);
   const [viewLoading, setViewLoading] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
@@ -818,6 +821,110 @@ const InvoicesPage = () => {
     setPayModalOpen(true);
   };
 
+  const handlePropertyInvoicesOpen = async (invoice) => {
+    const complexId =
+      invoice?.complex_id ??
+      invoice?.property?.complex_id ??
+      invoice?.property?.complex?.id ??
+      getInvoiceComplexId(invoice) ??
+      null;
+
+    const propertyId = invoice?.property?.id ?? invoice?.property_id ?? null;
+    let enrichedProperty = null;
+
+    if (propertyId != null) {
+      try {
+        const response = await propertiesAPI.getById(propertyId);
+        const propertyData = response?.data?.data ?? response?.data ?? null;
+
+        if (propertyData) {
+          const resolvedComplexId =
+            complexId ??
+            propertyData?.complex_id ??
+            propertyData?.complex?.id ??
+            null;
+
+          enrichedProperty = {
+            id: propertyData?.id ?? propertyId,
+            name:
+              propertyData?.name ||
+              propertyData?.meta?.apartment_number ||
+              propertyData?.apartment_number ||
+              `Mənzil #${propertyData?.id ?? propertyId}`,
+            apartmentNumber:
+              propertyData?.meta?.apartment_number ||
+              propertyData?.apartment_number ||
+              null,
+            buildingId: propertyData?.building_id ?? propertyData?.building?.id ?? null,
+            buildingName: propertyData?.building?.name || null,
+            blockId: propertyData?.block_id ?? propertyData?.block?.id ?? null,
+            blockName: propertyData?.block?.name || null,
+            complexId: resolvedComplexId,
+            complexName: propertyData?.complex?.name || null,
+            raw: propertyData,
+          };
+        }
+      } catch {
+        // Keep fallback context from invoice row if property detail cannot be fetched.
+      }
+    }
+
+    const clickedProperty =
+      enrichedProperty || {
+        id: propertyId,
+        name:
+          invoice?.property?.name ||
+          invoice?.property?.meta?.apartment_number ||
+          invoice?.property?.apartment_number ||
+          (invoice?.property?.id != null
+            ? `Mənzil #${invoice.property.id}`
+            : invoice?.property_id != null
+              ? `Mənzil #${invoice.property_id}`
+              : "-"),
+        buildingId:
+          invoice?.building_id ??
+          invoice?.property?.building_id ??
+          invoice?.property?.building?.id ??
+          null,
+        buildingName:
+          invoice?.building?.name ??
+          invoice?.property?.building?.name ??
+          null,
+        blockId:
+          invoice?.block_id ??
+          invoice?.property?.block_id ??
+          invoice?.property?.block?.id ??
+          null,
+        blockName:
+          invoice?.block?.name ??
+          invoice?.property?.block?.name ??
+          null,
+        complexId,
+        raw: invoice?.property || null,
+      };
+
+    setPropertyInvoicesContext({
+      invoiceId: invoice?.id ?? null,
+      invoice,
+      complexId: clickedProperty?.complexId ?? complexId,
+      clickedProperty,
+    });
+    setPropertyInvoicesModalOpen(true);
+  };
+
+  const handlePropertyInvoicesApply = (selectedProperty) => {
+    if (!selectedProperty?.id) return;
+    applyFilters({
+      ...filters,
+      complexId: selectedProperty?.raw?.complex_id || propertyInvoicesContext?.complexId || "",
+      buildingId: selectedProperty?.buildingId || "",
+      blockId: selectedProperty?.blockId || "",
+      propertyId: selectedProperty.id,
+    });
+    setPage(1);
+    setPropertyInvoicesModalOpen(false);
+  };
+
   const handlePaySuccess = () => {
     showToast("success", "Faktura uğurla ödənildi", "Uğurlu");
     setRefreshKey((prev) => prev + 1);
@@ -897,6 +1004,7 @@ const InvoicesPage = () => {
   };
 
   const invoiceViewFields = itemToView ? createInvoiceViewFields(t) : [];
+  const hasActiveChildInvoiceModal = formOpen || viewModalOpen || deleteModalOpen || payModalOpen;
 
   const getStatusColor = (status) => {
     const statusMap = {
@@ -939,16 +1047,22 @@ const InvoicesPage = () => {
       align: "text-left",
       render: (invoice) => (
         <>
-          <Typography variant="small" className="text-gray-700 dark:text-gray-300">
-            {invoice.property?.name ||
-              invoice.property?.meta?.apartment_number ||
-              invoice.property?.apartment_number ||
-              (invoice.property?.id != null
-                ? `Mənzil #${invoice.property.id}`
-                : invoice.property_id != null
-                  ? `Mənzil #${invoice.property_id}`
-                  : "-")}
-          </Typography>
+          <button
+            type="button"
+            onClick={() => handlePropertyInvoicesOpen(invoice)}
+            className="text-left"
+          >
+            <Typography variant="small" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
+              {invoice.property?.name ||
+                invoice.property?.meta?.apartment_number ||
+                invoice.property?.apartment_number ||
+                (invoice.property?.id != null
+                  ? `Mənzil #${invoice.property.id}`
+                  : invoice.property_id != null
+                    ? `Mənzil #${invoice.property_id}`
+                    : "-")}
+            </Typography>
+          </button>
           {invoice.property?.complex?.name && <Typography variant="small" className="text-xs text-gray-500 dark:text-gray-400">{invoice.property.complex.name}</Typography>}
         </>
       ),
@@ -1141,6 +1255,24 @@ const InvoicesPage = () => {
         currentFilters={filters}
       />
 
+      <PropertyInvoicesModal
+        open={propertyInvoicesModalOpen}
+        onClose={() => {
+          setPropertyInvoicesModalOpen(false);
+          setPropertyInvoicesContext(null);
+        }}
+        lockClose={hasActiveChildInvoiceModal}
+        mtkId={effectiveMtkId}
+        complexId={propertyInvoicesContext?.complexId || selectedComplex?.id || null}
+        title="Mənzil seçimi"
+        initialProperty={propertyInvoicesContext?.clickedProperty || null}
+        onApply={handlePropertyInvoicesApply}
+        onView={handleView}
+        onEdit={handleEdit}
+        onPay={handlePay}
+        onDelete={handleDelete}
+      />
+
       <PaymentModal
         open={payModalOpen}
         onClose={() => {
@@ -1153,7 +1285,9 @@ const InvoicesPage = () => {
           await dispatch(payFinanceInvoices([payload])).unwrap();
         }}
         onSuccess={handlePaySuccess}
-      /></div>
+      />
+
+      </div>
   );
 };
 

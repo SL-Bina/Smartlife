@@ -109,12 +109,16 @@ export function PaymentModal({ open, onClose, invoice, onSuccess, onPay, allowPa
     onClose();
   };
 
+  if (!open) return null;
+
   return (
     <Dialog
       open={open}
       handler={handleClose}
       size="sm"
-      className="dark:bg-gray-900"
+      dismiss={{ enabled: false }}
+      className="!z-[9999] dark:bg-gray-900"
+      style={{ zIndex: 9999 }}
     >
       <DialogHeader className="flex items-center justify-between pb-2 dark:border-gray-700">
         <div className="flex items-center gap-2">

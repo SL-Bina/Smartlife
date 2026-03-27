@@ -12,4 +12,5 @@ export { ServiceFeeModal } from "./ServiceFeeModal";
 export { default as SettingsModal } from "./SettingsModal";
 export { UnbindConfirmModal } from "./UnbindConfirmModal";
 export { ViewModal } from "./ViewModal";
+export { PropertyInvoicesModal } from "./PropertyInvoicesModal";
 

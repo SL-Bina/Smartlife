@@ -13,12 +13,15 @@ import {
   Pagination,
   Skeleton,
   Table,
+  PaymentModal,
   ServiceFeeModal,
   AddBalanceCashModal,
+  PropertyInvoicesModal,
 } from "@/components";
 import { usePropertyForm } from "@/hooks/management/properties/usePropertyForm";
 import { usePropertyData } from "@/hooks/management/properties/usePropertyData";
 import propertiesAPI from "@/services/management/propertiesApi";
+import { fetchInvoiceById, updateInvoice, deleteInvoice, payInvoices } from "@/services/finance/invoicesApi";
 import { Typography, Chip, IconButton, Menu, MenuHandler, MenuList, MenuItem } from "@material-tailwind/react";
 import { 
   HomeIcon, 
@@ -58,6 +61,30 @@ export default function PropertiesPage() {
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [serviceFeeModalOpen, setServiceFeeModalOpen] = useState(false);
   const [balanceModalOpen, setBalanceModalOpen] = useState(false);
+  const [propertyInvoicesModalOpen, setPropertyInvoicesModalOpen] = useState(false);
+  const [propertyInvoicesContext, setPropertyInvoicesContext] = useState(null);
+  const [propertyInvoicesRefreshKey, setPropertyInvoicesRefreshKey] = useState(0);
+  const [invoiceViewModalOpen, setInvoiceViewModalOpen] = useState(false);
+  const [invoiceViewLoading, setInvoiceViewLoading] = useState(false);
+  const [invoiceToView, setInvoiceToView] = useState(null);
+  const [invoiceDeleteModalOpen, setInvoiceDeleteModalOpen] = useState(false);
+  const [invoiceDeleteLoading, setInvoiceDeleteLoading] = useState(false);
+  const [invoiceToDelete, setInvoiceToDelete] = useState(null);
+  const [invoicePayModalOpen, setInvoicePayModalOpen] = useState(false);
+  const [invoiceToPay, setInvoiceToPay] = useState(null);
+  const [invoiceEditModalOpen, setInvoiceEditModalOpen] = useState(false);
+  const [invoiceEditLoading, setInvoiceEditLoading] = useState(false);
+  const [invoiceEditSaving, setInvoiceEditSaving] = useState(false);
+  const [invoiceToEdit, setInvoiceToEdit] = useState(null);
+  const [invoiceEditFormData, setInvoiceEditFormData] = useState({
+    amount: "",
+    type: "monthly",
+    start_date: "",
+    due_date: "",
+    status: "unpaid",
+    "meta.desc": "",
+  });
+  const hasActiveChildInvoiceModal = invoiceViewModalOpen || invoiceDeleteModalOpen || invoicePayModalOpen || invoiceEditModalOpen;
   const [itemForBalance, setItemForBalance] = useState(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -253,6 +280,209 @@ export default function PropertiesPage() {
     setBalanceModalOpen(true);
   };
 
+  const handlePropertyInvoicesOpen = (property) => {
+    if (!property?.id) return;
+
+    const resolvedComplexId =
+      property?.complex_id ??
+      property?.sub_data?.complex?.id ??
+      property?.bind_complex?.id ??
+      complexId ??
+      selectedComplex?.id ??
+      null;
+
+    const clickedProperty = {
+      id: property.id,
+      name: property?.name || property?.meta?.apartment_number || `Mənzil #${property.id}`,
+      apartmentNumber: property?.meta?.apartment_number || null,
+      complexId: resolvedComplexId,
+      complexName: property?.sub_data?.complex?.name || property?.bind_complex?.name || null,
+      buildingId: property?.building_id ?? property?.sub_data?.building?.id ?? property?.bind_building?.id ?? null,
+      buildingName: property?.sub_data?.building?.name || property?.bind_building?.name || null,
+      blockId: property?.block_id ?? property?.sub_data?.block?.id ?? property?.bind_block?.id ?? null,
+      blockName: property?.sub_data?.block?.name || property?.bind_block?.name || null,
+      raw: property,
+    };
+
+    setPropertyInvoicesContext({
+      complexId: resolvedComplexId,
+      clickedProperty,
+    });
+    setPropertyInvoicesModalOpen(true);
+  };
+
+  const invoiceViewFields = [
+    { key: "id", label: "ID" },
+    { key: "service.name", label: "Xidmət" },
+    { key: "property.name", label: "Mənzil" },
+    { key: "amount", label: "Məbləğ", format: (v) => `${parseFloat(v || 0).toFixed(2)} ₼` },
+    { key: "amount_paid", label: "Ödənilmiş", format: (v) => `${parseFloat(v || 0).toFixed(2)} ₼` },
+    { key: "type", label: "Növ" },
+    { key: "status", label: "Status" },
+    { key: "start_date", label: "Başlama tarixi" },
+    { key: "due_date", label: "Son tarix" },
+    { key: "meta.desc", label: "Qeyd", fullWidth: true },
+  ];
+
+  const invoiceEditFields = [
+    {
+      key: "amount",
+      label: "Məbləğ",
+      type: "number",
+      required: true,
+      placeholder: "Məbləğ",
+    },
+    {
+      key: "type",
+      label: "Növ",
+      type: "select",
+      required: true,
+      options: [
+        { value: "daily", label: "daily" },
+        { value: "weekly", label: "weekly" },
+        { value: "monthly", label: "monthly" },
+        { value: "quarterly", label: "quarterly" },
+        { value: "biannually", label: "biannually" },
+        { value: "yearly", label: "yearly" },
+        { value: "one_time", label: "one_time" },
+      ],
+    },
+    {
+      key: "status",
+      label: "Status",
+      type: "select",
+      required: true,
+      options: [
+        { value: "unpaid", label: "unpaid" },
+        { value: "pending", label: "pending" },
+        { value: "pre_paid", label: "pre_paid" },
+        { value: "paid", label: "paid" },
+        { value: "overdue", label: "overdue" },
+        { value: "declined", label: "declined" },
+        { value: "draft", label: "draft" },
+      ],
+    },
+    {
+      key: "start_date",
+      label: "Başlama tarixi",
+      type: "date",
+      required: true,
+    },
+    {
+      key: "due_date",
+      label: "Son tarix",
+      type: "date",
+      required: true,
+    },
+    {
+      key: "meta.desc",
+      label: "Qeyd",
+      type: "textarea",
+      colSpan: 2,
+      rows: 4,
+    },
+  ];
+
+  const handleInvoiceView = async (invoice) => {
+    if (!invoice?.id) return;
+    try {
+      setInvoiceViewLoading(true);
+      setInvoiceToView(null);
+      setInvoiceViewModalOpen(true);
+      const data = await fetchInvoiceById(invoice.id);
+      setInvoiceToView(data);
+    } catch {
+      setInvoiceViewModalOpen(false);
+      showToast("error", "Faktura məlumatları yüklənərkən xəta baş verdi", "Xəta");
+    } finally {
+      setInvoiceViewLoading(false);
+    }
+  };
+
+  const handleInvoicePay = (invoice) => {
+    if (!invoice?.id) return;
+    setInvoiceToPay(invoice);
+    setInvoicePayModalOpen(true);
+  };
+
+  const handleInvoiceDelete = (invoice) => {
+    if (!invoice?.id) return;
+    setInvoiceToDelete(invoice);
+    setInvoiceDeleteModalOpen(true);
+  };
+
+  const confirmInvoiceDelete = async () => {
+    if (!invoiceToDelete?.id) return;
+    try {
+      setInvoiceDeleteLoading(true);
+      await deleteInvoice(invoiceToDelete.id);
+      showToast("success", "Faktura uğurla silindi", "Uğurlu");
+      setInvoiceDeleteModalOpen(false);
+      setInvoiceToDelete(null);
+      setPropertyInvoicesRefreshKey((prev) => prev + 1);
+    } catch (error) {
+      showToast("error", error?.message || "Faktura silinərkən xəta baş verdi", "Xəta");
+    } finally {
+      setInvoiceDeleteLoading(false);
+    }
+  };
+
+  const handleInvoiceEdit = async (invoice) => {
+    if (!invoice?.id) return;
+    try {
+      setInvoiceEditLoading(true);
+      const data = await fetchInvoiceById(invoice.id);
+      setInvoiceToEdit(data);
+      setInvoiceEditFormData({
+        amount: data?.amount ?? "",
+        type: data?.type ?? "monthly",
+        start_date: data?.start_date ?? "",
+        due_date: data?.due_date ?? "",
+        status: data?.status ?? "unpaid",
+        "meta.desc": data?.meta?.desc ?? "",
+      });
+      setInvoiceEditModalOpen(true);
+    } catch {
+      showToast("error", "Faktura redaktə məlumatları yüklənərkən xəta baş verdi", "Xəta");
+    } finally {
+      setInvoiceEditLoading(false);
+    }
+  };
+
+  const submitInvoiceEdit = async () => {
+    if (!invoiceToEdit?.id) return;
+    try {
+      setInvoiceEditSaving(true);
+      const payload = {
+        mtk_id: invoiceToEdit?.mtk_id ?? mtkId ?? null,
+        complex_id: invoiceToEdit?.complex_id ?? invoiceToEdit?.property?.complex_id ?? null,
+        building_id: invoiceToEdit?.building_id ?? invoiceToEdit?.property?.building_id ?? null,
+        block_id: invoiceToEdit?.block_id ?? invoiceToEdit?.property?.block_id ?? null,
+        property_id: invoiceToEdit?.property_id ?? invoiceToEdit?.property?.id ?? null,
+        service_id: invoiceToEdit?.service_id ?? invoiceToEdit?.service?.id ?? null,
+        amount: Number(invoiceEditFormData?.amount || 0),
+        type: invoiceEditFormData?.type,
+        start_date: invoiceEditFormData?.start_date,
+        due_date: invoiceEditFormData?.due_date,
+        status: invoiceEditFormData?.status,
+        meta: {
+          ...(invoiceToEdit?.meta || {}),
+          desc: invoiceEditFormData?.["meta.desc"] || "",
+        },
+      };
+
+      await updateInvoice(invoiceToEdit.id, payload);
+      showToast("success", "Faktura uğurla yeniləndi", "Uğurlu");
+      setInvoiceEditModalOpen(false);
+      setInvoiceToEdit(null);
+      setPropertyInvoicesRefreshKey((prev) => prev + 1);
+    } catch (error) {
+      showToast("error", error?.message || "Faktura yenilənərkən xəta baş verdi", "Xəta");
+    } finally {
+      setInvoiceEditSaving(false);
+    }
+  };
+
   const submitForm = async (formData) => {
     try {
       const payload = normalizePropertyPayload(formData);
@@ -325,7 +555,18 @@ export default function PropertiesPage() {
 
   const tableColumns = [
     { key: "id", label: "ID", align: "text-left", render: (item) => <Typography variant="small" className="text-gray-700 dark:text-gray-300 font-medium">#{item.id}</Typography> },
-    { key: "name", label: "Ad", align: "text-left", render: (item) => <Typography variant="small" className="font-semibold text-gray-700 dark:text-gray-300">{item?.name || "-"}</Typography> },
+    {
+      key: "name",
+      label: "Ad",
+      align: "text-left",
+      render: (item) => (
+        <button type="button" onClick={() => handlePropertyInvoicesOpen(item)} className="text-left">
+          <Typography variant="small" className="font-semibold text-blue-600 dark:text-blue-400 hover:underline">
+            {item?.name || item?.meta?.apartment_number || "-"}
+          </Typography>
+        </button>
+      ),
+    },
     { key: "mtk", label: "MTK", align: "text-left", render: (item) => <Typography variant="small" className="text-gray-700 dark:text-gray-300">{item?.sub_data?.mtk?.name || "-"}</Typography> },
     { key: "complex", label: "Complex", align: "text-left", render: (item) => <Typography variant="small" className="text-gray-700 dark:text-gray-300">{item?.sub_data?.complex?.name || "-"}</Typography> },
     { key: "building", label: "Bina", align: "text-left", render: (item) => <Typography variant="small" className="text-gray-700 dark:text-gray-300">{item?.sub_data?.building?.name || "-"}</Typography> },
@@ -761,7 +1002,99 @@ export default function PropertiesPage() {
         loading={editConfirmLoading}
         oldData={selected}
         newData={pendingFormData}
-      />     </div>
+      />
+
+      <PropertyInvoicesModal
+        open={propertyInvoicesModalOpen}
+        onClose={() => {
+          setPropertyInvoicesModalOpen(false);
+          setPropertyInvoicesContext(null);
+        }}
+        lockClose={hasActiveChildInvoiceModal}
+        mtkId={mtkId}
+        complexId={propertyInvoicesContext?.complexId || complexId || selectedComplex?.id || null}
+        title="Mənzil seçimi"
+        refreshTrigger={propertyInvoicesRefreshKey}
+        initialProperty={propertyInvoicesContext?.clickedProperty || null}
+        onView={handleInvoiceView}
+        onEdit={handleInvoiceEdit}
+        onPay={handleInvoicePay}
+        onDelete={handleInvoiceDelete}
+        onApply={(selectedModel) => {
+          if (selectedModel?.id) {
+            dispatch(setSelectedProperty({
+              id: selectedModel.id,
+              property: selectedModel.raw || selectedModel,
+            }));
+          }
+          setPropertyInvoicesModalOpen(false);
+          setPropertyInvoicesContext(null);
+        }}
+      />
+
+      <ViewModal
+        open={invoiceViewModalOpen}
+        onClose={() => {
+          setInvoiceViewModalOpen(false);
+          setInvoiceToView(null);
+        }}
+        title="Faktura məlumatları"
+        item={invoiceToView}
+        entityName="faktura"
+        fields={invoiceViewFields}
+        loading={invoiceViewLoading}
+      />
+
+      <DeleteConfirmModal
+        open={invoiceDeleteModalOpen}
+        onClose={() => {
+          setInvoiceDeleteModalOpen(false);
+          setInvoiceToDelete(null);
+        }}
+        onConfirm={confirmInvoiceDelete}
+        title="Fakturanı Sil"
+        itemName={invoiceToDelete ? `ID: ${invoiceToDelete.id}` : ""}
+        entityName="faktura"
+        loading={invoiceDeleteLoading}
+      />
+
+      <PaymentModal
+        open={invoicePayModalOpen}
+        onClose={() => {
+          setInvoicePayModalOpen(false);
+          setInvoiceToPay(null);
+        }}
+        invoice={invoiceToPay}
+        allowPartialPayment
+        onPay={async (payload) => {
+          await payInvoices([payload]);
+        }}
+        onSuccess={() => {
+          showToast("success", "Faktura uğurla ödənildi", "Uğurlu");
+          setPropertyInvoicesRefreshKey((prev) => prev + 1);
+        }}
+      />
+
+      <FormModal
+        open={invoiceEditModalOpen}
+        mode="edit"
+        title="Fakturanı redaktə et"
+        description="Faktura məlumatlarını yeniləyin"
+        fields={invoiceEditFields}
+        formData={invoiceEditFormData}
+        onFieldChange={(field, value) => {
+          setInvoiceEditFormData((prev) => ({ ...prev, [field]: value }));
+        }}
+        onClose={() => {
+          if (invoiceEditSaving || invoiceEditLoading) return;
+          setInvoiceEditModalOpen(false);
+          setInvoiceToEdit(null);
+        }}
+        onSubmit={submitInvoiceEdit}
+        submitLabel="Yenilə"
+        saving={invoiceEditSaving || invoiceEditLoading}
+      />
+    </div>
   );
 }
 
