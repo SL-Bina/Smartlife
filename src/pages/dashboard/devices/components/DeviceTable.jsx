@@ -164,7 +164,7 @@ export function DeviceTable({ items, loading, page, lastPage, onEdit, onDelete, 
           <EyeIcon className="h-4 w-4" />
           {t("devices.actions.view") || "Bax"}
         </MenuItem>
-        <MenuItem
+        {/* <MenuItem
           onClick={(e) => { e.stopPropagation(); onEdit(row); }}
           className="flex items-center gap-2"
         >
@@ -177,7 +177,7 @@ export function DeviceTable({ items, loading, page, lastPage, onEdit, onDelete, 
         >
           <TrashIcon className="h-4 w-4" />
           {t("devices.actions.delete") || "Sil"}
-        </MenuItem>
+        </MenuItem> */}
       </MenuList>
     </Menu>
   );
@@ -369,7 +369,3 @@ export function DeviceTable({ items, loading, page, lastPage, onEdit, onDelete, 
     </>
   );
 }
-
-// ------------------------------------------------------------------
-// Small inline tag badge
-// ------------------------------------------------------------------

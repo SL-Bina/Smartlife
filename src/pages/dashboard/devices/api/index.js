@@ -144,12 +144,13 @@ export const devicesAPI = {
     }
   },
 
-  getBasipUsers: async ({ complex_id, page = 1, size = 20 }) => {
+  getBasipUsers: async ({ complex_id, page = 1, size = 20, search = "" }) => {
     try {
       const response = await api.post("/integration/device/basip-project/users", {
         complex_id,
         page,
         size,
+        ...(search ? { search } : {}),
       });
       return response;
     } catch (error) {

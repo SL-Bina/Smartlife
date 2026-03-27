@@ -31,6 +31,7 @@ export function AsyncSearchSelect({
   className = "",
   labelClassName = "",
   endpoint,
+  loadOptions,
   searchParams = {},
   labelKey = "name",
   valueKey = "id",
@@ -119,22 +120,50 @@ export function AsyncSearchSelect({
   }, []);
 
   const fetchOptions = useCallback(async ({ search = "", pageNum = 1 } = {}) => {
-    if (!endpoint) return;
+    if (!endpoint && typeof loadOptions !== "function") return;
     // Only show the full spinner for the first page; subsequent pages show loadingMore indicator
     if (pageNum === 1) setLoading(true);
     try {
-      const params = {
-        ...searchParamsRef.current,
-        per_page: perPage,
-        page: pageNum,
-      };
+      let data = [];
+      let lastPage = 1;
 
-      if (search && search.trim()) {
-        params.search = search.trim();
+      if (typeof loadOptions === "function") {
+        const result = await loadOptions({
+          search: search?.trim?.() || "",
+          page: pageNum,
+          perPage,
+          params: searchParamsRef.current,
+        });
+
+        if (Array.isArray(result)) {
+          data = result;
+          lastPage = pageNum + (result.length >= perPage ? 1 : 0);
+        } else {
+          data = result?.data || result?.items || [];
+          lastPage =
+            result?.lastPage ||
+            result?.last_page ||
+            result?.pagination?.last_page ||
+            result?.pagination?.totalPages ||
+            pageNum;
+        }
+      } else {
+        const params = {
+          ...searchParamsRef.current,
+          per_page: perPage,
+          page: pageNum,
+        };
+
+        if (search && search.trim()) {
+          params.search = search.trim();
+        }
+
+        const response = await api.get(endpoint, { params });
+        const parsed = parseResponse(response);
+        data = parsed.data;
+        lastPage = parsed.lastPage;
       }
 
-      const response = await api.get(endpoint, { params });
-      const { data, lastPage } = parseResponse(response);
       if (pageNum === 1) {
         setOptions(data);
       } else {
@@ -149,10 +178,10 @@ export function AsyncSearchSelect({
     } finally {
       if (pageNum === 1) setLoading(false);
     }
-  }, [endpoint, perPage, parseResponse]);
+  }, [endpoint, loadOptions, perPage, parseResponse]);
 
   const loadMoreData = useCallback(async (search, pageNum) => {
-    if (!endpoint || loadingMoreRef.current) return;
+    if ((!endpoint && typeof loadOptions !== "function") || loadingMoreRef.current) return;
     loadingMoreRef.current = true;
     setLoadingMore(true);
     try {
@@ -164,7 +193,7 @@ export function AsyncSearchSelect({
       loadingMoreRef.current = false;
       setLoadingMore(false);
     }
-  }, [endpoint, fetchOptions]);
+  }, [endpoint, loadOptions, fetchOptions]);
 
   const handleListScroll = useCallback((e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.target;
@@ -175,12 +204,12 @@ export function AsyncSearchSelect({
 
   // Single effect: only fetch when dropdown is open (or params change while open)
   useEffect(() => {
-    if (!endpoint || disabled || !isOpen) return;
+    if ((!endpoint && typeof loadOptions !== "function") || disabled || !isOpen) return;
     setPage(1);
     setHasMore(true);
     setOptions([]);
     fetchOptions({ search: debouncedSearch, pageNum: 1 });
-  }, [endpoint, searchParamsKey, disabled, debouncedSearch, isOpen, fetchOptions]);
+  }, [endpoint, loadOptions, searchParamsKey, disabled, debouncedSearch, isOpen, fetchOptions]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {

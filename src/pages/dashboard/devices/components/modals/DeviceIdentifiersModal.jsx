@@ -23,6 +23,8 @@ import { Actions as ManagementActions } from "@/components";
 import { Pagination } from "@/components";
 import { CustomInput } from "@/components/ui/CustomInput";
 import { CustomSelect } from "@/components/ui/CustomSelect";
+import AsyncSearchSelect from "@/components/ui/AsyncSearchSelect";
+import { devicesAPI } from "@/pages/dashboard/devices/api";
 
 const IDENTIFIER_TYPES = [
   { value: "card", label: "Card" },
@@ -48,6 +50,7 @@ const DEFAULT_FORM = {
   id: null,
   name: "",
   owner: "",
+  ownerLabel: "",
   owner_type: "owner",
   type: "card",
   value: "",
@@ -121,6 +124,7 @@ export function DeviceIdentifiersModal({
       id: identifier.id,
       name: identifier.name || "",
       owner: identifier.owner?.id ? String(identifier.owner.id) : "",
+      ownerLabel: identifier.owner?.name || "",
       owner_type: identifier.owner_type || "owner",
       type: identifier.type || "card",
       value: identifier.value || identifier.identifier || "",
@@ -134,7 +138,7 @@ export function DeviceIdentifiersModal({
   const handleSave = async () => {
     const errors = {};
     if (!formData.name?.trim()) errors.name = "Ad teleb olunur";
-    if (!formData.owner) errors.owner = "Owner ID teleb olunur";
+    if (!formData.owner) errors.owner = "Owner secimi teleb olunur";
     if (!formData.type) errors.type = "Nov teleb olunur";
     if (!formData.value?.trim()) errors.value = "Value teleb olunur";
 
@@ -409,11 +413,71 @@ export function DeviceIdentifiersModal({
             error={formErrors.name}
           />
 
-          <CustomInput
-            label={t("devices.deviceIdentifiers.ownerId") || "Owner ID"}
-            type="number"
-            value={formData.owner}
-            onChange={(e) => setFormData((prev) => ({ ...prev, owner: e.target.value }))}
+          <AsyncSearchSelect
+            label={t("devices.deviceIdentifiers.ownerId") || "Owner"}
+            value={formData.owner || null}
+            onChange={(value, option) => {
+              setFormData((prev) => ({
+                ...prev,
+                owner: value ? String(value) : "",
+                ownerLabel: option?.name || option?.label || "",
+              }));
+              setFormErrors((prev) => ({ ...prev, owner: undefined }));
+            }}
+            placeholder={t("devices.deviceIdentifiers.ownerId") || "Owner secin"}
+            searchPlaceholder={t("common.search") || "Axtar..."}
+            selectedLabel={formData.ownerLabel || null}
+            loadOptions={async ({ search = "", page: pageNum = 1, perPage: limit = 20 }) => {
+              if (!complexId) return { data: [], lastPage: 1 };
+
+              const response = await devicesAPI.getBasipUsers({
+                complex_id: complexId,
+                page: pageNum,
+                size: limit,
+                search,
+              });
+
+              const payload = response?.data?.body || {};
+              const listRaw = Array.isArray(payload?.data)
+                ? payload.data
+                : Array.isArray(response?.data?.data)
+                  ? response.data.data
+                  : [];
+
+              const list = listRaw
+                .map((user) => ({
+                  id: user?.id,
+                  name: user?.name || user?.full_name || user?.email || `#${user?.id ?? ""}`,
+                }))
+                .filter((user) => user.id !== null && user.id !== undefined);
+
+              const pagination = payload?.pagination || {};
+              const pageSize =
+                Number(pagination?.size) ||
+                Number(pagination?.per_page) ||
+                Number(limit) ||
+                20;
+              const totalPagesFromApi =
+                Number(pagination?.last_page) ||
+                Number(pagination?.total_pages) ||
+                (Number(pagination?.total) > 0
+                  ? Math.ceil(Number(pagination.total) / pageSize)
+                  : 0);
+
+              // If API doesn't provide total pages, keep scrolling while page is full.
+              const inferredLastPage =
+                totalPagesFromApi > 0
+                  ? totalPagesFromApi
+                  : (list.length < pageSize ? pageNum : pageNum + 1);
+
+              return {
+                data: list,
+                lastPage: inferredLastPage,
+              };
+            }}
+            perPage={20}
+            allowClear={false}
+            disabled={!complexId}
             error={formErrors.owner}
           />
 

@@ -825,104 +825,87 @@ const DevicesPage = () => {
     loadDeviceUsers,
   ]);
 
-  const renderDeviceExtraControls = (isMobile = false) => {
-    const wrapperClass = isMobile ? "flex flex-wrap gap-2" : "flex flex-wrap gap-2 md:gap-2";
+  const renderDevicePageControls = () => {
     const baseActionButtonClass =
-      "flex items-center justify-center px-4 !bg-transparent !shadow-none hover:!shadow-none border transition-all duration-200";
-
-    const actionStyles = {
-      complex: { color: "#1d4ed8", borderColor: "#93c5fd" },
-      users: { color: "#7c3aed", borderColor: "#c4b5fd" },
-      access: { color: "#0f766e", borderColor: "#99f6e4" },
-      identifiers: { color: "#b45309", borderColor: "#fcd34d" },
-      logs: { color: "#374151", borderColor: "#d1d5db" },
-    };
+      "w-full xl:w-auto inline-flex items-center justify-center rounded-xl border bg-white/70 dark:bg-gray-900/50 px-4 py-2.5 text-sm font-semibold transition-colors";
 
     return (
-      <div className={wrapperClass}>
-        <div className="inline-flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="rounded-2xl border border-gray-200/70 dark:border-gray-700/70 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl shadow-sm p-2 sm:p-3">
+        <div className="flex flex-col xl:flex-row xl:items-center gap-2 sm:gap-3">
+          {eligibleComplexes.length > 1 ? (
+            <button
+              type="button"
+              onClick={() => {
+                setComplexSelectionRequired(false);
+                setComplexSelectionOpen(true);
+              }}
+              className={`${baseActionButtonClass} border-blue-300 text-blue-700 dark:border-blue-500/60 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/25`}
+            >
+              {selectedComplexName
+                ? `${t("devices.complexSelection.changeButton") || "Kompleks sec"}: ${selectedComplexName}`
+                : t("devices.complexSelection.changeButton") || "Kompleks sec"}
+            </button>
+          ) : null}
+
           <button
             type="button"
-            onClick={() => setDevicesViewMode("table")}
-            className={`px-3 py-2 text-xs sm:text-sm font-medium inline-flex items-center gap-1.5 transition-colors ${
-              devicesViewMode === "table"
-                ? "bg-blue-600 text-white"
-                : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
-            }`}
+            onClick={handleOpenDeviceUsers}
+            className={`${baseActionButtonClass} border-violet-300 text-violet-700 dark:border-violet-500/60 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-900/25`}
           >
-            <TableCellsIcon className="h-4 w-4" />
-            Cədvəl
+            {t("devices.actions.deviceUsers") || "Istifadeciler"}
           </button>
+
           <button
             type="button"
-            onClick={() => setDevicesViewMode("card")}
-            className={`px-3 py-2 text-xs sm:text-sm font-medium inline-flex items-center gap-1.5 transition-colors ${
-              devicesViewMode === "card"
-                ? "bg-blue-600 text-white"
-                : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
-            }`}
+            onClick={() => setAccessRulesOpen(true)}
+            className={`${baseActionButtonClass} border-teal-300 text-teal-700 dark:border-teal-500/60 dark:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-900/25`}
           >
-            <Squares2X2Icon className="h-4 w-4" />
-            Kart
+            {t("devices.actions.accessRules") || "Icaze qaydalari"}
           </button>
+
+          <button
+            type="button"
+            onClick={handleOpenDeviceIdentifiers}
+            className={`${baseActionButtonClass} border-amber-300 text-amber-700 dark:border-amber-500/60 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/25`}
+          >
+            {t("devices.actions.deviceIdentifiers") || "Identifikatorlar"}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setDeviceLogsOpen(true)}
+            className={`${baseActionButtonClass} border-gray-300 text-gray-700 dark:border-gray-500/60 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/60`}
+          >
+            {t("devices.actions.deviceLogs") || "Loglar"}
+          </button>
+
+          <div className="w-full xl:w-auto xl:ml-auto inline-flex rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800">
+            <button
+              type="button"
+              onClick={() => setDevicesViewMode("table")}
+              className={`flex-1 xl:flex-none px-3 py-2 text-xs sm:text-sm font-medium inline-flex items-center justify-center gap-1.5 transition-colors ${
+                devicesViewMode === "table"
+                  ? "bg-blue-600 text-white"
+                  : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+              }`}
+            >
+              <TableCellsIcon className="h-4 w-4" />
+              Cədvəl
+            </button>
+            <button
+              type="button"
+              onClick={() => setDevicesViewMode("card")}
+              className={`flex-1 xl:flex-none px-3 py-2 text-xs sm:text-sm font-medium inline-flex items-center justify-center gap-1.5 transition-colors ${
+                devicesViewMode === "card"
+                  ? "bg-blue-600 text-white"
+                  : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+              }`}
+            >
+              <Squares2X2Icon className="h-4 w-4" />
+              Kart
+            </button>
+          </div>
         </div>
-
-        {eligibleComplexes.length > 1 ? (
-          <Button
-            type="button"
-            size={isMobile ? "sm" : "md"}
-            onClick={() => {
-              setComplexSelectionRequired(false);
-              setComplexSelectionOpen(true);
-            }}
-            className={baseActionButtonClass}
-            style={actionStyles.complex}
-          >
-            {selectedComplexName
-              ? `${t("devices.complexSelection.changeButton") || "Kompleks sec"}: ${selectedComplexName}`
-              : t("devices.complexSelection.changeButton") || "Kompleks sec"}
-          </Button>
-        ) : null}
-
-        <Button
-          type="button"
-          size={isMobile ? "sm" : "md"}
-          onClick={handleOpenDeviceUsers}
-          className={baseActionButtonClass}
-          style={actionStyles.users}
-        >
-          {t("devices.actions.deviceUsers") || "Istifadeciler"}
-        </Button>
-
-        <Button
-          type="button"
-          size={isMobile ? "sm" : "md"}
-          onClick={() => setAccessRulesOpen(true)}
-          className={baseActionButtonClass}
-          style={actionStyles.access}
-        >
-          {t("devices.actions.accessRules") || "Icaze qaydalari"}
-        </Button>
-
-        <Button
-          type="button"
-          size={isMobile ? "sm" : "md"}
-          onClick={handleOpenDeviceIdentifiers}
-          className={baseActionButtonClass}
-          style={actionStyles.identifiers}
-        >
-          {t("devices.actions.deviceIdentifiers") || "Identifikatorlar"}
-        </Button>
-
-        <Button
-          type="button"
-          size={isMobile ? "sm" : "md"}
-          onClick={() => setDeviceLogsOpen(true)}
-          className={baseActionButtonClass}
-          style={actionStyles.logs}
-        >
-          {t("devices.actions.deviceLogs") || "Loglar"}
-        </Button>
       </div>
     );
   };
@@ -1141,8 +1124,9 @@ const DevicesPage = () => {
             onStatusChange={handleStatusChange}
             totalItems={total}
             showStatus={false}
-            renderExtraControls={renderDeviceExtraControls}
           />
+
+          {renderDevicePageControls()}
 
           {devicesViewMode === "table" ? (
             <DeviceTable
@@ -1236,7 +1220,7 @@ const DevicesPage = () => {
                         >
                           {t("devices.actions.view") || "Bax"}
                         </button>
-                        <button
+                        {/* <button
                           type="button"
                           onClick={() => handleEdit(row)}
                           className="rounded-lg px-3 py-2 text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/50"
@@ -1249,7 +1233,7 @@ const DevicesPage = () => {
                           className="rounded-lg px-3 py-2 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/50"
                         >
                           {t("devices.actions.delete") || "Sil"}
-                        </button>
+                        </button> */}
                       </div>
                     </div>
                   );

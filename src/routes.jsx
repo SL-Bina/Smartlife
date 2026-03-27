@@ -33,7 +33,7 @@ import {
   ComplexDashboardPage,
   ComplexesPage,
   CreateQueryPage,
-  DebtorApartmentsPage,
+  // DebtorApartmentsPage,
   DebtPage,
   DepositPage,
   DeviceConnectionPage,
@@ -116,12 +116,12 @@ export const routes = [
             path: "/finance/reports",
             element: <ReportsPage />,
           },
-          {
-            icon: <ExclamationTriangleIcon {...icon} />,
-            name: "sidebar.debtorApartments",
-            path: "/finance/debtor-apartments",
-            element: <DebtorApartmentsPage />,
-          },
+          // {
+          //   icon: <ExclamationTriangleIcon {...icon} />,
+          //   name: "sidebar.debtorApartments",
+          //   path: "/finance/debtor-apartments",
+          //   element: <DebtorApartmentsPage />,
+          // },
           {
             icon: <CurrencyDollarIcon {...icon} />,
             name: "sidebar.expenses",
