@@ -578,6 +578,7 @@ export default function ResidentsPage() {
       <PropertyBindModal
         open={bindModalOpen}
         onClose={() => setBindModalOpen(false)}
+        lockClose={balanceModal.open}
         residentId={selectedResidentId}
         residentName={selectedResident ? `${selectedResident.name || ''} ${selectedResident.surname || ''}`.trim() : ""}
         residentProperties={selectedResident?.property_residents}

@@ -1,6 +1,18 @@
-import React, { useState, useMemo } from "react";
-import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography, Card, CardBody, Chip } from "@material-tailwind/react";
-import { XMarkIcon, HomeIcon, LinkIcon, BuildingOfficeIcon, Square3Stack3DIcon, TrashIcon, PlusIcon, CheckCircleIcon, BanknotesIcon, UserCircleIcon } from "@heroicons/react/24/outline";
+import React, { useState, useMemo, useEffect } from "react";
+import { Dialog, DialogHeader, DialogBody, DialogFooter, Button, Typography, Chip } from "@material-tailwind/react";
+import {
+  XMarkIcon,
+  HomeIcon,
+  LinkIcon,
+  BuildingOfficeIcon,
+  Square3Stack3DIcon,
+  TrashIcon,
+  PlusIcon,
+  CheckCircleIcon,
+  BanknotesIcon,
+  UserCircleIcon,
+  RectangleGroupIcon,
+} from "@heroicons/react/24/outline";
 import { AsyncSearchSelect } from "@/components/ui/AsyncSearchSelect";
 import { BindConfirmModal } from "./BindConfirmModal";
 import { UnbindConfirmModal } from "./UnbindConfirmModal";
@@ -10,6 +22,7 @@ import { useAppColor } from "@/hooks/useAppColor";
 export function PropertyBindModal({
   open,
   onClose,
+  lockClose = false,
   residentId,
   residentName = "",
   residentProperties = [],
@@ -17,6 +30,7 @@ export function PropertyBindModal({
   onAddBalance,
 }) {
   const { colorCode, getRgba } = useAppColor();
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [mtkId, setMtkId] = useState(null);
   const [complexId, setComplexId] = useState(null);
   const [buildingId, setBuildingId] = useState(null);
@@ -32,6 +46,18 @@ export function PropertyBindModal({
 
   const showToast = (type, message, title = "") => setToast({ open: true, type, message, title });
   const canBind = mtkId && complexId && propertyId;
+
+  useEffect(() => {
+    if (!open) {
+      setIsPickerOpen(false);
+      setMtkId(null);
+      setComplexId(null);
+      setBuildingId(null);
+      setBlockId(null);
+      setPropertyId(null);
+      setSelectedLabels({});
+    }
+  }, [open]);
 
   const complexSearchParams = useMemo(() => {
     const params = {};
@@ -156,6 +182,7 @@ export function PropertyBindModal({
       setBlockId(null);
       setPropertyId(null);
       setSelectedLabels({});
+      setIsPickerOpen(false);
     } catch (e) {
       const msg = e?.message || e?.data?.message || "Xəta baş verdi";
       showToast("error", msg, "Xəta");
@@ -192,10 +219,10 @@ export function PropertyBindModal({
       <Dialog
         open={open}
         handler={() => {
-          if (!unbindTarget && !bindConfirm) onClose();
+          if (!lockClose && !unbindTarget && !bindConfirm) onClose();
         }}
         size="xl"
-        dismiss={{ enabled: !unbindTarget && !bindConfirm }}
+        dismiss={{ enabled: !lockClose && !unbindTarget && !bindConfirm }}
         className="w-full max-h-[92vh] overflow-hidden rounded-lg sm:rounded-xl border-[0.5px] border-gray-200/55 dark:border-gray-700/55 bg-white dark:bg-gray-800 shadow-2xl"
       >
         <DialogHeader
@@ -206,13 +233,16 @@ export function PropertyBindModal({
             <div className="flex items-center gap-3">
               <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm"><LinkIcon className="h-6 w-6 text-white" /></div>
               <div>
-                <Typography variant="h5" className="text-white font-bold">Mənzil Bağlama</Typography>
-                <Typography variant="small" className="text-white/90">Sakin üçün mənzil əlavə edin və ya idarə edin</Typography>
+                <Typography variant="h5" className="text-white font-bold">Sakinin Mənzilləri</Typography>
+                <Typography variant="small" className="text-white/90">Mənzilləri idarə edin, yeni mənzil əlavə edin və balans əməliyyatlarını edin</Typography>
               </div>
             </div>
             <button
               type="button"
-              onClick={onClose}
+                onClick={() => {
+                  if (!lockClose) onClose();
+                }}
+                disabled={lockClose}
               className="h-9 w-9 rounded-xl grid place-items-center bg-white/15 hover:bg-white/25 transition-colors flex-shrink-0"
               aria-label="Bağla"
             >
@@ -221,141 +251,238 @@ export function PropertyBindModal({
           </div>
         </DialogHeader>
 
-        <DialogBody className="p-4 sm:p-6 bg-gray-50 dark:bg-gray-900 overflow-y-auto max-h-[64vh]">
-          <div className="rounded-xl border-[0.5px] border-gray-200/70 dark:border-gray-700/70 bg-white dark:bg-gray-800 p-4 sm:p-5 shadow-sm mb-6">
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-indigo-600"><UserCircleIcon className="h-5 w-5 text-white" /></div>
-              <div>
-                <Typography variant="small" className="font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Sakin</Typography>
-                <Typography variant="h6" className="font-bold text-gray-800 dark:text-white">{residentName || `Sakin #${residentId || "-"}`}</Typography>
+        <DialogBody className="p-0 bg-slate-50 dark:bg-gray-900 overflow-hidden">
+          <div className="max-h-[68vh] overflow-y-auto p-4 sm:p-6 space-y-4">
+            <div
+              className="rounded-2xl border border-gray-200/75 dark:border-gray-700/70 p-4 sm:p-5"
+              style={{ background: `linear-gradient(180deg, ${getRgba(0.12)}, transparent)` }}
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="h-11 w-11 rounded-xl grid place-items-center text-white" style={{ background: colorCode || "#2563eb" }}>
+                    <UserCircleIcon className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <Typography variant="small" className="text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">Sakin</Typography>
+                    <Typography variant="h6" className="text-gray-800 dark:text-white font-bold">
+                      {residentName || `Sakin #${residentId || "-"}`}
+                    </Typography>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <Chip
+                    value={`Mənzil sayı: ${residentProperties.length}`}
+                    className="rounded-full px-3 py-1 text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
+                  />
+                  <Chip
+                    value={residentProperties.length > 0 ? "Aktiv bağlar var" : "Bağ yoxdur"}
+                    className="rounded-full px-3 py-1 text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+                  />
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="rounded-xl border-[0.5px] border-gray-200/70 dark:border-gray-700/70 bg-white dark:bg-gray-800 p-4 sm:p-5 shadow-sm space-y-6">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="p-2 rounded-lg" style={{ background: colorCode || "#2563eb" }}><PlusIcon className="h-5 w-5 text-white" /></div>
-              <Typography variant="h6" className="font-bold text-gray-800 dark:text-white">Yeni Mənzil Bağla</Typography>
-            </div>
+            <div className="rounded-2xl border border-gray-200/75 dark:border-gray-700/70 bg-white dark:bg-gray-800 p-4 sm:p-5">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <div className="h-9 w-9 rounded-lg grid place-items-center bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
+                    <HomeIcon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <Typography variant="h6" className="font-bold text-gray-800 dark:text-white">Bağlı Mənzillər</Typography>
+                    <Typography variant="small" className="text-gray-500 dark:text-gray-400">Buradan sakinə bağlı mənzilləri idarə et</Typography>
+                  </div>
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <AsyncSearchSelect label="MTK" value={mtkId} onChange={handleMtkChange} endpoint="/search/module/mtk" selectedLabel={selectedLabels.mtk} placeholder="MTK seçin" searchPlaceholder="MTK axtar..." />
-              <AsyncSearchSelect key={complexSelectKey} label="Kompleks" value={complexId} onChange={handleComplexChange} endpoint="/search/module/complex" searchParams={complexSearchParams} selectedLabel={selectedLabels.complex} disabled={!mtkId} placeholder="Kompleks seçin" searchPlaceholder="Kompleks axtar..." />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <AsyncSearchSelect key={buildingSelectKey} label="Bina " value={buildingId} onChange={handleBuildingChange} endpoint="/search/module/building" searchParams={buildingSearchParams} selectedLabel={selectedLabels.building} disabled={!complexId} placeholder="Bina seçin" searchPlaceholder="Bina axtar..." />
-              <AsyncSearchSelect key={blockSelectKey} label="Blok " value={blockId} onChange={handleBlockChange} endpoint="/search/module/block" searchParams={blockSearchParams} selectedLabel={selectedLabels.block} disabled={!buildingId} placeholder="Blok seçin" searchPlaceholder="Blok axtar..." />
-            </div>
-
-            <div className="mb-6">
-              <AsyncSearchSelect key={propertySelectKey} label="Mənzil *" value={propertyId} onChange={handlePropertyChange} endpoint="/search/module/property" searchParams={propertySearchParams} selectedLabel={selectedLabels.property} disabled={!complexId} placeholder="Mənzil seçin" searchPlaceholder="Mənzil axtar..." />
-            </div>
-
-            <div className="flex justify-end">
-              <Button
-                disabled={!canBind || saving}
-                onClick={() => setBindConfirm(true)}
-                className="text-white font-semibold px-8 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2"
-                style={{ background: colorCode || "#2563eb" }}
-              >
-                <PlusIcon className="h-4 w-4" />
-                {saving ? "Bağlanır..." : "Mənzili Bağla"}
-              </Button>
-            </div>
-          </div>
-
-          <div className="rounded-xl border-[0.5px] border-gray-200/70 dark:border-gray-700/70 bg-white dark:bg-gray-800 p-4 sm:p-5 shadow-sm space-y-6">
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-green-600 rounded-lg"><HomeIcon className="h-5 w-5 text-white" /></div>
-              <Typography variant="h6" className="font-bold text-gray-800 dark:text-white">Bağlı Mənzillər ({residentProperties.length})</Typography>
-            </div>
-
-            {residentProperties.length === 0 ? (
-              <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600">
-                <HomeIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <Typography variant="h6" className="text-gray-500 dark:text-gray-400 mb-2">Hələ bağlı mənzil yoxdur</Typography>
-                <Typography variant="small" className="text-gray-400 dark:text-gray-500">Yuxarıdan yeni mənzil əlavə edin</Typography>
+                <Button
+                  size="sm"
+                  onClick={() => setIsPickerOpen((prev) => !prev)}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg px-4"
+                  style={{ background: colorCode || "#2563eb" }}
+                >
+                  <PlusIcon className="h-4 w-4" />
+                  {isPickerOpen ? "Seçimi gizlət" : "Əlavə et"}
+                </Button>
               </div>
-            ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {residentProperties.map((p) => (
-                  <Card key={p.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300 overflow-hidden">
-                    <CardBody className="p-0">
-                      <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-4 text-white">
-                        <div className="flex justify-between items-start">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm"><HomeIcon className="h-6 w-6 text-white" /></div>
-                            <div>
-                              <Typography variant="h6" className="font-bold text-white">{p.property?.name || `Mənzil #${p.property_id}`}</Typography>
-                              <Typography variant="small" className="text-green-100">ID: #{p.property_id}</Typography>
+
+              {isPickerOpen && (
+                <div className="mt-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 p-4 space-y-4">
+                  <Typography variant="small" className="font-semibold text-gray-700 dark:text-gray-200">Mənzil seçimi</Typography>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <AsyncSearchSelect
+                      label="MTK"
+                      value={mtkId}
+                      onChange={handleMtkChange}
+                      endpoint="/search/module/mtk"
+                      selectedLabel={selectedLabels.mtk}
+                      placeholder="MTK seçin"
+                      searchPlaceholder="MTK axtar..."
+                    />
+                    <AsyncSearchSelect
+                      key={complexSelectKey}
+                      label="Kompleks"
+                      value={complexId}
+                      onChange={handleComplexChange}
+                      endpoint="/search/module/complex"
+                      searchParams={complexSearchParams}
+                      selectedLabel={selectedLabels.complex}
+                      disabled={!mtkId}
+                      placeholder="Kompleks seçin"
+                      searchPlaceholder="Kompleks axtar..."
+                    />
+                    <AsyncSearchSelect
+                      key={buildingSelectKey}
+                      label="Bina"
+                      value={buildingId}
+                      onChange={handleBuildingChange}
+                      endpoint="/search/module/building"
+                      searchParams={buildingSearchParams}
+                      selectedLabel={selectedLabels.building}
+                      disabled={!complexId}
+                      placeholder="Bina seçin"
+                      searchPlaceholder="Bina axtar..."
+                    />
+                    <AsyncSearchSelect
+                      key={blockSelectKey}
+                      label="Blok"
+                      value={blockId}
+                      onChange={handleBlockChange}
+                      endpoint="/search/module/block"
+                      searchParams={blockSearchParams}
+                      selectedLabel={selectedLabels.block}
+                      disabled={!buildingId}
+                      placeholder="Blok seçin"
+                      searchPlaceholder="Blok axtar..."
+                    />
+                  </div>
+
+                  <AsyncSearchSelect
+                    key={propertySelectKey}
+                    label="Mənzil *"
+                    value={propertyId}
+                    onChange={handlePropertyChange}
+                    endpoint="/search/module/property"
+                    searchParams={propertySearchParams}
+                    selectedLabel={selectedLabels.property}
+                    disabled={!complexId}
+                    placeholder="Mənzil seçin"
+                    searchPlaceholder="Mənzil axtar..."
+                  />
+
+                  <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+                    <Button
+                      variant="outlined"
+                      color="blue-gray"
+                      onClick={() => setIsPickerOpen(false)}
+                      disabled={saving}
+                    >
+                      Ləğv et
+                    </Button>
+                    <Button
+                      onClick={() => setBindConfirm(true)}
+                      disabled={!canBind || saving}
+                      className="inline-flex items-center justify-center gap-2"
+                      style={{ background: colorCode || "#2563eb" }}
+                    >
+                      <LinkIcon className="h-4 w-4" />
+                      {saving ? "Bağlanır..." : "Mənzili bağla"}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-4 space-y-3">
+                {residentProperties.length === 0 ? (
+                  <div className="rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900/40 py-10 text-center">
+                    <HomeIcon className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+                    <Typography variant="h6" className="text-gray-600 dark:text-gray-300">Bu sakin üçün hələ mənzil bağlı deyil</Typography>
+                    <Typography variant="small" className="text-gray-500 dark:text-gray-400 mt-1">Əlavə et düyməsi ilə mənzil seçə bilərsən</Typography>
+                  </div>
+                ) : (
+                  residentProperties.map((p) => {
+                    const propertyTitle = p.property?.name || p.property?.apartment_number || `Mənzil #${p.property_id}`;
+                    return (
+                      <div
+                        key={p.id}
+                        className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 p-3 sm:p-4"
+                      >
+                        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
+                          <div className="space-y-2 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <div className="h-8 w-8 rounded-lg grid place-items-center text-white" style={{ background: colorCode || "#2563eb" }}>
+                                <HomeIcon className="h-4 w-4" />
+                              </div>
+                              <div className="min-w-0">
+                                <Typography variant="paragraph" className="font-bold text-gray-800 dark:text-white truncate">{propertyTitle}</Typography>
+                                <Typography variant="small" className="text-gray-500 dark:text-gray-400">ID: #{p.property_id}</Typography>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                              <div className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                                <Square3Stack3DIcon className="h-4 w-4" />
+                                <span>{p.mtk?.name || "MTK yoxdur"}</span>
+                              </div>
+                              <div className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                                <BuildingOfficeIcon className="h-4 w-4" />
+                                <span>{p.complex?.name || "Kompleks yoxdur"}</span>
+                              </div>
+                              {(p.building?.name || p.block?.name) && (
+                                <div className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-300 sm:col-span-2">
+                                  <RectangleGroupIcon className="h-4 w-4" />
+                                  <span>
+                                    {[p.building?.name, p.block?.name].filter(Boolean).join(" / ")}
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           </div>
-                          <div className="px-3 py-1 bg-white/20 backdrop-blur-sm text-white rounded-full text-sm font-semibold border-0 flex items-center">
-                            <CheckCircleIcon className="h-4 w-4 mr-1" />Aktiv
+
+                          <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row gap-2 lg:items-end">
+                            <Chip
+                              value="Aktiv"
+                              className="rounded-full px-3 py-1 text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+                              icon={<CheckCircleIcon className="h-4 w-4" />}
+                            />
+                            <div className="flex flex-wrap gap-2">
+                              <Button
+                                size="sm"
+                                variant="outlined"
+                                color="green"
+                                onClick={() => onAddBalance?.(p.property_id, propertyTitle)}
+                                disabled={saving}
+                                className="inline-flex items-center gap-1.5"
+                              >
+                                <BanknotesIcon className="h-4 w-4" />
+                                Balans artır
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="gradient"
+                                color="red"
+                                onClick={() => setUnbindTarget(p)}
+                                disabled={saving}
+                                className="inline-flex items-center gap-1.5"
+                              >
+                                <TrashIcon className="h-4 w-4" />
+                                Bağlantını sil
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </div>
-
-                      <div className="p-6 space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                              <Square3Stack3DIcon className="h-4 w-4" />
-                              <Typography variant="small" className="font-semibold uppercase tracking-wider">MTK</Typography>
-                            </div>
-                            <Typography variant="h6" className="text-gray-800 dark:text-white font-bold">{p.mtk?.name || "-"}</Typography>
-                          </div>
-
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                              <BuildingOfficeIcon className="h-4 w-4" />
-                              <Typography variant="small" className="font-semibold uppercase tracking-wider">Kompleks</Typography>
-                            </div>
-                            <Typography variant="h6" className="text-gray-800 dark:text-white font-bold">{p.complex?.name || "-"}</Typography>
-                          </div>
-                        </div>
-
-                        <div className="border-t border-gray-200 dark:border-gray-700 my-4" />
-
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center gap-2">
-                            <Chip value="Aktiv" className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-0" />
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              size="sm"
-                              variant="outlined"
-                              color="green"
-                              onClick={() => onAddBalance?.(p.property_id, p.property?.name || p.property?.apartment_number || `Mənzil #${p.property_id}`)}
-                              disabled={saving}
-                              className="flex items-center gap-1.5"
-                            >
-                              <BanknotesIcon className="h-4 w-4" />Balans əlavə et
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="gradient"
-                              color="red"
-                              onClick={() => setUnbindTarget(p)}
-                              disabled={saving}
-                              className="flex items-center gap-2"
-                            >
-                              <TrashIcon className="h-4 w-4" />Bağlantını sil
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </CardBody>
-                  </Card>
-                ))}
+                    );
+                  })
+                )}
               </div>
-            )}
+            </div>
           </div>
         </DialogBody>
 
         <DialogFooter className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2.5 px-4 py-4 sm:px-6 sm:py-5 border-t border-gray-200/80 dark:border-gray-700/80 bg-white dark:bg-gray-800 rounded-b-lg sm:rounded-b-xl">
-          <Button variant="outlined" onClick={onClose} className="w-full sm:w-auto rounded-xl px-6">Bağla</Button>
+          <Button variant="outlined" onClick={onClose} disabled={lockClose} className="w-full sm:w-auto rounded-xl px-6">Bağla</Button>
         </DialogFooter>
       </Dialog>
 
@@ -374,7 +501,8 @@ export function PropertyBindModal({
           property: unbindTarget?.property?.name || unbindTarget?.property?.apartment_number || (unbindTarget?.property_id ? `#${unbindTarget.property_id}` : undefined),
         }}
         loading={saving}
-      />     </>
+      />
+    </>
   );
 }
 
