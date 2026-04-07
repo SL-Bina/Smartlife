@@ -54,7 +54,7 @@ export function UserMenu({ isMobile = false, showButton = false }) {
 
   const isResident = user?.is_resident === true;
   const profilePath = isResident ? "/resident/profile" : "/dashboard/profile";
-  const settingsPath = "/dashboard/settings";
+  const settingsPath = isResident ? "/resident/settings" : "/dashboard/settings";
 
   if (!isInitialized) {
     return <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-600" />;
@@ -178,7 +178,7 @@ export function UserMenu({ isMobile = false, showButton = false }) {
       handler={setOpenMenu}
       placement="bottom-end"
       offset={10}
-      dismiss={{ itemPress: false }}
+      dismiss={{ itemPress: false, isRequired: {} }}
     >
       <MenuHandler>{trigger}</MenuHandler>
 
@@ -230,16 +230,14 @@ export function UserMenu({ isMobile = false, showButton = false }) {
                 <UserCircleIcon className="h-4 w-4" />
                 {t("header.profile")}
               </button>
-              {!isResident && (
-                <button
-                  type="button"
-                  onClick={() => goTo(settingsPath)}
-                  className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-                >
-                  <Cog6ToothIcon className="h-4 w-4" />
-                  {t("header.settings")}
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => goTo(settingsPath)}
+                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <Cog6ToothIcon className="h-4 w-4" />
+                {t("header.settings")}
+              </button>
             </div>
 
             <div>

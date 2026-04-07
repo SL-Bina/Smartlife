@@ -120,10 +120,12 @@ export function Sidenav({ brandImg, brandName, routes }) {
   }, [openSidenav, isMobile]);
 
   React.useEffect(() => {
+    if (!user || user?.is_resident === true) return;
+
     if (selectedMtkId && !selectedMtk) {
       dispatch(loadMtkById(selectedMtkId));
     }
-  }, [dispatch, selectedMtkId, selectedMtk]);
+  }, [dispatch, selectedMtkId, selectedMtk, user]);
 
   return (
     <>

@@ -441,6 +441,13 @@ export const routes = [
         path: "/profile",
         element: <ResidentProfilePage />,
       },
+      {
+        icon: <CogIcon {...icon} />,
+        name: "sidebar.settings",
+        path: "/settings",
+        element: <Settings />,
+        hideInSidenav: true,
+      },
     ],
   },
   {
