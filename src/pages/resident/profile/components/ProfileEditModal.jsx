@@ -24,15 +24,16 @@ function Field({ label, children }) {
   );
 }
 
-function TextInput({ value, onChange, type = "text", placeholder, rightIcon }) {
+function TextInput({ value, onChange, type = "text", placeholder, rightIcon, disabled = false }) {
   return (
     <div className="relative">
       <input
         type={type}
         value={value || ""}
         onChange={onChange}
+        disabled={disabled}
         placeholder={placeholder}
-        className="w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all"
+        className={`w-full px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-gray-100 dark:disabled:bg-gray-800 ${rightIcon ? "pr-10" : ""}`}
         style={{ "--tw-ring-color": "var(--profile-color)" }}
         onFocus={(e) => (e.target.style.borderColor = "var(--profile-color)")}
         onBlur={(e) => (e.target.style.borderColor = "")}
@@ -47,6 +48,7 @@ function TextInput({ value, onChange, type = "text", placeholder, rightIcon }) {
 /* ─── Main modal component ──────────────────────────────────────── */
 export function ProfileEditModal({ open, onClose, user, onSaved, mode = "personal" }) {
   const { color, getRgba } = useComplexColor();
+  const [activeTab, setActiveTab] = useState(mode === "password" ? "password" : "personal");
 
   /* personal form */
   const [form, setForm] = useState({
@@ -78,6 +80,14 @@ export function ProfileEditModal({ open, onClose, user, onSaved, mode = "persona
       setError(null);
     }
   }, [open, user]);
+
+  useEffect(() => {
+    if (open) {
+      setActiveTab(mode === "password" ? "password" : "personal");
+      setSuccess(false);
+      setError(null);
+    }
+  }, [open, mode]);
 
   const handleClose = () => { setSuccess(false); setError(null); onClose(); };
 
@@ -113,7 +123,7 @@ export function ProfileEditModal({ open, onClose, user, onSaved, mode = "persona
     } finally { setLoading(false); }
   };
 
-  const isPassword = mode === "password";
+  const isPassword = activeTab === "password";
 
   return (
     <Dialog
@@ -144,6 +154,42 @@ export function ProfileEditModal({ open, onClose, user, onSaved, mode = "persona
 
       <DialogBody className="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
 
+        {/* ── Tabs ── */}
+        <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-gray-100 dark:bg-gray-700/50">
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("personal");
+              setSuccess(false);
+              setError(null);
+            }}
+            className={`px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
+              activeTab === "personal"
+                ? "text-white"
+                : "text-gray-600 dark:text-gray-300 hover:bg-white/60 dark:hover:bg-gray-600/40"
+            }`}
+            style={activeTab === "personal" ? { background: color } : undefined}
+          >
+            Şəxsi məlumat
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("password");
+              setSuccess(false);
+              setError(null);
+            }}
+            className={`px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
+              activeTab === "password"
+                ? "text-white"
+                : "text-gray-600 dark:text-gray-300 hover:bg-white/60 dark:hover:bg-gray-600/40"
+            }`}
+            style={activeTab === "password" ? { background: color } : undefined}
+          >
+            Şifrə dəyiş
+          </button>
+        </div>
+
         {/* Success state */}
         {success && (
           <div className="flex items-center gap-3 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
@@ -169,12 +215,27 @@ export function ProfileEditModal({ open, onClose, user, onSaved, mode = "persona
           <>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Ad">
-                <TextInput value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Adınız" />
+                <TextInput
+                  value={form.name}
+                  onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
+                  placeholder="Adınız"
+                  rightIcon={<LockClosedIcon className="h-4 w-4 text-gray-400" />}
+                  disabled
+                />
               </Field>
               <Field label="Soyad">
-                <TextInput value={form.surname} onChange={(e) => setForm(f => ({ ...f, surname: e.target.value }))} placeholder="Soyadınız" />
+                <TextInput
+                  value={form.surname}
+                  onChange={(e) => setForm(f => ({ ...f, surname: e.target.value }))}
+                  placeholder="Soyadınız"
+                  rightIcon={<LockClosedIcon className="h-4 w-4 text-gray-400" />}
+                  disabled
+                />
               </Field>
             </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 -mt-1">
+              Ad və soyad resident tərəfindən dəyişdirilə bilməz.
+            </p>
             <Field label="E-poçt">
               <TextInput type="email" value={form.email} onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))} placeholder="email@example.com" />
             </Field>

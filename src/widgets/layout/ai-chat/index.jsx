@@ -68,7 +68,7 @@ const saveActiveChatId = (chatId) => {
   setCookie(ACTIVE_CHAT_COOKIE, chatId, 365);
 };
 
-export function AiChat({ sidenavPosition = "left" }) {
+export function AiChat({ sidenavPosition = "left", hideToggle = false }) {
   const [openChat, setOpenChat] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(false);
 
@@ -297,6 +297,15 @@ export function AiChat({ sidenavPosition = "left" }) {
     return () => clearTimeout(t);
   }, [openChat, isMobile, mobileView, activeChatId]);
 
+  React.useEffect(() => {
+    const openFromNavbarDialog = () => setOpenChat(true);
+    window.addEventListener("smartlife:open-ai-chat", openFromNavbarDialog);
+
+    return () => {
+      window.removeEventListener("smartlife:open-ai-chat", openFromNavbarDialog);
+    };
+  }, []);
+
   const close = () => {
     setOpenChat(false);
     setError(null);
@@ -521,11 +530,13 @@ export function AiChat({ sidenavPosition = "left" }) {
 
   return (
     <>
-      <AiChatToggleButton
-        setOpenChat={setOpenChat}
-        isAnyOverlayOpen={openChat}
-        sidenavPosition={sidenavPosition}
-      />
+      {!hideToggle && (
+        <AiChatToggleButton
+          setOpenChat={setOpenChat}
+          isAnyOverlayOpen={openChat}
+          sidenavPosition={sidenavPosition}
+        />
+      )}
 
       <AnimatePresence>
         {openChat && (

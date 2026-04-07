@@ -1,8 +1,6 @@
 import React from "react";
 import { Bars3Icon, BuildingOfficeIcon } from "@heroicons/react/24/solid";
 import { useMaterialTailwindController, setOpenSidenav } from "@/store/exports";
-import { DarkModeToggle } from "./DarkModeToggle";
-import { LanguageSelector } from "./LanguageSelector";
 import { NotificationsMenu } from "./NotificationsMenu";
 import { UserMenu } from "./UserMenu";
 import PropertySelectorMenu from "./PropertySelectorMenu";
@@ -90,12 +88,6 @@ export function MobileNavbar({ pageTitle, navbarHoverEffects }) {
         </div>
         <div className="flex items-center">
           <PropertySelectorMenu isMobile={true} />
-        </div>
-        <div className="flex items-center">
-          <DarkModeToggle isMobile={true} />
-        </div>
-        <div className="flex items-center">
-          <LanguageSelector isMobile={true} />
         </div>
         <div className="flex items-center">
           <NotificationsMenu isMobile={true} />

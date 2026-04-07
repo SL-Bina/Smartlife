@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Suspense } from "react";
 import { useCallback, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import {
   Sidenav,
   DashboardNavbar,
-  Configurator,
 } from "@/widgets/layout";
 import myPropertiesAPI from "@/pages/resident/myproperties/api";  
 import routes from "@/routes";
@@ -29,6 +28,20 @@ const getCookie = (name) => {
   const parts = value.split(`; ${name}=`);
   if (parts.length === 2) return parts.pop().split(';').shift();
   return null;
+};
+
+const normalizePath = (path) => {
+  if (!path) return "/";
+
+  const withLeadingSlash = path.startsWith("/") ? path : `/${path}`;
+  const noTrailingSlash = withLeadingSlash.replace(/\/+$/, "");
+
+  return noTrailingSlash || "/";
+};
+
+const toRelativeLayoutPath = (pathname) => {
+  const strippedLayoutPrefix = pathname.replace(/^\/(dashboard|resident|properties)(?=\/|$)/, "");
+  return strippedLayoutPrefix || "/";
 };
 
 function ProtectedRoute({ element, allowedRoles, moduleName, fallbackPath }) {
@@ -166,6 +179,7 @@ export const filterRoutesByRole = (routes, user) => {
 };
 
 export function Dashboard() {
+  const location = useLocation();
   const [controller, uiActions] = useMaterialTailwindController();
   const { sidenavType, sidenavCollapsed, sidenavSize, sidenavPosition } = controller;
   const { user, hasModuleAccess, refreshUser, isInitialized, error, clearError } = useAuth();
@@ -278,6 +292,40 @@ export function Dashboard() {
   }
 
   let filteredRoutes = filterRoutesByRole(routes, user, hasModuleAccess);
+
+  const validRoutePaths = new Set(["/"]);
+  const registerPath = (rawPath) => {
+    if (!rawPath) return;
+
+    let parsedPath = rawPath;
+    if (parsedPath.startsWith("/dashboard/")) {
+      parsedPath = parsedPath.replace("/dashboard", "");
+    } else if (parsedPath.startsWith("/resident/")) {
+      parsedPath = parsedPath.replace("/resident", "");
+    } else if (!parsedPath.startsWith("/")) {
+      parsedPath = `/${parsedPath}`;
+    }
+
+    validRoutePaths.add(normalizePath(parsedPath));
+  };
+
+  filteredRoutes.forEach((route) => {
+    route.pages.forEach((page) => {
+      if (page.children?.length) {
+        page.children.forEach((child) => registerPath(child.path));
+        return;
+      }
+
+      registerPath(page.path);
+    });
+  });
+
+  const currentRelativePath = normalizePath(toRelativeLayoutPath(location.pathname));
+  const isUnknownPath = !validRoutePaths.has(currentRelativePath);
+
+  if (isUnknownPath) {
+    return <NotFound />;
+  }
 
   const firstActivePath = getFirstActivePath(filteredRoutes);
   const parentPathMap = buildParentPathMap(filteredRoutes);
@@ -392,8 +440,7 @@ export function Dashboard() {
         </div>
       </motion.div>
       <div className="relative z-10">
-        <Configurator />
-        <AiChat />
+        <AiChat hideToggle />
         <Footer />
       </div>
 

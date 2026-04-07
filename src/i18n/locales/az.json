@@ -3059,6 +3059,7 @@
         "errorOccurred": "Xəta baş verdi"
       }
     }
+    }
   },
   "configurator": {
     "title": "Dashboard Konfiquratoru",
@@ -3131,5 +3132,11 @@
         }
       }
     }
+  },
+  "error404": {
+    "label": "SMARTLIFE",
+    "title": "Səhifə tapılmadı",
+    "message": "Axtardığınız səhifə mövcud deyil və ya silinib. Əsas panelə qayıdaraq davam edə bilərsiniz.",
+    "goHome": "Ana səhifəyə qayıt"
   }
-}}
+  }

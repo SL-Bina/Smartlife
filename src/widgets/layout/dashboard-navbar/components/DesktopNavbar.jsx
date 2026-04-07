@@ -11,8 +11,6 @@ import {
 } from "@heroicons/react/24/outline";
 import { useMaterialTailwindController, setOpenSidenav } from "@/store/exports";
 import { NavbarBreadcrumbs } from "./NavbarBreadcrumbs";
-import { DarkModeToggle } from "./DarkModeToggle";
-import { LanguageSelector } from "./LanguageSelector";
 import { NotificationsMenu } from "./NotificationsMenu";
 import { UserMenu } from "./UserMenu";
 import { BuildingOfficeIcon } from "@heroicons/react/24/outline";
@@ -389,12 +387,6 @@ export function DesktopNavbar({ pathParts, pageTitle, fixedNavbar, navbarHoverEf
         </div>
         <div className={navbarHoverEffects === "enabled" ? "hover:scale-125 hover:rotate-6 hover:brightness-110 active:scale-100 transition-all duration-300 ease-out cursor-pointer" : "active:scale-95"}>
           <PropertySelectorMenu />
-        </div>
-        <div className={navbarHoverEffects === "enabled" ? "hover:scale-125 hover:rotate-6 hover:brightness-110 active:scale-100 transition-all duration-300 ease-out cursor-pointer" : "active:scale-95"}>
-          <DarkModeToggle />
-        </div>
-        <div className={navbarHoverEffects === "enabled" ? "hover:scale-125 hover:rotate-6 hover:brightness-110 active:scale-100 transition-all duration-300 ease-out cursor-pointer" : "active:scale-95"}>
-          <LanguageSelector />
         </div>
         <div className={navbarHoverEffects === "enabled" ? "hover:scale-125 hover:rotate-6 hover:brightness-110 active:scale-100 transition-all duration-300 ease-out cursor-pointer" : "active:scale-95"}>
           <NotificationsMenu />

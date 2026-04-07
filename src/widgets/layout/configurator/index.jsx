@@ -7,7 +7,7 @@ import { SidenavSection } from "./components/SidenavSection";
 import { NavbarSection } from "./components/NavbarSection";
 import { LayoutSection } from "./components/LayoutSection";
 
-export function Configurator() {
+export function Configurator({ hideToggle = false }) {
   const [controller, dispatch] = useMaterialTailwindController();
   const {
     openConfigurator,
@@ -38,12 +38,14 @@ export function Configurator() {
 
   return (
     <>
-      <ConfiguratorToggleButton
-        dispatch={dispatch}
-        openConfigurator={openConfigurator}
-        isMobile={isMobile}
-        sidenavPosition={sidenavPosition}
-      />
+      {!hideToggle && (
+        <ConfiguratorToggleButton
+          dispatch={dispatch}
+          openConfigurator={openConfigurator}
+          isMobile={isMobile}
+          sidenavPosition={sidenavPosition}
+        />
+      )}
 
       {!isMobile && (
         <AnimatePresence>

@@ -52,8 +52,8 @@ const ResidentProfilePage = () => {
   const { user, refreshUser } = useAuth();
   const { color, getRgba, headerStyle } = useComplexColor();
 
-  const [editOpen, setEditOpen]   = useState(false);
-  const [pwOpen,   setPwOpen]     = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editMode, setEditMode] = useState("personal");
 
   const fullName = [user?.name, user?.surname].filter(Boolean).join(" ") || "Resident";
   const initials = ((user?.name?.[0] || "") + (user?.surname?.[0] || "")).toUpperCase() || "R";
@@ -87,20 +87,26 @@ const ResidentProfilePage = () => {
           {/* Action buttons */}
           <div className="flex gap-2 shrink-0">
             <button
-              onClick={() => setEditOpen(true)}
+              onClick={() => {
+                setEditMode("personal");
+                setEditOpen(true);
+              }}
               className="flex items-center gap-2 px-4 py-2 bg-white text-sm font-semibold rounded-xl shadow hover:shadow-md transition-all"
               style={{ color }}
             >
               <PencilSquareIcon className="h-4 w-4" />
               Düzəliş et
             </button>
-            <button
-              onClick={() => setPwOpen(true)}
+            {/* <button
+              onClick={() => {
+                setEditMode("password");
+                setEditOpen(true);
+              }}
               className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 border border-white/30 text-white text-sm font-semibold rounded-xl transition-all"
             >
               <LockClosedIcon className="h-4 w-4" />
               Şifrə
-            </button>
+            </button> */}
           </div>
         </div>
       </div>
@@ -132,7 +138,10 @@ const ResidentProfilePage = () => {
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Şifrənizi mütəmadi dəyişdirin</p>
             </div>
             <button
-              onClick={() => setPwOpen(true)}
+              onClick={() => {
+                setEditMode("password");
+                setEditOpen(true);
+              }}
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
               style={{ background: color }}
             >
@@ -149,14 +158,7 @@ const ResidentProfilePage = () => {
         onClose={() => setEditOpen(false)}
         user={user}
         onSaved={refreshUser}
-        mode="personal"
-      />
-      <ProfileEditModal
-        open={pwOpen}
-        onClose={() => setPwOpen(false)}
-        user={user}
-        onSaved={refreshUser}
-        mode="password"
+        mode={editMode}
       />
     </div>
   );
