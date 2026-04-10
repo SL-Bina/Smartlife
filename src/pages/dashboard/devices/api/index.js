@@ -283,6 +283,44 @@ export const devicesAPI = {
       throw error.response?.data || error.message;
     }
   },
+
+  getBasipDomainDetail: async (id, params = {}) => {
+    try {
+      const response = await api.get(`/integration/device/basip-project/domains/detail/${id}`, { params });
+      return response;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  getBasipBindActions: async (params = {}) => {
+    try {
+      const response = await api.get("/integration/device/basip-project/bind-actions/list", { params });
+      return response;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  bindBasipAction: async (data) => {
+    try {
+      const response = await api.post("/integration/device/basip-project/bind-actions/bind", data);
+      return response;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  unbindBasipAction: async (data) => {
+    try {
+      const response = await api.delete("/integration/device/basip-project/bind-actions/unbind", {
+        data,
+      });
+      return response;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
 };
 
 export default devicesAPI;
